@@ -1,15 +1,18 @@
+import { keyBy } from 'lodash-es'
+
 import {
   Assertion,
   BrowserEvent,
   BrowserEventTarget,
 } from '@/schemas/recording'
+import { toClickButton, toClickModifiers } from '@/utils/clickOptions'
 import { exhaustive } from '@/utils/typescript'
 import {
   BrowserActionInstance,
   LocatorOptions,
 } from '@/views/BrowserTestEditor/types'
 
-import { isSelectorEqual, getNodeSelector, toNodeSelector } from './selectors'
+import { isLocatorEqual, getElementLocator } from './selectors'
 import {
   TestNode,
   PageNode,
@@ -96,17 +99,17 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
     // await input.type("Hello")
     // await input.press("Enter")
 
-    const selector = getNodeSelector(target.selectors)
+    const locator = getElementLocator(target.selectors)
 
     if (
       previousLocator === null ||
-      !isSelectorEqual(selector, previousLocator.selector) ||
+      !isLocatorEqual(locator, previousLocator.locator) ||
       previousLocator.inputs.page.nodeId !== page.nodeId
     ) {
       previousLocator = {
         type: 'locator',
         nodeId: crypto.randomUUID(),
-        selector,
+        locator,
         inputs: {
           page,
         },
@@ -330,17 +333,15 @@ function buildBrowserNodeGraphFromActions(
     // await input.type("Hello")
     // await input.press("Enter")
 
-    const selector = toNodeSelector(currentLocator)
-
     if (
       previousLocatorNode === null ||
-      !isSelectorEqual(selector, previousLocatorNode.selector) ||
+      !isLocatorEqual(currentLocator, previousLocatorNode.locator) ||
       previousLocatorNode.inputs.page.nodeId !== getPage().nodeId
     ) {
       previousLocatorNode = {
         type: 'locator',
         nodeId: crypto.randomUUID(),
-        selector,
+        locator: currentLocator,
         inputs: {
           page: getPage(),
         },
@@ -385,13 +386,11 @@ function buildBrowserNodeGraphFromActions(
         return {
           type: 'click',
           nodeId: crypto.randomUUID(),
-          button: 'left',
-          modifiers: {
-            ctrl: false,
-            shift: false,
-            alt: false,
-            meta: false,
-          },
+          button: toClickButton(action.options),
+          modifiers: toClickModifiers(action.options?.modifiers),
+          waitForNavigation: action.options?.waitForNavigation
+            ? { page: getPage() }
+            : undefined,
           inputs: {
             locator: getLocator(action.locator),
           },
@@ -423,16 +422,51 @@ function buildBrowserNodeGraphFromActions(
             locator: getLocator(action.locator),
           },
         }
+      case 'locator.clear':
+        return {
+          type: 'clear',
+          nodeId: crypto.randomUUID(),
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
+      case 'locator.selectOption': {
+        const deduped = Object.values(
+          keyBy(action.values, (v) => {
+            if (v.value !== undefined) return `value:${v.value}`
+            if (v.label !== undefined) return `label:${v.label}`
+            return `index:${v.index}`
+          })
+        )
+        const selected = deduped.length > 0 ? deduped : ['']
+
+        return {
+          type: 'select-options',
+          nodeId: crypto.randomUUID(),
+          selected,
+          multiple: selected.length > 1,
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
+      }
+      case 'page.waitForTimeout':
+        return {
+          type: 'wait-for-timeout',
+          nodeId: crypto.randomUUID(),
+          timeout: action.timeout,
+          inputs: {
+            page: getPage(),
+          },
+        }
       case 'page.waitForNavigation':
       case 'page.close':
       case 'page.*':
       case 'locator.dblclick':
       case 'locator.type':
-      case 'locator.selectOption':
       case 'locator.hover':
       case 'locator.setChecked':
       case 'locator.tap':
-      case 'locator.clear':
       case 'locator.press':
       case 'locator.focus':
       case 'locator.*':

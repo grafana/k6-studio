@@ -1,17 +1,14 @@
 import { useChat } from '@ai-sdk/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { TokenUsage } from '@/handlers/ai/types'
 import { applyRules } from '@/rules/rules'
 import { UsageEventName } from '@/services/usageTracking/types'
-import { useFeaturesStore } from '@/store/features'
 import {
   selectFilteredRequests,
   selectGeneratorData,
   useGeneratorStore,
 } from '@/store/generator'
 import { AiCorrelationRule } from '@/types/autoCorrelation'
-import { AiProvider } from '@/types/features'
 import { CorrelationRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
 import { validateScript } from '@/utils/validateScript'
@@ -28,8 +25,20 @@ import {
   searchRequests,
 } from './utils/searchTools'
 import { prepareRequestsForAI } from './utils/stripRequestData'
-import { sumTokenUsage } from './utils/sumTokenUsage'
 import { validationMatchesRecording } from './utils/validationMatchesRecording'
+
+const outcomeEvents = {
+  success: UsageEventName.AutocorrelationSucceeded,
+  'partial-success': UsageEventName.AutocorrelationPartiallySucceeded,
+  failure: UsageEventName.AutocorrelationFailed,
+} as const
+
+const LOADING_STATES: CorrelationStatus[] = [
+  'validating',
+  'analyzing',
+  'creating-rules',
+  'finalizing',
+]
 
 export const useGenerateRules = ({
   clearValidation,
@@ -40,20 +49,21 @@ export const useGenerateRules = ({
   const [correlationStatus, setCorrelationStatus] =
     useState<CorrelationStatus>('not-started')
   const [outcomeReason, setOutcomeReason] = useState('')
-  const [tokenUsage, setTokenUsage] = useState<TokenUsage>()
   const suggestedRulesRef = useRef(suggestedRules)
+  const correlationStatusRef = useRef(correlationStatus)
   const abortControllerRef = useRef<AbortController | null>(null)
   const recording = useGeneratorStore(selectFilteredRequests)
   const generator = useGeneratorStore(selectGeneratorData)
 
-  const isGrafanaAssistant = useFeaturesStore(
-    (state) => state.features['grafana-assistant']
-  )
-  const provider: AiProvider = isGrafanaAssistant
-    ? 'grafana-assistant'
-    : 'openai'
+  // Sync refs after commit (not during render) so aborted renders in
+  // concurrent mode can't leave refs pointing at uncommitted state.
+  useEffect(() => {
+    suggestedRulesRef.current = suggestedRules
+  })
 
-  suggestedRulesRef.current = suggestedRules
+  useEffect(() => {
+    correlationStatusRef.current = correlationStatus
+  })
 
   const {
     sendMessage,
@@ -64,16 +74,15 @@ export const useGenerateRules = ({
     clearError,
     setMessages,
   } = useChat<Message>({
-    transport: new IPCChatTransport({
-      provider,
-      onUsage: (usage) => {
-        setTokenUsage((prev) => sumTokenUsage(prev, usage))
-      },
-    }),
+    transport: new IPCChatTransport(),
+
     // Keep calling tools without user input
     sendAutomaticallyWhen: lastMessageIsToolCall,
     onError: (error) => {
       setCorrelationStatus('error')
+      window.studio.app.trackEvent({
+        event: UsageEventName.AutocorrelationErrored,
+      })
       console.error(error)
     },
     onToolCall: async ({ toolCall }) => {
@@ -102,7 +111,10 @@ export const useGenerateRules = ({
     const { toolName } = toolCall
 
     switch (toolName) {
-      case 'addRule': {
+      case 'addRuleBeginEnd':
+      case 'addRuleRegex':
+      case 'addRuleJson':
+      case 'addRuleHeaderName': {
         return addRule(toolCall.input.rule)
       }
 
@@ -126,25 +138,11 @@ export const useGenerateRules = ({
       }
 
       case 'finish':
-        if (toolCall.input.outcome === 'success') {
-          window.studio.app.trackEvent({
-            event: UsageEventName.AutocorrelationSucceeded,
-          })
-        }
-
-        if (toolCall.input.outcome === 'partial-success') {
-          window.studio.app.trackEvent({
-            event: UsageEventName.AutocorrelationPartiallySucceeded,
-          })
-        }
-
-        if (toolCall.input.outcome === 'failure') {
-          window.studio.app.trackEvent({
-            event: UsageEventName.AutocorrelationFailed,
-          })
-        }
+        window.studio.app.trackEvent({
+          event: outcomeEvents[toolCall.input.outcome],
+        })
         setOutcomeReason(toolCall.input.reason)
-        return
+        return toolCall.input.outcome
 
       default:
         return exhaustive(toolName)
@@ -152,19 +150,20 @@ export const useGenerateRules = ({
   }
 
   function addRule(rule: AiCorrelationRule) {
+    const validRule = toCorrelationRule(rule)
     const applyResult = applyRules(recording, [
       ...suggestedRulesRef.current,
-      rule,
+      validRule,
     ])
 
     const matchedRequestsIds =
       applyResult.ruleInstances[0]?.state.matchedRequestIds
 
     if (!matchedRequestsIds || matchedRequestsIds.length === 0) {
-      return []
+      return 'The provided rule did not match any requests in the recording. Review the rule and try again.'
     }
 
-    setSuggestedRules((prev) => [...prev, rule])
+    setSuggestedRules((prev) => [...prev, validRule])
     return matchedRequestsIds
   }
 
@@ -192,12 +191,7 @@ export const useGenerateRules = ({
     return result
   }
 
-  const isLoading = [
-    'validating',
-    'analyzing',
-    'creating-rules',
-    'finalizing',
-  ].includes(correlationStatus)
+  const isLoading = LOADING_STATES.includes(correlationStatus)
 
   async function start() {
     window.studio.app.trackEvent({
@@ -231,16 +225,29 @@ export const useGenerateRules = ({
   }
 
   function stop() {
+    if (!LOADING_STATES.includes(correlationStatusRef.current)) {
+      return
+    }
+
+    window.studio.app.trackEvent({
+      event: UsageEventName.AutocorrelationAborted,
+      payload: { status: correlationStatusRef.current },
+    })
     void stopGeneration()
     setCorrelationStatus('aborted')
     abortControllerRef.current?.abort()
   }
 
-  function restart() {
+  function reset() {
     setSuggestedRules([])
     setMessages([])
     clearError()
-    setTokenUsage(undefined)
+    setCorrelationStatus('not-started')
+    setOutcomeReason('')
+  }
+
+  function restart() {
+    reset()
     return start()
   }
 
@@ -259,8 +266,8 @@ export const useGenerateRules = ({
     isLoading,
     correlationStatus,
     outcomeReason,
-    tokenUsage,
     restart,
+    reset,
     stop: useCallback(stop, [stopGeneration]),
   }
 }
@@ -274,11 +281,23 @@ function toolCallToStep(toolCall: ToolCall): CorrelationStatus {
     case 'getRequestsMetadata':
     case 'getRequestDetails':
       return 'analyzing'
-    case 'addRule':
+    case 'addRuleBeginEnd':
+    case 'addRuleRegex':
+    case 'addRuleJson':
+    case 'addRuleHeaderName':
       return 'creating-rules'
     case 'finish':
       return toolCall.input.outcome
     default:
       return exhaustive(toolName)
+  }
+}
+
+function toCorrelationRule(rule: AiCorrelationRule): CorrelationRule {
+  return {
+    ...rule,
+    id: `autocorrelation_rule_${crypto.randomUUID()}`,
+    type: 'correlation',
+    enabled: true,
   }
 }

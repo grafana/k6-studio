@@ -8,13 +8,12 @@ import {
   Tooltip,
 } from '@radix-ui/themes'
 import { WholeWordIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
-import { toNodeSelector } from '@/codegen/browser/selectors'
 import { LocatorIcon, LocatorText } from '@/components/Browser/Locator'
 import { FieldGroup } from '@/components/Form'
-import { ActionLocator } from '@/main/runner/schema'
-import { NodeSelector } from '@/schemas/selectors'
+import { useHighlightLocator } from '@/components/HighlightLocatorProvider'
+import { ElementLocator } from '@/schemas/locator'
 import { exhaustive } from '@/utils/typescript'
 
 import { LocatorOptions } from '../../types'
@@ -31,7 +30,7 @@ import {
   GetByTitleForm,
 } from './locators'
 
-const LOCATOR_TYPES: Record<ActionLocator['type'], string> = {
+const LOCATOR_TYPES: Record<ElementLocator['type'], string> = {
   role: 'ARIA Role',
   label: 'Form label',
   alt: 'Alt text',
@@ -53,13 +52,52 @@ export function LocatorForm({
   onChange,
   suggestedRoles,
 }: LocatorFormProps) {
+  const highlightSelector = useHighlightLocator()
+
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
+
   const [touchedTypes, setTouchedTypes] = useState(
-    new Set<ActionLocator['type']>()
+    new Set<ElementLocator['type']>()
   )
-  const [dirtyTypes, setDirtyTypes] = useState(new Set<ActionLocator['type']>())
+  const [dirtyTypes, setDirtyTypes] = useState(
+    new Set<ElementLocator['type']>()
+  )
 
   const currentLocator = values[current] ?? initializeLocatorValues(current)
+
+  useEffect(() => {
+    if (!isPopoverOpen) {
+      highlightSelector(null)
+
+      return
+    }
+
+    const debounce = setTimeout(() => {
+      highlightSelector(currentLocator)
+    }, 100)
+
+    return () => {
+      clearTimeout(debounce)
+    }
+  }, [isPopoverOpen, currentLocator, highlightSelector])
+
+  useEffect(() => {
+    return () => {
+      highlightSelector(null)
+    }
+  }, [highlightSelector])
+
+  const handlePointerEnter = () => {
+    highlightSelector(currentLocator)
+  }
+
+  const handlePointerLeave = () => {
+    if (isPopoverOpen) {
+      return
+    }
+
+    highlightSelector(null)
+  }
 
   const handleChangeCurrent = (type: LocatorOptions['current']) => {
     if (dirtyTypes.has(current)) {
@@ -72,13 +110,15 @@ export function LocatorForm({
         return next
       })
     }
+
     const nextValues = values[type]
       ? values
       : { ...values, [type]: initializeLocatorValues(type) }
+
     onChange({ current: type, values: nextValues })
   }
 
-  const handleLocatorChange = (locator: ActionLocator) => {
+  const handleLocatorChange = (locator: ElementLocator) => {
     setDirtyTypes((prev) => {
       return addIfAbsent(prev, current)
     })
@@ -108,11 +148,15 @@ export function LocatorForm({
   const validation = touchedTypes.has(current)
     ? validateLocator(currentLocator)
     : { isValid: true }
+
   const error = validation.isValid ? null : validation.message
 
   return (
     <Popover.Root open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
-      <Popover.Trigger>
+      <Popover.Trigger
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
+      >
         <ValuePopoverBadge
           displayValue={<DisplayValue state={{ current, values }} />}
           error={error}
@@ -153,9 +197,9 @@ export function LocatorForm({
 }
 
 interface LocatorFieldsFormProps {
-  locator: ActionLocator
+  locator: ElementLocator
   errors?: Record<string, string>
-  onChange: (locator: ActionLocator) => void
+  onChange: (locator: ElementLocator) => void
   onBlur?: () => void
   suggestedRoles?: string[]
 }
@@ -246,7 +290,7 @@ function LocatorFieldsForm({
   }
 }
 
-function validateLocator(locator: ActionLocator) {
+function validateLocator(locator: ElementLocator) {
   const fieldErrors: Record<string, string> = {}
 
   switch (locator.type) {
@@ -298,11 +342,11 @@ function DisplayValue({
 }: {
   state: LocatorOptions
 }) {
-  const selector = toNodeSelector(values[current]!)
+  const locator = values[current]!
   return (
     <Flex gap="1" align="center" overflow="hidden">
       <LocatorIcon
-        locator={selector}
+        locator={locator}
         css={css`
           && {
             width: 12px;
@@ -319,20 +363,19 @@ function DisplayValue({
           text-overflow: ellipsis;
         `}
       >
-        <LocatorText locator={selector} />
+        <LocatorText locator={locator} />
       </span>
-      <ExactMatchIndicator locator={selector} />
+      <ExactMatchIndicator locator={locator} />
     </Flex>
   )
 }
 
-function ExactMatchIndicator({ locator }: { locator: NodeSelector }) {
-  if (locator.type === 'test-id' || locator.type === 'css') {
+function ExactMatchIndicator({ locator }: { locator: ElementLocator }) {
+  if (locator.type === 'testid' || locator.type === 'css') {
     return null
   }
 
-  const exact =
-    locator.type === 'role' ? locator.name?.exact : locator.text.exact
+  const exact = locator.options?.exact
   if (exact) {
     return (
       <Tooltip content="Exact match">
@@ -344,23 +387,30 @@ function ExactMatchIndicator({ locator }: { locator: NodeSelector }) {
   return null
 }
 
-function initializeLocatorValues(type: ActionLocator['type']): ActionLocator {
+function initializeLocatorValues(type: ElementLocator['type']): ElementLocator {
   switch (type) {
     case 'css':
       return { type, selector: '' }
+
     case 'testid':
       return { type, testId: '' }
+
     case 'label':
-      return { type, label: '' }
+      return { type, label: '', options: { exact: false } }
+
     case 'placeholder':
-      return { type, placeholder: '' }
+      return { type, placeholder: '', options: { exact: false } }
+
     case 'title':
-      return { type, title: '' }
+      return { type, title: '', options: { exact: false } }
+
     case 'alt':
     case 'text':
-      return { type, text: '' }
+      return { type, text: '', options: { exact: false } }
+
     case 'role':
-      return { type, role: '' }
+      return { type, role: '', options: { exact: false } }
+
     default:
       return exhaustive(type)
   }

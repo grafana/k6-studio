@@ -30,7 +30,7 @@ export function getAvailableOperators(
   valueType?: VerificationRule['value']['type']
 ) {
   if (valueType === 'regex') {
-    return [StatusVerificationRuleSchema.shape.operator.Values.matches]
+    return [StatusVerificationRuleSchema.shape.operator.enum.matches]
   }
 
   switch (target) {

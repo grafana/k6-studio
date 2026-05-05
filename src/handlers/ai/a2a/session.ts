@@ -28,8 +28,8 @@ export class ActiveA2ASession {
   }> = []
   /** Leftover bytes from SSE parsing between reads */
   sseBuffer = ''
-  /** Set to true when all emitted tool calls have been matched with REMOTE_TOOL_REQUESTs */
-  readyToFinishForTools = false
+  /** Set to true when step.complete(tool_use) signals all tool calls for this step are emitted */
+  allToolCallsReceived = false
   /** Artifact ID of the active token-streaming block (set by message.stream.start) */
   activeStreamArtifactId: string | undefined
   /** Content type of the currently open streaming block ('text' | 'reasoning') */
@@ -98,17 +98,26 @@ export class ActiveA2ASession {
   }
 
   /**
+   * True once step.complete(tool_use) has fired AND every emitted tool call
+   * is matched with a REMOTE_TOOL_REQUEST — the A2A server is now blocking
+   * and waiting for our remote tool response, so the stream can emit
+   * `finish(tool-calls)`.
+   */
+  get readyToFinishForTools(): boolean {
+    return (
+      this.allToolCallsReceived &&
+      this.unmatchedToolCalls.length === 0 &&
+      this.pendingToolRequests.size > 0
+    )
+  }
+
+  /**
    * Match unmatched tool calls with unmatched remote requests by toolName.
    * Since parallel tool calls are disabled, they arrive in order.
-   *
-   * When ALL unmatched tool calls have been matched, sets `readyToFinishForTools`
-   * so the stream emits `finish(tool-calls)` — the A2A server is now blocking
-   * and waiting for our remote tool response.
    */
   tryMatchToolRequests(): void {
     const remainingRequests = [...this.unmatchedRemoteRequests]
     const unmatchedCalls: typeof this.unmatchedToolCalls = []
-    let matchCount = 0
 
     for (const call of this.unmatchedToolCalls) {
       const reqIndex = remainingRequests.findIndex(
@@ -129,18 +138,9 @@ export class ActiveA2ASession {
         LOG_PREFIX,
         `Matched: toolId=${call.toolId} ↔ requestId=${req.requestId} (${call.toolName})`
       )
-      matchCount++
     }
 
     this.unmatchedToolCalls = unmatchedCalls
     this.unmatchedRemoteRequests = remainingRequests
-
-    if (
-      matchCount > 0 &&
-      unmatchedCalls.length === 0 &&
-      this.pendingToolRequests.size > 0
-    ) {
-      this.readyToFinishForTools = true
-    }
   }
 }

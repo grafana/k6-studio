@@ -1,0 +1,92 @@
+diff --git a/node_modules/rrweb/dist/rrweb.cjs b/node_modules/rrweb/dist/rrweb.cjs
+index 7d09b21..48fd3a1 100644
+--- a/node_modules/rrweb/dist/rrweb.cjs
++++ b/node_modules/rrweb/dist/rrweb.cjs
+@@ -14737,6 +14737,10 @@ function createPlayerService(context, { getCastFn, applyEventsSynchronously, emi
+         },
+         live: {
+           on: {
++            STOP_LIVE: {
++              target: "paused",
++              actions: ["pause"]
++            },
+             ADD_EVENT: {
+               target: "live",
+               actions: ["addEvent"]
+@@ -15863,6 +15867,9 @@ class Replayer {
+   startLive(baselineTime) {
+     this.service.send({ type: "TO_LIVE", payload: { baselineTime } });
+   }
++  stopLive() {
++    this.service.send({ type: "STOP_LIVE" });
++  }
+   addEvent(rawEvent) {
+     const event = this.config.unpackFn ? this.config.unpackFn(rawEvent) : rawEvent;
+     if (indicatesTouchDevice(event)) {
+diff --git a/node_modules/rrweb/dist/rrweb.d.cts b/node_modules/rrweb/dist/rrweb.d.cts
+index 92d2c5f..b4cd061 100644
+--- a/node_modules/rrweb/dist/rrweb.d.cts
++++ b/node_modules/rrweb/dist/rrweb.d.cts
+@@ -178,6 +178,8 @@ declare type PlayerEvent = {
+     };
+ } | {
+     type: 'PAUSE';
++} | {
++    type: 'STOP_LIVE';
+ } | {
+     type: 'TO_LIVE';
+     payload: {
+@@ -295,6 +297,7 @@ export declare class Replayer {
+     resume(timeOffset?: number): void;
+     destroy(): void;
+     startLive(baselineTime?: number): void;
++    stopLive(): void;
+     addEvent(rawEvent: eventWithTime | string): void;
+     enableInteract(): void;
+     disableInteract(): void;
+diff --git a/node_modules/rrweb/dist/rrweb.d.ts b/node_modules/rrweb/dist/rrweb.d.ts
+index 92d2c5f..b4cd061 100644
+--- a/node_modules/rrweb/dist/rrweb.d.ts
++++ b/node_modules/rrweb/dist/rrweb.d.ts
+@@ -178,6 +178,8 @@ declare type PlayerEvent = {
+     };
+ } | {
+     type: 'PAUSE';
++} | {
++    type: 'STOP_LIVE';
+ } | {
+     type: 'TO_LIVE';
+     payload: {
+@@ -295,6 +297,7 @@ export declare class Replayer {
+     resume(timeOffset?: number): void;
+     destroy(): void;
+     startLive(baselineTime?: number): void;
++    stopLive(): void;
+     addEvent(rawEvent: eventWithTime | string): void;
+     enableInteract(): void;
+     disableInteract(): void;
+diff --git a/node_modules/rrweb/dist/rrweb.js b/node_modules/rrweb/dist/rrweb.js
+index 553c605..bf92559 100644
+--- a/node_modules/rrweb/dist/rrweb.js
++++ b/node_modules/rrweb/dist/rrweb.js
+@@ -14735,6 +14735,10 @@ function createPlayerService(context, { getCastFn, applyEventsSynchronously, emi
+         },
+         live: {
+           on: {
++            STOP_LIVE: {
++              target: 'paused',
++              actions: ["pause"]
++            },
+             ADD_EVENT: {
+               target: "live",
+               actions: ["addEvent"]
+@@ -15861,6 +15865,9 @@ class Replayer {
+   startLive(baselineTime) {
+     this.service.send({ type: "TO_LIVE", payload: { baselineTime } });
+   }
++  stopLive() {
++    this.service.send({ type: "STOP_LIVE" });
++  }
+   addEvent(rawEvent) {
+     const event = this.config.unpackFn ? this.config.unpackFn(rawEvent) : rawEvent;
+     if (indicatesTouchDevice(event)) {

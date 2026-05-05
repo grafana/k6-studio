@@ -11,9 +11,7 @@ import {
 import {
   AlertTriangleIcon,
   CheckCircleIcon,
-  KeyIcon,
   LinkIcon,
-  UnlinkIcon,
   WandSparkles,
 } from 'lucide-react'
 import { useState } from 'react'
@@ -24,65 +22,16 @@ import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
 import {
   useAssistantAuthStatus,
   useAssistantSignIn,
-  useAssistantSignOut,
   invalidateAssistantAuthStatus,
 } from '@/hooks/useAssistantAuth'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
-import { useSettings } from '@/hooks/useSettings'
-import { useFeaturesStore } from '@/store/features'
-import { useStudioUIStore } from '@/store/ui'
-
-import { AssistantTestChat } from './AssistantTestChat'
+import { useStackHealth } from '@/hooks/useStackHealth'
 
 interface IntroductionMessageProps {
   onStart: () => void
 }
 
 export function IntroductionMessage({ onStart }: IntroductionMessageProps) {
-  const isGrafanaAssistant = useFeaturesStore(
-    (state) => state.features['grafana-assistant']
-  )
-
-  if (isGrafanaAssistant) {
-    return <GrafanaAssistantIntro />
-  }
-
-  return <OpenAiIntro onStart={onStart} />
-}
-
-function OpenAiIntro({ onStart }: IntroductionMessageProps) {
-  const openSettingsDialog = useStudioUIStore(
-    (state) => state.openSettingsDialog
-  )
-  const { data: settings } = useSettings()
-  const isAiConfigured = !!settings?.ai.apiKey
-  const proxyStatus = useProxyStatus()
-
-  return (
-    <IntroLayout>
-      {isAiConfigured && (
-        <AnalyzeButton onStart={onStart} proxyStatus={proxyStatus} />
-      )}
-      {!isAiConfigured && (
-        <>
-          <Text size="2" color="gray">
-            To use autocorrelation, configure your OpenAI API key first.
-          </Text>
-
-          <Button onClick={() => openSettingsDialog('ai')} size="3">
-            <KeyIcon />
-            Add OpenAI API key
-          </Button>
-        </>
-      )}
-      <Text size="1" color="gray" mt="1">
-        This feature is in public preview and subject to change.
-      </Text>
-    </IntroLayout>
-  )
-}
-
-function GrafanaAssistantIntro() {
   const { data: authStatus, isLoading } = useAssistantAuthStatus()
   const [isCloudSigningIn, setIsCloudSigningIn] = useState(false)
   const signIn = useAssistantSignIn()
@@ -154,6 +103,7 @@ function GrafanaAssistantIntro() {
         isLoading={isLoading}
         onSignIn={() => setIsCloudSigningIn(true)}
         onConnect={() => signIn.mutate()}
+        onStart={onStart}
         connectError={signIn.error}
       />
       <Text size="1" color="gray" mt="1">
@@ -169,6 +119,7 @@ interface AssistantAuthStatusProps {
   isLoading: boolean
   onSignIn: () => void
   onConnect: () => void
+  onStart: () => void
   connectError: Error | null
 }
 
@@ -178,9 +129,10 @@ function AssistantAuthStatus({
   isLoading,
   onSignIn,
   onConnect,
+  onStart,
   connectError,
 }: AssistantAuthStatusProps) {
-  const { mutate: signOut, isPending: isSigningOut } = useAssistantSignOut()
+  const { isStackReady } = useStackHealth(isAuthenticated)
 
   if (isLoading) {
     return (
@@ -223,30 +175,22 @@ function AssistantAuthStatus({
     )
   }
 
-  return (
-    <Flex direction="column" align="center" gap="2">
-      <AssistantTestChat />
-      <Button
-        variant="ghost"
-        size="1"
-        color="red"
-        onClick={() => signOut()}
-        disabled={isSigningOut}
-      >
-        <UnlinkIcon size={14} />
-        Disconnect
-      </Button>
-    </Flex>
-  )
+  if (!isStackReady) {
+    return (
+      <Flex align="center" gap="2">
+        <Spinner />
+        <Text size="2" color="gray">
+          Your Grafana instance is loading...
+        </Text>
+      </Flex>
+    )
+  }
+
+  return <AnalyzeButton onStart={onStart} />
 }
 
-function AnalyzeButton({
-  onStart,
-  proxyStatus,
-}: {
-  onStart: () => void
-  proxyStatus: string
-}) {
+function AnalyzeButton({ onStart }: { onStart: () => void }) {
+  const proxyStatus = useProxyStatus()
   return (
     <Tooltip
       content={`Proxy is ${proxyStatus}`}

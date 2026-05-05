@@ -1,3 +1,4 @@
+import { css } from '@emotion/react'
 import { ScrollArea, ScrollAreaProps } from '@radix-ui/themes'
 import { ReactNode, UIEvent, useRef } from 'react'
 
@@ -50,7 +51,14 @@ export function AutoScrollArea({
 
   return (
     <ScrollArea {...props} onScroll={handleScroll}>
-      <div ref={handleMount}>{children}</div>
+      <div
+        ref={handleMount}
+        css={css`
+          height: 100%;
+        `}
+      >
+        {children}
+      </div>
     </ScrollArea>
   )
 }

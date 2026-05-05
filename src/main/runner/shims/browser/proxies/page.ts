@@ -3,12 +3,23 @@ import { Page } from 'k6/browser'
 import { createSingleEntryGuard, ProxyOptions, trackLog } from '../utils'
 
 import { locatorProxy } from './locator'
+import { pageDetail } from './symbols'
 import { isLocatorMethod } from './utils'
 
-const isPageInstrumented = createSingleEntryGuard()
+const shouldInstrument = createSingleEntryGuard()
+
+declare module 'k6/browser' {
+  interface Page {
+    [pageDetail]: true
+  }
+}
 
 export function pageProxy(target: Page): ProxyOptions<Page> {
-  if (!isPageInstrumented(target)) {
+  // There's no way of checking if an object is a Page instance, but by adding a symbol
+  // property we can check for its existence and apply special serialization of the page.
+  target[pageDetail] = true
+
+  if (shouldInstrument(target)) {
     target.on('console', (msg) => {
       const type = msg.type()
 
@@ -27,6 +38,7 @@ export function pageProxy(target: Page): ProxyOptions<Page> {
         msg: msg.text(),
         time: new Date().toISOString(),
         source: 'browser',
+        process: 'browser',
       })
     })
   }
@@ -53,6 +65,13 @@ export function pageProxy(target: Page): ProxyOptions<Page> {
         }
       },
 
+      waitForTimeout(timeout: number) {
+        return {
+          method: 'page.waitForTimeout',
+          timeout,
+        }
+      },
+
       close() {
         return {
           method: 'page.close',
@@ -60,7 +79,7 @@ export function pageProxy(target: Page): ProxyOptions<Page> {
       },
 
       $default(method, ...args) {
-        if (isLocatorMethod(method)) {
+        if (typeof method === 'symbol' || isLocatorMethod(method)) {
           return null
         }
 

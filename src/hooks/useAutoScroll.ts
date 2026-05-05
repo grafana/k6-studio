@@ -1,9 +1,9 @@
-import { MutableRefObject, useEffect, useRef } from 'react'
+import { RefObject, useEffect, useRef } from 'react'
 
 export function useAutoScroll<Element extends HTMLElement = HTMLDivElement>(
   items: unknown,
   enabled = true
-): MutableRefObject<Element | null> {
+): RefObject<Element | null> {
   const bottomRef = useRef<Element>(null)
 
   useEffect(() => {

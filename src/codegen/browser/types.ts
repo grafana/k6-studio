@@ -1,5 +1,5 @@
+import { ElementLocator } from '@/schemas/locator'
 import { CheckState, NavigateToPageEvent } from '@/schemas/recording'
-import { NodeSelector } from '@/schemas/selectors'
 
 export type NodeId = string
 
@@ -17,7 +17,7 @@ export interface PageNode extends NodeBase {
 
 export interface LocatorNode extends NodeBase {
   type: 'locator'
-  selector: NodeSelector
+  locator: ElementLocator
   inputs: {
     page: NodeRef
   }
@@ -70,7 +70,7 @@ export interface TypeTextNode extends NodeBase {
 
 export interface SelectOptionsNode extends NodeBase {
   type: 'select-options'
-  selected: string[]
+  selected: (string | { value?: string; label?: string; index?: number })[]
   multiple: boolean
   inputs: {
     previous?: NodeRef
@@ -123,6 +123,14 @@ export interface AssertNode extends NodeBase {
   }
 }
 
+export interface ClearNode extends NodeBase {
+  type: 'clear'
+  inputs: {
+    previous?: NodeRef
+    locator: NodeRef
+  }
+}
+
 export interface WaitForNode extends NodeBase {
   type: 'wait-for'
   inputs: {
@@ -135,17 +143,28 @@ export interface WaitForNode extends NodeBase {
   }
 }
 
+export interface WaitForTimeoutNode extends NodeBase {
+  type: 'wait-for-timeout'
+  timeout: number
+  inputs: {
+    previous?: NodeRef
+    page: NodeRef
+  }
+}
+
 export type TestNode =
   | PageNode
   | GotoNode
   | ReloadNode
   | LocatorNode
+  | ClearNode
   | ClickNode
   | TypeTextNode
   | SelectOptionsNode
   | CheckNode
   | AssertNode
   | WaitForNode
+  | WaitForTimeoutNode
 
 export interface Scenario {
   nodes: TestNode[]

@@ -7,6 +7,7 @@ export function createK6Log(log?: Partial<LogEntry>): LogEntry {
     level: 'info',
     source: 'source',
     time: '00:00:00',
+    process: 'k6',
     ...log,
   }
 }

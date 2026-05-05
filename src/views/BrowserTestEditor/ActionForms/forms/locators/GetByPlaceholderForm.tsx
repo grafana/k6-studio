@@ -1,15 +1,13 @@
 import { FieldGroup } from '@/components/Form'
-import { ActionLocator } from '@/main/runner/schema'
+import { ElementLocator, PlaceholderLocator } from '@/schemas/locator'
 
 import { TextFieldWithExactToggle } from '../../components'
 import { toFieldErrors } from '../utils'
 
-type PlaceholderLocator = Extract<ActionLocator, { type: 'placeholder' }>
-
 interface GetByPlaceholderFormProps {
   locator: PlaceholderLocator
   errors?: Record<string, string>
-  onChange: (locator: ActionLocator) => void
+  onChange: (locator: ElementLocator) => void
   onBlur?: () => void
 }
 

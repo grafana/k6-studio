@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
 import * as v1 from './browser/v1'
 import * as v2 from './browser/v2'

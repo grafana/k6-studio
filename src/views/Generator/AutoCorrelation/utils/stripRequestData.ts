@@ -5,6 +5,8 @@ import { ProxyData } from '@/types'
 import { safeAtob } from '@/utils/format'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 
+import { shouldSkipCookie } from './skipCookies'
+
 export type StrippedProxyData = ReturnType<typeof stripUnnecessaryData>
 
 export function prepareRequestsForAI(requests: ProxyData[]) {
@@ -37,7 +39,7 @@ function filterRequestProperties(data: ProxyData) {
     url: request.url,
     path: request.path,
     content: request.content,
-    cookies: request.cookies,
+    cookies: request.cookies.filter(([name]) => !shouldSkipCookie(name)),
     headers: request.headers,
   }
 
@@ -56,7 +58,7 @@ function filterRequestProperties(data: ProxyData) {
       statusCode: response.statusCode,
       content: response.content,
       headers: response.headers,
-      cookies: response.cookies,
+      cookies: response.cookies.filter(([name]) => !shouldSkipCookie(name)),
     },
   }
 }

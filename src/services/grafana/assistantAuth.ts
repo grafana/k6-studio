@@ -32,7 +32,7 @@ export function buildAssistantAuthUrl(
   callbackPort: number
 ): string {
   const url = new URL(
-    '/a/grafana-assistant-app/cli/auth',
+    '/a/grafana-assistant-app/connect/app',
     normalizeStackUrl(stackUrl)
   )
 

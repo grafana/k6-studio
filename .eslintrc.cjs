@@ -1,4 +1,5 @@
 module.exports = {
+  root: true,
   env: {
     browser: true,
     es6: true,
@@ -23,6 +24,7 @@ module.exports = {
     'install-k6.js',
     '.eslintrc.cjs',
     '**/__snapshots__/',
+    'src/browser/injectedScript.js',
   ],
   plugins: [
     'import',

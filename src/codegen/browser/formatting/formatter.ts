@@ -1,12 +1,6 @@
 /* eslint-disable import/default */
 import type { TSESTree as ts } from '@typescript-eslint/types'
-import {
-  AstPath,
-  Plugin,
-  Printer,
-  SupportOption,
-  ParserOptions,
-} from 'prettier'
+import { AstPath, Plugin, SupportOption, ParserOptions } from 'prettier'
 import { builders } from 'prettier/doc'
 import defaultOptions, { options, printers } from 'prettier/plugins/estree'
 import { format as formatWithPrettier } from 'prettier/standalone'
@@ -15,10 +9,6 @@ const { hardline } = builders
 const estree = printers.estree
 
 declare module 'prettier/plugins/estree' {
-  const printers: {
-    estree: Printer<ts.Node>
-  }
-
   const options: Record<string, SupportOption>
 }
 

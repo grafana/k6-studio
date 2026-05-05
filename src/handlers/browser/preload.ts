@@ -1,10 +1,7 @@
 import { ipcRenderer } from 'electron'
 
-import {
-  LaunchBrowserOptions,
-  BrowserHandler,
-  LaunchBrowserError,
-} from '@/handlers/browser/types'
+import { BrowserHandler, LaunchBrowserError } from '@/handlers/browser/types'
+import { LaunchBrowserOptions } from '@/recorder/types'
 import { BrowserEvent } from '@/schemas/recording'
 
 import { createListener } from '../utils'

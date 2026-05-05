@@ -1,3 +1,4 @@
+import * as dotenv from 'dotenv'
 import { readFileSync } from 'node:fs'
 import { builtinModules } from 'node:module'
 import type { AddressInfo } from 'node:net'
@@ -61,6 +62,12 @@ export function getBuildConfig(env: ConfigEnv<'build'>): UserConfig {
       watch: command === 'serve' ? {} : null,
       minify: command === 'build',
       sourcemap: command === 'serve',
+      // Match the Chromium in our Electron version. Legacy defaults (chrome87,
+      // …) make esbuild fail when transpiling modern deps (destructuring/rest).
+      target: 'esnext',
+    },
+    esbuild: {
+      target: 'esnext',
     },
     clearScreen: false,
   }
@@ -143,4 +150,17 @@ export function pluginHotRestart(command: 'reload' | 'restart'): Plugin {
       }
     },
   }
+}
+
+export function getDotEnv<T extends Record<string, string>>(
+  defaults: T
+): T & Record<string, string> {
+  const env = {
+    ...defaults,
+    ...dotenv.config().parsed,
+  }
+
+  return Object.fromEntries(
+    Object.entries(env).map(([key, value]) => [key, JSON.stringify(value)])
+  ) as T & Record<string, string>
 }

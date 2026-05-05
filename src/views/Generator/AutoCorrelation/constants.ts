@@ -9,6 +9,11 @@ Use the following approach to efficiently analyze recordings:
 1. **Start with overview**: Use getRequestsMetadata to get a lightweight overview of all requests
 2. **Search efficiently**: Use searchRequests to find specific requests (e.g., "login", "POST", "/auth")
 3. **Fetch details**: Use getRequestDetails to get full data only for requests you need to inspect
+4. **Create rules with selector-specific tools**:
+   - Use addRuleBeginEnd for begin/end extraction
+   - Use addRuleRegex for regex extraction
+   - Use addRuleJson for JSON path extraction
+   - Use addRuleHeaderName for header-name extraction
 
 ## Correlation Guidelines
 

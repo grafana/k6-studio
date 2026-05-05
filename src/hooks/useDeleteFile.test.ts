@@ -20,6 +20,7 @@ describe('useDeleteFile', () => {
     type: 'recording',
     fileName: 'file-name',
     displayName: 'test-file',
+    path: '/recordings/file-name',
   }
 
   beforeEach(() => {

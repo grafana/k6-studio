@@ -8,12 +8,13 @@ import { Filter } from '@/types/rules'
 export function useHeaderOptions(
   recording: ProxyData[],
   extractFrom: 'request' | 'response',
-  filter: Filter
+  filter: Filter | undefined
 ) {
   return useMemo(() => {
-    const filteredRequests = recording.filter((entry) =>
-      matchFilter(entry.request, filter)
-    )
+    const filteredRequests =
+      filter !== undefined
+        ? recording.filter((entry) => matchFilter(entry.request, filter))
+        : recording
 
     const headers = filteredRequests.flatMap(
       (request) => request?.[extractFrom]?.headers ?? []

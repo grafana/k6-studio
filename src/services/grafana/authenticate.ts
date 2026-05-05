@@ -1,6 +1,8 @@
 import {
   Configuration,
+  CustomFetch,
   customFetch,
+  CustomFetchOptions,
   initiateDeviceAuthorization,
   pollDeviceAuthorizationGrant,
   ResponseBodyError,
@@ -53,12 +55,20 @@ const metadata: ServerMetadata = {
  * The Grafana authorization flow has several issues. This function works
  * around these issues by modifying the response from the token endpoint.
  */
-async function fetchAndPatch(
-  input: RequestInfo,
-  init?: RequestInit
-): Promise<Response> {
-  if (input === metadata.token_endpoint) {
-    const response = await fetch(input, init)
+const fetchAndPatch: CustomFetch = async (
+  url: string,
+  options: CustomFetchOptions
+): Promise<Response> => {
+  const init: RequestInit = {
+    method: options.method,
+    headers: options.headers,
+    body: options.body as RequestInit['body'],
+    redirect: options.redirect,
+    signal: options.signal,
+  }
+
+  if (url === metadata.token_endpoint) {
+    const response = await fetch(url, init)
 
     // In the case of a successful response, the endpoint returns
     // an empty refresh_token. This is not valid according to the
@@ -143,7 +153,7 @@ async function fetchAndPatch(
     return response
   }
 
-  return fetch(input, init)
+  return fetch(url, init)
 }
 
 export interface GrantedResult {

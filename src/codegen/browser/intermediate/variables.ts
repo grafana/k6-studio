@@ -55,6 +55,7 @@ function substituteExpression(
     case 'ClickOptionsExpression':
     case 'WaitForOptionsExpression':
     case 'RoleLocatorOptionsExpression':
+    case 'SelectOptionValueExpression':
     case 'TextLocatorOptionsExpression':
       return node
 
@@ -163,6 +164,12 @@ function substituteExpression(
         value: substituteExpression(node.value, substitutions),
       }
 
+    case 'ClearExpression':
+      return {
+        type: 'ClearExpression',
+        locator: substituteExpression(node.locator, substitutions),
+      }
+
     case 'CheckExpression':
       return {
         type: 'CheckExpression',
@@ -208,6 +215,13 @@ function substituteExpression(
       return {
         type: 'WaitForNavigationExpression',
         target: substituteExpression(node.target, substitutions),
+      }
+
+    case 'WaitForTimeoutExpression':
+      return {
+        type: 'WaitForTimeoutExpression',
+        target: substituteExpression(node.target, substitutions),
+        timeout: node.timeout,
       }
 
     default:

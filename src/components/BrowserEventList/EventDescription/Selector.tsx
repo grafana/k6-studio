@@ -1,17 +1,17 @@
-import { getNodeSelector } from '@/codegen/browser/selectors'
+import { getElementLocator } from '@/codegen/browser/selectors'
 import { Locator } from '@/components/Browser/Locator'
+import { ElementLocator } from '@/schemas/locator'
 import { ElementSelector } from '@/schemas/recording'
-import { NodeSelector } from '@/schemas/selectors'
 import { useIsRecording } from '@/views/Recorder/RecordingContext'
 
 interface SelectorProps {
   selectors: ElementSelector
-  onHighlight: (selector: NodeSelector | null) => void
+  onHighlight: (locator: ElementLocator | null) => void
 }
 
 export function Selector({ selectors, onHighlight }: SelectorProps) {
   const isRecording = useIsRecording()
-  const nodeSelector = getNodeSelector(selectors)
+  const locator = getElementLocator(selectors)
 
   const handleHighlightChange = (highlighted: boolean) => {
     if (!highlighted) {
@@ -20,12 +20,12 @@ export function Selector({ selectors, onHighlight }: SelectorProps) {
       return
     }
 
-    onHighlight(nodeSelector)
+    onHighlight(locator)
   }
 
   return (
     <Locator
-      locator={nodeSelector}
+      locator={locator}
       onHighlightChange={isRecording ? handleHighlightChange : undefined}
     />
   )

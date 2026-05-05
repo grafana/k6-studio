@@ -41,19 +41,9 @@ export function processA2AEvent(
   session: ActiveA2ASession
 ): LanguageModelV2StreamPart[] {
   if (event.error) {
-    log.error(
-      LOG_PREFIX,
-      `A2A error (${event.error.code}):`,
-      event.error.message
-    )
-    return [
-      {
-        type: 'error',
-        error: new Error(
-          `A2A error (${event.error.code}): ${event.error.message}`
-        ),
-      },
-    ]
+    const message = `A2A error (${event.error.code}): ${event.error.message}`
+    log.error(LOG_PREFIX, message)
+    return [{ type: 'error', error: new Error(message) }]
   }
 
   const result = event.result
@@ -138,7 +128,7 @@ function handleArtifactUpdate(
     case ARTIFACT_NAME.STEP_TOOL_CALL:
       return handleToolCallArtifact(session, artifact)
     case ARTIFACT_NAME.STEP_COMPLETE:
-      return handleStepComplete(artifact)
+      return handleStepComplete(session, artifact)
     case ARTIFACT_NAME.STEP_MESSAGE:
       return handleMessageArtifact(session, artifact)
     case ARTIFACT_NAME.MESSAGE_STREAM_START:
@@ -198,6 +188,7 @@ function extractUsage(artifact: A2AArtifact) {
 }
 
 function handleStepComplete(
+  session: ActiveA2ASession,
   artifact: A2AArtifact
 ): LanguageModelV2StreamPart[] {
   const dataPart = artifact.parts.find(isDataPart)
@@ -209,6 +200,10 @@ function handleStepComplete(
   if (stopReason !== 'tool_use') {
     return [{ type: 'finish', finishReason: 'stop', usage }]
   }
+
+  // Gate readyToFinishForTools so the stream won't close before all tool calls arrive.
+  session.allToolCallsReceived = true
+  session.tryMatchToolRequests()
 
   return []
 }

@@ -1,4 +1,4 @@
-import { BrowserActionEvent, BrowserReplayEvent } from '@/main/runner/schema'
+import { BrowserDebuggerEvent, BrowserReplayEvent } from '@/main/runner/schema'
 import { Check, LogEntry } from '@/schemas/k6'
 import { ProxyData } from '@/types'
 
@@ -9,7 +9,7 @@ export interface DebugSession {
   state: DebuggerState
   requests: ProxyData[]
   browser: {
-    actions: BrowserActionEvent[]
+    actions: BrowserDebuggerEvent[]
     replay: BrowserReplayEvent[]
   }
   logs: LogEntry[]

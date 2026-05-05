@@ -8,7 +8,7 @@ import { Check, LogEntry } from '@/schemas/k6'
 import { ReadOnlyEditor } from '../Monaco/ReadOnlyEditor'
 
 import { ChecksSection } from './ChecksSection'
-import { LogsSection } from './LogsSection'
+import { LogsSection, useConsoleFilter } from './LogsSection'
 
 interface ExecutionDetailsProps {
   isRunning: boolean
@@ -26,6 +26,10 @@ export function ExecutionDetails({
   const [selectedTab, setSelectedTab] = useState<'logs' | 'checks' | 'script'>(
     script !== undefined ? 'script' : 'logs'
   )
+
+  const consoleFilter = useConsoleFilter({
+    browser: false,
+  })
 
   const handleTabChange = (value: string) => {
     if (value !== 'logs' && value !== 'checks' && value !== 'script') {
@@ -74,7 +78,7 @@ export function ExecutionDetails({
           min-height: 0;
         `}
       >
-        <LogsSection logs={logs} autoScroll={isRunning} />
+        <LogsSection {...consoleFilter} autoScroll={isRunning} logs={logs} />
       </Tabs.Content>
       {script !== undefined && (
         <Tabs.Content

@@ -122,6 +122,113 @@ describe('compareResponseValues', () => {
 
       expect(result.hasMatches).toBe(false)
     })
+
+    it('should skip AWSALB cookies', () => {
+      const expected = createMockData([
+        [
+          'Set-Cookie',
+          'AWSALB=XoIoRjP8Ku8q+szSAqb0POxVXTrnNLxs; Expires=Fri, 31 Oct 2025; Path=/',
+        ],
+      ])
+      const actual = createMockData([
+        [
+          'Set-Cookie',
+          'AWSALB=njiHWdAe/m0ZbSeZtADr5FJOutoxHpzz; Expires=Thu, 12 Mar 2026; Path=/',
+        ],
+      ])
+
+      const result = compareResponseValues(expected, actual)
+
+      expect(result.hasMatches).toBe(false)
+      expect(result.mismatches).toHaveLength(0)
+    })
+
+    it('should skip AWSALBCORS cookies', () => {
+      const expected = createMockData([
+        ['Set-Cookie', 'AWSALBCORS=abc123; Path=/; SameSite=None; Secure'],
+      ])
+      const actual = createMockData([
+        ['Set-Cookie', 'AWSALBCORS=xyz789; Path=/; SameSite=None; Secure'],
+      ])
+
+      const result = compareResponseValues(expected, actual)
+
+      expect(result.hasMatches).toBe(false)
+    })
+
+    it('should skip JSESSIONID cookies', () => {
+      const expected = createMockData([
+        ['Set-Cookie', 'JSESSIONID=abc123; Path=/'],
+      ])
+      const actual = createMockData([
+        ['Set-Cookie', 'JSESSIONID=def456; Path=/'],
+      ])
+
+      const result = compareResponseValues(expected, actual)
+
+      expect(result.hasMatches).toBe(false)
+    })
+
+    it('should skip cookies matching prefix patterns', () => {
+      const expected = createMockData([
+        ['Set-Cookie', 'incap_ses_123_456=abc; Path=/'],
+      ])
+      const actual = createMockData([
+        ['Set-Cookie', 'incap_ses_123_456=xyz; Path=/'],
+      ])
+
+      const result = compareResponseValues(expected, actual)
+
+      expect(result.hasMatches).toBe(false)
+    })
+
+    it('should still report mismatches for functional cookies like csrf_token', () => {
+      const expected = createMockData([
+        [
+          'Set-Cookie',
+          'csrf_token=6j1uRYI1zaZY7qekB4JK; Path=/; SameSite=Strict',
+        ],
+      ])
+      const actual = createMockData([
+        [
+          'Set-Cookie',
+          'csrf_token=047sSaHsYVDE6KjBZF1E; Path=/; SameSite=Strict',
+        ],
+      ])
+
+      const result = compareResponseValues(expected, actual)
+
+      expect(result.hasMatches).toBe(true)
+      expect(result.mismatches).toHaveLength(1)
+      expect(result.mismatches[0]?.path).toBe(
+        'response.headers.set-cookie.csrf_token'
+      )
+    })
+
+    it('should truncate long mismatch values to 80 characters', () => {
+      const longValue1 = 'X-Custom=' + 'a'.repeat(200)
+      const longValue2 = 'X-Custom=' + 'b'.repeat(200)
+      const expected = createMockData([['Set-Cookie', longValue1]])
+      const actual = createMockData([['Set-Cookie', longValue2]])
+
+      const result = compareResponseValues(expected, actual)
+
+      expect(result.hasMatches).toBe(true)
+      expect(result.mismatches[0]?.expected.length).toBeLessThanOrEqual(83) // 80 + '...'
+      expect(result.mismatches[0]?.expected).toMatch(/\.\.\.$/)
+      expect(result.mismatches[0]?.actual).toMatch(/\.\.\.$/)
+    })
+
+    it('should not truncate short mismatch values', () => {
+      const expected = createMockData([['Set-Cookie', 'token=short; Path=/']])
+      const actual = createMockData([['Set-Cookie', 'token=other; Path=/']])
+
+      const result = compareResponseValues(expected, actual)
+
+      expect(result.hasMatches).toBe(true)
+      expect(result.mismatches[0]?.expected).toBe('token=short; Path=/')
+      expect(result.mismatches[0]?.actual).toBe('token=other; Path=/')
+    })
   })
 
   describe('Body Content', () => {

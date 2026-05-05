@@ -16,7 +16,7 @@ const AssistantTokenDataSchema = z.object({
 
 const AssistantTokenStoreSchema = z.object({
   version: z.literal('1.0'),
-  tokens: z.record(AssistantTokenDataSchema),
+  tokens: z.record(z.string(), AssistantTokenDataSchema),
 })
 
 export type AssistantTokenData = z.infer<typeof AssistantTokenDataSchema>

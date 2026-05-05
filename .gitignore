@@ -114,3 +114,8 @@ resources/browser
 # Entry script
 resources/entrypoint.js
 resources/replay.js
+
+# Local claude settings
+.claude/settings.local.json
+.claude/CLAUDE.local.md
+.claude/worktrees

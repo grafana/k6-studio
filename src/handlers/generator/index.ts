@@ -1,12 +1,8 @@
 import { ipcMain } from 'electron'
 import { writeFile, readFile } from 'fs/promises'
 import path from 'path'
-import invariant from 'tiny-invariant'
 
-import {
-  INVALID_FILENAME_CHARS,
-  K6_GENERATOR_FILE_EXTENSION,
-} from '@/constants/files'
+import { K6_GENERATOR_FILE_EXTENSION } from '@/constants/files'
 import { GENERATORS_PATH } from '@/constants/workspace'
 import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { trackEvent } from '@/services/usageTracking'
@@ -21,7 +17,7 @@ export function initialize() {
   ipcMain.handle(GeneratorHandler.Create, async (_, recordingPath: string) => {
     console.log(`${GeneratorHandler.Create} event received`)
     const generator = createNewGeneratorFile(recordingPath)
-    const fileName = await createFileWithUniqueName({
+    const filePath = await createFileWithUniqueName({
       data: JSON.stringify(generator, null, 2),
       directory: GENERATORS_PATH,
       ext: K6_GENERATOR_FILE_EXTENSION,
@@ -32,19 +28,15 @@ export function initialize() {
       event: UsageEventName.GeneratorCreated,
     })
 
-    return fileName
+    return filePath
   })
 
   ipcMain.handle(
     GeneratorHandler.Save,
-    async (_, generator: GeneratorFileData, fileName: string) => {
+    async (_, generator: GeneratorFileData, filePath: string) => {
       console.log(`${GeneratorHandler.Save} event received`)
-      invariant(!INVALID_FILENAME_CHARS.test(fileName), 'Invalid file name')
 
-      await writeFile(
-        path.join(GENERATORS_PATH, fileName),
-        JSON.stringify(generator, null, 2)
-      )
+      await writeFile(filePath, JSON.stringify(generator, null, 2))
 
       trackGeneratorUpdated(generator)
     }

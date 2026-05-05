@@ -144,7 +144,12 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
   ): Promise<Awaited<ReturnType<LanguageModelV2['doStream']>>> {
     forwardAbortSignal(abortSignal, session.sessionAbortController)
 
-    session.readyToFinishForTools = false
+    // Do NOT reset `allToolCallsReceived` here: when the server emits parallel
+    // tool_calls fragmented across streams (step.complete arrives after the
+    // first tool_call, with more tool_calls + requests arriving after), the
+    // continuation stream never sees another step.complete. Keeping the flag
+    // true lets the continuation stream finish as soon as the new tool_call
+    // is matched with its REMOTE_TOOL_REQUEST.
 
     for (const result of toolResults) {
       const pending = session.pendingToolRequests.get(result.toolCallId)

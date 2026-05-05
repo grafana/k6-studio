@@ -5,15 +5,15 @@ import { Server } from 'http'
 import { AddressInfo } from 'net'
 
 import {
-  ActionBeginEvent,
-  ActionBeginEventSchema,
-  ActionEndEvent,
-  ActionEndEventSchema,
+  BrowserDebuggerBeginEvent,
+  BrowserDebuggerBeginEventSchema,
+  BrowserDebuggerEndEvent,
+  BrowserDebuggerEndEventSchema,
   BrowserReplayEvent,
   SessionReplayEventSchema,
 } from '@/main/runner/schema'
 import { LogEntry, LogEntrySchema } from '@/schemas/k6'
-import { EventEmitter } from 'extension/src/utils/events'
+import { EventEmitter } from '@/utils/events'
 
 function getPort(address: AddressInfo | string | null): number {
   if (address === null) {
@@ -27,9 +27,9 @@ function getPort(address: AddressInfo | string | null): number {
   return address.port
 }
 
-interface ReportingServerEventMap {
-  begin: ActionBeginEvent
-  end: ActionEndEvent
+interface TrackingServerEventMap {
+  begin: BrowserDebuggerBeginEvent
+  end: BrowserDebuggerEndEvent
   replay: {
     events: BrowserReplayEvent[]
   }
@@ -38,7 +38,7 @@ interface ReportingServerEventMap {
   }
 }
 
-class TestRunTrackingServer extends EventEmitter<ReportingServerEventMap> {
+class TestRunTrackingServer extends EventEmitter<TrackingServerEventMap> {
   #server: Server
 
   get port() {
@@ -79,7 +79,7 @@ export async function createTrackingServer(): Promise<TestRunTrackingServer> {
   )
 
   app.post('/track/:id/begin', (req, res) => {
-    const parsed = ActionBeginEventSchema.safeParse(req.body)
+    const parsed = BrowserDebuggerBeginEventSchema.safeParse(req.body)
 
     if (!parsed.success) {
       log.warn('Received invalid begin action event: ', parsed.error.format())
@@ -95,7 +95,7 @@ export async function createTrackingServer(): Promise<TestRunTrackingServer> {
   })
 
   app.post('/track/:id/end', (req, res) => {
-    const parsed = ActionEndEventSchema.safeParse(req.body)
+    const parsed = BrowserDebuggerEndEventSchema.safeParse(req.body)
 
     if (!parsed.success) {
       log.warn('Received invalid end action event: ', parsed.error.format())

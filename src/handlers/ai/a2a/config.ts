@@ -17,6 +17,23 @@ const REMOTE_TOOL_EXTENSION =
 const TOKEN_STREAMING_EXTENSION =
   'https://grafana.com/extensions/token-streaming/v1'
 
+export async function getCurrentStackUrl(): Promise<string> {
+  const profile = await getProfileData()
+  const stackId = profile.profiles.currentStack
+
+  if (!stackId) {
+    throw new Error('No stack selected')
+  }
+
+  const stack = profile.profiles.stacks[stackId]
+
+  if (!stack) {
+    throw new Error(`Stack ${stackId} not found in profile`)
+  }
+
+  return stack.url
+}
+
 export async function getA2AConfig(): Promise<A2AConfig> {
   const profile = await getProfileData()
   const stackId = profile.profiles.currentStack

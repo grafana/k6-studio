@@ -30,7 +30,11 @@ export function UncheckActionBody({
       width="100%"
     >
       Uncheck input
-      <LocatorForm state={action.locator} suggestedRoles={UNCHECK_ROLES} onChange={handleChangeLocator} />
+      <LocatorForm
+        state={action.locator}
+        suggestedRoles={UNCHECK_ROLES}
+        onChange={handleChangeLocator}
+      />
     </Grid>
   )
 }

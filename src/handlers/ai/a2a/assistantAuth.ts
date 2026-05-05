@@ -15,7 +15,13 @@ import { browserWindowFromEvent } from '@/utils/electron'
 import { abortAllActiveAssistantSessions } from '../grafanaAssistantProvider'
 import { AssistantAuthHandler } from '../types'
 
+import { getCurrentStackUrl } from './config'
 import { LOG_PREFIX } from './constants'
+import {
+  checkStackHealth,
+  wakeStack,
+  type StackHealthStatus,
+} from './stackHealth'
 import {
   clearAssistantTokens,
   hasAssistantTokens,
@@ -215,6 +221,17 @@ export function initialize() {
       pendingAbortController = null
     }
   })
+
+  ipcMain.handle(AssistantAuthHandler.WakeStack, async (): Promise<void> => {
+    return wakeStack(await getCurrentStackUrl())
+  })
+
+  ipcMain.handle(
+    AssistantAuthHandler.CheckStackHealth,
+    async (): Promise<StackHealthStatus> => {
+      return checkStackHealth(await getCurrentStackUrl())
+    }
+  )
 
   ipcMain.handle(AssistantAuthHandler.SignOut, async (): Promise<void> => {
     const profile = await getProfileData()

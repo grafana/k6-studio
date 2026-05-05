@@ -1,6 +1,7 @@
 import { Header } from '@/types'
 import { safeJsonParse } from '@/utils/json'
 
+import { shouldSkipCookie } from './skipCookies'
 import { StrippedProxyData } from './stripRequestData'
 
 const MAX_RECURSION_DEPTH = 5
@@ -28,6 +29,8 @@ const SKIP_HEADERS = [
   'user-agent',
 ]
 
+const MAX_MISMATCH_VALUE_LENGTH = 80
+
 export interface ValueMismatch {
   path: string
   expected: string
@@ -42,6 +45,11 @@ export interface ComparisonResult {
 
 type MismatchLocation = ValueMismatch['location']
 
+function truncateValue(value: string, maxLength = MAX_MISMATCH_VALUE_LENGTH) {
+  if (value.length <= maxLength) return value
+  return value.slice(0, maxLength) + '...'
+}
+
 function createMismatch(
   path: string,
   expected: unknown,
@@ -50,8 +58,8 @@ function createMismatch(
 ): ValueMismatch {
   return {
     path,
-    expected: String(expected),
-    actual: String(actual),
+    expected: truncateValue(String(expected)),
+    actual: truncateValue(String(actual)),
     location,
   }
 }
@@ -154,7 +162,19 @@ function parseCookieName(value: string) {
 }
 
 function shouldSkipHeader(key: string) {
-  return SKIP_HEADERS.includes(key.toLowerCase())
+  const lowerKey = key.toLowerCase()
+
+  if (SKIP_HEADERS.includes(lowerKey)) {
+    return true
+  }
+
+  // Check if this is a set-cookie header with a skippable cookie name
+  if (lowerKey.startsWith('set-cookie.')) {
+    const cookieName = lowerKey.slice('set-cookie.'.length)
+    return shouldSkipCookie(cookieName)
+  }
+
+  return false
 }
 
 function normalizeValue(value: string) {

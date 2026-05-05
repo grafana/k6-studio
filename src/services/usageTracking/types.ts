@@ -24,11 +24,16 @@ export enum UsageEventName {
   ScriptOpenedExternal = 'script_opened_external',
   ScriptRunInCloud = 'script_run_in_cloud',
 
+  // Grafana Assistant
+  AssistantSignInSucceeded = 'assistant_sign_in_succeeded',
+
   AutocorrelationDialogOpened = 'autocorrelation_dialog_opened',
   AutocorrelationStarted = 'autocorrelation_started',
   AutocorrelationSucceeded = 'autocorrelation_succeeded',
   AutocorrelationPartiallySucceeded = 'autocorrelation_partially_succeeded',
   AutocorrelationFailed = 'autocorrelation_failed',
+  AutocorrelationAborted = 'autocorrelation_aborted',
+  AutocorrelationErrored = 'autocorrelation_errored',
 }
 
 export interface UsageEventMetadata {
@@ -108,6 +113,10 @@ interface ScriptRunInCloudEvent {
   event: UsageEventName.ScriptRunInCloud
 }
 
+interface AssistantSignInSucceededEvent {
+  event: UsageEventName.AssistantSignInSucceeded
+}
+
 interface AutocorrelationDialogOpenedEvent {
   event: UsageEventName.AutocorrelationDialogOpened
 }
@@ -128,6 +137,17 @@ interface AutocorrelationFailedEvent {
   event: UsageEventName.AutocorrelationFailed
 }
 
+interface AutocorrelationAbortedEvent {
+  event: UsageEventName.AutocorrelationAborted
+  payload: {
+    status: string
+  }
+}
+
+interface AutocorrelationErroredEvent {
+  event: UsageEventName.AutocorrelationErrored
+}
+
 export type UsageEvent =
   | AppInstalledEvent
   | UserLoggedInEvent
@@ -142,10 +162,13 @@ export type UsageEvent =
   | ScriptValidatedEvent
   | ScriptOpenedExternalEvent
   | ScriptRunInCloudEvent
+  | AssistantSignInSucceededEvent
   | AutocorrelationDialogOpenedEvent
   | AutocorrelationStartedEvent
   | AutocorrelationSucceededEvent
   | AutocorrelationPartiallySucceededEvent
   | AutocorrelationFailedEvent
+  | AutocorrelationAbortedEvent
+  | AutocorrelationErroredEvent
 
 export type UsageEventWithMetadata = UsageEvent & UsageEventMetadata

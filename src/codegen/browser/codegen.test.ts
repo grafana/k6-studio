@@ -87,7 +87,7 @@ it('should emit click on element', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { type: 'css', selector: 'button' },
+          locator: { type: 'css', selector: 'button' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -127,7 +127,7 @@ it('should emit right-click on element', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { type: 'css', selector: 'button' },
+          locator: { type: 'css', selector: 'button' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -167,7 +167,7 @@ it('should emit click with modifier keys on element', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { type: 'css', selector: 'button' },
+          locator: { type: 'css', selector: 'button' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -207,7 +207,7 @@ it('should emit type text on element', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { type: 'css', selector: 'input' },
+          locator: { type: 'css', selector: 'input' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -241,7 +241,7 @@ it('should emit check on element', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { type: 'css', selector: 'input[type="checkbox"]' },
+          locator: { type: 'css', selector: 'input[type="checkbox"]' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -275,7 +275,7 @@ it('should emit uncheck on element', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { type: 'css', selector: 'input[type="checkbox"]' },
+          locator: { type: 'css', selector: 'input[type="checkbox"]' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -309,7 +309,7 @@ it('should emit select single option on element', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { type: 'css', selector: 'select' },
+          locator: { type: 'css', selector: 'select' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -346,7 +346,7 @@ it('should emit select with multiple options on element', async ({
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { type: 'css', selector: 'select' },
+          locator: { type: 'css', selector: 'select' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -381,7 +381,7 @@ it('should emit waitForNavigation on a link click', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { type: 'css', selector: 'button' },
+          locator: { type: 'css', selector: 'button' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -439,7 +439,7 @@ it('should keep page allocation block open for post-navigation interactions', as
         {
           type: 'locator',
           nodeId: 'linkLocator',
-          selector: { type: 'css', selector: 'a.nav-link' },
+          locator: { type: 'css', selector: 'a.nav-link' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -464,7 +464,7 @@ it('should keep page allocation block open for post-navigation interactions', as
         {
           type: 'locator',
           nodeId: 'inputLocator',
-          selector: { type: 'css', selector: 'input[name="query"]' },
+          locator: { type: 'css', selector: 'input[name="query"]' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -498,7 +498,7 @@ it('should emit waitForNavigation on a form submit', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'submitLocator',
-          selector: { type: 'css', selector: 'button[type="submit"]' },
+          locator: { type: 'css', selector: 'button[type="submit"]' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -541,7 +541,7 @@ it('should assert that element contains text', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { type: 'css', selector: 'button' },
+          locator: { type: 'css', selector: 'button' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -578,7 +578,7 @@ it('should assert that element is visible', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { type: 'css', selector: 'button' },
+          locator: { type: 'css', selector: 'button' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -615,7 +615,7 @@ it('should assert that element is hidden', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { type: 'css', selector: 'button' },
+          locator: { type: 'css', selector: 'button' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -652,7 +652,7 @@ it('should assert that html input is checked', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { type: 'css', selector: 'input[type="checkbox"]' },
+          locator: { type: 'css', selector: 'input[type="checkbox"]' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -690,7 +690,7 @@ it('should assert that html input is not checked', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { type: 'css', selector: 'input[type="checkbox"]' },
+          locator: { type: 'css', selector: 'input[type="checkbox"]' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -728,7 +728,7 @@ it('should assert that html input is indeterminate', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { type: 'css', selector: 'input[type="checkbox"]' },
+          locator: { type: 'css', selector: 'input[type="checkbox"]' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -766,7 +766,7 @@ it('should assert that aria input is checked', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { type: 'css', selector: '[role="checkbox"]' },
+          locator: { type: 'css', selector: '[role="checkbox"]' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -804,7 +804,7 @@ it('should assert that aria input is not checked', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { type: 'css', selector: '[role="checkbox"]' },
+          locator: { type: 'css', selector: '[role="checkbox"]' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -842,7 +842,7 @@ it('should assert that aria input is indeterminate', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { type: 'css', selector: '[role="checkbox"]' },
+          locator: { type: 'css', selector: '[role="checkbox"]' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -882,7 +882,7 @@ it('should assert that input has single value using toHaveValue', async ({
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { type: 'css', selector: 'input[type="text"]' },
+          locator: { type: 'css', selector: 'input[type="text"]' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -919,7 +919,7 @@ it('should emit a getByTestId locator', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { type: 'test-id', testId: 'submit-button' },
+          locator: { type: 'testid', testId: 'submit-button' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -959,10 +959,10 @@ it('should emit a getByRole locator', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: {
+          locator: {
             type: 'role',
             role: 'button',
-            name: { value: 'Submit' },
+            options: { name: 'Submit' },
           },
           inputs: { page: { nodeId: 'page' } },
         },
@@ -1001,7 +1001,7 @@ it('should emit a css locator', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: {
+          locator: {
             type: 'css',
             selector: 'button.submit-btn',
           },
@@ -1042,9 +1042,10 @@ it('should emit a getByAltText locator', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: {
+          locator: {
             type: 'alt',
-            text: { value: 'Grot is happy', exact: true },
+            text: 'Grot is happy',
+            options: { exact: true },
           },
           inputs: { page: { nodeId: 'page' } },
         },
@@ -1083,9 +1084,10 @@ it('should emit a getByLabel locator', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: {
+          locator: {
             type: 'label',
-            text: { value: 'Username', exact: true },
+            label: 'Username',
+            options: { exact: true },
           },
           inputs: { page: { nodeId: 'page' } },
         },
@@ -1118,9 +1120,10 @@ it('should emit a getByPlaceholder locator', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: {
+          locator: {
             type: 'placeholder',
-            text: { value: 'Enter your email', exact: true },
+            placeholder: 'Enter your email',
+            options: { exact: true },
           },
           inputs: { page: { nodeId: 'page' } },
         },
@@ -1153,9 +1156,10 @@ it('should emit a getByTitle locator', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: {
+          locator: {
             type: 'title',
-            text: { value: 'Submit your form', exact: true },
+            title: 'Submit your form',
+            options: { exact: true },
           },
           inputs: { page: { nodeId: 'page' } },
         },
@@ -1194,9 +1198,10 @@ it('should emit a waitFor statement', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: {
+          locator: {
             type: 'title',
-            text: { value: 'Submit your form', exact: true },
+            title: 'Submit your form',
+            options: { exact: true },
           },
           inputs: { page: { nodeId: 'page' } },
         },
@@ -1218,6 +1223,30 @@ it('should emit a waitFor statement', async ({ expect }) => {
 
   await expect(script).toMatchFileSnapshot(
     '__snapshots__/browser/wait-for-statement.ts'
+  )
+})
+
+it('should emit page.waitForTimeout', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'wait-for-timeout',
+          nodeId: 'wait-for-timeout',
+          timeout: 1500,
+          inputs: { page: { nodeId: 'page' } },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/wait-for-timeout-statement.ts'
   )
 })
 
@@ -1343,7 +1372,7 @@ it('should emit two actions on same locator inside same try-finally block', asyn
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { type: 'css', selector: 'button' },
+          locator: { type: 'css', selector: 'button' },
           inputs: {
             page: { nodeId: 'page' },
           },

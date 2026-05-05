@@ -11,14 +11,14 @@ import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { RunInCloudButton } from '@/components/RunInCloudDialog/RunInCloudButton'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
+import { useCurrentFile } from '@/hooks/useCurrentFile'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { useGeneratorStore } from '@/store/generator'
-import { getFileNameWithoutExtension } from '@/utils/file'
 
 import { ExportScriptDialog } from '../ExportScriptDialog'
-import { useGeneratorParams, useScriptExport } from '../Generator.hooks'
+import { useScriptExport } from '../Generator.hooks'
 import { ValidatorDialog } from '../ValidatorDialog'
 
 interface GeneratorControlsProps {
@@ -33,18 +33,12 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
   const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
     useState(false)
   const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
-  const { fileName } = useGeneratorParams()
+  const file = useCurrentFile('generator')
   const { preview, hasError } = useScriptPreview()
   const proxyStatus = useProxyStatus()
   const isScriptExportable = !hasError && !!preview
 
-  const file = {
-    type: 'generator' as const,
-    fileName,
-    displayName: getFileNameWithoutExtension(fileName),
-  }
-
-  const handleExportScript = useScriptExport(fileName)
+  const handleExportScript = useScriptExport(file.path)
 
   const handleDelete = useDeleteFile({
     file,
@@ -123,7 +117,7 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
         <>
           <RunInCloudDialog
             open={isRunInCloudDialogOpen}
-            script={{ type: 'raw', name: fileName, content: preview }}
+            script={{ type: 'raw', name: file.fileName, content: preview }}
             onOpenChange={setIsRunInCloudDialogOpen}
           />
           <ValidatorDialog

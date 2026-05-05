@@ -1,0 +1,99 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { renderHook, waitFor } from '@testing-library/react'
+import { type PropsWithChildren } from 'react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+import type { StackHealthStatus } from '@/handlers/ai/a2a/stackHealth'
+
+import { useStackHealth } from './useStackHealth'
+
+const checkStackHealthMock = vi.fn<() => Promise<StackHealthStatus>>()
+const wakeStackMock = vi.fn<() => Promise<void>>()
+
+function createWrapper() {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  return function Wrapper({ children }: PropsWithChildren) {
+    return <QueryClientProvider client={client}>{children}</QueryClientProvider>
+  }
+}
+
+describe('useStackHealth', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.stubGlobal('studio', {
+      ai: {
+        assistantCheckStackHealth: checkStackHealthMock,
+        assistantWakeStack: wakeStackMock,
+      },
+    })
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('returns "ready" when stack is healthy', async () => {
+    checkStackHealthMock.mockResolvedValue('ready')
+
+    const { result } = renderHook(() => useStackHealth(true), {
+      wrapper: createWrapper(),
+    })
+
+    await waitFor(() => {
+      expect(result.current.isStackReady).toBe(true)
+    })
+  })
+
+  it('returns not ready when stack is loading', async () => {
+    checkStackHealthMock.mockResolvedValue('loading')
+
+    const { result } = renderHook(() => useStackHealth(true), {
+      wrapper: createWrapper(),
+    })
+
+    await waitFor(() => {
+      expect(result.current.isStackReady).toBe(false)
+    })
+  })
+
+  it('does not fetch when disabled', () => {
+    const { result } = renderHook(() => useStackHealth(false), {
+      wrapper: createWrapper(),
+    })
+
+    expect(checkStackHealthMock).not.toHaveBeenCalled()
+    expect(result.current.isStackReady).toBe(true)
+  })
+
+  it('reports not ready while first health check is pending', () => {
+    checkStackHealthMock.mockReturnValue(new Promise(() => {})) // never resolves
+
+    const { result } = renderHook(() => useStackHealth(true), {
+      wrapper: createWrapper(),
+    })
+
+    expect(result.current.isStackReady).toBe(false)
+  })
+
+  it('calls wake once when enabled', async () => {
+    checkStackHealthMock.mockResolvedValue('ready')
+
+    renderHook(() => useStackHealth(true), {
+      wrapper: createWrapper(),
+    })
+
+    await waitFor(() => {
+      expect(wakeStackMock).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  it('does not call wake when disabled', () => {
+    renderHook(() => useStackHealth(false), {
+      wrapper: createWrapper(),
+    })
+
+    expect(wakeStackMock).not.toHaveBeenCalled()
+  })
+})

@@ -15,9 +15,8 @@ vi.mock('ai', () => ({
   streamText: vi.fn(),
 }))
 
-vi.mock('./model', () => ({
-  getOpenAiModel: vi.fn(),
-  getGrafanaAssistantModel: vi.fn(),
+vi.mock('./grafanaAssistantProvider', () => ({
+  GrafanaAssistantLanguageModel: vi.fn(),
 }))
 
 vi.mock('./streamMessages', () => ({
@@ -54,31 +53,7 @@ afterEach(() => {
 })
 
 describe('handleStreamChat', () => {
-  it('sends error chunk when getOpenAiModel throws', async () => {
-    const { getOpenAiModel } = await import('./model')
-    vi.mocked(getOpenAiModel).mockRejectedValue(new Error('API key missing'))
-
-    const event = createMockEvent()
-    const request = createRequest()
-
-    await handleStreamChat(event, request)
-
-    expect(event.sender.send).toHaveBeenCalledWith(AiHandler.StreamChatChunk, {
-      id: 'test-request-id',
-      chunk: {
-        type: 'error',
-        errorText: 'API key missing',
-      },
-    })
-    expect(event.sender.send).toHaveBeenCalledWith(AiHandler.StreamChatEnd, {
-      id: 'test-request-id',
-    })
-  })
-
   it('sends error chunk when streamMessages throws mid-stream', async () => {
-    const { getOpenAiModel } = await import('./model')
-    vi.mocked(getOpenAiModel).mockResolvedValue({} as never)
-
     const { streamText } = await import('ai')
     vi.mocked(streamText).mockReturnValue({} as never)
 
@@ -103,8 +78,10 @@ describe('handleStreamChat', () => {
   })
 
   it('sends Unknown error when catch receives a non-Error value', async () => {
-    const { getOpenAiModel } = await import('./model')
-    vi.mocked(getOpenAiModel).mockRejectedValue('string error')
+    const { streamText } = await import('ai')
+    vi.mocked(streamText).mockImplementation(() => {
+      throw 'string error'
+    })
 
     const event = createMockEvent()
     const request = createRequest()

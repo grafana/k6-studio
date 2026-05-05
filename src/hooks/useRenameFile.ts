@@ -1,13 +1,16 @@
 import { useMutation } from '@tanstack/react-query'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
+import { useActiveFilePath } from '@/hooks/useCurrentFile'
+import { getViewPath } from '@/routeMap'
 import { useStudioUIStore } from '@/store/ui'
 import { StudioFile } from '@/types'
-import { getFileNameWithoutExtension, getViewPath } from '@/utils/file'
+import * as path from '@/utils/path'
 import { queryClient } from '@/utils/query'
 
 export function useRenameFile(file: StudioFile) {
-  const { fileName: selectedFileName } = useParams()
+  const activeFilePath = useActiveFilePath()
+
   const navigate = useNavigate()
   const addFile = useStudioUIStore((state) => state.addFile)
   const removeFile = useStudioUIStore((state) => state.removeFile)
@@ -19,16 +22,18 @@ export function useRenameFile(file: StudioFile) {
       // There's a slight delay between the add and remove callbacks being triggered,
       // causing the UI to flicker because it thinks the renamed file is actually
       // a new file. To prevent this, we optimistically update the file list.
+      const newPath = path.join(path.dirname(file.path), newName)
       const updatedFile = {
         ...file,
-        displayName: getFileNameWithoutExtension(newName),
+        path: newPath,
+        displayName: path.name(newName),
         fileName: newName,
       }
 
       removeFile(file)
       addFile(updatedFile)
 
-      if (selectedFileName !== file.fileName) {
+      if (activeFilePath !== file.path) {
         return
       }
 
@@ -39,7 +44,7 @@ export function useRenameFile(file: StudioFile) {
         )
       }
 
-      navigate(getViewPath(file.type, newName), { replace: true })
+      navigate(getViewPath(file.type, newPath), { replace: true })
     },
   })
 }
