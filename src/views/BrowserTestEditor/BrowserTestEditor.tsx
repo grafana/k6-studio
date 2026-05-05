@@ -171,7 +171,11 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                               </Flex>
                             }
                             session={session}
-                            highlightedLocator={highlightedLocator}
+                            highlightedElement={
+                              state?.type === 'context-menu'
+                                ? state.target
+                                : highlightedLocator
+                            }
                             onClick={() => setState(null)}
                             onContextMenu={handleContextMenu}
                           />

@@ -14,39 +14,49 @@ interface Highlight {
 }
 
 export function useHighlightedElements(
-  element: HTMLElement | null,
-  locator: ElementLocator | null
+  root: HTMLElement | null,
+  target: ElementLocator | Element | null
 ) {
   const idCounter = useRef(0)
   const [highlights, setHighlights] = useState<Highlight[] | null>(null)
 
   useEffect(() => {
-    if (element === null || locator === null) {
+    if (root === null || target === null) {
       setHighlights(null)
 
       return
     }
 
-    try {
-      const elements = findElementsByLocator(element, locator)
-      const highlights = elements.map((element) => {
-        const bounds = getElementBounds(element)
+    const toHighlight = (element: Element) => {
+      const bounds = getElementBounds(element)
 
-        return {
-          id: idCounter.current++,
-          element,
-          bounds,
-        }
-      })
+      return {
+        id: idCounter.current++,
+        element,
+        bounds,
+      }
+    }
+
+    const { Element } = root.ownerDocument.defaultView ?? window
+
+    if (target instanceof Element) {
+      setHighlights([toHighlight(target)])
+
+      return
+    }
+
+    try {
+      const elements = findElementsByLocator(root, target)
+      const highlights = elements.map((element) => toHighlight(element))
 
       setHighlights(highlights)
     } catch {
       setHighlights([])
     }
-  }, [element, locator])
+  }, [root, target])
 
   useEffect(() => {
-    if (element === null || locator === null) {
+    if (root === null || target === null) {
       return
     }
 
@@ -70,7 +80,7 @@ export function useHighlightedElements(
     return () => {
       observer.disconnect()
     }
-  }, [element, locator])
+  }, [root, target])
 
   return useDebouncedValue({
     value: highlights,

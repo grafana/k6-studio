@@ -29,7 +29,7 @@ interface SessionPlayerProps {
   placeholder?: string
   initialPage?: Page
   initialContent?: ReactNode
-  highlightedLocator: ElementLocator | null
+  highlightedElement: ElementLocator | Element | null
   interactive?: boolean
   onContextMenu?: (pos: ContextMenuEvent) => void
   onClick?: () => void
@@ -40,7 +40,7 @@ export function SessionPlayer({
   placeholder = 'Enter a URL to start...',
   initialPage = DEFAULT_PAGE,
   initialContent,
-  highlightedLocator,
+  highlightedElement,
   interactive = false,
   onContextMenu,
   onClick,
@@ -119,7 +119,7 @@ export function SessionPlayer({
             {pageState === 'loaded' && (
               <LocatorHighlights
                 player={player}
-                locator={highlightedLocator ?? null}
+                target={highlightedElement ?? null}
               />
             )}
           </Box>
