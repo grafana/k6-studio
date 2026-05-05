@@ -37,6 +37,7 @@
     "@electron/fuses": "^1.8.0",
     "@tanstack/eslint-plugin-query": "^5.53.0",
     "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/cors": "^2.8.19",
     "@types/diff": "^7.0.2",
     "@types/electron-squirrel-startup": "^1.0.2",
