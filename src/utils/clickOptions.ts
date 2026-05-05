@@ -2,7 +2,7 @@ import type {
   LocatorClickAction,
   LocatorClickButton,
   LocatorClickModifier,
-} from '@/main/runner/schema'
+} from '@/schemas/browserTest'
 
 export interface ClickModifiers {
   alt: boolean
