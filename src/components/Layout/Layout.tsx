@@ -1,7 +1,6 @@
 import { css } from '@emotion/react'
-import { Box, Flex, IconButton, Spinner } from '@radix-ui/themes'
+import { Box, Flex, Spinner } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
-import { PanelLeftOpenIcon } from 'lucide-react'
 import { Suspense, useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
@@ -69,27 +68,6 @@ export function Layout() {
         --sash-hover-size: 2px;
       `}
     >
-      {!isSidebarExpanded && (
-        <IconButton
-          size="1"
-          variant="ghost"
-          color="gray"
-          onClick={() => setIsSidebarExpanded(true)}
-          css={css`
-            position: absolute;
-            top: var(--space-4);
-            left: calc(64px - var(--space-2));
-            background-color: var(--color-background);
-            z-index: 10000;
-
-            &:hover {
-              background-color: var(--accent-3);
-            }
-          `}
-        >
-          <PanelLeftOpenIcon />
-        </IconButton>
-      )}
       <Allotment onVisibleChange={handleVisibleChange}>
         <Allotment.Pane minSize={64} maxSize={64}>
           <ActivityBar activeTab={activeTab} onTabChange={handleTabChange} />
