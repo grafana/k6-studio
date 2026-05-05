@@ -1,5 +1,6 @@
 import { css } from '@emotion/react'
-import { Flex, Tabs, Text } from '@radix-ui/themes'
+import { Flex, IconButton, Popover, Tabs, Text } from '@radix-ui/themes'
+import { Settings2Icon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import LogoGradient from '@/assets/logo-gradient.svg'
@@ -35,6 +36,7 @@ import {
 } from './BrowserTestEditor.hooks'
 import { BrowserTestEditorControls } from './BrowserTestEditorControls'
 import { EditableBrowserActionList } from './EditableBrowserActionList'
+import { PostTestTimeoutControl } from './PostTestTimeoutControl'
 
 interface BrowserTestEditorViewProps {
   file: StudioFile
@@ -53,7 +55,9 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
   const test = useBrowserTestState(data)
 
   const previewScript = useBrowserScriptPreview(test.actions)
-  const validatorScript = useValidatorScript(test.actions)
+
+  const { validatorScript, timeoutAction, setTimeoutAction } =
+    useValidatorScript(test.actions)
 
   const { session, startDebugging, stopDebugging } = useDebugSession({
     type: 'raw',
@@ -66,7 +70,10 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
       return
     }
 
-    const browserTestData = { ...data, actions: test.plainActions }
+    const browserTestData = {
+      ...data,
+      actions: test.plainActions,
+    }
 
     void saveBrowserTest(browserTestData)
   }
@@ -160,6 +167,30 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                             }
                             session={session}
                             highlightedLocator={highlightedLocator}
+                            controls={
+                              <Popover.Root>
+                                <Popover.Trigger>
+                                  <IconButton
+                                    variant="ghost"
+                                    size="1"
+                                    color="gray"
+                                    aria-label="Test settings"
+                                  >
+                                    <Settings2Icon size={14} />
+                                  </IconButton>
+                                </Popover.Trigger>
+                                <Popover.Content
+                                  size="1"
+                                  align="end"
+                                  side="top"
+                                >
+                                  <PostTestTimeoutControl
+                                    timeout={timeoutAction.timeout}
+                                    onChange={setTimeoutAction}
+                                  />
+                                </Popover.Content>
+                              </Popover.Root>
+                            }
                           />
                         </PersistentTabs.Content>
                         <PersistentTabs.Content

@@ -29,6 +29,7 @@ interface SessionPlayerProps {
   placeholder?: string
   initialPage?: Page
   initialContent?: ReactNode
+  controls?: ReactNode
   highlightedLocator: ElementLocator | null
 }
 
@@ -37,6 +38,7 @@ export function SessionPlayer({
   placeholder = 'Enter a URL to start...',
   initialPage = DEFAULT_PAGE,
   initialContent,
+  controls,
   highlightedLocator,
 }: SessionPlayerProps) {
   const [mount, setMount] = useState<HTMLDivElement | null>(null)
@@ -124,6 +126,7 @@ export function SessionPlayer({
         actions={session.browser.actions.filter(
           (action) => action.type === 'action' || isBrowserAssertion(action)
         )}
+        controls={controls}
         onPlay={handlePlay}
         onPause={handlePause}
         onSeek={handleSeek}
