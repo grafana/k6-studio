@@ -1,7 +1,7 @@
 import { css } from '@emotion/react'
 import { Grid } from '@radix-ui/themes'
 
-import { LocatorWaitForAction } from '@/main/runner/schema'
+import { LocatorWaitForAction } from '@/schemas/browserTest'
 
 import { LocatorForm } from '../../ActionForms/forms/LocatorForm'
 import { WaitForOptionsForm } from '../../ActionForms/forms/WaitForOptionsForm'

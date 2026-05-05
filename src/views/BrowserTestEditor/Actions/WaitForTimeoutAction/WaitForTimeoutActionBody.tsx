@@ -1,6 +1,6 @@
 import { Grid } from '@radix-ui/themes'
 
-import { PageWaitForTimeoutAction } from '@/main/runner/schema'
+import { PageWaitForTimeoutAction } from '@/schemas/browserTest'
 
 import { TimeoutForm } from '../../ActionForms/forms/TimeoutForm'
 import { WithEditorMetadata } from '../../types'

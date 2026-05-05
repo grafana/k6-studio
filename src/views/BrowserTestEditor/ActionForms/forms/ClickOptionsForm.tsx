@@ -9,7 +9,7 @@ import {
 import { SettingsIcon } from 'lucide-react'
 import { useId, useState } from 'react'
 
-import { LocatorClickAction } from '@/main/runner/schema'
+import { LocatorClickAction } from '@/schemas/browserTest'
 
 interface ClickOptionsFormProps {
   options: LocatorClickAction['options']

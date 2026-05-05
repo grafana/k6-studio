@@ -1,6 +1,6 @@
 import { Grid } from '@radix-ui/themes'
 
-import { LocatorUncheckAction } from '@/main/runner/schema'
+import { LocatorUncheckAction } from '@/schemas/browserTest'
 
 import { LocatorForm } from '../../ActionForms/forms/LocatorForm'
 import { WithEditorMetadata } from '../../types'
