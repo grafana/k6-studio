@@ -33,6 +33,9 @@ export function findInteractiveElement(element: Element): Element | null {
     HTMLInputElement,
     HTMLSelectElement,
     HTMLTextAreaElement,
+    HTMLLabelElement,
+    HTMLAnchorElement,
+    HTMLImageElement,
   } = element.ownerDocument.defaultView ?? window
 
   while (current !== null) {
