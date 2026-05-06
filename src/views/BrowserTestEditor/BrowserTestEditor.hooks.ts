@@ -153,7 +153,7 @@ export function useBrowserTestValidator({
       {
         id: '_validator_timeout_',
         method: 'page.waitForTimeout',
-        timeout: shutdownDelay,
+        timeout: isNaN(shutdownDelay) ? 3000 : shutdownDelay,
       },
     ],
     [actions, shutdownDelay]
