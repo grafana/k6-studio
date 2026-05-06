@@ -34,9 +34,11 @@ export function useWatchFileChanges() {
     [addFile]
   )
 
-  useEffect(() => {
-    window.studio.ui.onRemoveFile((file) => {
-      removeFile(file)
-    })
-  }, [removeFile])
+  useEffect(
+    () =>
+      window.studio.ui.onRemoveFile((file) => {
+        removeFile(file)
+      }),
+    [removeFile]
+  )
 }

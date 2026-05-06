@@ -3,13 +3,14 @@ import { Flex, IconButton } from '@radix-ui/themes'
 import { PanelLeftCloseIcon } from 'lucide-react'
 import { ReactNode } from 'react'
 
-interface SidebarHeaderProps {
+type SidebarHeaderProps = {
   icon: ReactNode
   title: string
-  variant?: 'primary' | 'secondary'
   actions?: ReactNode
-  onCollapseSidebar: () => void
-}
+} & (
+  | { variant?: 'primary'; onCollapseSidebar: () => void }
+  | { variant: 'secondary'; onCollapseSidebar?: never }
+)
 
 export function SidebarHeader({
   icon,

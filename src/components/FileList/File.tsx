@@ -179,10 +179,14 @@ function FileIcon({ file }: { file: FileItem }) {
     return <FileBracesIcon aria-hidden color="var(--accent-9)" />
   }
 
-  if (file.type === 'data-file') {
-    return file.fileName.endsWith('.json') ? (
+  if (file.type === 'data-file' && file.fileName.endsWith('.json')) {
+    return (
       <FileBracesIcon aria-label="JSON data file" color="var(--indigo-9)" />
-    ) : (
+    )
+  }
+
+  if (file.type === 'data-file') {
+    return (
       <FileSpreadsheetIcon
         aria-label="Spreadsheet data file"
         color="var(--accent-9)"

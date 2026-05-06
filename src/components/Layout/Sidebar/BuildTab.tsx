@@ -15,8 +15,8 @@ import { StudioFile } from '@/types'
 
 import { useFiles } from './Sidebar.hooks'
 import { SidebarEmptyState } from './SidebarEmptyState'
+import { SidebarFileList } from './SidebarFileList'
 import { SidebarHeader } from './SidebarHeader'
-import { SidebarSearchBar } from './SidebarSearchBar'
 
 interface BuildTabProps {
   onCollapseSidebar: () => void
@@ -41,75 +41,32 @@ export function BuildTab({ onCollapseSidebar }: BuildTabProps) {
             actions={<NewTestMenu />}
             onCollapseSidebar={onCollapseSidebar}
           />
-          <TestsBody
+          <SidebarFileList
             isEmpty={isEmpty.tests}
-            tests={tests}
+            files={tests}
             searchTerm={searchTerm}
+            placeholder="Search tests..."
+            noFilesMessage="No tests found"
+            emptyMessage="Build a test from scratch or transform a recording into one."
+            emptyAction={<CreateTestButton />}
             onSearchChange={setSearchTerm}
           />
         </Flex>
       </Panel>
       <Separator />
       <Panel minSize={200} defaultSize="20%" id="sidebar-build-tab-data-files">
-        <DataFilesPanel
-          isEmpty={isEmpty.dataFiles}
-          dataFiles={dataFiles}
-          onCollapseSidebar={onCollapseSidebar}
-        />
+        <DataFilesPanel isEmpty={isEmpty.dataFiles} dataFiles={dataFiles} />
       </Panel>
     </Group>
-  )
-}
-
-interface TestsBodyProps {
-  isEmpty: boolean
-  tests: StudioFile[]
-  searchTerm: string
-  onSearchChange: (value: string) => void
-}
-
-function TestsBody({
-  isEmpty,
-  tests,
-  searchTerm,
-  onSearchChange,
-}: TestsBodyProps) {
-  if (isEmpty) {
-    return (
-      <SidebarEmptyState
-        message="Build a test from scratch or transform a recording into one."
-        action={<CreateTestButton />}
-      />
-    )
-  }
-
-  return (
-    <>
-      <SidebarSearchBar
-        filter={searchTerm}
-        placeholder="Search tests..."
-        onChange={onSearchChange}
-      />
-      <ScrollArea scrollbars="vertical">
-        <Flex direction="column" gap="2" py="2">
-          <FileList files={tests} noFilesMessage="No tests found" />
-        </Flex>
-      </ScrollArea>
-    </>
   )
 }
 
 interface DataFilesPanelProps {
   isEmpty: boolean
   dataFiles: StudioFile[]
-  onCollapseSidebar: () => void
 }
 
-function DataFilesPanel({
-  isEmpty,
-  dataFiles,
-  onCollapseSidebar,
-}: DataFilesPanelProps) {
+function DataFilesPanel({ isEmpty, dataFiles }: DataFilesPanelProps) {
   const handleImportDataFile = useImportDataFile()
 
   return (
@@ -130,7 +87,6 @@ function DataFilesPanel({
           </Tooltip>
         }
         variant="secondary"
-        onCollapseSidebar={onCollapseSidebar}
       />
       <DataFilesBody
         isEmpty={isEmpty}

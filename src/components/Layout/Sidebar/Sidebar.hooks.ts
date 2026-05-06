@@ -1,21 +1,40 @@
 import Fuse, { IFuseOptions } from 'fuse.js'
-import { orderBy } from 'lodash-es'
 import { useMemo } from 'react'
 
 import { useStudioUIStore } from '@/store/ui'
 import { StudioFile } from '@/types'
 import { withMatches } from '@/utils/fuse'
 
-function orderByFileName(files: Map<string, StudioFile>) {
-  return orderBy([...files.values()], (s) => s.displayName)
+function sortByDisplayName(files: Map<string, StudioFile>) {
+  return [...files.values()].sort((a, b) =>
+    a.displayName.localeCompare(b.displayName)
+  )
 }
 
 export function useFiles(searchTerm: string) {
-  const recordings = useStudioUIStore((s) => orderByFileName(s.recordings))
-  const generators = useStudioUIStore((s) => orderByFileName(s.generators))
-  const browserTests = useStudioUIStore((s) => orderByFileName(s.browserTests))
-  const scripts = useStudioUIStore((s) => orderByFileName(s.scripts))
-  const dataFiles = useStudioUIStore((s) => orderByFileName(s.dataFiles))
+  const recordingsMap = useStudioUIStore((s) => s.recordings)
+  const generatorsMap = useStudioUIStore((s) => s.generators)
+  const browserTestsMap = useStudioUIStore((s) => s.browserTests)
+  const scriptsMap = useStudioUIStore((s) => s.scripts)
+  const dataFilesMap = useStudioUIStore((s) => s.dataFiles)
+
+  const recordings = useMemo(
+    () => sortByDisplayName(recordingsMap),
+    [recordingsMap]
+  )
+  const generators = useMemo(
+    () => sortByDisplayName(generatorsMap),
+    [generatorsMap]
+  )
+  const browserTests = useMemo(
+    () => sortByDisplayName(browserTestsMap),
+    [browserTestsMap]
+  )
+  const scripts = useMemo(() => sortByDisplayName(scriptsMap), [scriptsMap])
+  const dataFiles = useMemo(
+    () => sortByDisplayName(dataFilesMap),
+    [dataFilesMap]
+  )
 
   const tests = useMemo(
     () =>
@@ -54,15 +73,15 @@ export function useFiles(searchTerm: string) {
       dataFiles: dataFiles.length,
     }
 
-    const isFirstTimeEmpty = searchTerm === ''
+    const isSearching = searchTerm.trim() !== ''
     const isEmpty = {
-      recordings: counts.recordings === 0 && isFirstTimeEmpty,
-      tests: counts.tests === 0 && isFirstTimeEmpty,
-      scripts: counts.scripts === 0 && isFirstTimeEmpty,
-      dataFiles: counts.dataFiles === 0 && isFirstTimeEmpty,
+      recordings: counts.recordings === 0 && !isSearching,
+      tests: counts.tests === 0 && !isSearching,
+      scripts: counts.scripts === 0 && !isSearching,
+      dataFiles: counts.dataFiles === 0 && !isSearching,
     }
 
-    if (searchTerm.match(/^\s*$/)) {
+    if (!isSearching) {
       return { recordings, tests, scripts, dataFiles, counts, isEmpty }
     }
 

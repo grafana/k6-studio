@@ -65,7 +65,7 @@ export function Layout() {
 
   useEffect(() => {
     window.studio.app.changeRoute(location.pathname)
-  }, [location])
+  }, [location.pathname])
 
   return (
     <Flex height="100dvh">
