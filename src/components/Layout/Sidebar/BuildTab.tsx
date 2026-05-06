@@ -113,7 +113,7 @@ function DataFilesPanel({
   const handleImportDataFile = useImportDataFile()
 
   return (
-    <>
+    <Flex direction="column" height="100%" overflow="hidden">
       <SidebarHeader
         icon={<FileSpreadsheetIcon />}
         title="Data files"
@@ -137,7 +137,7 @@ function DataFilesPanel({
         dataFiles={dataFiles}
         onImport={handleImportDataFile}
       />
-    </>
+    </Flex>
   )
 }
 
@@ -163,7 +163,7 @@ function DataFilesBody({ isEmpty, dataFiles, onImport }: DataFilesBodyProps) {
 
   return (
     <ScrollArea scrollbars="vertical">
-      <Flex direction="column" gap="2" py="2">
+      <Flex direction="column" gap="2" pb="2">
         <FileList files={dataFiles} noFilesMessage="No data files found" />
       </Flex>
     </ScrollArea>
