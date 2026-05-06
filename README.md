@@ -133,13 +133,13 @@ nvm use
 Before you can start the app, you need to install the related dependencies:
 
 ```
-npm install
+pnpm install
 ```
 
 After the command has finished, you start the app locally with:
 
 ```
-npm start
+pnpm start
 ```
 
 ### Compile a local binary (packaged app)
@@ -156,8 +156,8 @@ Example:
 export SENTRY_DSN="sentry"
 export NODE_OPTIONS="--max_old_space_size=8192"
 
-npm install
-npm run package
+pnpm install
+pnpm package
 ```
 
 If you want installable artifacts (`.deb`, `.rpm`, etc.) instead of only a packaged app directory:
@@ -166,8 +166,8 @@ If you want installable artifacts (`.deb`, `.rpm`, etc.) instead of only a packa
 export SENTRY_DSN="sentry"
 export NODE_OPTIONS="--max_old_space_size=8192"
 
-npm install
-npm run make
+pnpm install
+pnpm make
 ```
 
 Common output paths:
@@ -196,4 +196,4 @@ cp ./k6 resources/linux/x86_64/k6
 chmod +x resources/linux/x86_64/k6
 ```
 
-After replacing the binary, run `npm run package` or `npm run make` to include it in your local build.
+After replacing the binary, run `pnpm package` or `pnpm make` to include it in your local build.

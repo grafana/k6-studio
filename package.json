@@ -6,11 +6,13 @@
   "repository": "github:grafana/k6-studio",
   "main": ".vite/build/main.js",
   "engines": {
-    "node": "^24.11.0"
+    "node": "^24.11.0",
+    "pnpm": ">=11"
   },
+  "packageManager": "pnpm@11.0.6",
   "scripts": {
-    "preinstall": "node install-k6.js",
-    "postinstall": "patch-package",
+    "preinstall": "npx only-allow pnpm",
+    "postinstall": "node install-k6.js",
     "start": "electron-forge start -- --remote-debugging-port=9223",
     "package": "electron-forge package",
     "make": "electron-forge make",
@@ -66,7 +68,6 @@
     "husky": "^9.0.11",
     "jsdom": "^25.0.0",
     "lint-staged": "^15.2.5",
-    "patch-package": "^8.0.1",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "vite": "^6.4.1",
@@ -167,12 +168,5 @@
       "prettier --ignore-unknown --write",
       "bash -c 'tsc --noEmit'"
     ]
-  },
-  "overrides": {
-    "esbuild": "^0.27.0",
-    "nan": "^2.25.0",
-    "basic-ftp": "^5.2.0",
-    "tar": "^7.5.13",
-    "dompurify": "^3.4.0"
   }
 }
