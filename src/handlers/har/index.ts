@@ -34,10 +34,14 @@ export function initialize() {
 
   ipcMain.handle(
     HarHandler.OpenFile,
-    async (_, fileName: string): Promise<Recording> => {
+    async (_, filePath: string): Promise<Recording> => {
       console.info(`${HarHandler.OpenFile} event received`)
 
-      const data = await readFile(path.join(RECORDINGS_PATH, fileName), {
+      const resolvedPath = path.isAbsolute(filePath)
+        ? filePath
+        : path.join(RECORDINGS_PATH, filePath)
+
+      const data = await readFile(resolvedPath, {
         encoding: 'utf-8',
         flag: 'r',
       })

@@ -32,13 +32,12 @@ export function Generator() {
   const navigate = useNavigate()
 
   const file = useCurrentFile('generator')
-  const { fileName } = file
 
   const {
     data: generatorFileData,
     isLoading: isLoadingGenerator,
     error: generatorError,
-  } = useLoadGeneratorFile(fileName)
+  } = useLoadGeneratorFile(file.path)
 
   const {
     data: recording,
@@ -50,7 +49,7 @@ export function Generator() {
 
   const isLoading = isLoadingGenerator || isLoadingRecording
 
-  const isDirty = useIsGeneratorDirty(fileName)
+  const isDirty = useIsGeneratorDirty(file.path)
   const isDirtyRef = useRef(isDirty)
 
   const [isAppClosing, setIsAppClosing] = useState(false)
