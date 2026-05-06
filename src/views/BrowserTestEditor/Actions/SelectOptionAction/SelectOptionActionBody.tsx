@@ -1,6 +1,6 @@
 import { Grid } from '@radix-ui/themes'
 
-import { LocatorSelectOptionAction } from '@/main/runner/schema'
+import { LocatorSelectOptionAction } from '@/schemas/browserTest'
 
 import { LocatorForm } from '../../ActionForms/forms/LocatorForm'
 import { SelectOptionValuesForm } from '../../ActionForms/forms/SelectOptionValuesForm'

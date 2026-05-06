@@ -1,6 +1,6 @@
 import { type GeneratorStore } from '@/store/generator'
 import { GeneratorFileData } from '@/types/generator'
-import { TestOptions } from '@/types/testOptions'
+import { LoadProfileExecutorOptions, TestOptions } from '@/types/testOptions'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 import { exhaustive } from '@/utils/typescript'
 
@@ -102,6 +102,15 @@ export function selectHasVerificationRule(state: GeneratorStore) {
 
 export function selectHasGroups(state: GeneratorStore) {
   return state.requests.some((request) => request.group)
+}
+
+export function selectLoadProfileExecutorOptions(
+  state: GeneratorStore
+): LoadProfileExecutorOptions {
+  const { executor, stages, vus, iterations } = state
+  // Always pass all executor-specific fields so the LoadProfile form defaultValues
+  // retain e.g. stages while shared-iterations is active (Zod strips extras on parse).
+  return { executor, stages, vus, iterations }
 }
 
 export function selectSelectedRuleIndex(state: GeneratorStore) {

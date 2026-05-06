@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron'
 
-import { BrowserTestFile } from '@/schemas/browserTest/v1'
+import { BrowserTestFile } from '@/schemas/browserTest'
 
 import { BrowserTestHandler } from './types'
 

@@ -1,5 +1,7 @@
 import { afterAll, beforeAll, it, vi } from 'vitest'
 
+import { defaultBrowserTestOptions } from '@/schemas/browserTest'
+
 import { emitScript } from './codegen'
 
 beforeAll(() => {
@@ -1412,5 +1414,60 @@ it('should emit two actions on same locator inside same try-finally block', asyn
 
   await expect(script).toMatchFileSnapshot(
     '__snapshots__/browser/two-actions-on-same-locator-inside-same-try-finally-block.ts'
+  )
+})
+
+it('emits options with thresholds, ramping-vus stages, and cloud loadZones', async ({
+  expect,
+}) => {
+  const script = await emitScript({
+    defaultScenario: { nodes: [] },
+    scenarios: {},
+    options: {
+      loadProfile: {
+        executor: 'ramping-vus',
+        stages: [
+          { id: 's1', target: 5, duration: '30s' },
+          { id: 's2', target: 0, duration: '15s' },
+        ],
+      },
+      thresholds: [
+        {
+          id: '1',
+          metric: 'browser_web_vital_lcp',
+          statistic: 'p(95)',
+          condition: '<',
+          value: 1000,
+          stopTest: false,
+        },
+      ],
+      cloud: {
+        loadZones: {
+          distribution: 'manual',
+          zones: [
+            { id: 'z1', loadZone: 'amazon:us:columbus', percent: 60 },
+            { id: 'z2', loadZone: 'amazon:de:frankfurt', percent: 40 },
+          ],
+        },
+      },
+    },
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/browser-with-settings.ts'
+  )
+})
+
+it('emits minimal options when options has empty thresholds and zones', async ({
+  expect,
+}) => {
+  const script = await emitScript({
+    defaultScenario: { nodes: [] },
+    scenarios: {},
+    options: defaultBrowserTestOptions,
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/browser-empty-settings.ts'
   )
 })

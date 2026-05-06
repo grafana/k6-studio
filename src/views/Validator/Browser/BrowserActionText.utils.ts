@@ -1,12 +1,12 @@
 import { ClickDetails } from '@/components/Browser/ClickPill'
 import {
-  LocatorClickAction,
-  LocatorDoubleClickAction,
+  LocatorClickDebugEvent,
+  LocatorDoubleClickDebugEvent,
 } from '@/main/runner/schema'
 import { toClickButton, toClickModifiers } from '@/utils/clickOptions'
 
 export function toClickDetails(
-  action: LocatorClickAction | LocatorDoubleClickAction
+  action: LocatorClickDebugEvent | LocatorDoubleClickDebugEvent
 ): ClickDetails {
   return {
     button: toClickButton(action.options),

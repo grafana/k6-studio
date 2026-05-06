@@ -1,7 +1,7 @@
 import { css } from '@emotion/react'
 import { Grid } from '@radix-ui/themes'
 
-import { LocatorClickAction, LocatorClickButton } from '@/main/runner/schema'
+import { LocatorClickAction, LocatorClickButton } from '@/schemas/browserTest'
 
 import { ClickButtonForm } from '../../ActionForms/forms/ClickButtonForm'
 import { ClickOptionsForm } from '../../ActionForms/forms/ClickOptionsForm'

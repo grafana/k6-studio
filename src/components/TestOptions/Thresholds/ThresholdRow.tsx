@@ -7,50 +7,57 @@ import {
   UseFieldArrayRemove,
   useFormContext,
 } from 'react-hook-form'
-import type { z } from 'zod'
 
 import { FieldGroup, ControlledSelect } from '@/components/Form'
-import { ThresholdDataSchema } from '@/schemas/generator'
-import { Threshold } from '@/types/testOptions'
 
 import {
-  THRESHOLD_METRICS_OPTIONS,
-  getStatisticOptions,
   THRESHOLD_CONDITIONS_OPTIONS,
-  getMetricUnit,
+  ThresholdLikeRow,
 } from './Thresholds.utils'
+import { MetricsConfig } from './createMetricsConfig'
 
-type ThresholdFormInput = z.input<typeof ThresholdDataSchema>
-
-type ThresholdRowProps = {
-  index: number
-  field: FieldArrayWithId<ThresholdFormInput, 'thresholds', 'id'>
-  remove: UseFieldArrayRemove
+interface ThresholdFormShape {
+  thresholds: ThresholdLikeRow[]
 }
 
-export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
+type ThresholdRowProps<M extends string> = {
+  index: number
+  field: FieldArrayWithId<ThresholdFormShape, 'thresholds', 'id'>
+  remove: UseFieldArrayRemove
+  metricsConfig: MetricsConfig<M>
+}
+
+export function ThresholdRow<M extends string>({
+  field,
+  index,
+  remove,
+  metricsConfig,
+}: ThresholdRowProps<M>) {
   const {
     register,
     formState: { errors },
     control,
     watch,
     setValue,
-  } = useFormContext<ThresholdFormInput>()
+  } = useFormContext<ThresholdFormShape>()
 
-  const threshold = watch('thresholds')[index] as Threshold
+  const threshold = watch(`thresholds.${index}`)
+  const metric = threshold?.metric
+  const statistic = threshold?.statistic
 
-  // Handle selected statistic when the metric field changes
   useEffect(() => {
-    const availableStatistics = getStatisticOptions(threshold.metric).map(
-      (option) => option.value
-    )
-    if (!availableStatistics.includes(threshold.statistic)) {
+    if (metric === undefined || statistic === undefined) return
+
+    const availableStatistics = metricsConfig
+      .getStatisticOptions(metric)
+      .map((option) => option.value)
+    if (!availableStatistics.includes(statistic)) {
       const newStatistic = availableStatistics[0]
       if (newStatistic) {
         setValue(`thresholds.${index}.statistic`, newStatistic)
       }
     }
-  }, [threshold.metric, threshold.statistic, index, setValue])
+  }, [metric, statistic, index, setValue, metricsConfig])
 
   return (
     <Table.Row key={field.id}>
@@ -59,7 +66,7 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
           <ControlledSelect
             control={control}
             name={`thresholds.${index}.metric`}
-            options={THRESHOLD_METRICS_OPTIONS}
+            options={metricsConfig.options}
           />
         </FieldGroup>
       </Table.Cell>
@@ -73,7 +80,9 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
             control={control}
             name={`thresholds.${index}.statistic`}
             options={
-              threshold?.metric ? getStatisticOptions(threshold.metric) : []
+              threshold?.metric
+                ? metricsConfig.getStatisticOptions(threshold.metric)
+                : []
             }
           />
         </FieldGroup>
@@ -109,7 +118,9 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
             {...register(`thresholds.${index}.value`, { valueAsNumber: true })}
           >
             <TextField.Slot side="right">
-              {threshold?.metric ? getMetricUnit(threshold.metric) : ''}
+              {threshold?.metric
+                ? metricsConfig.getMetricUnit(threshold.metric)
+                : ''}
             </TextField.Slot>
           </TextField.Root>
         </FieldGroup>
