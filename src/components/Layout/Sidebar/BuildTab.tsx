@@ -45,7 +45,7 @@ export function BuildTab({ onCollapseSidebar }: BuildTabProps) {
             isEmpty={isEmpty.tests}
             files={tests}
             searchTerm={searchTerm}
-            placeholder="Search tests..."
+            placeholder="Search..."
             noFilesMessage="No tests found"
             emptyMessage="Build a test from scratch or transform a recording into one."
             emptyAction={<CreateTestButton />}
