@@ -1,10 +1,5 @@
 import { Button, Flex, IconButton, ScrollArea, Tooltip } from '@radix-ui/themes'
-import {
-  FileSpreadsheetIcon,
-  PlusIcon,
-  UploadIcon,
-  WrenchIcon,
-} from 'lucide-react'
+import { FileSpreadsheetIcon, UploadIcon, WrenchIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { FileList } from '@/components/FileList'
@@ -130,7 +125,7 @@ function DataFilesPanel({
               color="gray"
               onClick={handleImportDataFile}
             >
-              <PlusIcon />
+              <UploadIcon />
             </IconButton>
           </Tooltip>
         }

@@ -1,9 +1,8 @@
-import { Button, Flex, ScrollArea } from '@radix-ui/themes'
+import { Button, Flex, IconButton, ScrollArea, Tooltip } from '@radix-ui/themes'
 import { FileBracesIcon, FolderOpenIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { FileList } from '@/components/FileList'
-import { CreateTestButton, NewTestMenu } from '@/components/NewTestMenu'
 import { useOpenExternalScript } from '@/hooks/useOpenExternalScript'
 import { StudioFile } from '@/types'
 
@@ -19,13 +18,26 @@ interface RunTabProps {
 export function RunTab({ onCollapseSidebar }: RunTabProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const { scripts, isEmpty } = useFiles(searchTerm)
+  const handleOpenScript = useOpenExternalScript()
 
   return (
     <>
       <SidebarHeader
         icon={<FileBracesIcon />}
         title="Scripts"
-        actions={<NewTestMenu />}
+        actions={
+          <Tooltip content="Open external script" side="right">
+            <IconButton
+              aria-label="Open external script"
+              variant="ghost"
+              size="1"
+              color="gray"
+              onClick={handleOpenScript}
+            >
+              <FolderOpenIcon />
+            </IconButton>
+          </Tooltip>
+        }
         onCollapseSidebar={onCollapseSidebar}
       />
       <ScriptsBody
@@ -33,6 +45,7 @@ export function RunTab({ onCollapseSidebar }: RunTabProps) {
         scripts={scripts}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onOpenScript={handleOpenScript}
       />
     </>
   )
@@ -43,6 +56,7 @@ interface ScriptsBodyProps {
   scripts: StudioFile[]
   searchTerm: string
   onSearchChange: (value: string) => void
+  onOpenScript: () => void
 }
 
 function ScriptsBody({
@@ -50,20 +64,16 @@ function ScriptsBody({
   scripts,
   searchTerm,
   onSearchChange,
+  onOpenScript,
 }: ScriptsBodyProps) {
-  const handleOpenScript = useOpenExternalScript()
-
   if (isEmpty) {
     return (
       <SidebarEmptyState
-        message="Create a test or open an external k6 script to debug it."
+        message="Exported scripts from your tests will appear here. You can also open an external k6 script to debug it."
         action={
-          <Flex gap="4" wrap="wrap" justify="center">
-            <CreateTestButton />
-            <Button size="1" variant="ghost" onClick={handleOpenScript}>
-              <FolderOpenIcon /> Open script
-            </Button>
-          </Flex>
+          <Button size="1" variant="ghost" onClick={onOpenScript}>
+            <FolderOpenIcon /> Open external script
+          </Button>
         }
       />
     )
