@@ -1,10 +1,16 @@
 import { css } from '@emotion/react'
 import { Box, Flex, Spinner } from '@radix-ui/themes'
-import { Allotment } from 'allotment'
-import { Suspense, useEffect } from 'react'
+import { Suspense, useCallback, useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 
+import {
+  Group,
+  Panel,
+  Separator,
+  useDefaultLayout,
+  usePanelRef,
+} from '@/components/primitives/ResizablePanel'
 import { useDelayedVisibility } from '@/hooks/useDelayedVisibility'
 import { useListenDeepLinks } from '@/hooks/useListenDeepLinks'
 import { useWatchFileChanges } from '@/hooks/useWatchFileChanges'
@@ -35,62 +41,71 @@ export function Layout() {
     'activeTab',
     'record'
   )
-  const [isSidebarExpanded, setIsSidebarExpanded] = useLocalStorage(
-    'isSidebarExpanded',
-    true
-  )
+  const sidebarRef = usePanelRef()
   const location = useLocation()
   useListenDeepLinks()
   useWatchFileChanges()
 
-  const handleVisibleChange = (index: number, visible: boolean) => {
-    if (index !== 1) return
-    setIsSidebarExpanded(visible)
-  }
+  const layout = useDefaultLayout({
+    groupId: 'sidebar-layout',
+    storage: localStorage,
+  })
 
-  const handleTabChange = (tab: SidebarTab) => {
-    setActiveTab(tab)
-    setIsSidebarExpanded(true)
-  }
+  const handleTabChange = useCallback(
+    (tab: SidebarTab) => {
+      setActiveTab(tab)
+      sidebarRef.current?.expand()
+    },
+    [setActiveTab, sidebarRef]
+  )
+
+  const handleCollapseSidebar = useCallback(() => {
+    sidebarRef.current?.collapse()
+  }, [sidebarRef])
 
   useEffect(() => {
     window.studio.app.changeRoute(location.pathname)
   }, [location])
 
   return (
-    <Box
-      height="100dvh"
-      position="relative"
-      css={css`
-        /* Allotment */
-        --focus-border: var(--accent-9);
-        --separator-border: var(--gray-5);
-        --sash-hover-size: 2px;
-      `}
-    >
-      <Allotment onVisibleChange={handleVisibleChange}>
-        <Allotment.Pane minSize={64} maxSize={64}>
-          <ActivityBar activeTab={activeTab} onTabChange={handleTabChange} />
-        </Allotment.Pane>
-        <Allotment.Pane
-          minSize={200}
-          maxSize={300}
-          preferredSize={280}
-          visible={isSidebarExpanded}
-          snap
+    <Flex height="100dvh">
+      <Box
+        flexShrink="0"
+        css={{
+          width: '64px',
+          borderRight: '1px solid var(--gray-a5)',
+        }}
+      >
+        <ActivityBar activeTab={activeTab} onTabChange={handleTabChange} />
+      </Box>
+      <Group
+        {...layout}
+        id="sidebar-layout"
+        css={css`
+          --focus-border: var(--accent-9);
+        `}
+      >
+        <Panel
+          panelRef={sidebarRef}
+          collapsible
+          collapsedSize="0px"
+          minSize="200px"
+          maxSize="300px"
+          defaultSize="280px"
+          id="sidebar-panel"
         >
           <Sidebar
             activeTab={activeTab}
-            onCollapseSidebar={() => setIsSidebarExpanded(false)}
+            onCollapseSidebar={handleCollapseSidebar}
           />
-        </Allotment.Pane>
-
-        <Allotment.Pane>
+        </Panel>
+        <Separator />
+        <Panel id="main-panel" style={{ position: 'relative', zIndex: 0 }}>
           <Suspense fallback={<RouteLoadingFallback />}>
             <Outlet />
           </Suspense>
-        </Allotment.Pane>
-      </Allotment>
-    </Box>
+        </Panel>
+      </Group>
+    </Flex>
   )
 }
