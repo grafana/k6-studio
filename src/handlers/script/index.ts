@@ -35,25 +35,19 @@ export function initialize() {
   ipcMain.handle(ScriptHandler.Open, async (_, scriptPath: string) => {
     console.log(`${ScriptHandler.Open} event received`)
 
-    const absolute = path.isAbsolute(scriptPath)
-
-    const resolvedScriptPath = absolute
-      ? scriptPath
-      : path.join(SCRIPTS_PATH, scriptPath)
-
-    const script = await readFile(resolvedScriptPath, {
+    const script = await readFile(scriptPath, {
       encoding: 'utf-8',
       flag: 'r',
     })
 
     const options = await new K6Client()
-      .inspect({ scriptPath: resolvedScriptPath })
+      .inspect({ scriptPath })
       .catch(() => ({}))
 
     return {
       script,
       options: options ?? {},
-      isExternal: isExternalScript(resolvedScriptPath),
+      isExternal: isExternalScript(scriptPath),
     }
   })
 
