@@ -21,7 +21,6 @@ import { StudioFile } from '@/types'
 import { LoadProfileExecutorOptions, LoadZoneData } from '@/types/testOptions'
 import { getInitialStages } from '@/utils/generator'
 import { stripUndefined } from '@/utils/object'
-import { basename } from '@/utils/path'
 import { queryClient } from '@/utils/query'
 
 import { useDebugSession } from '../Validator/Validator.hooks'
@@ -32,11 +31,11 @@ import {
 } from './actionAdapters'
 import { BrowserActionInstance } from './types'
 
-export function useBrowserTest(fileName: string) {
+export function useBrowserTest(filePath: string) {
   return useQuery<BrowserTestFile>({
-    queryKey: ['browserTest', fileName],
+    queryKey: ['browserTest', filePath],
     queryFn: () => {
-      return window.studio.browserTest.open(fileName)
+      return window.studio.browserTest.open(filePath)
     },
   })
 }
@@ -48,7 +47,7 @@ export function useSaveBrowserTest(filePath: string) {
     mutationFn: async (data: BrowserTestFile) => {
       await window.studio.browserTest.save(filePath, data)
       await queryClient.invalidateQueries({
-        queryKey: ['browserTest', basename(filePath)],
+        queryKey: ['browserTest', filePath],
       })
     },
 
