@@ -5,7 +5,6 @@ import { useCallback } from 'react'
 import { selectGeneratorData, useGeneratorStore } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
 import { GeneratorFileData } from '@/types/generator'
-import { basename } from '@/utils/path'
 import { queryClient } from '@/utils/query'
 
 import { exportScript, loadGeneratorFile, loadHarFile } from './Generator.utils'
@@ -18,17 +17,17 @@ export function useLoadHarFile(fileName?: string) {
   })
 }
 
-export function useLoadGeneratorFile(fileName: string) {
+export function useLoadGeneratorFile(filePath: string) {
   return useQuery({
-    queryKey: ['generator', fileName],
-    queryFn: () => loadGeneratorFile(fileName),
+    queryKey: ['generator', filePath],
+    queryFn: () => loadGeneratorFile(filePath),
   })
 }
 
 export function useUpdateValueInGeneratorFile(filePath: string) {
   return useMutation({
     mutationFn: async ({ key, value }: { key: string; value: unknown }) => {
-      const generator = await loadGeneratorFile(basename(filePath))
+      const generator = await loadGeneratorFile(filePath)
 
       await window.studio.generator.saveGenerator(
         { ...generator, [key]: value },
@@ -46,7 +45,7 @@ export function useSaveGeneratorFile(filePath: string) {
       await window.studio.generator.saveGenerator(generator, filePath)
 
       await queryClient.invalidateQueries({
-        queryKey: ['generator', basename(filePath)],
+        queryKey: ['generator', filePath],
       })
     },
 
@@ -70,9 +69,9 @@ export function useSaveGeneratorFile(filePath: string) {
   })
 }
 
-export function useIsGeneratorDirty(fileName: string) {
+export function useIsGeneratorDirty(filePath: string) {
   const generatorState = useGeneratorStore(selectGeneratorData)
-  const { data } = useLoadGeneratorFile(fileName)
+  const { data } = useLoadGeneratorFile(filePath)
 
   // Comparing data without `scriptName`, which is saved to disk in the background
   // and should not be considered as a change

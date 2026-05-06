@@ -1,4 +1,4 @@
-import { AnyBrowserAction } from '@/main/runner/schema'
+import { AnyBrowserAction } from '@/schemas/browserTest'
 
 import { BrowserActionInstance } from './types'
 

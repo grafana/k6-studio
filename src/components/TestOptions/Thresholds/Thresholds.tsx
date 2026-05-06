@@ -1,34 +1,51 @@
-import { zodResolver } from '@hookform/resolvers/zod'
 import { Button, Text } from '@radix-ui/themes'
-import { useCallback, useEffect } from 'react'
-import { useForm, useFieldArray, FormProvider } from 'react-hook-form'
-import type { z } from 'zod'
+import { useCallback, useMemo } from 'react'
+import { FormProvider, Resolver, useFieldArray } from 'react-hook-form'
 
 import { ExternalLink } from '@/components/ExternalLink'
 import { Table } from '@/components/Table'
-import { ThresholdDataSchema } from '@/schemas/generator'
-import { useGeneratorStore } from '@/store/generator'
-import { ThresholdData } from '@/types/testOptions'
+
+import { useControlledForm } from '../useControlledForm'
 
 import { ThresholdRow } from './ThresholdRow'
+import type { ThresholdLikeRow } from './Thresholds.utils'
+import { MetricsConfig } from './createMetricsConfig'
 
-export function Thresholds() {
-  const thresholds = useGeneratorStore((store) => store.thresholds)
-  const setThresholds = useGeneratorStore((store) => store.setThresholds)
+interface ThresholdsProps<M extends string> {
+  value: Array<ThresholdLikeRow & { metric: M }>
+  onChange: (next: Array<ThresholdLikeRow & { metric: M }>) => void
+  metricsConfig: MetricsConfig<M>
+  // Resolver is contravariant in TFieldValues so callers with narrower schemas
+  // cannot assign to a concrete form type. Use any to accept all resolvers.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  resolver?: Resolver<any>
+}
 
-  const formMethods = useForm<
-    z.input<typeof ThresholdDataSchema>,
-    unknown,
-    ThresholdData
-  >({
-    resolver: zodResolver(ThresholdDataSchema),
-    shouldFocusError: false,
-    defaultValues: {
-      thresholds,
-    },
+export function Thresholds<M extends string>({
+  value,
+  onChange,
+  metricsConfig,
+  resolver,
+}: ThresholdsProps<M>) {
+  type Row = ThresholdLikeRow & { metric: M }
+  type FormShape = { thresholds: Row[] }
+
+  const wrappedValue = useMemo<FormShape>(
+    () => ({ thresholds: value }),
+    [value]
+  )
+  const handleChange = useCallback(
+    (data: FormShape) => onChange(data.thresholds),
+    [onChange]
+  )
+
+  const formMethods = useControlledForm<FormShape>({
+    value: wrappedValue,
+    onChange: handleChange,
+    resolver: resolver as Resolver<FormShape> | undefined,
   })
 
-  const { handleSubmit, control, watch } = formMethods
+  const { handleSubmit, control } = formMethods
 
   const { append, remove, fields } = useFieldArray({
     control,
@@ -38,32 +55,27 @@ export function Thresholds() {
   function handleAddThreshold(event: React.MouseEvent) {
     event.preventDefault()
 
-    append({
+    const firstMetric = metricsConfig.options[0]?.value
+    if (firstMetric === undefined) return
+
+    const firstStatistic =
+      metricsConfig.getStatisticOptions(firstMetric)[0]?.value
+    if (firstStatistic === undefined) return
+
+    const newRow: Row = {
       id: crypto.randomUUID(),
-      metric: 'http_req_duration',
-      statistic: 'avg',
+      metric: firstMetric,
+      statistic: firstStatistic,
       condition: '<',
       value: 0,
       stopTest: false,
-    })
+    }
+    append(newRow)
   }
-
-  const onSubmit = useCallback(
-    (data: ThresholdData) => {
-      setThresholds(data.thresholds)
-    },
-    [setThresholds]
-  )
-
-  // Submit onChange
-  useEffect(() => {
-    const subscription = watch(() => handleSubmit(onSubmit)())
-    return () => subscription.unsubscribe()
-  }, [watch, handleSubmit, onSubmit])
 
   return (
     <FormProvider {...formMethods}>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(handleChange)}>
         <Text size="2" as="p" mb="4">
           Define pass/fail criteria for your test metrics across all URLs. Learn
           more about thresholds in the{' '}
@@ -90,10 +102,9 @@ export function Thresholds() {
               <Table.ColumnHeaderCell width="80px">
                 Stop Test
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="59px"></Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="59px" />
             </Table.Row>
           </Table.Header>
-
           <Table.Body>
             {fields.map((field, index) => (
               <ThresholdRow
@@ -101,9 +112,9 @@ export function Thresholds() {
                 field={field}
                 index={index}
                 remove={remove}
+                metricsConfig={metricsConfig}
               />
             ))}
-
             <Table.Row>
               <Table.RowHeaderCell colSpan={7} justify="center">
                 <Button variant="ghost" onClick={handleAddThreshold}>

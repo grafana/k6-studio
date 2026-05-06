@@ -1,7 +1,7 @@
 import { arrayMove } from '@dnd-kit/sortable'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
-import { debounce } from 'lodash-es'
+import { debounce, isEqual } from 'lodash-es'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { emitScript } from '@/codegen/browser'
@@ -10,9 +10,16 @@ import {
   useDefaultLayout,
   usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
-import { BrowserTestFile } from '@/schemas/browserTest/v1'
+import {
+  BrowserTestFile,
+  BrowserTestOptions,
+  BrowserThreshold,
+  defaultBrowserTestOptions,
+} from '@/schemas/browserTest'
 import { useToast } from '@/store/ui/useToast'
-import { basename } from '@/utils/path'
+import { LoadProfileExecutorOptions, LoadZoneData } from '@/types/testOptions'
+import { getInitialStages } from '@/utils/generator'
+import { stripUndefined } from '@/utils/object'
 import { queryClient } from '@/utils/query'
 
 import {
@@ -21,11 +28,11 @@ import {
 } from './actionAdapters'
 import { BrowserActionInstance } from './types'
 
-export function useBrowserTest(fileName: string) {
+export function useBrowserTest(filePath: string) {
   return useQuery<BrowserTestFile>({
-    queryKey: ['browserTest', fileName],
+    queryKey: ['browserTest', filePath],
     queryFn: () => {
-      return window.studio.browserTest.open(fileName)
+      return window.studio.browserTest.open(filePath)
     },
   })
 }
@@ -37,7 +44,7 @@ export function useSaveBrowserTest(filePath: string) {
     mutationFn: async (data: BrowserTestFile) => {
       await window.studio.browserTest.save(filePath, data)
       await queryClient.invalidateQueries({
-        queryKey: ['browserTest', basename(filePath)],
+        queryKey: ['browserTest', filePath],
       })
     },
 
@@ -81,39 +88,50 @@ export function useBrowserTestEditorLayout() {
 }
 
 export function useBrowserScriptPreview(
-  browserActions: BrowserActionInstance[]
+  browserActions: BrowserActionInstance[],
+  options?: BrowserTestOptions
 ) {
   const [preview, setPreview] = useState('')
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const generatePreview = useCallback(
-    debounce(async (actions: BrowserActionInstance[]) => {
-      try {
-        const test = convertActionsToTest({
-          browserActions: actions,
-        })
+    debounce(
+      async (
+        actions: BrowserActionInstance[],
+        currentOptions: BrowserTestOptions | undefined
+      ) => {
+        try {
+          const test = convertActionsToTest({
+            browserActions: actions,
+            options: currentOptions,
+          })
 
-        const script = await emitScript(test)
-        setPreview(script)
-      } catch (error) {
-        setPreview(
-          `// Failed to generate script preview:\n// ${error instanceof Error ? error.message : String(error)}`
-        )
-      }
-    }, 300),
+          const script = await emitScript(test)
+          setPreview(script)
+        } catch (error) {
+          setPreview(
+            `// Failed to generate script preview:\n// ${error instanceof Error ? error.message : String(error)}`
+          )
+        }
+      },
+      300
+    ),
     []
   )
 
   useEffect(() => {
-    void generatePreview(browserActions)
+    void generatePreview(browserActions, options)
 
     return () => generatePreview.cancel()
-  }, [browserActions, generatePreview])
+  }, [browserActions, options, generatePreview])
 
   return preview
 }
 
-export function useValidatorScript(browserActions: BrowserActionInstance[]) {
+export function useValidatorScript(
+  browserActions: BrowserActionInstance[],
+  options?: BrowserTestOptions
+) {
   // We add a timeout to the end of the script to give the page time to load the page, so that
   // there's something that the user can interact with. If we don't do this, k6 will stop before
   // any DOM mutations have been recorded.
@@ -129,37 +147,71 @@ export function useValidatorScript(browserActions: BrowserActionInstance[]) {
     [browserActions]
   )
 
-  return useBrowserScriptPreview(validatorActions)
+  return useBrowserScriptPreview(validatorActions, options)
+}
+
+// Browser tests start with `shared-iterations` and no stages, but the
+// `<LoadProfile>` form requires a stages array to validate when the user
+// switches to `ramping-vus`. Carry default stages alongside the active branch
+// so the form always validates; codegen reads only the active branch.
+function withSeededStages(
+  loadProfile: LoadProfileExecutorOptions
+): LoadProfileExecutorOptions {
+  if ('stages' in loadProfile && (loadProfile.stages?.length ?? 0) > 0) {
+    return loadProfile
+  }
+  const seeded = { ...loadProfile, stages: getInitialStages() }
+  return seeded
 }
 
 export function useBrowserTestState(
   browserTestFile: BrowserTestFile | undefined
 ) {
-  const { actions = [] } = browserTestFile ?? {}
-  const [state, setState] = useState<BrowserActionInstance[]>(
+  const { actions = [], options = defaultBrowserTestOptions } =
+    browserTestFile ?? {}
+
+  const [actionState, setActionState] = useState<BrowserActionInstance[]>(
     actions.map(toBrowserActionInstance)
   )
+  const [optionsState, setOptionsState] = useState<BrowserTestOptions>(() => ({
+    ...options,
+    loadProfile: withSeededStages(options.loadProfile),
+  }))
+
+  useEffect(() => {
+    const { options: fileOptions } = browserTestFile ?? {}
+    const resolvedOptions = fileOptions ?? defaultBrowserTestOptions
+    const nextOptions: BrowserTestOptions = {
+      ...resolvedOptions,
+      loadProfile: withSeededStages(resolvedOptions.loadProfile),
+    }
+    setOptionsState((prev) =>
+      isEqual(stripUndefined(prev), stripUndefined(nextOptions))
+        ? prev
+        : nextOptions
+    )
+  }, [browserTestFile])
 
   const addAction = (action: BrowserActionInstance) => {
-    setState([...state, action])
+    setActionState([...actionState, action])
   }
 
   const updateAction = (updatedAction: BrowserActionInstance) => {
-    const newActions = state.map((action) =>
-      action.id === updatedAction.id ? updatedAction : action
+    setActionState(
+      actionState.map((action) =>
+        action.id === updatedAction.id ? updatedAction : action
+      )
     )
-    setState(newActions)
   }
 
   const removeAction = (id: string) => {
-    const newActions = state.filter((actionWithId) => actionWithId.id !== id)
-    setState(newActions)
+    setActionState(actionState.filter((action) => action.id !== id))
   }
 
   const reorderActions = useCallback((activeId: string, overId: string) => {
-    setState((prev) => {
-      const oldIndex = prev.findIndex((a) => a.id === activeId)
-      const newIndex = prev.findIndex((a) => a.id === overId)
+    setActionState((prev) => {
+      const oldIndex = prev.findIndex((action) => action.id === activeId)
+      const newIndex = prev.findIndex((action) => action.id === overId)
       if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
         return prev
       }
@@ -167,24 +219,64 @@ export function useBrowserTestState(
     })
   }, [])
 
-  const plainActions = useMemo(() => {
-    return state.map(fromBrowserActionInstance)
-  }, [state])
+  const setLoadProfile = useCallback(
+    (loadProfile: LoadProfileExecutorOptions) =>
+      setOptionsState((prev) => ({
+        ...prev,
+        // Merge so inactive-branch fields (e.g. user's stages while
+        // shared-iterations is active) survive an executor switch. Codegen
+        // reads only the active branch, so shadow fields are inert.
+        loadProfile: {
+          ...prev.loadProfile,
+          ...loadProfile,
+        },
+      })),
+    []
+  )
+
+  const setThresholds = useCallback(
+    (thresholds: BrowserThreshold[]) =>
+      setOptionsState((prev) => ({ ...prev, thresholds })),
+    []
+  )
+
+  const setLoadZones = useCallback(
+    (loadZones: LoadZoneData) =>
+      setOptionsState((prev) => ({ ...prev, cloud: { loadZones } })),
+    []
+  )
+
+  const plainActions = useMemo(
+    () => actionState.map(fromBrowserActionInstance),
+    [actionState]
+  )
 
   const isDirty = useMemo(() => {
+    // Baseline widens stages to match the in-memory state so seeded defaults
+    // aren't seen as edits. Compare strips undefined keys (RHF emits cleared
+    // inputs as `key: undefined`, while Zod parse drops them entirely) and
+    // ignores key order (Zod can reorder after a save+reload roundtrip).
+    const baseline = {
+      ...options,
+      loadProfile: withSeededStages(options.loadProfile),
+    }
     return (
-      plainActions.length !== actions.length ||
-      JSON.stringify(plainActions) !== JSON.stringify(actions)
+      !isEqual(stripUndefined(plainActions), stripUndefined(actions)) ||
+      !isEqual(stripUndefined(optionsState), stripUndefined(baseline))
     )
-  }, [plainActions, actions])
+  }, [plainActions, actions, optionsState, options])
 
   return {
-    actions: state,
+    actions: actionState,
     plainActions,
     addAction,
     updateAction,
     removeAction,
     reorderActions,
+    options: optionsState,
+    setLoadProfile,
+    setThresholds,
+    setLoadZones,
     isDirty,
   }
 }

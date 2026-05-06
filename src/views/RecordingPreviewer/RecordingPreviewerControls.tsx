@@ -42,7 +42,7 @@ export function RecordingPreviewControls({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const isDiscardable = Boolean(state?.discardable)
 
-  const handleCreateGenerator = () => createTestGenerator(file.fileName)
+  const handleCreateGenerator = () => createTestGenerator(file.path)
 
   const handleDelete = useDeleteFile({
     file,

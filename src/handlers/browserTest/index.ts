@@ -1,13 +1,13 @@
 import { ipcMain } from 'electron'
 import { readFile, writeFile } from 'fs/promises'
-import path from 'path'
 
 import { K6_BROWSER_TEST_FILE_EXTENSION } from '@/constants/files'
 import { BROWSER_TESTS_PATH } from '@/constants/workspace'
 import {
   BrowserTestFile,
-  BrowserTestFileSchema,
-} from '@/schemas/browserTest/v1'
+  BrowserTestFileDataSchema,
+  defaultBrowserTestOptions,
+} from '@/schemas/browserTest'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { createFileWithUniqueName } from '@/utils/fileSystem'
@@ -21,6 +21,7 @@ export function initialize() {
     const emptyBrowserTest: BrowserTestFile = {
       version: '1.0',
       actions: [],
+      options: defaultBrowserTestOptions,
     }
 
     const filePath = await createFileWithUniqueName({
@@ -37,15 +38,15 @@ export function initialize() {
     return filePath
   })
 
-  ipcMain.handle(BrowserTestHandler.Open, async (_, fileName: string) => {
+  ipcMain.handle(BrowserTestHandler.Open, async (_, filePath: string) => {
     console.info(`${BrowserTestHandler.Open} event received`)
 
-    const data = await readFile(path.join(BROWSER_TESTS_PATH, fileName), {
+    const data = await readFile(filePath, {
       encoding: 'utf-8',
       flag: 'r',
     })
 
-    return BrowserTestFileSchema.parse(JSON.parse(data))
+    return BrowserTestFileDataSchema.parse(JSON.parse(data))
   })
 
   ipcMain.handle(

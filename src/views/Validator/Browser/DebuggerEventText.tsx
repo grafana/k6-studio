@@ -3,7 +3,7 @@ import { SelectOptions } from '@/components/Browser/SelectOptions'
 import { Value } from '@/components/Browser/Value'
 import { Kbd } from '@/components/primitives/Kbd'
 import {
-  AnyBrowserAction,
+  AnyBrowserDebugEvent,
   BrowserAssertionEvent,
   BrowserDebuggerEvent,
 } from '@/main/runner/schema'
@@ -13,7 +13,7 @@ import { toClickDetails } from './BrowserActionText.utils'
 import { BrowserElementLocator } from './BrowserElementLocator'
 
 interface BrowserActionTextProps {
-  action: AnyBrowserAction
+  action: AnyBrowserDebugEvent
 }
 
 function BrowserActionText({ action }: BrowserActionTextProps) {
