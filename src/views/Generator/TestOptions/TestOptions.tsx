@@ -1,69 +1,52 @@
-import { css } from '@emotion/react'
-import { Box, Button, Inset, ScrollArea, Tabs } from '@radix-ui/themes'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Button } from '@radix-ui/themes'
 import { SettingsIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 
-import { PopoverDialog } from '@/components/PopoverDialogs'
+import { TestOptionsDialog } from '@/components/TestOptions'
+import { ThresholdDataSchema } from '@/schemas/generator'
+import {
+  selectLoadProfileExecutorOptions,
+  useGeneratorStore,
+} from '@/store/generator'
 
-import { VariablesEditor } from '../TestData/VariablesEditor'
-
-import { LoadProfile } from './LoadProfile'
-import { LoadZones } from './LoadZones'
 import { ThinkTime } from './ThinkTime'
-import { Thresholds } from './Thresholds'
+import { HTTP_METRICS_CONFIG } from './httpThresholdMetrics'
 
 export function TestOptions() {
-  const [selectedTab, setSelectedTab] = useState('loadProfile')
+  const loadProfile = useGeneratorStore(
+    useShallow(selectLoadProfileExecutorOptions)
+  )
+  const setLoadProfile = useGeneratorStore((store) => store.setLoadProfile)
+
+  const thresholds = useGeneratorStore((store) => store.thresholds)
+  const setThresholds = useGeneratorStore((store) => store.setThresholds)
+
+  const loadZones = useGeneratorStore((store) => store.loadZones)
+  const setLoadZones = useGeneratorStore((store) => store.setLoadZones)
 
   return (
-    <PopoverDialog
-      align="center"
-      width="780px"
+    <TestOptionsDialog
       trigger={
         <Button variant="ghost" size="1" color="gray">
           <SettingsIcon />
           Test options
         </Button>
       }
-    >
-      <Inset>
-        <Tabs.Root value={selectedTab} onValueChange={setSelectedTab}>
-          <Tabs.List
-            css={css`
-              margin-bottom: var(--space-3);
-            `}
-          >
-            <Tabs.Trigger value="loadProfile">Load profile</Tabs.Trigger>
-            <Tabs.Trigger value="thresholds">Thresholds</Tabs.Trigger>
-            <Tabs.Trigger value="thinkTime">Think time</Tabs.Trigger>
-            <Tabs.Trigger value="loadZones">Load zones</Tabs.Trigger>
-          </Tabs.List>
-          <ScrollArea
-            scrollbars="vertical"
-            css={css`
-              max-height: 60vh;
-            `}
-          >
-            <Box p="3" pt="0" css={{ '.rt-TabsContent': { outline: 'none' } }}>
-              <Tabs.Content value="loadProfile">
-                <LoadProfile />
-              </Tabs.Content>
-              <Tabs.Content value="thinkTime">
-                <ThinkTime />
-              </Tabs.Content>
-              <Tabs.Content value="variables">
-                <VariablesEditor />
-              </Tabs.Content>
-              <Tabs.Content value="thresholds">
-                <Thresholds />
-              </Tabs.Content>
-              <Tabs.Content value="loadZones">
-                <LoadZones />
-              </Tabs.Content>
-            </Box>
-          </ScrollArea>
-        </Tabs.Root>
-      </Inset>
-    </PopoverDialog>
+      tabs={['loadProfile', 'thresholds', 'thinkTime', 'loadZones']}
+      loadProfile={{
+        value: loadProfile,
+        onChange: setLoadProfile,
+        executors: ['ramping-vus', 'shared-iterations'],
+      }}
+      thresholds={{
+        value: thresholds,
+        onChange: setThresholds,
+        metricsConfig: HTTP_METRICS_CONFIG,
+        resolver: zodResolver(ThresholdDataSchema),
+      }}
+      loadZones={{ value: loadZones, onChange: setLoadZones }}
+      thinkTime={{ content: <ThinkTime /> }}
+    />
   )
 }

@@ -1,4 +1,4 @@
-import { LocatorClickAction } from '@/main/runner/schema'
+import { LocatorClickAction } from '@/schemas/browserTest'
 import { WithEditorMetadata } from '@/views/BrowserTestEditor/types'
 
 export function buildClickAction(

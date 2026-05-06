@@ -1,6 +1,6 @@
 import { Grid } from '@radix-ui/themes'
 
-import { LocatorFillAction } from '@/main/runner/schema'
+import { LocatorFillAction } from '@/schemas/browserTest'
 
 import { FillValueForm } from '../../ActionForms/forms/FillValueForm'
 import { LocatorForm } from '../../ActionForms/forms/LocatorForm'

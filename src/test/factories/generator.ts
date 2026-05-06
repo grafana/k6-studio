@@ -115,6 +115,7 @@ export function createGeneratorState(
       zones: [],
     },
     setLoadZones: vi.fn(),
+    setLoadProfile: vi.fn(),
 
     ...state,
   }

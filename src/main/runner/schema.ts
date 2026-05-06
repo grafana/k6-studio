@@ -15,23 +15,23 @@ function safe<T>(schema: z.ZodType<T>) {
 // Generic options schema to allow any options object. Should be refined later.
 const GenericOptions = z.unknown()
 
-const PageGotoActionSchema = z.object({
+const PageGotoDebugEventSchema = z.object({
   method: z.literal('page.goto'),
   url: z.string(),
   options: GenericOptions.optional(),
 })
 
-const PageReloadActionSchema = z.object({
+const PageReloadDebugEventSchema = z.object({
   method: z.literal('page.reload'),
   options: GenericOptions.optional(),
 })
 
-const PageWaitForNavigationActionSchema = z.object({
+const PageWaitForNavigationDebugEventSchema = z.object({
   method: z.literal('page.waitForNavigation'),
   options: GenericOptions.optional(),
 })
 
-const PageWaitForTimeoutActionSchema = z.object({
+const PageWaitForTimeoutDebugEventSchema = z.object({
   method: z.literal('page.waitForTimeout'),
   // NaN is converted to null by `JSON.stringify` so we type this
   // as nullable and transform it back to NaN to allow invalid data
@@ -42,11 +42,11 @@ const PageWaitForTimeoutActionSchema = z.object({
     .transform((value) => value ?? NaN),
 })
 
-const PageCloseActionSchema = z.object({
+const PageCloseDebugEventSchema = z.object({
   method: z.literal('page.close'),
 })
 
-const GenericPageActionSchema = z.object({
+const GenericPageDebugEventSchema = z.object({
   method: z.literal('page.*'),
   name: z.string(),
   args: z.array(z.unknown()),
@@ -71,38 +71,38 @@ const LocatorClickOptionSchema = z
   })
   .passthrough()
 
-const LocatorClickActionSchema = z.object({
+const LocatorClickDebugEventSchema = z.object({
   method: z.literal('locator.click'),
   locator: ElementLocatorSchema,
   options: LocatorClickOptionSchema.optional(),
 })
 
-const LocatorDoubleClickActionSchema = z.object({
+const LocatorDoubleClickDebugEventSchema = z.object({
   method: z.literal('locator.dblclick'),
   locator: ElementLocatorSchema,
   options: LocatorClickOptionSchema.optional(),
 })
 
-const LocatorFillActionSchema = z.object({
+const LocatorFillDebugEventSchema = z.object({
   method: z.literal('locator.fill'),
   locator: ElementLocatorSchema,
   value: z.string(),
   options: GenericOptions.optional(),
 })
 
-const LocatorCheckActionSchema = z.object({
+const LocatorCheckDebugEventSchema = z.object({
   method: z.literal('locator.check'),
   locator: ElementLocatorSchema,
   options: GenericOptions.optional(),
 })
 
-const LocatorUncheckActionSchema = z.object({
+const LocatorUncheckDebugEventSchema = z.object({
   method: z.literal('locator.uncheck'),
   locator: ElementLocatorSchema,
   options: GenericOptions.optional(),
 })
 
-const LocatorSelectOptionActionSchema = z.object({
+const LocatorSelectOptionDebugEventSchema = z.object({
   method: z.literal('locator.selectOption'),
   locator: ElementLocatorSchema,
   values: z.array(
@@ -115,7 +115,7 @@ const LocatorSelectOptionActionSchema = z.object({
   options: GenericOptions.optional(),
 })
 
-const LocatorWaitForActionSchema = z.object({
+const LocatorWaitForDebugEventSchema = z.object({
   method: z.literal('locator.waitFor'),
   locator: ElementLocatorSchema,
   options: z
@@ -133,92 +133,92 @@ const LocatorWaitForActionSchema = z.object({
     .optional(),
 })
 
-const LocatorHoverActionSchema = z.object({
+const LocatorHoverDebugEventSchema = z.object({
   method: z.literal('locator.hover'),
   locator: ElementLocatorSchema,
   options: GenericOptions.optional(),
 })
 
-const LocatorSetCheckedActionSchema = z.object({
+const LocatorSetCheckedDebugEventSchema = z.object({
   method: z.literal('locator.setChecked'),
   locator: ElementLocatorSchema,
   checked: z.boolean(),
   options: GenericOptions.optional(),
 })
 
-const LocatorTypeActionSchema = z.object({
+const LocatorTypeDebugEventSchema = z.object({
   method: z.literal('locator.type'),
   locator: ElementLocatorSchema,
   text: z.string(),
   options: GenericOptions.optional(),
 })
 
-const LocatorPressActionSchema = z.object({
+const LocatorPressDebugEventSchema = z.object({
   method: z.literal('locator.press'),
   locator: ElementLocatorSchema,
   key: z.string(),
   options: GenericOptions.optional(),
 })
 
-const LocatorClearActionSchema = z.object({
+const LocatorClearDebugEventSchema = z.object({
   method: z.literal('locator.clear'),
   locator: ElementLocatorSchema,
   options: GenericOptions.optional(),
 })
 
-const LocatorTapActionSchema = z.object({
+const LocatorTapDebugEventSchema = z.object({
   method: z.literal('locator.tap'),
   locator: ElementLocatorSchema,
   options: GenericOptions.optional(),
 })
 
-const LocatorFocusActionSchema = z.object({
+const LocatorFocusDebugEventSchema = z.object({
   method: z.literal('locator.focus'),
   locator: ElementLocatorSchema,
   options: GenericOptions.optional(),
 })
 
-const GenericLocatorActionSchema = z.object({
+const GenericLocatorDebugEventSchema = z.object({
   method: z.literal('locator.*'),
   name: z.string(),
   locator: ElementLocatorSchema,
   args: z.array(z.unknown()),
 })
 
-const GenericBrowserContextActionSchema = z.object({
+const GenericBrowserContextDebugEventSchema = z.object({
   method: z.literal('browserContext.*'),
   name: z.string(),
   args: z.array(z.unknown()),
 })
 
-export const AnyBrowserActionSchema = z.discriminatedUnion('method', [
+export const AnyBrowserDebugEventSchema = z.discriminatedUnion('method', [
   // BrowserContext actions
-  GenericBrowserContextActionSchema,
+  GenericBrowserContextDebugEventSchema,
 
   // Page actions
-  PageGotoActionSchema,
-  PageReloadActionSchema,
-  PageWaitForNavigationActionSchema,
-  PageWaitForTimeoutActionSchema,
-  PageCloseActionSchema,
-  GenericPageActionSchema,
+  PageGotoDebugEventSchema,
+  PageReloadDebugEventSchema,
+  PageWaitForNavigationDebugEventSchema,
+  PageWaitForTimeoutDebugEventSchema,
+  PageCloseDebugEventSchema,
+  GenericPageDebugEventSchema,
 
   // Locator actions
-  LocatorCheckActionSchema,
-  LocatorClearActionSchema,
-  LocatorClickActionSchema,
-  LocatorDoubleClickActionSchema,
-  LocatorFillActionSchema,
-  LocatorFocusActionSchema,
-  LocatorHoverActionSchema,
-  LocatorPressActionSchema,
-  LocatorSelectOptionActionSchema,
-  LocatorSetCheckedActionSchema,
-  LocatorTapActionSchema,
-  LocatorTypeActionSchema,
-  LocatorUncheckActionSchema,
-  LocatorWaitForActionSchema,
-  GenericLocatorActionSchema,
+  LocatorCheckDebugEventSchema,
+  LocatorClearDebugEventSchema,
+  LocatorClickDebugEventSchema,
+  LocatorDoubleClickDebugEventSchema,
+  LocatorFillDebugEventSchema,
+  LocatorFocusDebugEventSchema,
+  LocatorHoverDebugEventSchema,
+  LocatorPressDebugEventSchema,
+  LocatorSelectOptionDebugEventSchema,
+  LocatorSetCheckedDebugEventSchema,
+  LocatorTapDebugEventSchema,
+  LocatorTypeDebugEventSchema,
+  LocatorUncheckDebugEventSchema,
+  LocatorWaitForDebugEventSchema,
+  GenericLocatorDebugEventSchema,
 ])
 
 export const SessionReplayEventSchema = z.object({
@@ -237,52 +237,70 @@ export const SessionReplayEventSchema = z.object({
 
 export type BrowserReplayEvent = eventWithTime
 
-export type PageGotoAction = z.infer<typeof PageGotoActionSchema>
-export type PageReloadAction = z.infer<typeof PageReloadActionSchema>
-export type PageWaitForNavigationAction = z.infer<
-  typeof PageWaitForNavigationActionSchema
+export type PageGotoDebugEvent = z.infer<typeof PageGotoDebugEventSchema>
+export type PageReloadDebugEvent = z.infer<typeof PageReloadDebugEventSchema>
+export type PageWaitForNavigationDebugEvent = z.infer<
+  typeof PageWaitForNavigationDebugEventSchema
 >
-export type PageWaitForTimeoutAction = z.infer<
-  typeof PageWaitForTimeoutActionSchema
+export type PageWaitForTimeoutDebugEvent = z.infer<
+  typeof PageWaitForTimeoutDebugEventSchema
 >
-export type GenericPageAction = z.infer<typeof GenericPageActionSchema>
+export type GenericPageDebugEvent = z.infer<typeof GenericPageDebugEventSchema>
 
-export type LocatorCheckAction = z.infer<typeof LocatorCheckActionSchema>
-export type LocatorClearAction = z.infer<typeof LocatorClearActionSchema>
-export type LocatorClickAction = z.infer<typeof LocatorClickActionSchema>
-
-export type LocatorClickButton = NonNullable<
-  NonNullable<LocatorClickAction['options']>['button']
+export type LocatorCheckDebugEvent = z.infer<
+  typeof LocatorCheckDebugEventSchema
+>
+export type LocatorClearDebugEvent = z.infer<
+  typeof LocatorClearDebugEventSchema
+>
+export type LocatorClickDebugEvent = z.infer<
+  typeof LocatorClickDebugEventSchema
 >
 
-export type LocatorClickModifier = NonNullable<
-  NonNullable<LocatorClickAction['options']>['modifiers']
+export type LocatorClickDebugEventButton = NonNullable<
+  NonNullable<LocatorClickDebugEvent['options']>['button']
+>
+
+export type LocatorClickDebugEventModifier = NonNullable<
+  NonNullable<LocatorClickDebugEvent['options']>['modifiers']
 >[number]
-export type LocatorDoubleClickAction = z.infer<
-  typeof LocatorDoubleClickActionSchema
+export type LocatorDoubleClickDebugEvent = z.infer<
+  typeof LocatorDoubleClickDebugEventSchema
 >
-export type LocatorFillAction = z.infer<typeof LocatorFillActionSchema>
-export type LocatorFocusAction = z.infer<typeof LocatorFocusActionSchema>
-export type LocatorHoverAction = z.infer<typeof LocatorHoverActionSchema>
-export type LocatorPressAction = z.infer<typeof LocatorPressActionSchema>
-export type LocatorSelectOptionAction = z.infer<
-  typeof LocatorSelectOptionActionSchema
+export type LocatorFillDebugEvent = z.infer<typeof LocatorFillDebugEventSchema>
+export type LocatorFocusDebugEvent = z.infer<
+  typeof LocatorFocusDebugEventSchema
 >
-export type LocatorSetCheckedAction = z.infer<
-  typeof LocatorSetCheckedActionSchema
+export type LocatorHoverDebugEvent = z.infer<
+  typeof LocatorHoverDebugEventSchema
 >
-export type LocatorTapAction = z.infer<typeof LocatorTapActionSchema>
-export type LocatorTypeAction = z.infer<typeof LocatorTypeActionSchema>
-export type LocatorUncheckAction = z.infer<typeof LocatorUncheckActionSchema>
-export type LocatorWaitForAction = z.infer<typeof LocatorWaitForActionSchema>
+export type LocatorPressDebugEvent = z.infer<
+  typeof LocatorPressDebugEventSchema
+>
+export type LocatorSelectOptionDebugEvent = z.infer<
+  typeof LocatorSelectOptionDebugEventSchema
+>
+export type LocatorSetCheckedDebugEvent = z.infer<
+  typeof LocatorSetCheckedDebugEventSchema
+>
+export type LocatorTapDebugEvent = z.infer<typeof LocatorTapDebugEventSchema>
+export type LocatorTypeDebugEvent = z.infer<typeof LocatorTypeDebugEventSchema>
+export type LocatorUncheckDebugEvent = z.infer<
+  typeof LocatorUncheckDebugEventSchema
+>
+export type LocatorWaitForDebugEvent = z.infer<
+  typeof LocatorWaitForDebugEventSchema
+>
 
-export type GenericLocatorAction = z.infer<typeof GenericLocatorActionSchema>
-
-export type GenericBrowserContextAction = z.infer<
-  typeof GenericBrowserContextActionSchema
+export type GenericLocatorDebugEvent = z.infer<
+  typeof GenericLocatorDebugEventSchema
 >
 
-export type AnyBrowserAction = z.infer<typeof AnyBrowserActionSchema>
+export type GenericBrowserContextDebugEvent = z.infer<
+  typeof GenericBrowserContextDebugEventSchema
+>
+
+export type AnyBrowserDebugEvent = z.infer<typeof AnyBrowserDebugEventSchema>
 
 // =============================================================================
 // Serialized Value Schemas
@@ -902,7 +920,7 @@ export type AssertionError =
 const ActionEventSchemaBase = z.object({
   type: z.literal('action'),
   eventId: z.string(),
-  action: AnyBrowserActionSchema,
+  action: AnyBrowserDebugEventSchema,
 })
 
 export const ActionBeginEventSchema = ActionEventSchemaBase.extend({

@@ -1,5 +1,6 @@
 import { keyBy } from 'lodash-es'
 
+import { BrowserTestOptions } from '@/schemas/browserTest'
 import {
   Assertion,
   BrowserEvent,
@@ -461,7 +462,6 @@ function buildBrowserNodeGraphFromActions(
         }
       case 'page.waitForNavigation':
       case 'page.close':
-      case 'page.*':
       case 'locator.dblclick':
       case 'locator.type':
       case 'locator.hover':
@@ -469,8 +469,6 @@ function buildBrowserNodeGraphFromActions(
       case 'locator.tap':
       case 'locator.press':
       case 'locator.focus':
-      case 'locator.*':
-      case 'browserContext.*':
         throw new Error('Not implemented.')
       default:
         return exhaustive(action)
@@ -497,13 +495,16 @@ export function convertEventsToTest({ browserEvents }: Recording): Test {
 
 export function convertActionsToTest({
   browserActions,
+  options,
 }: {
   browserActions: BrowserActionInstance[]
+  options?: BrowserTestOptions
 }): Test {
   return {
     defaultScenario: {
       nodes: buildBrowserNodeGraphFromActions(browserActions),
     },
     scenarios: {},
+    options,
   }
 }

@@ -1,5 +1,6 @@
 import { css } from '@emotion/react'
 import {
+  Box,
   Button,
   DropdownMenu,
   Flex,
@@ -7,6 +8,7 @@ import {
   ScrollArea,
 } from '@radix-ui/themes'
 import { CirclePlusIcon } from 'lucide-react'
+import { ReactNode } from 'react'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
 
@@ -31,6 +33,7 @@ interface EditableBrowserActionListProps {
   onRemoveAction: (actionId: string) => void
   onChangeAction: (action: BrowserActionInstance) => void
   onReorderActions: (activeId: string, overId: string) => void
+  optionsButton?: ReactNode
 }
 
 export function EditableBrowserActionList({
@@ -39,6 +42,7 @@ export function EditableBrowserActionList({
   onRemoveAction,
   onChangeAction,
   onReorderActions,
+  optionsButton,
 }: EditableBrowserActionListProps) {
   return (
     <Flex direction="column" height="100%">
@@ -55,8 +59,17 @@ export function EditableBrowserActionList({
           box-sizing: border-box;
         `}
       >
-        Browser actions ({actions.length})
+        Actions ({actions.length})
         <NewActionMenu onAddAction={onAddAction} />
+        {optionsButton && (
+          <Box
+            css={css`
+              margin-left: auto;
+            `}
+          >
+            {optionsButton}
+          </Box>
+        )}
       </Heading>
       <ScrollArea>
         {actions.length === 0 ? (

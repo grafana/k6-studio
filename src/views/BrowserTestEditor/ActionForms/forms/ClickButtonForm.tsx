@@ -1,6 +1,6 @@
 import { Select } from '@radix-ui/themes'
 
-import { LocatorClickButton } from '@/main/runner/schema'
+import { LocatorClickButton } from '@/schemas/browserTest'
 
 const BUTTON_OPTIONS: { value: LocatorClickButton; label: string }[] = [
   { value: 'left', label: 'Left' },

@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { HighlightLocatorProvider } from '@/components/HighlightLocatorProvider'
-import { LocatorClickAction } from '@/main/runner/schema'
+import { LocatorClickAction } from '@/schemas/browserTest'
 import { buildClickAction } from '@/test/factories/browserActions'
 
 import { WithEditorMetadata } from '../../types'
