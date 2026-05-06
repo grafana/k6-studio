@@ -144,6 +144,26 @@ export function createWaitForTimeoutAction(): ActionByMethod<'page.waitForTimeou
   }
 }
 
+export function createToBeCheckedAction(): ActionByMethod<'locator.toBeChecked'> {
+  return {
+    id: crypto.randomUUID(),
+    method: 'locator.toBeChecked',
+    checked: true,
+    locator: {
+      current: 'role',
+      values: {
+        role: {
+          type: 'role',
+          role: 'checkbox',
+          options: {
+            exact: false,
+          },
+        },
+      },
+    },
+  }
+}
+
 export function createWaitForAction(): ActionByMethod<'locator.waitFor'> {
   return {
     id: crypto.randomUUID(),

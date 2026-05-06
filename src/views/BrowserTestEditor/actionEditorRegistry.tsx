@@ -3,6 +3,7 @@ import {
   CircleQuestionMarkIcon,
   ClockIcon,
   EraserIcon,
+  EyeIcon,
   GlobeIcon,
   ListChecksIcon,
   MousePointerClickIcon,
@@ -22,6 +23,7 @@ import {
   GoToActionBody,
   PageReloadActionBody,
   SelectOptionActionBody,
+  ToBeCheckedActionBody,
   UncheckActionBody,
   WaitForActionBody,
   WaitForTimeoutActionBody,
@@ -94,6 +96,12 @@ const actionEditors: ActionEditorRegistry = {
     icon: <ListChecksIcon aria-hidden="true" />,
     render: ({ action, onChange }) => (
       <SelectOptionActionBody action={action} onChange={onChange} />
+    ),
+  },
+  'locator.toBeChecked': {
+    icon: <EyeIcon aria-hidden="true" />,
+    render: ({ action, onChange }) => (
+      <ToBeCheckedActionBody action={action} onChange={onChange} />
     ),
   },
   'page.goto': {
