@@ -1,7 +1,7 @@
-import { BrowserActionInstance } from './types'
+import { AnyBrowserAction } from '@/schemas/browserTest'
 
-type ActionByMethod<M extends BrowserActionInstance['method']> = Extract<
-  BrowserActionInstance,
+type ActionByMethod<M extends AnyBrowserAction['method']> = Extract<
+  AnyBrowserAction,
   { method: M }
 >
 

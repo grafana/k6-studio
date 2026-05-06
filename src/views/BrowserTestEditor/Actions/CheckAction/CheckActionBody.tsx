@@ -3,19 +3,16 @@ import { Grid } from '@radix-ui/themes'
 import { LocatorCheckAction } from '@/schemas/browserTest'
 
 import { LocatorForm } from '../../ActionForms/forms/LocatorForm'
-import { WithEditorMetadata } from '../../types'
 
 const CHECK_ROLES = ['checkbox', 'radio', 'switch']
 
 interface CheckActionBodyProps {
-  action: WithEditorMetadata<LocatorCheckAction>
-  onChange: (action: WithEditorMetadata<LocatorCheckAction>) => void
+  action: LocatorCheckAction
+  onChange: (action: LocatorCheckAction) => void
 }
 
 export function CheckActionBody({ action, onChange }: CheckActionBodyProps) {
-  const handleChangeLocator = (
-    locator: WithEditorMetadata<LocatorCheckAction>['locator']
-  ) => {
+  const handleChangeLocator = (locator: LocatorCheckAction['locator']) => {
     onChange({ ...action, locator })
   }
 

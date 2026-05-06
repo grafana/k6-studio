@@ -3,22 +3,19 @@ import { Grid } from '@radix-ui/themes'
 import { LocatorUncheckAction } from '@/schemas/browserTest'
 
 import { LocatorForm } from '../../ActionForms/forms/LocatorForm'
-import { WithEditorMetadata } from '../../types'
 
 const UNCHECK_ROLES = ['checkbox', 'radio', 'switch']
 
 interface UncheckActionBodyProps {
-  action: WithEditorMetadata<LocatorUncheckAction>
-  onChange: (action: WithEditorMetadata<LocatorUncheckAction>) => void
+  action: LocatorUncheckAction
+  onChange: (action: LocatorUncheckAction) => void
 }
 
 export function UncheckActionBody({
   action,
   onChange,
 }: UncheckActionBodyProps) {
-  const handleChangeLocator = (
-    locator: WithEditorMetadata<LocatorUncheckAction>['locator']
-  ) => {
+  const handleChangeLocator = (locator: LocatorUncheckAction['locator']) => {
     onChange({ ...action, locator })
   }
 

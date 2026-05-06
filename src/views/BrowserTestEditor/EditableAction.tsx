@@ -3,14 +3,15 @@ import { Flex, IconButton, Tooltip } from '@radix-ui/themes'
 import { Trash2Icon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
+import { AnyBrowserAction } from '@/schemas/browserTest'
+
 import { OptionsSummary } from './Actions/components/OptionsSummary'
 import { getActionEditorForAction } from './actionEditorRegistry'
-import { BrowserActionInstance } from './types'
 
 interface EditableActionProps {
-  action: BrowserActionInstance
+  action: AnyBrowserAction
   onRemove: (actionId: string) => void
-  onChange: (action: BrowserActionInstance) => void
+  onChange: (action: AnyBrowserAction) => void
   dragHandle?: ReactNode
 }
 

@@ -1,6 +1,7 @@
 import { keyBy } from 'lodash-es'
 
-import { BrowserTestOptions } from '@/schemas/browserTest'
+import { AnyBrowserAction, BrowserTestOptions } from '@/schemas/browserTest'
+import { LocatorOptions } from '@/schemas/locator'
 import {
   Assertion,
   BrowserEvent,
@@ -8,10 +9,6 @@ import {
 } from '@/schemas/recording'
 import { toClickButton, toClickModifiers } from '@/utils/clickOptions'
 import { exhaustive } from '@/utils/typescript'
-import {
-  BrowserActionInstance,
-  LocatorOptions,
-} from '@/views/BrowserTestEditor/types'
 
 import { isLocatorEqual, getElementLocator } from './selectors'
 import {
@@ -294,9 +291,7 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
   return nodes
 }
 
-function buildBrowserNodeGraphFromActions(
-  browserActions: BrowserActionInstance[]
-) {
+function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
   const nodes: TestNode[] = []
   let previousLocatorNode: LocatorNode | null = null
 
@@ -354,7 +349,7 @@ function buildBrowserNodeGraphFromActions(
     return toNodeRef(previousLocatorNode)
   }
 
-  function toNode(action: BrowserActionInstance): TestNode {
+  function toNode(action: AnyBrowserAction): TestNode {
     switch (action.method) {
       case 'page.goto':
         return {
@@ -497,7 +492,7 @@ export function convertActionsToTest({
   browserActions,
   options,
 }: {
-  browserActions: BrowserActionInstance[]
+  browserActions: AnyBrowserAction[]
   options?: BrowserTestOptions
 }): Test {
   return {

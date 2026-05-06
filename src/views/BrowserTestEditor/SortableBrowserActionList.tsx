@@ -24,9 +24,10 @@ import { css } from '@emotion/react'
 import { Flex } from '@radix-ui/themes'
 import { useState } from 'react'
 
+import { AnyBrowserAction } from '@/schemas/browserTest/v1/actions'
+
 import { EditableAction } from './EditableAction'
 import { EditableActionDragHandle } from './EditableActionDragHandle'
-import { BrowserActionInstance } from './types'
 
 enum Position {
   Before = 'before',
@@ -34,10 +35,10 @@ enum Position {
 }
 
 interface SortableBrowserActionListProps {
-  actions: BrowserActionInstance[]
+  actions: AnyBrowserAction[]
   onReorderActions: (activeId: string, overId: string) => void
   onRemoveAction: (actionId: string) => void
-  onChangeAction: (action: BrowserActionInstance) => void
+  onChangeAction: (action: AnyBrowserAction) => void
 }
 
 export function SortableBrowserActionList({
@@ -46,7 +47,7 @@ export function SortableBrowserActionList({
   onRemoveAction,
   onChangeAction,
 }: SortableBrowserActionListProps) {
-  const [active, setActive] = useState<BrowserActionInstance | null>(null)
+  const [active, setActive] = useState<AnyBrowserAction | null>(null)
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -106,9 +107,9 @@ export function SortableBrowserActionList({
 }
 
 interface SortableEditableActionProps {
-  action: BrowserActionInstance
+  action: AnyBrowserAction
   onRemove: (actionId: string) => void
-  onChange: (action: BrowserActionInstance) => void
+  onChange: (action: AnyBrowserAction) => void
 }
 
 function SortableEditableAction({

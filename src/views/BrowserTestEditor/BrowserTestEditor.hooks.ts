@@ -11,6 +11,7 @@ import {
   usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
 import {
+  AnyBrowserAction,
   BrowserTestFile,
   BrowserTestOptions,
   BrowserThreshold,
@@ -21,12 +22,6 @@ import { LoadProfileExecutorOptions, LoadZoneData } from '@/types/testOptions'
 import { getInitialStages } from '@/utils/generator'
 import { stripUndefined } from '@/utils/object'
 import { queryClient } from '@/utils/query'
-
-import {
-  fromBrowserActionInstance,
-  toBrowserActionInstance,
-} from './actionAdapters'
-import { BrowserActionInstance } from './types'
 
 export function useBrowserTest(filePath: string) {
   return useQuery<BrowserTestFile>({
@@ -88,7 +83,7 @@ export function useBrowserTestEditorLayout() {
 }
 
 export function useBrowserScriptPreview(
-  browserActions: BrowserActionInstance[],
+  browserActions: AnyBrowserAction[],
   options?: BrowserTestOptions
 ) {
   const [preview, setPreview] = useState('')
@@ -97,7 +92,7 @@ export function useBrowserScriptPreview(
   const generatePreview = useCallback(
     debounce(
       async (
-        actions: BrowserActionInstance[],
+        actions: AnyBrowserAction[],
         currentOptions: BrowserTestOptions | undefined
       ) => {
         try {
@@ -129,13 +124,13 @@ export function useBrowserScriptPreview(
 }
 
 export function useValidatorScript(
-  browserActions: BrowserActionInstance[],
+  browserActions: AnyBrowserAction[],
   options?: BrowserTestOptions
 ) {
   // We add a timeout to the end of the script to give the page time to load the page, so that
   // there's something that the user can interact with. If we don't do this, k6 will stop before
   // any DOM mutations have been recorded.
-  const validatorActions: BrowserActionInstance[] = useMemo(
+  const validatorActions: AnyBrowserAction[] = useMemo(
     () => [
       ...browserActions,
       {
@@ -170,9 +165,8 @@ export function useBrowserTestState(
   const { actions = [], options = defaultBrowserTestOptions } =
     browserTestFile ?? {}
 
-  const [actionState, setActionState] = useState<BrowserActionInstance[]>(
-    actions.map(toBrowserActionInstance)
-  )
+  const [actionState, setActionState] = useState(actions)
+
   const [optionsState, setOptionsState] = useState<BrowserTestOptions>(() => ({
     ...options,
     loadProfile: withSeededStages(options.loadProfile),
@@ -192,11 +186,11 @@ export function useBrowserTestState(
     )
   }, [browserTestFile])
 
-  const addAction = (action: BrowserActionInstance) => {
+  const addAction = (action: AnyBrowserAction) => {
     setActionState([...actionState, action])
   }
 
-  const updateAction = (updatedAction: BrowserActionInstance) => {
+  const updateAction = (updatedAction: AnyBrowserAction) => {
     setActionState(
       actionState.map((action) =>
         action.id === updatedAction.id ? updatedAction : action
@@ -246,11 +240,6 @@ export function useBrowserTestState(
     []
   )
 
-  const plainActions = useMemo(
-    () => actionState.map(fromBrowserActionInstance),
-    [actionState]
-  )
-
   const isDirty = useMemo(() => {
     // Baseline widens stages to match the in-memory state so seeded defaults
     // aren't seen as edits. Compare strips undefined keys (RHF emits cleared
@@ -261,14 +250,13 @@ export function useBrowserTestState(
       loadProfile: withSeededStages(options.loadProfile),
     }
     return (
-      !isEqual(stripUndefined(plainActions), stripUndefined(actions)) ||
+      !isEqual(stripUndefined(actionState), stripUndefined(actions)) ||
       !isEqual(stripUndefined(optionsState), stripUndefined(baseline))
     )
-  }, [plainActions, actions, optionsState, options])
+  }, [actions, actionState, optionsState, options])
 
   return {
     actions: actionState,
-    plainActions,
     addAction,
     updateAction,
     removeAction,
