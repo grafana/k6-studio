@@ -4,13 +4,13 @@ import path from 'path'
 
 import { K6_GENERATOR_FILE_EXTENSION } from '@/constants/files'
 import { GENERATORS_PATH } from '@/constants/workspace'
-import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { GeneratorFileData } from '@/types/generator'
 import { createFileWithUniqueName } from '@/utils/fileSystem'
 import { createNewGeneratorFile } from '@/utils/generator'
 
+import { deserializeGenerator, serializeGenerator } from './serialization'
 import { GeneratorHandler } from './types'
 
 export function initialize() {
@@ -39,7 +39,10 @@ export function initialize() {
     async (_, generator: GeneratorFileData, filePath: string) => {
       console.log(`${GeneratorHandler.Save} event received`)
 
-      await writeFile(filePath, JSON.stringify(generator, null, 2))
+      await writeFile(
+        filePath,
+        JSON.stringify(serializeGenerator(generator), null, 2)
+      )
 
       trackGeneratorUpdated(generator)
     }
@@ -55,7 +58,7 @@ export function initialize() {
         flag: 'r',
       })
 
-      return GeneratorFileDataSchema.parse(JSON.parse(data))
+      return deserializeGenerator(data)
     }
   )
 }
