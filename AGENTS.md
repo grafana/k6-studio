@@ -3,17 +3,17 @@
 ## Commands
 
 ```bash
-npm start              # start dev server (electron-forge)
-npm run lint           # eslint
-npm run typecheck      # tsc --noEmit
-npm test               # vitest run
-npm run test:watch     # vitest watch
-npm run format         # prettier
+pnpm start             # start dev server (electron-forge)
+pnpm lint              # eslint
+pnpm typecheck         # tsc --noEmit
+pnpm test              # vitest run
+pnpm test:watch        # vitest watch
+pnpm format            # prettier
 ```
 
 ## Inspecting the Running App
 
-`npm start` enables CDP remote debugging on port 9223 (port 9222 is reserved for the recorder's CDP browser).
+`pnpm start` enables CDP remote debugging on port 9223 (port 9222 is reserved for the recorder's CDP browser).
 
 The project has a `chrome-devtools` MCP server configured in `.mcp.json` that connects to port 9223. When the app is running, use the MCP tools (`take_snapshot`, `click`, `fill`, `navigate_page`, `take_screenshot`, `evaluate_script`, etc.) to interact with the app. Prefer `take_snapshot` over `take_screenshot` for reading UI state.
 
