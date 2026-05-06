@@ -70,7 +70,7 @@ export function File({ file, isSelected }: FileProps) {
           }
 
           &:hover {
-            background-color: var(--gray-4);
+            background-color: var(--gray-a2);
           }
         `}
       >
