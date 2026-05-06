@@ -1,22 +1,27 @@
 import { css } from '@emotion/react'
+import * as Label from '@radix-ui/react-label'
 import { Flex, Text, TextField, Tooltip } from '@radix-ui/themes'
 import { InfoIcon } from 'lucide-react'
+import { useId } from 'react'
 
-interface PostTestTimeoutControlProps {
+interface ShutdownDelayControlProps {
   timeout: number
   onChange: (timeout: number) => void
 }
 
-export function PostTestTimeoutControl({
+export function ShutdownDelayControl({
   timeout,
   onChange,
-}: PostTestTimeoutControlProps) {
+}: ShutdownDelayControlProps) {
+  const id = useId()
+
   return (
     <Flex align="center" gap="2">
-      <Text size="1" weight="medium">
-        Browser shutdown delay
+      <Text asChild size="1">
+        <Label.Root htmlFor={id}>Browser shutdown delay</Label.Root>
       </Text>
       <TextField.Root
+        id={id}
         size="1"
         type="number"
         min={0}
@@ -44,12 +49,8 @@ export function PostTestTimeoutControl({
       <Tooltip
         content={
           <>
-            <p>
-              The amount of time to wait after the last browser action before
-              closing the browser. Ensures the browser has enough time to render
-              content for the preview.
-            </p>
-            <p>This timeout will not be part of the generated script.</p>
+            Ensures the browser has enough time to render content for the
+            preview. This timeout will not be part of the generated script.
           </>
         }
         maxWidth="260px"

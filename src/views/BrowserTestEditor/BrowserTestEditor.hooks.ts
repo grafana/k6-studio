@@ -17,11 +17,14 @@ import {
   defaultBrowserTestOptions,
 } from '@/schemas/browserTest'
 import { useToast } from '@/store/ui/useToast'
+import { StudioFile } from '@/types'
 import { LoadProfileExecutorOptions, LoadZoneData } from '@/types/testOptions'
 import { getInitialStages } from '@/utils/generator'
 import { stripUndefined } from '@/utils/object'
 import { basename } from '@/utils/path'
 import { queryClient } from '@/utils/query'
+
+import { useDebugSession } from '../Validator/Validator.hooks'
 
 import {
   fromBrowserActionInstance,
@@ -129,39 +132,45 @@ export function useBrowserScriptPreview(
   return preview
 }
 
-export function useValidatorScript(
-  browserActions: BrowserActionInstance[],
+interface UseBrowserTestValidatorOptions {
+  file: StudioFile
+  actions: BrowserActionInstance[]
   options?: BrowserTestOptions
-) {
-  const [timeoutAction, setTimeoutAction] = useState<
-    Extract<BrowserActionInstance, { method: 'page.waitForTimeout' }>
-  >({
-    id: '_validator_timeout_',
-    method: 'page.waitForTimeout',
-    timeout: 3000,
-  })
+}
+
+export function useBrowserTestValidator({
+  file,
+  actions,
+  options,
+}: UseBrowserTestValidatorOptions) {
+  const [shutdownDelay, setShutdownDelay] = useState(3000)
 
   // We add a timeout to the end of the script to give the page time to load the page, so that
   // there's something that the user can interact with. If we don't do this, k6 will stop before
   // any DOM mutations have been recorded.
-  const validatorActions: BrowserActionInstance[] = useMemo(
-    () => [...browserActions, timeoutAction],
-    [browserActions, timeoutAction]
+  const actionsWithTimeout: BrowserActionInstance[] = useMemo(
+    () => [
+      ...actions,
+      {
+        id: '_validator_timeout_',
+        method: 'page.waitForTimeout',
+        timeout: shutdownDelay,
+      },
+    ],
+    [actions, shutdownDelay]
   )
 
-  const setTimeoutActionCallback = useCallback((timeout: number) => {
-    setTimeoutAction((prev) => ({
-      ...prev,
-      timeout,
-    }))
-  }, [])
-
-  const validatorScript = useBrowserScriptPreview(validatorActions, options)
+  const script = useBrowserScriptPreview(actionsWithTimeout, options)
+  const session = useDebugSession({
+    type: 'raw',
+    content: script,
+    name: file.fileName,
+  })
 
   return {
-    validatorScript,
-    timeoutAction,
-    setTimeoutAction: setTimeoutActionCallback,
+    ...session,
+    shutdownDelay,
+    setShutdownDelay,
   }
 }
 
