@@ -1,5 +1,6 @@
 import { css } from '@emotion/react'
 import { Text, Flex } from '@radix-ui/themes'
+import { ReactNode } from 'react'
 
 import { BrowserDebuggerEvent } from '@/main/runner/schema'
 
@@ -19,6 +20,7 @@ interface PlaybackControlsProps {
   streaming: boolean
   time: Time
   actions: BrowserDebuggerEvent[]
+  controls?: ReactNode
   onPlay: () => void
   onPause: () => void
   onSeek: ({ time, commit }: OnSeekEvent) => void
@@ -30,6 +32,7 @@ export function PlaybackControls({
   streaming,
   time,
   actions = [],
+  controls,
   onPlay,
   onPause,
   onSeek,
@@ -80,6 +83,7 @@ export function PlaybackControls({
           {formatTime(time.current)} / {formatTime(time.total)}
         </Flex>
       </Text>
+      {controls}
     </Flex>
   )
 }
