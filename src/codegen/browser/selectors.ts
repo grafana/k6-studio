@@ -1,8 +1,17 @@
-import { ElementLocator } from '@/schemas/locator'
+import {
+  AltLocator,
+  CssLocator,
+  ElementLocator,
+  LabelLocator,
+  PlaceholderLocator,
+  RoleLocator,
+  TestIdLocator,
+  TitleLocator,
+} from '@/schemas/locator'
 import { ElementSelector } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 
-function getRoleLocator(selectors: ElementSelector): ElementLocator | null {
+export function getRoleLocator(selectors: ElementSelector): RoleLocator | null {
   if (selectors.role === undefined) {
     return null
   }
@@ -16,7 +25,9 @@ function getRoleLocator(selectors: ElementSelector): ElementLocator | null {
   }
 }
 
-function getAltTextLocator(selectors: ElementSelector): ElementLocator | null {
+export function getAltTextLocator(
+  selectors: ElementSelector
+): AltLocator | null {
   if (selectors.alt === undefined) {
     return null
   }
@@ -28,7 +39,9 @@ function getAltTextLocator(selectors: ElementSelector): ElementLocator | null {
   }
 }
 
-function getLabelLocator(selectors: ElementSelector): ElementLocator | null {
+export function getLabelLocator(
+  selectors: ElementSelector
+): LabelLocator | null {
   if (selectors.label === undefined) {
     return null
   }
@@ -40,9 +53,9 @@ function getLabelLocator(selectors: ElementSelector): ElementLocator | null {
   }
 }
 
-function getPlaceholderLocator(
+export function getPlaceholderLocator(
   selectors: ElementSelector
-): ElementLocator | null {
+): PlaceholderLocator | null {
   if (selectors.placeholder === undefined) {
     return null
   }
@@ -54,7 +67,9 @@ function getPlaceholderLocator(
   }
 }
 
-function getTitleLocator(selectors: ElementSelector): ElementLocator | null {
+export function getTitleLocator(
+  selectors: ElementSelector
+): TitleLocator | null {
   if (selectors.title === undefined) {
     return null
   }
@@ -66,7 +81,9 @@ function getTitleLocator(selectors: ElementSelector): ElementLocator | null {
   }
 }
 
-function getTestIdLocator(selectors: ElementSelector): ElementLocator | null {
+export function getTestIdLocator(
+  selectors: ElementSelector
+): TestIdLocator | null {
   if (selectors.testId === undefined || selectors.testId.trim() === '') {
     return null
   }
@@ -77,7 +94,7 @@ function getTestIdLocator(selectors: ElementSelector): ElementLocator | null {
   }
 }
 
-function getCssLocator(selectors: ElementSelector): ElementLocator {
+export function getCssLocator(selectors: ElementSelector): CssLocator {
   return {
     type: 'css',
     selector: selectors.css,

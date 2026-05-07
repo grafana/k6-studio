@@ -2,9 +2,9 @@ import { nanoid } from 'nanoid'
 
 import { Bounds } from '@/components/Browser/types'
 import { getElementBounds } from '@/components/Browser/utils'
-import { getEventTarget } from '@/recorder/browser/target'
-import { ElementRole, getElementRoles } from '@/recorder/browser/utils/aria'
 import { BrowserEventTarget } from '@/schemas/recording'
+import { ElementRole, getElementRoles } from '@/utils/dom/aria'
+import { getElementDetails } from '@/utils/dom/selectors'
 
 export interface TrackedElement {
   id: string
@@ -20,7 +20,7 @@ export function toTrackedElement(element: Element): TrackedElement {
   return {
     id: nanoid(),
     roles: [...roles],
-    target: getEventTarget(element),
+    target: getElementDetails(element),
     element: element,
     bounds: getElementBounds(element),
   }

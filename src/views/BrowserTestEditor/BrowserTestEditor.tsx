@@ -1,5 +1,6 @@
 import { css } from '@emotion/react'
 import { Flex, Tabs, Text } from '@radix-ui/themes'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import LogoGradient from '@/assets/logo-gradient.svg'
@@ -11,6 +12,7 @@ import {
 import { View } from '@/components/Layout/View'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { SessionPlayer } from '@/components/SessionPlayer/SessionPlayer'
+import { PlayerMouseEvent } from '@/components/SessionPlayer/SessionPlayer.hooks'
 import {
   LogsSection,
   useConsoleFilter,
@@ -36,6 +38,9 @@ import {
 import { BrowserTestEditorControls } from './BrowserTestEditorControls'
 import { BrowserTestOptionsButton } from './BrowserTestOptionsButton'
 import { EditableBrowserActionList } from './EditableBrowserActionList'
+import { ReplayContextMenu } from './ReplayContextMenu'
+import { createContextMenuState } from './ReplayContextMenu.utils'
+import { ContextMenuState } from './types'
 
 interface BrowserTestEditorViewProps {
   file: StudioFile
@@ -50,6 +55,8 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
 
   const consoleFilter = useConsoleFilter()
   const highlightedLocator = useHighlightedLocator()
+
+  const [state, setState] = useState<ContextMenuState | null>(null)
 
   const test = useBrowserTestState(data)
 
@@ -74,6 +81,16 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
     }
 
     void saveBrowserTest(browserTestData)
+  }
+
+  const handleClick = (event: PlayerMouseEvent) => {
+    if (state !== null) {
+      setState(null)
+
+      return
+    }
+
+    setState(createContextMenuState(event))
   }
 
   return (
@@ -136,6 +153,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                         >
                           <SessionPlayer
                             key={session.id}
+                            interactive={session.state !== 'running'}
                             initialPage={{
                               title: 'k6 Studio',
                               href: '',
@@ -164,8 +182,24 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                               </Flex>
                             }
                             session={session}
-                            highlightedLocator={highlightedLocator}
+                            highlightedElement={
+                              state?.type === 'context-menu'
+                                ? state.target
+                                : highlightedLocator
+                            }
+                            onClick={handleClick}
                           />
+                          {state !== null && (
+                            <ReplayContextMenu
+                              key={state.key}
+                              target={state.target}
+                              position={state.position}
+                              aria={state.aria}
+                              locator={state.locator}
+                              onClose={() => setState(null)}
+                              onAddAction={test.addAction}
+                            />
+                          )}
                         </PersistentTabs.Content>
                         <PersistentTabs.Content
                           css={css`
