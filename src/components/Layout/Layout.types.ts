@@ -1,1 +1,1 @@
-export type SidebarTab = 'record' | 'build' | 'validate'
+export type SidebarTab = 'record' | 'build' | 'debug'

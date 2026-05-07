@@ -5,8 +5,8 @@ import { exhaustive } from '@/utils/typescript'
 import { SidebarTab } from '../Layout.types'
 
 import { BuildTab } from './BuildTab'
+import { DebugTab } from './DebugTab'
 import { RecordTab } from './RecordTab'
-import { RunTab } from './RunTab'
 
 interface SidebarProps {
   activeTab: SidebarTab
@@ -45,8 +45,8 @@ function SidebarContent({
       return <RecordTab onCollapseSidebar={onCollapseSidebar} />
     case 'build':
       return <BuildTab onCollapseSidebar={onCollapseSidebar} />
-    case 'validate':
-      return <RunTab onCollapseSidebar={onCollapseSidebar} />
+    case 'debug':
+      return <DebugTab onCollapseSidebar={onCollapseSidebar} />
     default:
       return exhaustive(activeTab)
   }

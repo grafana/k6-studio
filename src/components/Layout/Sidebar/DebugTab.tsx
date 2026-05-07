@@ -8,11 +8,11 @@ import { useFiles } from './Sidebar.hooks'
 import { SidebarFileList } from './SidebarFileList'
 import { SidebarHeader } from './SidebarHeader'
 
-interface RunTabProps {
+interface DebugTabProps {
   onCollapseSidebar: () => void
 }
 
-export function RunTab({ onCollapseSidebar }: RunTabProps) {
+export function DebugTab({ onCollapseSidebar }: DebugTabProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const { scripts, isEmpty } = useFiles(searchTerm)
   const handleOpenScript = useOpenExternalScript()

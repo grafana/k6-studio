@@ -69,8 +69,8 @@ export function ActivityBar({ activeTab, onTabChange }: ActivityBarProps) {
         <VerticalTabButton
           icon={<BugPlay />}
           tooltip="Debug"
-          active={activeTab === 'validate'}
-          onClick={() => onTabChange('validate')}
+          active={activeTab === 'debug'}
+          onClick={() => onTabChange('debug')}
         />
       </Flex>
 
