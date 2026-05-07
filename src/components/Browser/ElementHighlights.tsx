@@ -31,18 +31,15 @@ const ElementOutline = forwardRef<HTMLDivElement, ElementHighlightProps>(
 )
 
 interface ElementHighlightsProps {
-  element: HTMLElement | null
-  locator: ElementLocator | null
+  root: HTMLElement | null
+  target: ElementLocator | Element | null
 }
 
 /**
  * Highlights elements when hovering over selectors inside k6 Studio.
  */
-export function ElementHighlights({
-  element,
-  locator,
-}: ElementHighlightsProps) {
-  const highlights = useHighlightedElements(element, locator)
+export function ElementHighlights({ root, target }: ElementHighlightsProps) {
+  const highlights = useHighlightedElements(root, target)
 
   if (highlights === null) {
     return null

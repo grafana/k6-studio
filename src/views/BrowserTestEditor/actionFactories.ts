@@ -1,15 +1,21 @@
-import { BrowserActionInstance } from './types'
+import { BrowserActionInstance, LocatorOptions } from './types'
+
+interface LocatorFactoryOptions {
+  locator?: LocatorOptions
+}
 
 type ActionByMethod<M extends BrowserActionInstance['method']> = Extract<
   BrowserActionInstance,
   { method: M }
 >
 
-export function createCheckAction(): ActionByMethod<'locator.check'> {
+export function createCheckAction({
+  locator,
+}: LocatorFactoryOptions = {}): ActionByMethod<'locator.check'> {
   return {
     id: crypto.randomUUID(),
     method: 'locator.check',
-    locator: {
+    locator: locator ?? {
       current: 'role',
       values: {
         role: {
@@ -24,11 +30,13 @@ export function createCheckAction(): ActionByMethod<'locator.check'> {
   }
 }
 
-export function createUncheckAction(): ActionByMethod<'locator.uncheck'> {
+export function createUncheckAction({
+  locator,
+}: LocatorFactoryOptions = {}): ActionByMethod<'locator.uncheck'> {
   return {
     id: crypto.randomUUID(),
     method: 'locator.uncheck',
-    locator: {
+    locator: locator ?? {
       current: 'role',
       values: {
         role: {
@@ -43,11 +51,13 @@ export function createUncheckAction(): ActionByMethod<'locator.uncheck'> {
   }
 }
 
-export function createClearAction(): ActionByMethod<'locator.clear'> {
+export function createClearAction({
+  locator,
+}: LocatorFactoryOptions = {}): ActionByMethod<'locator.clear'> {
   return {
     id: crypto.randomUUID(),
     method: 'locator.clear',
-    locator: {
+    locator: locator ?? {
       current: 'role',
       values: {
         role: {
@@ -62,11 +72,13 @@ export function createClearAction(): ActionByMethod<'locator.clear'> {
   }
 }
 
-export function createClickAction(): ActionByMethod<'locator.click'> {
+export function createClickAction({
+  locator,
+}: LocatorFactoryOptions = {}): ActionByMethod<'locator.click'> {
   return {
     id: crypto.randomUUID(),
     method: 'locator.click',
-    locator: {
+    locator: locator ?? {
       current: 'role',
       values: {
         role: {
@@ -81,12 +93,14 @@ export function createClickAction(): ActionByMethod<'locator.click'> {
   }
 }
 
-export function createFillAction(): ActionByMethod<'locator.fill'> {
+export function createFillAction({
+  locator,
+}: LocatorFactoryOptions = {}): ActionByMethod<'locator.fill'> {
   return {
     id: crypto.randomUUID(),
     method: 'locator.fill',
     value: '',
-    locator: {
+    locator: locator ?? {
       current: 'role',
       values: {
         role: {
@@ -101,17 +115,62 @@ export function createFillAction(): ActionByMethod<'locator.fill'> {
   }
 }
 
-export function createSelectOptionAction(): ActionByMethod<'locator.selectOption'> {
+export function createSelectOptionAction({
+  locator,
+}: LocatorFactoryOptions = {}): ActionByMethod<'locator.selectOption'> {
   return {
     id: crypto.randomUUID(),
     method: 'locator.selectOption',
     values: [{ value: '' }],
-    locator: {
+    locator: locator ?? {
       current: 'role',
       values: {
         role: {
           type: 'role',
           role: 'combobox',
+          options: {
+            exact: false,
+          },
+        },
+      },
+    },
+  }
+}
+
+export function createWaitForAction({
+  locator,
+}: LocatorFactoryOptions = {}): ActionByMethod<'locator.waitFor'> {
+  return {
+    id: crypto.randomUUID(),
+    method: 'locator.waitFor',
+    locator: locator ?? {
+      current: 'role',
+      values: {
+        role: {
+          type: 'role',
+          role: '',
+          options: {
+            exact: false,
+          },
+        },
+      },
+    },
+  }
+}
+
+export function createToBeCheckedAction({
+  locator,
+}: LocatorFactoryOptions = {}): ActionByMethod<'locator.toBeChecked'> {
+  return {
+    id: crypto.randomUUID(),
+    method: 'locator.toBeChecked',
+    checked: true,
+    locator: locator ?? {
+      current: 'role',
+      values: {
+        role: {
+          type: 'role',
+          role: 'checkbox',
           options: {
             exact: false,
           },
@@ -141,24 +200,5 @@ export function createWaitForTimeoutAction(): ActionByMethod<'page.waitForTimeou
     id: crypto.randomUUID(),
     method: 'page.waitForTimeout',
     timeout: 1000,
-  }
-}
-
-export function createWaitForAction(): ActionByMethod<'locator.waitFor'> {
-  return {
-    id: crypto.randomUUID(),
-    method: 'locator.waitFor',
-    locator: {
-      current: 'role',
-      values: {
-        role: {
-          type: 'role',
-          role: '',
-          options: {
-            exact: false,
-          },
-        },
-      },
-    },
   }
 }

@@ -21,6 +21,7 @@ import { useImportDataFile } from '@/hooks/useImportDataFile'
 import { useGeneratorStore } from '@/store/generator'
 import { useStudioUIStore } from '@/store/ui'
 import { DataFile } from '@/types/testData'
+import * as path from '@/utils/path'
 
 export function DataFiles() {
   const selectedFiles = useGeneratorStore((store) => store.files)
@@ -108,7 +109,7 @@ function DataFileRow({ file, onRemove }: DataFileRowProps) {
               />
             </Tooltip>
           )}
-          {file.name}
+          {path.basename(file.name)}
         </Flex>
       </Table.Cell>
       <Table.Cell>Unique item per iteration</Table.Cell>
@@ -136,7 +137,7 @@ function AddDataFileDropdown() {
   const selectedFiles = useGeneratorStore((store) => store.files)
 
   const options = [...availableFiles.values()].filter(
-    (file) => !selectedFiles.find((f) => f.name === file.fileName)
+    (file) => !selectedFiles.find((f) => f.name === file.path)
   )
 
   const handleAdd = (fileName: string) => {
@@ -166,7 +167,7 @@ function AddDataFileDropdown() {
         {options.map((file) => (
           <DropdownMenu.Item
             key={file.fileName}
-            onClick={() => handleAdd(file.fileName)}
+            onClick={() => handleAdd(file.path)}
           >
             {file.fileName}
           </DropdownMenu.Item>

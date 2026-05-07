@@ -1,5 +1,6 @@
 import { css } from '@emotion/react'
 import { Flex, Tabs } from '@radix-ui/themes'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
@@ -29,6 +30,7 @@ import { BrowserTestEditorControls } from './BrowserTestEditorControls'
 import { BrowserTestOptionsButton } from './BrowserTestOptionsButton'
 import { BrowserTestPreview } from './BrowserTestPreview'
 import { EditableBrowserActionList } from './EditableBrowserActionList'
+import { ContextMenuState } from './types'
 
 interface BrowserTestEditorViewProps {
   file: StudioFile
@@ -42,6 +44,8 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
   const { mutateAsync: saveBrowserTest } = useSaveBrowserTest(file.path)
 
   const consoleFilter = useConsoleFilter()
+
+  const [state, setState] = useState<ContextMenuState | null>(null)
 
   const test = useBrowserTestState(data)
 
@@ -115,9 +119,12 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                 >
                   <Panel id="main" minSize={200}>
                     <BrowserTestPreview
+                      state={state}
                       session={session}
                       previewScript={previewScript}
                       shutdownDelay={shutdownDelay}
+                      onStateChange={setState}
+                      onAddAction={test.addAction}
                       onShutdownDelayChange={setShutdownDelay}
                     />
                   </Panel>
