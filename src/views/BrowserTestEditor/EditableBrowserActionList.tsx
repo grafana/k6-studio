@@ -23,6 +23,7 @@ import {
   createPageReloadAction,
   createSelectOptionAction,
   createToBeCheckedAction,
+  createToBeVisibleAction,
   createUncheckAction,
   createWaitForAction,
   createWaitForTimeoutAction,
@@ -127,6 +128,11 @@ function NewActionMenu({ onAddAction }: NewActionMenuProps) {
           onClick={() => onAddAction(createToBeCheckedAction())}
         >
           Expect to be checked
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => onAddAction(createToBeVisibleAction())}
+        >
+          Expect to be visible
         </DropdownMenu.Item>
         <DropdownMenu.Separator />
         <DropdownMenu.Item onClick={() => onAddAction(createWaitForAction())}>
