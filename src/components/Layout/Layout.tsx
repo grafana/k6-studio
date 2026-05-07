@@ -69,15 +69,6 @@ export function Layout() {
 
   return (
     <Flex height="100dvh">
-      <Box
-        flexShrink="0"
-        css={{
-          width: '64px',
-          borderRight: '1px solid var(--gray-a5)',
-        }}
-      >
-        <ActivityBar activeTab={activeTab} onTabChange={handleTabChange} />
-      </Box>
       <Group
         {...layout}
         id="sidebar-layout"
@@ -85,6 +76,15 @@ export function Layout() {
           --focus-border: var(--accent-9);
         `}
       >
+        <Box
+          flexShrink="0"
+          css={{
+            width: '64px',
+          }}
+        >
+          <ActivityBar activeTab={activeTab} onTabChange={handleTabChange} />
+        </Box>
+        <Separator />
         <Panel
           panelRef={sidebarRef}
           collapsible
