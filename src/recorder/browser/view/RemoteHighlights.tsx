@@ -19,5 +19,5 @@ export function RemoteHighlights() {
     })
   }, [client])
 
-  return <ElementHighlights element={document.body} locator={locator} />
+  return <ElementHighlights root={document.body} target={locator} />
 }

@@ -1,7 +1,7 @@
-import { getEventTarget } from '@/recorder/browser/target'
-import { ElementRole, getElementRoles } from '@/recorder/browser/utils/aria'
-import { findAssociatedElement } from '@/recorder/browser/utils/dom'
 import { BrowserEventTarget } from '@/schemas/recording'
+import { ElementRole, getElementRoles } from '@/utils/dom/aria'
+import { findAssociatedElement } from '@/utils/dom/dom'
+import { getElementDetails } from '@/utils/dom/selectors'
 
 import { CheckAssertionData } from './assertions/types'
 import { TrackedElement } from './utils'
@@ -57,7 +57,7 @@ export function findAssociatedControl({
 
   return {
     element: associatedElement,
-    target: getEventTarget(associatedElement),
+    target: getElementDetails(associatedElement),
     roles: [...getElementRoles(associatedElement)],
   }
 }

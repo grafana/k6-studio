@@ -1,5 +1,5 @@
-import { ElementRole } from '@/recorder/browser/utils/aria'
 import { ElementSelector } from '@/schemas/recording'
+import { ElementRole } from '@/utils/dom/aria'
 
 /**
  * Adapted list of widgets that are interacted with a simple click, regardless where the item
@@ -27,6 +27,16 @@ const SIMPLE_CLICK_WIDGET_ROLES = [
 
 export function findInteractiveElement(element: Element): Element | null {
   let current: Element | null = element
+
+  const {
+    HTMLButtonElement,
+    HTMLInputElement,
+    HTMLSelectElement,
+    HTMLTextAreaElement,
+    HTMLLabelElement,
+    HTMLAnchorElement,
+    HTMLImageElement,
+  } = element.ownerDocument.defaultView ?? window
 
   while (current !== null) {
     // https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Content_categories#interactive_content

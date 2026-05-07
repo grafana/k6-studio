@@ -143,6 +143,9 @@ export function getElementRoles(element: Element): Set<ElementRole> {
 }
 
 function getLabelTexts(element: Element): string[] {
+  const { HTMLInputElement, HTMLTextAreaElement, HTMLSelectElement } =
+    element.ownerDocument.defaultView ?? window
+
   if (
     element instanceof HTMLInputElement === false &&
     element instanceof HTMLTextAreaElement === false &&
