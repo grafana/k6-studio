@@ -100,17 +100,18 @@ export function generateDataFileDeclarations(files: DataFile[]): string {
 
   const fileKeyValuePairs = files
     .map(({ name }) => {
+      const baseName = path.basename(name)
       const displayName = path.name(name)
       const isCSV = name.toLowerCase().endsWith('csv')
 
       if (isCSV) {
         return `
-        "${displayName}": await csv.parse(await fs.open('../Data/${name}'), { asObjects: true })`
+        "${displayName}": await csv.parse(await fs.open('../Data/${baseName}'), { asObjects: true })`
       }
 
       return `
         "${displayName}": new SharedArray("${displayName}", () => {
-          const data = JSON.parse(open('../Data/${name}'));
+          const data = JSON.parse(open('../Data/${baseName}'));
           return Array.isArray(data) ? data : [data];
         })`
     })

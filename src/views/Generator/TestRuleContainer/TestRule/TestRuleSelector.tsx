@@ -10,6 +10,7 @@ import {
   ReplacerSelector,
   TestRule,
 } from '@/types/rules'
+import * as path from '@/utils/path'
 import { exhaustive } from '@/utils/typescript'
 
 import { CodeSnippetPreview, CustomCodeContent } from './CustomCodeContent'
@@ -130,7 +131,7 @@ function ParameterizationValue({ rule }: { rule: ParameterizationRule }) {
       return (
         <>
           <Strong>{rule.value.propertyName}</Strong> from{' '}
-          <Strong>{rule.value.fileName}</Strong>
+          <Strong>{path.basename(rule.value.fileName)}</Strong>
         </>
       )
     case 'customCode':

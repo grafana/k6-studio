@@ -68,15 +68,14 @@ export function initialize() {
       return
     }
 
-    await copyFile(
-      filePath,
-      path.join(RECORDINGS_PATH, path.basename(filePath))
-    )
+    const destinationPath = path.join(RECORDINGS_PATH, path.basename(filePath))
+
+    await copyFile(filePath, destinationPath)
 
     trackEvent({
       event: UsageEventName.RecordingImported,
     })
 
-    return path.basename(filePath)
+    return destinationPath
   })
 }
