@@ -16,16 +16,13 @@ export function RecordingSelector({
   compact?: boolean
   onChangeRecording?: () => void
 }) {
-  const recordings = useStudioUIStore((store) => [...store.recordings.values()])
+  const recordings = useStudioUIStore((store) => store.recordings)
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
 
   const setRecording = useGeneratorStore((store) => store.setRecording)
   const showToast = useToast()
 
-  const selectedRecording = recordings.find(
-    (recording) => recording.fileName === recordingPath
-  )
-
+  const selectedRecording = recordings.get(recordingPath)
   const isRecordingMissing =
     selectedRecording === undefined && recordingPath !== ''
 
@@ -97,8 +94,8 @@ export function RecordingSelector({
               {path.name(recordingPath)}
             </Select.Item>
           )}
-          {recordings.map((recording) => (
-            <Select.Item value={recording.fileName} key={recording.fileName}>
+          {Array.from(recordings.values()).map((recording) => (
+            <Select.Item value={recording.path} key={recording.path}>
               {recording.displayName}
             </Select.Item>
           ))}
