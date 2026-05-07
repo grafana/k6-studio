@@ -17,9 +17,11 @@ export function RichDropdownMenuItem({
   description,
   disabled,
   onClick,
+  ...itemProps
 }: RichDropdownMenuItemProps) {
   return (
     <DropdownMenu.Item
+      {...itemProps}
       disabled={disabled}
       onClick={onClick}
       css={css`
