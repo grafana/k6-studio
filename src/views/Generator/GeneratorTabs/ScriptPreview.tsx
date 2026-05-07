@@ -1,13 +1,19 @@
 import { Flex } from '@radix-ui/themes'
 
 import { ReactMonacoEditor } from '@/components/Monaco/ReactMonacoEditor'
-import { useScriptPreview } from '@/hooks/useScriptPreview'
+import { ScriptPreview as ScriptPreviewType } from '@/hooks/useScriptPreview'
 import { useTrackScriptCopy } from '@/hooks/useTrackScriptCopy'
 
 import { ScriptPreviewError } from './ScriptPreviewError'
 
-export function ScriptPreview() {
-  const { preview, error } = useScriptPreview()
+interface ScriptPreviewProps {
+  script: ScriptPreviewType
+}
+
+export function ScriptPreview({ script }: ScriptPreviewProps) {
+  const preview = script.valid ? script.preview : ''
+  const error = script.valid ? undefined : script.error
+
   const handleCopy = useTrackScriptCopy(preview, 'generator')
 
   return (

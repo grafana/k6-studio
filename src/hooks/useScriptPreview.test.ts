@@ -45,9 +45,7 @@ describe('useScriptPreview', () => {
     vi.mocked(useGeneratorStore.getState).mockReturnValue(mockState)
     const { result } = renderHook(() => useScriptPreview())
 
-    expect(result.current.preview).toBe('')
-    expect(result.current.error).toBeUndefined()
-    expect(result.current.hasError).toBe(false)
+    expect(result.current).toEqual({ valid: true, preview: '' })
   })
 
   it('should update the preview when the store state changes', async () => {
@@ -66,9 +64,7 @@ describe('useScriptPreview', () => {
     const { result } = renderHook(() => useScriptPreview())
 
     await waitFor(() => {
-      expect(result.current.preview).toBe(mockScript)
-      expect(result.current.error).toBeUndefined()
-      expect(result.current.hasError).toBe(false)
+      expect(result.current).toEqual({ valid: true, preview: mockScript })
     })
   })
 
@@ -89,9 +85,7 @@ describe('useScriptPreview', () => {
     const { result } = renderHook(() => useScriptPreview())
 
     await waitFor(() => {
-      expect(result.current.preview).toBe('')
-      expect(result.current.error).toBe(mockError)
-      expect(result.current.hasError).toBe(true)
+      expect(result.current).toEqual({ valid: false, error: mockError })
     })
   })
 })

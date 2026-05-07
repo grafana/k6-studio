@@ -9,23 +9,32 @@ import {
 } from '@/store/generator'
 import { generateScriptPreview } from '@/views/Generator/Generator.utils'
 
-export function useScriptPreview() {
-  const [preview, setPreview] = useState('')
-  const [error, setError] = useState<Error>()
+export type ScriptPreview =
+  | { valid: true; preview: string }
+  | { valid: false; error: Error }
+
+export function useScriptPreview(): ScriptPreview {
+  const [state, setState] = useState<ScriptPreview>({
+    valid: true,
+    preview: '',
+  })
 
   // Connect to the store on mount, disconnect on unmount, regenerate preview on state change
   useEffect(() => {
-    const updatePreview = debounce(async (state: GeneratorStore) => {
+    const updatePreview = debounce(async (storeState: GeneratorStore) => {
       try {
-        setError(undefined)
-        const generator = selectGeneratorData(state)
-        const requests = selectFilteredRequests(state)
+        const generator = selectGeneratorData(storeState)
+        const requests = selectFilteredRequests(storeState)
 
-        const script = await generateScriptPreview(generator, requests)
-        setPreview(script)
-      } catch (e) {
-        console.error(e)
-        setError(e as Error)
+        const preview = await generateScriptPreview(generator, requests)
+        setState({ valid: true, preview })
+      } catch (error) {
+        console.error(error)
+
+        setState({
+          valid: false,
+          error: error instanceof Error ? error : new Error(String(error)),
+        })
       }
     }, 100)
 
@@ -40,5 +49,5 @@ export function useScriptPreview() {
     return unsubscribe
   }, [])
 
-  return { preview, error, hasError: !!error }
+  return state
 }
