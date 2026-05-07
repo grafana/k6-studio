@@ -13,6 +13,7 @@ import {
 } from '@/components/primitives/ResizablePanel'
 import { useDelayedVisibility } from '@/hooks/useDelayedVisibility'
 import { useListenDeepLinks } from '@/hooks/useListenDeepLinks'
+
 import { ActivityBar } from './ActivityBar'
 import { SidebarTab } from './Layout.types'
 import { Sidebar } from './Sidebar'

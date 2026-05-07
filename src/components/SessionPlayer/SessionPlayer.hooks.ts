@@ -161,7 +161,7 @@ export function usePlayer({
   })
 
   useEffect(() => {
-    if (!player || !interactive) {
+    if (!player || !interactive || state === 'playing') {
       return
     }
 
@@ -234,7 +234,7 @@ export function usePlayer({
 
       cleanupListeners()
     }
-  }, [player, interactive])
+  }, [player, interactive, state])
 
   // Keep track of the current time for non-streaming playback.
   useEffect(() => {
