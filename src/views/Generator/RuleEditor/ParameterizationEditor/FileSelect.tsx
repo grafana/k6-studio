@@ -6,6 +6,7 @@ import { useFormContext } from 'react-hook-form'
 import { ControlledSelect, FieldGroup } from '@/components/Form'
 import { useGeneratorStore } from '@/store/generator'
 import { ParameterizationRule } from '@/types/rules'
+import * as path from '@/utils/path'
 import { useDataFilePreview } from '@/views/DataFile/DataFile.hooks'
 
 export function FileSelect() {
@@ -25,7 +26,7 @@ export function FileSelect() {
       value: file.name,
       label: (
         <Code size="2" truncate variant="ghost">
-          {file.name}
+          {path.basename(file.name)}
         </Code>
       ),
     }))

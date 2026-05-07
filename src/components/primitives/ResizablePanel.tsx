@@ -5,6 +5,7 @@ export const Separator = styled(SeparatorPrimitive)`
   --separator-size: 1px;
 
   position: relative;
+  z-index: 2;
 
   &::before {
     content: '';
@@ -41,4 +42,5 @@ export {
   Panel,
   useDefaultLayout,
   usePanelCallbackRef,
+  usePanelRef,
 } from 'react-resizable-panels'

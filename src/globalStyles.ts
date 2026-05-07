@@ -14,9 +14,10 @@ export const globalStyles = css`
   }
 
   .radix-themes {
-    --default-font-family: 'InterVariable', -apple-system, BlinkMacSystemFont,
-      'Segoe UI (Custom)', Roboto, 'Helvetica Neue', 'Open Sans (Custom)',
-      system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+    --default-font-family:
+      'InterVariable', -apple-system, BlinkMacSystemFont, 'Segoe UI (Custom)',
+      Roboto, 'Helvetica Neue', 'Open Sans (Custom)', system-ui, sans-serif,
+      'Apple Color Emoji', 'Segoe UI Emoji';
 
     --cursor-button: pointer;
   }
@@ -41,6 +42,13 @@ export const globalStyles = css`
   /* Allow to truncate text in Select options */
   .rt-SelectItem > span:not(.rt-SelectItemIndicator) {
     width: 100%;
+  }
+
+  /* Radix TextField handles focus outline on the root via :focus-within;
+     suppress the global :focus-visible on inner elements to avoid
+     duplicate outlines between slots. */
+  .rt-TextFieldRoot :focus-visible {
+    outline: none;
   }
 
   /* Make Monaco scroll thumbs rounder */

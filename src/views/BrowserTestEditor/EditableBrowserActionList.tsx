@@ -22,6 +22,7 @@ import {
   createGoToAction,
   createPageReloadAction,
   createSelectOptionAction,
+  createToBeCheckedAction,
   createUncheckAction,
   createWaitForAction,
   createWaitForTimeoutAction,
@@ -120,6 +121,12 @@ function NewActionMenu({ onAddAction }: NewActionMenuProps) {
         </DropdownMenu.Item>
         <DropdownMenu.Item onClick={() => onAddAction(createUncheckAction())}>
           Uncheck input
+        </DropdownMenu.Item>
+        <DropdownMenu.Separator />
+        <DropdownMenu.Item
+          onClick={() => onAddAction(createToBeCheckedAction())}
+        >
+          Expect to be checked
         </DropdownMenu.Item>
         <DropdownMenu.Separator />
         <DropdownMenu.Item onClick={() => onAddAction(createWaitForAction())}>

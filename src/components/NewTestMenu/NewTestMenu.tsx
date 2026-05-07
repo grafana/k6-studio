@@ -1,17 +1,14 @@
 import { DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes'
 import { PlusIcon } from 'lucide-react'
 
-import { useCreateBrowserTest } from '@/hooks/useCreateBrowserTest'
-import { useCreateGenerator } from '@/hooks/useCreateGenerator'
-import { useFeaturesStore } from '@/store/features'
+import { useCreateTestActions } from '@/hooks/useCreateTestActions'
 
 export function NewTestMenu() {
-  const handleCreateHTTPTest = useCreateGenerator()
-  const handleCreateBrowserTest = useCreateBrowserTest()
-
-  const isBrowserEditorEnabled = useFeaturesStore(
-    (state) => state.features['browser-test-editor']
-  )
+  const {
+    handleCreateHTTPTest,
+    handleCreateBrowserTest,
+    isBrowserEditorEnabled,
+  } = useCreateTestActions()
 
   if (!isBrowserEditorEnabled) {
     return (
@@ -32,7 +29,12 @@ export function NewTestMenu() {
     <DropdownMenu.Root>
       <Tooltip content="New test" side="right">
         <DropdownMenu.Trigger>
-          <IconButton aria-label="New test" variant="ghost" size="1">
+          <IconButton
+            aria-label="New test"
+            variant="ghost"
+            size="1"
+            color="gray"
+          >
             <PlusIcon />
           </IconButton>
         </DropdownMenu.Trigger>

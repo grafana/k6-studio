@@ -1,29 +1,20 @@
 import { css } from '@emotion/react'
 import { Button, Flex, Grid, Heading, Text } from '@radix-ui/themes'
 import { CircleCheckIcon, CirclePlusIcon, DiscIcon } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 import { GeneratorIcon, RecorderIcon, ValidatorIcon } from '@/components/icons'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
-import { getRoutePath, getViewPath } from '@/routeMap'
+import { useOpenExternalScript } from '@/hooks/useOpenExternalScript'
+import { getRoutePath } from '@/routeMap'
 
 import { NavigationCard } from './NavigationCard'
 
 export function Home() {
-  const navigate = useNavigate()
   const createNewGenerator = useCreateGenerator()
+  const handleOpenScript = useOpenExternalScript()
 
   const handleCreateNewGenerator = () => createNewGenerator()
-
-  const handleOpenScript = async () => {
-    const path = await window.studio.script.showScriptSelectDialog()
-
-    if (!path) {
-      return
-    }
-
-    navigate(getViewPath('script', path))
-  }
 
   return (
     <Flex direction="column" height="100%" position="relative">
