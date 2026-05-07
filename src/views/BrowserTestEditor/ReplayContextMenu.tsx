@@ -14,6 +14,7 @@ import {
   createClickAction,
   createFillAction,
   createSelectOptionAction,
+  createToBeCheckedAction,
   createUncheckAction,
   createWaitForAction,
 } from './actionFactories'
@@ -83,6 +84,12 @@ export function ReplayContextMenu({
             >
               Uncheck
             </DropdownMenu.Item>
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item
+              onClick={() => onAddAction(createToBeCheckedAction({ locator }))}
+            >
+              Expect to be checked
+            </DropdownMenu.Item>
           </>
         )}
         {isRadio(target, aria.roles) && (
@@ -106,6 +113,7 @@ export function ReplayContextMenu({
             Click
           </DropdownMenu.Item>
         )}
+        <DropdownMenu.Separator />
         <DropdownMenu.Item
           onClick={() => onAddAction(createWaitForAction({ locator }))}
         >

@@ -414,6 +414,19 @@ function buildBrowserNodeGraphFromActions(
             locator: getLocator(action.locator),
           },
         }
+      case 'locator.toBeChecked':
+        return {
+          type: 'assert',
+          nodeId: crypto.randomUUID(),
+          operation: {
+            type: 'is-checked',
+            inputType: 'native',
+            expected: action.checked ? 'checked' : 'unchecked',
+          },
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
       case 'locator.fill':
         return {
           type: 'type-text',

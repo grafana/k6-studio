@@ -137,6 +137,49 @@ export function createSelectOptionAction({
   }
 }
 
+export function createWaitForAction({
+  locator,
+}: LocatorFactoryOptions = {}): ActionByMethod<'locator.waitFor'> {
+  return {
+    id: crypto.randomUUID(),
+    method: 'locator.waitFor',
+    locator: locator ?? {
+      current: 'role',
+      values: {
+        role: {
+          type: 'role',
+          role: '',
+          options: {
+            exact: false,
+          },
+        },
+      },
+    },
+  }
+}
+
+export function createToBeCheckedAction({
+  locator,
+}: LocatorFactoryOptions = {}): ActionByMethod<'locator.toBeChecked'> {
+  return {
+    id: crypto.randomUUID(),
+    method: 'locator.toBeChecked',
+    checked: true,
+    locator: locator ?? {
+      current: 'role',
+      values: {
+        role: {
+          type: 'role',
+          role: 'checkbox',
+          options: {
+            exact: false,
+          },
+        },
+      },
+    },
+  }
+}
+
 export function createGoToAction(): ActionByMethod<'page.goto'> {
   return {
     id: crypto.randomUUID(),
@@ -157,26 +200,5 @@ export function createWaitForTimeoutAction(): ActionByMethod<'page.waitForTimeou
     id: crypto.randomUUID(),
     method: 'page.waitForTimeout',
     timeout: 1000,
-  }
-}
-
-export function createWaitForAction({
-  locator,
-}: LocatorFactoryOptions = {}): ActionByMethod<'locator.waitFor'> {
-  return {
-    id: crypto.randomUUID(),
-    method: 'locator.waitFor',
-    locator: locator ?? {
-      current: 'role',
-      values: {
-        role: {
-          type: 'role',
-          role: '',
-          options: {
-            exact: false,
-          },
-        },
-      },
-    },
   }
 }
