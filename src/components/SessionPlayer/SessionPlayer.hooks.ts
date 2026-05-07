@@ -199,7 +199,7 @@ export function usePlayer({
         })
       }
 
-      const blockedEvents = ['submit', 'keydown', 'keypress', 'contextmenu']
+      const blockedEvents = ['submit', 'keydown', 'keypress']
 
       // Enabling interaction in rrweb's player allows the user to e.g. click links causing page navigations. We don't
       // want that so we need to block these interactions ourself.
@@ -209,6 +209,7 @@ export function usePlayer({
 
       // Clicks and context menu events are handled separately since we want to trigger callbacks when these events happen.
       target.addEventListener('click', handleClick, true)
+      target.addEventListener('contextmenu', handleClick, true)
 
       return () => {
         for (const ev of blockedEvents) {
@@ -216,6 +217,7 @@ export function usePlayer({
         }
 
         target.removeEventListener('click', handleClick, true)
+        target.removeEventListener('contextmenu', handleClick, true)
       }
     }
 
