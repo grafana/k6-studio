@@ -61,7 +61,9 @@ export function ExportScriptDialog({
   const onSubmit = (data: ExportScriptDialogData) => {
     const { scriptName: userInput, overwriteFile } = data
     const fileName = getScriptNameWithExtension(userInput)
-    const fileExists = Array.from(scripts.keys()).includes(fileName)
+    const fileExists = [...scripts.values()].some(
+      (s) => s.fileName === fileName
+    )
     if (fileExists && !overwriteFile && !alwaysOverwriteScript) {
       setValue('overwriteFile', true)
       return

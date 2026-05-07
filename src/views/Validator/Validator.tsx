@@ -1,12 +1,11 @@
 import { Flex } from '@radix-ui/themes'
-import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { useCurrentFile } from '@/hooks/useCurrentFile'
-import { getViewPath } from '@/routeMap'
+import { useOpenExternalScript } from '@/hooks/useOpenExternalScript'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 
@@ -23,8 +22,8 @@ function Content({ file }: ValidatorProps) {
 
   const [showRunInCloudDialog, setShowRunInCloudDialog] = useState(false)
 
-  const navigate = useNavigate()
   const showToast = useToast()
+  const handleSelectExternalScript = useOpenExternalScript()
 
   const { session, startDebugging, stopDebugging } = useDebugSession({
     type: 'file',
@@ -32,16 +31,6 @@ function Content({ file }: ValidatorProps) {
   })
 
   const isRunning = session?.state === 'running'
-
-  const handleSelectExternalScript = useCallback(async () => {
-    const newScriptPath = await window.studio.script.showScriptSelectDialog()
-
-    if (!newScriptPath) {
-      return
-    }
-
-    navigate(getViewPath('script', newScriptPath))
-  }, [navigate])
 
   async function handleDebugScript() {
     await startDebugging()

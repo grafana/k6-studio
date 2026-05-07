@@ -1,15 +1,20 @@
 import { css } from '@emotion/react'
-import { Box, Flex, IconButton, Spinner } from '@radix-ui/themes'
-import { Allotment } from 'allotment'
-import { PanelLeftOpenIcon } from 'lucide-react'
-import { Suspense, useEffect } from 'react'
+import { Box, Flex, Spinner } from '@radix-ui/themes'
+import { Suspense, useCallback, useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 
+import {
+  Group,
+  Panel,
+  Separator,
+  useDefaultLayout,
+  usePanelRef,
+} from '@/components/primitives/ResizablePanel'
 import { useDelayedVisibility } from '@/hooks/useDelayedVisibility'
 import { useListenDeepLinks } from '@/hooks/useListenDeepLinks'
-
 import { ActivityBar } from './ActivityBar'
+import { SidebarTab } from './Layout.types'
 import { Sidebar } from './Sidebar'
 
 function RouteLoadingFallback() {
@@ -30,77 +35,74 @@ function RouteLoadingFallback() {
 }
 
 export function Layout() {
-  const [isSidebarExpanded, setIsSidebarExpanded] = useLocalStorage(
-    'isSidebarExpanded',
-    true
+  const [activeTab = 'record', setActiveTab] = useLocalStorage<SidebarTab>(
+    'activeTab',
+    'record'
   )
+  const sidebarRef = usePanelRef()
   const location = useLocation()
   useListenDeepLinks()
 
-  const handleVisibleChange = (index: number, visible: boolean) => {
-    if (index !== 1) return
-    setIsSidebarExpanded(visible)
-  }
+  const layout = useDefaultLayout({
+    groupId: 'sidebar-layout',
+    storage: localStorage,
+  })
+
+  const handleTabChange = useCallback(
+    (tab: SidebarTab) => {
+      setActiveTab(tab)
+      sidebarRef.current?.expand()
+    },
+    [setActiveTab, sidebarRef]
+  )
+
+  const handleCollapseSidebar = useCallback(() => {
+    sidebarRef.current?.collapse()
+  }, [sidebarRef])
 
   useEffect(() => {
     window.studio.app.changeRoute(location.pathname)
-  }, [location])
+  }, [location.pathname])
 
   return (
-    <Box
-      height="100dvh"
-      position="relative"
-      css={css`
-        /* Allotment */
-        --focus-border: var(--accent-9);
-        --separator-border: var(--gray-5);
-        --sash-hover-size: 2px;
-      `}
-    >
-      {!isSidebarExpanded && (
-        <IconButton
-          size="1"
-          variant="ghost"
-          color="gray"
-          onClick={() => setIsSidebarExpanded(true)}
-          css={css`
-            position: absolute;
-            top: var(--space-4);
-            left: calc(64px - var(--space-2));
-            background-color: var(--color-background);
-            z-index: 10000;
-
-            &:hover {
-              background-color: var(--accent-3);
-            }
-          `}
+    <Flex height="100dvh">
+      <Group
+        {...layout}
+        id="sidebar-layout"
+        css={css`
+          --focus-border: var(--accent-9);
+        `}
+      >
+        <Box
+          flexShrink="0"
+          css={{
+            width: '64px',
+          }}
         >
-          <PanelLeftOpenIcon />
-        </IconButton>
-      )}
-      <Allotment onVisibleChange={handleVisibleChange}>
-        <Allotment.Pane minSize={64} maxSize={64}>
-          <ActivityBar />
-        </Allotment.Pane>
-        <Allotment.Pane
-          minSize={200}
-          maxSize={300}
-          preferredSize={280}
-          visible={isSidebarExpanded}
-          snap
+          <ActivityBar activeTab={activeTab} onTabChange={handleTabChange} />
+        </Box>
+        <Separator />
+        <Panel
+          panelRef={sidebarRef}
+          collapsible
+          collapsedSize="0px"
+          minSize="200px"
+          maxSize="300px"
+          defaultSize="280px"
+          id="sidebar-panel"
         >
           <Sidebar
-            isExpanded={isSidebarExpanded}
-            onCollapseSidebar={() => setIsSidebarExpanded(false)}
+            activeTab={activeTab}
+            onCollapseSidebar={handleCollapseSidebar}
           />
-        </Allotment.Pane>
-
-        <Allotment.Pane>
+        </Panel>
+        <Separator />
+        <Panel id="main-panel" style={{ position: 'relative', zIndex: 0 }}>
           <Suspense fallback={<RouteLoadingFallback />}>
             <Outlet />
           </Suspense>
-        </Allotment.Pane>
-      </Allotment>
-    </Box>
+        </Panel>
+      </Group>
+    </Flex>
   )
 }

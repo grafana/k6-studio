@@ -1,0 +1,245 @@
+import { renderHook } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+import { useStudioUIStore } from '@/store/ui'
+import { StudioFile } from '@/types'
+
+import { useFiles } from './Sidebar.hooks'
+
+vi.mock('@/store/ui', () => ({ useStudioUIStore: vi.fn() }))
+
+function makeFile(
+  overrides: Partial<StudioFile> & Pick<StudioFile, 'type'>
+): StudioFile {
+  return {
+    displayName: 'file',
+    fileName: 'file.ext',
+    path: '/tmp/file.ext',
+    ...overrides,
+  }
+}
+
+function toMap(files: StudioFile[]): Map<string, StudioFile> {
+  return new Map(files.map((file) => [file.path, file]))
+}
+
+function mockStore({
+  recordings = [],
+  generators = [],
+  browserTests = [],
+  scripts = [],
+  dataFiles = [],
+}: {
+  recordings?: StudioFile[]
+  generators?: StudioFile[]
+  browserTests?: StudioFile[]
+  scripts?: StudioFile[]
+  dataFiles?: StudioFile[]
+}) {
+  const state = {
+    recordings: toMap(recordings),
+    generators: toMap(generators),
+    browserTests: toMap(browserTests),
+    scripts: toMap(scripts),
+    dataFiles: toMap(dataFiles),
+    addFile: vi.fn(),
+    removeFile: vi.fn(),
+    setFolderContent: vi.fn(),
+  }
+  vi.mocked(useStudioUIStore).mockImplementation(
+    // @ts-expect-error -- partial store mock, only fields used by useFiles
+    (selector) => selector(state)
+  )
+}
+
+describe('useFiles', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.stubGlobal('studio', {
+      ui: {
+        getFiles: vi.fn().mockResolvedValue({
+          recordings: [],
+          generators: [],
+          browserTests: [],
+          scripts: [],
+          dataFiles: [],
+        }),
+        onAddFile: vi.fn(() => vi.fn()),
+        onRemoveFile: vi.fn(() => vi.fn()),
+      },
+    })
+  })
+
+  it('returns all files unfiltered when search term is empty', () => {
+    mockStore({
+      recordings: [makeFile({ type: 'recording', displayName: 'rec1' })],
+      generators: [makeFile({ type: 'generator', displayName: 'gen1' })],
+      browserTests: [makeFile({ type: 'browser-test', displayName: 'btest1' })],
+      scripts: [makeFile({ type: 'script', displayName: 'script1' })],
+      dataFiles: [makeFile({ type: 'data-file', displayName: 'data1' })],
+    })
+
+    const { result } = renderHook(() => useFiles(''))
+
+    expect(result.current.recordings).toHaveLength(1)
+    expect(result.current.tests).toHaveLength(2)
+    expect(result.current.scripts).toHaveLength(1)
+    expect(result.current.dataFiles).toHaveLength(1)
+  })
+
+  it('merges generators and browserTests into a single tests list sorted by displayName', () => {
+    mockStore({
+      generators: [
+        makeFile({
+          type: 'generator',
+          displayName: 'b-gen',
+          path: '/tmp/b.k6g',
+        }),
+        makeFile({
+          type: 'generator',
+          displayName: 'd-gen',
+          path: '/tmp/d.k6g',
+        }),
+      ],
+      browserTests: [
+        makeFile({
+          type: 'browser-test',
+          displayName: 'a-bt',
+          path: '/tmp/a.k6b',
+        }),
+        makeFile({
+          type: 'browser-test',
+          displayName: 'c-bt',
+          path: '/tmp/c.k6b',
+        }),
+      ],
+    })
+
+    const { result } = renderHook(() => useFiles(''))
+
+    expect(result.current.tests.map((file) => file.displayName)).toEqual([
+      'a-bt',
+      'b-gen',
+      'c-bt',
+      'd-gen',
+    ])
+  })
+
+  it('exposes counts for each category', () => {
+    mockStore({
+      recordings: [
+        makeFile({ type: 'recording', path: '/tmp/r1' }),
+        makeFile({ type: 'recording', path: '/tmp/r2' }),
+      ],
+      generators: [makeFile({ type: 'generator', path: '/tmp/g1' })],
+      browserTests: [makeFile({ type: 'browser-test', path: '/tmp/b1' })],
+      scripts: [],
+      dataFiles: [
+        makeFile({ type: 'data-file', path: '/tmp/d1' }),
+        makeFile({ type: 'data-file', path: '/tmp/d2' }),
+        makeFile({ type: 'data-file', path: '/tmp/d3' }),
+      ],
+    })
+
+    const { result } = renderHook(() => useFiles(''))
+
+    expect(result.current.counts).toEqual({
+      recordings: 2,
+      tests: 2,
+      scripts: 0,
+      dataFiles: 3,
+    })
+  })
+
+  it('flags only categories with zero files as empty when search is blank', () => {
+    mockStore({
+      recordings: [makeFile({ type: 'recording', path: '/tmp/r1' })],
+      generators: [],
+      browserTests: [],
+      scripts: [],
+      dataFiles: [makeFile({ type: 'data-file', path: '/tmp/d1' })],
+    })
+
+    const { result } = renderHook(() => useFiles(''))
+
+    expect(result.current.isEmpty).toEqual({
+      recordings: false,
+      tests: true,
+      scripts: true,
+      dataFiles: false,
+    })
+  })
+
+  it('does not flag categories as empty when search term is set', () => {
+    mockStore({ recordings: [], generators: [], scripts: [], dataFiles: [] })
+
+    const { result } = renderHook(() => useFiles('foo'))
+
+    expect(result.current.isEmpty).toEqual({
+      recordings: false,
+      tests: false,
+      scripts: false,
+      dataFiles: false,
+    })
+  })
+
+  it('filters via fuzzy search across all categories', () => {
+    mockStore({
+      recordings: [
+        makeFile({
+          type: 'recording',
+          displayName: 'home-page',
+          path: '/tmp/h.har',
+        }),
+        makeFile({
+          type: 'recording',
+          displayName: 'login-page',
+          path: '/tmp/l.har',
+        }),
+      ],
+      generators: [
+        makeFile({
+          type: 'generator',
+          displayName: 'home-flow',
+          path: '/tmp/hf.k6g',
+        }),
+      ],
+    })
+
+    const { result } = renderHook(() => useFiles('home'))
+
+    expect(result.current.recordings).toHaveLength(1)
+    expect(result.current.recordings[0]?.displayName).toBe('home-page')
+    expect(result.current.tests).toHaveLength(1)
+    expect(result.current.tests[0]?.displayName).toBe('home-flow')
+  })
+
+  it('returns counts based on unfiltered data even when search has matches', () => {
+    mockStore({
+      generators: [
+        makeFile({
+          type: 'generator',
+          displayName: 'apple',
+          path: '/tmp/a.k6g',
+        }),
+        makeFile({
+          type: 'generator',
+          displayName: 'banana',
+          path: '/tmp/b.k6g',
+        }),
+      ],
+      browserTests: [
+        makeFile({
+          type: 'browser-test',
+          displayName: 'cherry',
+          path: '/tmp/c.k6b',
+        }),
+      ],
+    })
+
+    const { result } = renderHook(() => useFiles('apple'))
+
+    expect(result.current.tests).toHaveLength(1)
+    expect(result.current.counts.tests).toBe(3)
+  })
+})
