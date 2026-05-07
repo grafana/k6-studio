@@ -64,7 +64,7 @@ interface Pages {
   current: Page
 }
 
-export type ContextMenuEvent = {
+export type PlayerMouseEvent = {
   x: number
   y: number
   target: HTMLElement
@@ -74,15 +74,13 @@ interface UsePlayerOptions {
   session: DebugSession
   mount: HTMLDivElement | null
   interactive?: boolean
-  onContextMenu?: (pos: ContextMenuEvent) => void
-  onClick?: () => void
+  onClick?: (event: PlayerMouseEvent) => void
 }
 
 export function usePlayer({
   session,
   mount,
   interactive = false,
-  onContextMenu,
   onClick,
 }: UsePlayerOptions) {
   const events = session.browser.replay
@@ -156,11 +154,9 @@ export function usePlayer({
     setPlayer(newPlayer)
   }, [player, mount, session.state, events])
 
-  const onContextMenuRef = useRef(onContextMenu)
   const onClickRef = useRef(onClick)
 
   useEffect(() => {
-    onContextMenuRef.current = onContextMenu
     onClickRef.current = onClick
   })
 
@@ -182,12 +178,7 @@ export function usePlayer({
         e.preventDefault()
       }
 
-      const handleClick = (e: Event) => {
-        e.preventDefault()
-        onClickRef.current?.()
-      }
-
-      const handleContextMenu = (ev: PointerEvent) => {
+      const handleClick = (ev: PointerEvent) => {
         ev.preventDefault()
 
         const iframe = player.iframe
@@ -201,14 +192,14 @@ export function usePlayer({
         const x = rect.left + (ev.clientX / iframe.offsetWidth) * rect.width
         const y = rect.top + (ev.clientY / iframe.offsetHeight) * rect.height
 
-        onContextMenuRef.current?.({
+        onClickRef.current?.({
           x,
           y,
           target: ev.target as HTMLElement,
         })
       }
 
-      const blockedEvents = ['submit', 'keydown', 'keypress']
+      const blockedEvents = ['submit', 'keydown', 'keypress', 'contextmenu']
 
       // Enabling interaction in rrweb's player allows the user to e.g. click links causing page navigations. We don't
       // want that so we need to block these interactions ourself.
@@ -218,7 +209,6 @@ export function usePlayer({
 
       // Clicks and context menu events are handled separately since we want to trigger callbacks when these events happen.
       target.addEventListener('click', handleClick, true)
-      target.addEventListener('contextmenu', handleContextMenu, true)
 
       return () => {
         for (const ev of blockedEvents) {
@@ -226,7 +216,6 @@ export function usePlayer({
         }
 
         target.removeEventListener('click', handleClick, true)
-        target.removeEventListener('contextmenu', handleContextMenu, true)
       }
     }
 

@@ -12,7 +12,7 @@ import {
 import { View } from '@/components/Layout/View'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { SessionPlayer } from '@/components/SessionPlayer/SessionPlayer'
-import { ContextMenuEvent } from '@/components/SessionPlayer/SessionPlayer.hooks'
+import { PlayerMouseEvent } from '@/components/SessionPlayer/SessionPlayer.hooks'
 import {
   LogsSection,
   useConsoleFilter,
@@ -83,7 +83,13 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
     void saveBrowserTest(browserTestData)
   }
 
-  const handleContextMenu = (event: ContextMenuEvent) => {
+  const handleClick = (event: PlayerMouseEvent) => {
+    if (state !== null) {
+      setState(null)
+
+      return
+    }
+
     setState(createContextMenuState(event))
   }
 
@@ -181,8 +187,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                                 ? state.target
                                 : highlightedLocator
                             }
-                            onClick={() => setState(null)}
-                            onContextMenu={handleContextMenu}
+                            onClick={handleClick}
                           />
                           {state !== null && (
                             <ReplayContextMenu

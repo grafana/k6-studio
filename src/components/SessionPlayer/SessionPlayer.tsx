@@ -11,7 +11,7 @@ import { DebugSession } from '@/views/Validator/types'
 import { AddressBar } from './AddressBar'
 import { LocatorHighlights } from './LocatorHighlights'
 import { OnSeekEvent, PlaybackControls } from './PlaybackControls'
-import { ContextMenuEvent, usePlayer } from './SessionPlayer.hooks'
+import { PlayerMouseEvent, usePlayer } from './SessionPlayer.hooks'
 import { getPageState } from './SessionPlayer.utils'
 import { Viewport } from './Viewport'
 import { Page } from './types'
@@ -31,8 +31,7 @@ interface SessionPlayerProps {
   initialContent?: ReactNode
   highlightedElement: ElementLocator | Element | null
   interactive?: boolean
-  onContextMenu?: (pos: ContextMenuEvent) => void
-  onClick?: () => void
+  onClick?: (ev: PlayerMouseEvent) => void
 }
 
 export function SessionPlayer({
@@ -42,7 +41,6 @@ export function SessionPlayer({
   initialContent,
   highlightedElement,
   interactive = false,
-  onContextMenu,
   onClick,
 }: SessionPlayerProps) {
   const [mount, setMount] = useState<HTMLDivElement | null>(null)
@@ -51,7 +49,6 @@ export function SessionPlayer({
     session,
     mount,
     interactive,
-    onContextMenu,
     onClick,
   })
 

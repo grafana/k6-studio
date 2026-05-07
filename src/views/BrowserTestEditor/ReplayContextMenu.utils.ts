@@ -7,7 +7,7 @@ import {
   getTestIdLocator,
   getTitleLocator,
 } from '@/codegen/browser/selectors'
-import { ContextMenuEvent } from '@/components/SessionPlayer/SessionPlayer.hooks'
+import { PlayerMouseEvent } from '@/components/SessionPlayer/SessionPlayer.hooks'
 import { ElementSelector } from '@/schemas/recording'
 import { getAriaDetails } from '@/utils/dom/aria'
 import { findInteractiveElement } from '@/utils/dom/dom'
@@ -98,7 +98,7 @@ export function isSelect(element: Element, roles: string[]): boolean {
 }
 
 export function createContextMenuState(
-  event: ContextMenuEvent
+  event: PlayerMouseEvent
 ): ContextMenuState {
   const target = findInteractiveElement(event.target) ?? event.target
 
