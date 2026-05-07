@@ -109,20 +109,31 @@ describe('useRecentURLs', () => {
       ])
     })
 
-    it('limits to 3 recent URLs', () => {
+    it('limits to 10 recent URLs', () => {
+      seedURLs(
+        Array.from({ length: 10 }, (_, i) => `https://example.com/${10 - i}`)
+      )
+      const { result } = renderHook(() => useRecentURLs())
+
+      act(() => {
+        result.current.addURL('https://example.com/11')
+      })
+
+      expect(result.current.recentURLs).toEqual([
+        'https://example.com/11',
+        ...Array.from({ length: 9 }, (_, i) => `https://example.com/${10 - i}`),
+      ])
+    })
+
+    it('caps the returned list when limit is provided', () => {
       seedURLs([
         'https://example.com/3',
         'https://example.com/2',
         'https://example.com/1',
       ])
-      const { result } = renderHook(() => useRecentURLs())
-
-      act(() => {
-        result.current.addURL('https://example.com/4')
-      })
+      const { result } = renderHook(() => useRecentURLs({ limit: 2 }))
 
       expect(result.current.recentURLs).toEqual([
-        'https://example.com/4',
         'https://example.com/3',
         'https://example.com/2',
       ])

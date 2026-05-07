@@ -67,7 +67,7 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
     shouldFocusError: false,
   })
 
-  const { recentURLs, addURL, removeURL } = useRecentURLs()
+  const { recentURLs, addURL, removeURL } = useRecentURLs({ limit: 3 })
 
   const canRecord = proxyStatus === 'online' && isBrowserInstalled === true
 

@@ -1,7 +1,9 @@
-import { useLocalStorage } from 'react-use'
+import { z } from 'zod'
+
+import { useSyncedLocalStorage } from './useSyncedLocalStorage'
 
 const LOCAL_STORAGE_KEY = 'recentURLs'
-const MAX_RECENT_URLS = 3
+const MAX_RECENT_URLS = 10
 
 function hasScheme(url: string): boolean {
   return /^https?:\/\//i.test(url)
@@ -23,11 +25,21 @@ function areSameURL(a: string, b: string): boolean {
   }
 }
 
-export function useRecentURLs() {
-  const [recentURLs = [], setRecentURLs] = useLocalStorage<string[]>(
+interface UseRecentURLsOptions {
+  limit?: number
+}
+
+const RecentURLsStorageSchema = z.array(z.string())
+
+export function useRecentURLs({ limit }: UseRecentURLsOptions = {}) {
+  const [storedURLs, setRecentURLs] = useSyncedLocalStorage<string[]>(
     LOCAL_STORAGE_KEY,
+    RecentURLsStorageSchema,
     []
   )
+
+  const recentURLs =
+    limit !== undefined ? storedURLs.slice(0, limit) : storedURLs
 
   const addURL = (url: string) => {
     const trimmedURL = url.trim()
@@ -36,19 +48,21 @@ export function useRecentURLs() {
       return
     }
 
-    setRecentURLs((prev = []) => {
-      const newUrls = prev.filter(
-        (existingUrl) => !areSameURL(existingUrl, trimmedURL)
-      )
+    const newUrls = storedURLs.filter(
+      (existingUrl) => !areSameURL(existingUrl, trimmedURL)
+    )
 
-      return [trimmedURL, ...newUrls].slice(0, MAX_RECENT_URLS)
-    })
+    const updatedURLs = [trimmedURL, ...newUrls].slice(0, MAX_RECENT_URLS)
+
+    setRecentURLs(updatedURLs)
   }
 
   const removeURL = (url: string) => {
-    setRecentURLs((prev = []) => {
-      return prev.filter((existingUrl) => !areSameURL(existingUrl, url))
-    })
+    const filteredURLs = storedURLs.filter(
+      (existingUrl) => !areSameURL(existingUrl, url)
+    )
+
+    setRecentURLs(filteredURLs)
   }
 
   return { recentURLs, addURL, removeURL }
