@@ -20,7 +20,7 @@ function makeFile(
 }
 
 function toMap(files: StudioFile[]): Map<string, StudioFile> {
-  return new Map(files.map((file) => [file.fileName, file]))
+  return new Map(files.map((file) => [file.path, file]))
 }
 
 function mockStore({
@@ -42,13 +42,32 @@ function mockStore({
     browserTests: toMap(browserTests),
     scripts: toMap(scripts),
     dataFiles: toMap(dataFiles),
-  } as unknown as Parameters<Parameters<typeof useStudioUIStore>[0]>[0]
-  vi.mocked(useStudioUIStore).mockImplementation((selector) => selector(state))
+    addFile: vi.fn(),
+    removeFile: vi.fn(),
+    setFolderContent: vi.fn(),
+  }
+  vi.mocked(useStudioUIStore).mockImplementation(
+    // @ts-expect-error -- partial store mock, only fields used by useFiles
+    (selector) => selector(state)
+  )
 }
 
 describe('useFiles', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.stubGlobal('studio', {
+      ui: {
+        getFiles: vi.fn().mockResolvedValue({
+          recordings: [],
+          generators: [],
+          browserTests: [],
+          scripts: [],
+          dataFiles: [],
+        }),
+        onAddFile: vi.fn(() => vi.fn()),
+        onRemoveFile: vi.fn(() => vi.fn()),
+      },
+    })
   })
 
   it('returns all files unfiltered when search term is empty', () => {
@@ -74,24 +93,24 @@ describe('useFiles', () => {
         makeFile({
           type: 'generator',
           displayName: 'b-gen',
-          fileName: 'b.k6g',
+          path: '/tmp/b.k6g',
         }),
         makeFile({
           type: 'generator',
           displayName: 'd-gen',
-          fileName: 'd.k6g',
+          path: '/tmp/d.k6g',
         }),
       ],
       browserTests: [
         makeFile({
           type: 'browser-test',
           displayName: 'a-bt',
-          fileName: 'a.k6b',
+          path: '/tmp/a.k6b',
         }),
         makeFile({
           type: 'browser-test',
           displayName: 'c-bt',
-          fileName: 'c.k6b',
+          path: '/tmp/c.k6b',
         }),
       ],
     })
@@ -109,16 +128,16 @@ describe('useFiles', () => {
   it('exposes counts for each category', () => {
     mockStore({
       recordings: [
-        makeFile({ type: 'recording', fileName: 'r1' }),
-        makeFile({ type: 'recording', fileName: 'r2' }),
+        makeFile({ type: 'recording', path: '/tmp/r1' }),
+        makeFile({ type: 'recording', path: '/tmp/r2' }),
       ],
-      generators: [makeFile({ type: 'generator', fileName: 'g1' })],
-      browserTests: [makeFile({ type: 'browser-test', fileName: 'b1' })],
+      generators: [makeFile({ type: 'generator', path: '/tmp/g1' })],
+      browserTests: [makeFile({ type: 'browser-test', path: '/tmp/b1' })],
       scripts: [],
       dataFiles: [
-        makeFile({ type: 'data-file', fileName: 'd1' }),
-        makeFile({ type: 'data-file', fileName: 'd2' }),
-        makeFile({ type: 'data-file', fileName: 'd3' }),
+        makeFile({ type: 'data-file', path: '/tmp/d1' }),
+        makeFile({ type: 'data-file', path: '/tmp/d2' }),
+        makeFile({ type: 'data-file', path: '/tmp/d3' }),
       ],
     })
 
@@ -134,11 +153,11 @@ describe('useFiles', () => {
 
   it('flags only categories with zero files as empty when search is blank', () => {
     mockStore({
-      recordings: [makeFile({ type: 'recording', fileName: 'r1' })],
+      recordings: [makeFile({ type: 'recording', path: '/tmp/r1' })],
       generators: [],
       browserTests: [],
       scripts: [],
-      dataFiles: [makeFile({ type: 'data-file', fileName: 'd1' })],
+      dataFiles: [makeFile({ type: 'data-file', path: '/tmp/d1' })],
     })
 
     const { result } = renderHook(() => useFiles(''))
@@ -170,19 +189,19 @@ describe('useFiles', () => {
         makeFile({
           type: 'recording',
           displayName: 'home-page',
-          fileName: 'h.har',
+          path: '/tmp/h.har',
         }),
         makeFile({
           type: 'recording',
           displayName: 'login-page',
-          fileName: 'l.har',
+          path: '/tmp/l.har',
         }),
       ],
       generators: [
         makeFile({
           type: 'generator',
           displayName: 'home-flow',
-          fileName: 'hf.k6g',
+          path: '/tmp/hf.k6g',
         }),
       ],
     })
@@ -201,19 +220,19 @@ describe('useFiles', () => {
         makeFile({
           type: 'generator',
           displayName: 'apple',
-          fileName: 'a.k6g',
+          path: '/tmp/a.k6g',
         }),
         makeFile({
           type: 'generator',
           displayName: 'banana',
-          fileName: 'b.k6g',
+          path: '/tmp/b.k6g',
         }),
       ],
       browserTests: [
         makeFile({
           type: 'browser-test',
           displayName: 'cherry',
-          fileName: 'c.k6b',
+          path: '/tmp/c.k6b',
         }),
       ],
     })

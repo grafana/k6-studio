@@ -1,48 +1,70 @@
 import Fuse, { IFuseOptions } from 'fuse.js'
-import { useMemo } from 'react'
+import { orderBy } from 'lodash-es'
+import { useEffect, useMemo } from 'react'
 
 import { useStudioUIStore } from '@/store/ui'
 import { StudioFile } from '@/types'
 import { withMatches } from '@/utils/fuse'
 
-function sortByDisplayName(files: Map<string, StudioFile>) {
-  return [...files.values()].sort((a, b) =>
-    a.displayName.localeCompare(b.displayName)
+function orderByFileName(files: Map<string, StudioFile>) {
+  return orderBy([...files.values()], (s) => s.displayName)
+}
+
+function toFileMap(files: StudioFile[]) {
+  return new Map(files.map((file) => [file.path, file]))
+}
+
+function useFolderContent() {
+  const recordings = useStudioUIStore((s) => orderByFileName(s.recordings))
+  const generators = useStudioUIStore((s) => orderByFileName(s.generators))
+  const browserTests = useStudioUIStore((s) => orderByFileName(s.browserTests))
+  const scripts = useStudioUIStore((s) => orderByFileName(s.scripts))
+  const dataFiles = useStudioUIStore((s) => orderByFileName(s.dataFiles))
+
+  const addFile = useStudioUIStore((s) => s.addFile)
+  const removeFile = useStudioUIStore((s) => s.removeFile)
+  const setFolderContent = useStudioUIStore((s) => s.setFolderContent)
+
+  useEffect(() => {
+    ;(async () => {
+      const files = await window.studio.ui.getFiles()
+
+      setFolderContent({
+        recordings: toFileMap(files.recordings),
+        generators: toFileMap(files.generators),
+        scripts: toFileMap(files.scripts),
+        dataFiles: toFileMap(files.dataFiles),
+        browserTests: toFileMap(files.browserTests),
+      })
+    })()
+  }, [setFolderContent])
+
+  useEffect(
+    () =>
+      window.studio.ui.onAddFile((file) => {
+        addFile(file)
+      }),
+    [addFile]
   )
+
+  useEffect(() => {
+    window.studio.ui.onRemoveFile((file) => {
+      removeFile(file)
+    })
+  }, [removeFile])
+
+  return {
+    recordings,
+    tests: [...generators, ...browserTests].sort((a, b) =>
+      a.displayName.localeCompare(b.displayName)
+    ),
+    scripts,
+    dataFiles,
+  }
 }
 
 export function useFiles(searchTerm: string) {
-  const recordingsMap = useStudioUIStore((s) => s.recordings)
-  const generatorsMap = useStudioUIStore((s) => s.generators)
-  const browserTestsMap = useStudioUIStore((s) => s.browserTests)
-  const scriptsMap = useStudioUIStore((s) => s.scripts)
-  const dataFilesMap = useStudioUIStore((s) => s.dataFiles)
-
-  const recordings = useMemo(
-    () => sortByDisplayName(recordingsMap),
-    [recordingsMap]
-  )
-  const generators = useMemo(
-    () => sortByDisplayName(generatorsMap),
-    [generatorsMap]
-  )
-  const browserTests = useMemo(
-    () => sortByDisplayName(browserTestsMap),
-    [browserTestsMap]
-  )
-  const scripts = useMemo(() => sortByDisplayName(scriptsMap), [scriptsMap])
-  const dataFiles = useMemo(
-    () => sortByDisplayName(dataFilesMap),
-    [dataFilesMap]
-  )
-
-  const tests = useMemo(
-    () =>
-      [...generators, ...browserTests].sort((a, b) =>
-        a.displayName.localeCompare(b.displayName)
-      ),
-    [generators, browserTests]
-  )
+  const files = useFolderContent()
 
   const searchIndex = useMemo(() => {
     const options: IFuseOptions<StudioFile> = {
@@ -58,19 +80,19 @@ export function useFiles(searchTerm: string) {
     }
 
     return {
-      recordings: new Fuse(recordings, options),
-      tests: new Fuse(tests, options),
-      scripts: new Fuse(scripts, options),
-      dataFiles: new Fuse(dataFiles, options),
+      recordings: new Fuse(files.recordings, options),
+      tests: new Fuse(files.tests, options),
+      scripts: new Fuse(files.scripts, options),
+      dataFiles: new Fuse(files.dataFiles, options),
     }
-  }, [recordings, tests, scripts, dataFiles])
+  }, [files])
 
   return useMemo(() => {
     const counts = {
-      recordings: recordings.length,
-      tests: tests.length,
-      scripts: scripts.length,
-      dataFiles: dataFiles.length,
+      recordings: files.recordings.length,
+      tests: files.tests.length,
+      scripts: files.scripts.length,
+      dataFiles: files.dataFiles.length,
     }
 
     const isSearching = searchTerm.trim() !== ''
@@ -82,7 +104,7 @@ export function useFiles(searchTerm: string) {
     }
 
     if (!isSearching) {
-      return { recordings, tests, scripts, dataFiles, counts, isEmpty }
+      return { ...files, counts, isEmpty }
     }
 
     return {
@@ -93,5 +115,5 @@ export function useFiles(searchTerm: string) {
       counts,
       isEmpty,
     }
-  }, [recordings, tests, scripts, dataFiles, searchIndex, searchTerm])
+  }, [files, searchIndex, searchTerm])
 }
