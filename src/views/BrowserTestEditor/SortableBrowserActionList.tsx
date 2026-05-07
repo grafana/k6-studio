@@ -24,7 +24,7 @@ import { css } from '@emotion/react'
 import { Flex } from '@radix-ui/themes'
 import { useState } from 'react'
 
-import { AnyBrowserAction } from '@/schemas/browserTest/v1/actions'
+import { AnyBrowserAction } from '@/schemas/browserTest'
 
 import { EditableAction } from './EditableAction'
 import { EditableActionDragHandle } from './EditableActionDragHandle'
