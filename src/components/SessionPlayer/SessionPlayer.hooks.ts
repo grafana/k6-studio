@@ -64,12 +64,25 @@ interface Pages {
   current: Page
 }
 
+export type PlayerMouseEvent = {
+  x: number
+  y: number
+  target: HTMLElement
+}
+
 interface UsePlayerOptions {
   session: DebugSession
   mount: HTMLDivElement | null
+  interactive?: boolean
+  onClick?: (event: PlayerMouseEvent) => void
 }
 
-export function usePlayer({ session, mount }: UsePlayerOptions) {
+export function usePlayer({
+  session,
+  mount,
+  interactive = false,
+  onClick,
+}: UsePlayerOptions) {
   const events = session.browser.replay
 
   const [player, setPlayer] = useState<EnhancedReplayer | null>(null)
@@ -140,6 +153,88 @@ export function usePlayer({ session, mount }: UsePlayerOptions) {
 
     setPlayer(newPlayer)
   }, [player, mount, session.state, events])
+
+  const onClickRef = useRef(onClick)
+
+  useEffect(() => {
+    onClickRef.current = onClick
+  })
+
+  useEffect(() => {
+    if (!player || !interactive || state === 'playing') {
+      return
+    }
+
+    player.enableInteract()
+
+    const addListeners = () => {
+      const target = player.iframe?.contentDocument?.documentElement
+
+      if (!target) {
+        return () => {}
+      }
+
+      const preventInteraction = (e: Event) => {
+        e.preventDefault()
+      }
+
+      const handleClick = (ev: PointerEvent) => {
+        ev.preventDefault()
+
+        const iframe = player.iframe
+
+        if (!iframe) {
+          return
+        }
+
+        const rect = iframe.getBoundingClientRect()
+
+        const x = rect.left + (ev.clientX / iframe.offsetWidth) * rect.width
+        const y = rect.top + (ev.clientY / iframe.offsetHeight) * rect.height
+
+        onClickRef.current?.({
+          x,
+          y,
+          target: ev.target as HTMLElement,
+        })
+      }
+
+      const blockedEvents = ['submit', 'keydown', 'keypress', 'contextmenu']
+
+      // Enabling interaction in rrweb's player allows the user to e.g. click links causing page navigations. We don't
+      // want that so we need to block these interactions ourself.
+      for (const ev of blockedEvents) {
+        target.addEventListener(ev, preventInteraction, true)
+      }
+
+      // Clicks events are handled separately since we want to trigger callbacks when these events happen.
+      target.addEventListener('click', handleClick, true)
+
+      return () => {
+        for (const ev of blockedEvents) {
+          target.removeEventListener(ev, preventInteraction, true)
+        }
+
+        target.removeEventListener('click', handleClick, true)
+      }
+    }
+
+    const handleSnapshotRebuilt = () => {
+      cleanupListeners()
+      cleanupListeners = addListeners()
+    }
+
+    let cleanupListeners = addListeners()
+
+    player.on(ReplayerEvents.FullsnapshotRebuilded, handleSnapshotRebuilt)
+
+    return () => {
+      player.disableInteract()
+      player.off(ReplayerEvents.FullsnapshotRebuilded, handleSnapshotRebuilt)
+
+      cleanupListeners()
+    }
+  }, [player, interactive, state])
 
   // Keep track of the current time for non-streaming playback.
   useEffect(() => {

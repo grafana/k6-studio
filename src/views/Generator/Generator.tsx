@@ -33,7 +33,7 @@ export function Generator() {
   const navigate = useNavigate()
 
   const file = useCurrentFile('generator')
-  const scriptPreview = useScriptPreview()
+  const scriptPreview = useScriptPreview(file.path)
 
   const {
     data: generatorFileData,

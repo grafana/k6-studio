@@ -50,8 +50,10 @@ export function BrowserTestEditorControls({
     navigateHomeOnDelete: true,
   })
 
-  const handleExportScript = (scriptName: string) => {
-    void window.studio.script.saveScript(preview, scriptName)
+  const handleExportScript = async (scriptName: string) => {
+    const scriptPath = await window.studio.fs.getScriptPath(scriptName)
+
+    await window.studio.script.saveScript(scriptPath, preview)
   }
 
   return (

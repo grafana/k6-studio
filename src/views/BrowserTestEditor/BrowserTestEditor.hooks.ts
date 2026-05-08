@@ -17,10 +17,13 @@ import {
   defaultBrowserTestOptions,
 } from '@/schemas/browserTest'
 import { useToast } from '@/store/ui/useToast'
+import { StudioFile } from '@/types'
 import { LoadProfileExecutorOptions, LoadZoneData } from '@/types/testOptions'
 import { getInitialStages } from '@/utils/generator'
 import { stripUndefined } from '@/utils/object'
 import { queryClient } from '@/utils/query'
+
+import { useDebugSession } from '../Validator/Validator.hooks'
 
 import {
   fromBrowserActionInstance,
@@ -128,26 +131,46 @@ export function useBrowserScriptPreview(
   return preview
 }
 
-export function useValidatorScript(
-  browserActions: BrowserActionInstance[],
+interface UseBrowserTestValidatorOptions {
+  file: StudioFile
+  actions: BrowserActionInstance[]
   options?: BrowserTestOptions
-) {
+}
+
+export function useBrowserTestValidator({
+  file,
+  actions,
+  options,
+}: UseBrowserTestValidatorOptions) {
+  const [shutdownDelay, setShutdownDelay] = useState(3000)
+
   // We add a timeout to the end of the script to give the page time to load the page, so that
   // there's something that the user can interact with. If we don't do this, k6 will stop before
   // any DOM mutations have been recorded.
-  const validatorActions: BrowserActionInstance[] = useMemo(
+  const actionsWithTimeout: BrowserActionInstance[] = useMemo(
     () => [
-      ...browserActions,
+      ...actions,
       {
         id: '_validator_timeout_',
         method: 'page.waitForTimeout',
-        timeout: 3000,
+        timeout: isNaN(shutdownDelay) ? 3000 : shutdownDelay,
       },
     ],
-    [browserActions]
+    [actions, shutdownDelay]
   )
 
-  return useBrowserScriptPreview(validatorActions, options)
+  const script = useBrowserScriptPreview(actionsWithTimeout, options)
+  const session = useDebugSession({
+    type: 'raw',
+    content: script,
+    name: file.fileName,
+  })
+
+  return {
+    ...session,
+    shutdownDelay,
+    setShutdownDelay,
+  }
 }
 
 // Browser tests start with `shared-iterations` and no stages, but the

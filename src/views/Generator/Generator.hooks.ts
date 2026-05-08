@@ -96,7 +96,8 @@ export function useScriptExport(generatorFilePath: string) {
       setScriptName(scriptName)
 
       try {
-        await exportScript(scriptName)
+        const scriptPath = await window.studio.fs.getScriptPath(scriptName)
+        await exportScript(scriptPath)
       } catch (error) {
         log.error(error)
 

@@ -1,21 +1,15 @@
 import { css } from '@emotion/react'
-import { Flex, Tabs, Text } from '@radix-ui/themes'
+import { Flex, Tabs } from '@radix-ui/themes'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import LogoGradient from '@/assets/logo-gradient.svg'
 import { FileNameHeader } from '@/components/FileNameHeader'
-import {
-  HighlightLocatorProvider,
-  useHighlightedLocator,
-} from '@/components/HighlightLocatorProvider'
+import { HighlightLocatorProvider } from '@/components/HighlightLocatorProvider'
 import { View } from '@/components/Layout/View'
-import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
-import { SessionPlayer } from '@/components/SessionPlayer/SessionPlayer'
 import {
   LogsSection,
   useConsoleFilter,
 } from '@/components/Validator/LogsSection'
-import { PersistentTabs } from '@/components/primitives/PersistentTabs'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import { useCurrentFile } from '@/hooks/useCurrentFile'
 import { routeMap } from '@/routeMap'
@@ -23,7 +17,6 @@ import { BrowserTestFile } from '@/schemas/browserTest'
 import { StudioFile } from '@/types'
 
 import { NetworkInspector } from '../Validator/Browser/NetworkInspector'
-import { useDebugSession } from '../Validator/Validator.hooks'
 
 import {
   useBrowserScriptPreview,
@@ -31,11 +24,13 @@ import {
   useBrowserTestEditorLayout,
   useBrowserTestState,
   useSaveBrowserTest,
-  useValidatorScript,
+  useBrowserTestValidator,
 } from './BrowserTestEditor.hooks'
 import { BrowserTestEditorControls } from './BrowserTestEditorControls'
 import { BrowserTestOptionsButton } from './BrowserTestOptionsButton'
+import { BrowserTestPreview } from './BrowserTestPreview'
 import { EditableBrowserActionList } from './EditableBrowserActionList'
+import { ContextMenuState } from './types'
 
 interface BrowserTestEditorViewProps {
   file: StudioFile
@@ -49,17 +44,23 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
   const { mutateAsync: saveBrowserTest } = useSaveBrowserTest(file.path)
 
   const consoleFilter = useConsoleFilter()
-  const highlightedLocator = useHighlightedLocator()
+
+  const [state, setState] = useState<ContextMenuState | null>(null)
 
   const test = useBrowserTestState(data)
 
   const previewScript = useBrowserScriptPreview(test.actions, test.options)
-  const validatorScript = useValidatorScript(test.actions, test.options)
 
-  const { session, startDebugging, stopDebugging } = useDebugSession({
-    type: 'raw',
-    content: validatorScript,
-    name: file.fileName,
+  const {
+    session,
+    shutdownDelay,
+    setShutdownDelay,
+    startDebugging,
+    stopDebugging,
+  } = useBrowserTestValidator({
+    file,
+    actions: test.actions,
+    options: test.options,
   })
 
   const handleSave = () => {
@@ -117,71 +118,15 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                   `}
                 >
                   <Panel id="main" minSize={200}>
-                    <PersistentTabs.Root asChild defaultValue="preview">
-                      <Flex direction="column" height="100%" width="100%">
-                        <PersistentTabs.List>
-                          <PersistentTabs.Trigger value="preview">
-                            Preview
-                          </PersistentTabs.Trigger>
-                          <PersistentTabs.Trigger value="script">
-                            Script
-                          </PersistentTabs.Trigger>
-                        </PersistentTabs.List>
-                        <PersistentTabs.Content
-                          css={css`
-                            flex: 1 1 0;
-                            overflow: hidden;
-                          `}
-                          value="preview"
-                        >
-                          <SessionPlayer
-                            key={session.id}
-                            initialPage={{
-                              title: 'k6 Studio',
-                              href: '',
-                              width: 1280,
-                              height: 720,
-                            }}
-                            placeholder="Waiting for the initial URL..."
-                            initialContent={
-                              <Flex
-                                align="center"
-                                justify="center"
-                                direction="column"
-                                gap="2"
-                              >
-                                <img
-                                  src={LogoGradient}
-                                  alt="k6 Studio"
-                                  css={css`
-                                    width: 64px;
-                                    height: 64px;
-                                  `}
-                                />
-                                <Text size="2" color="gray">
-                                  Run the test to see a preview...
-                                </Text>
-                              </Flex>
-                            }
-                            session={session}
-                            highlightedLocator={highlightedLocator}
-                          />
-                        </PersistentTabs.Content>
-                        <PersistentTabs.Content
-                          css={css`
-                            flex: 1 1 0;
-                            overflow: hidden;
-                          `}
-                          value="script"
-                        >
-                          <ReadOnlyEditor
-                            value={previewScript}
-                            showToolbar={false}
-                            language="typescript"
-                          />
-                        </PersistentTabs.Content>
-                      </Flex>
-                    </PersistentTabs.Root>
+                    <BrowserTestPreview
+                      state={state}
+                      session={session}
+                      previewScript={previewScript}
+                      shutdownDelay={shutdownDelay}
+                      onStateChange={setState}
+                      onAddAction={test.addAction}
+                      onShutdownDelayChange={setShutdownDelay}
+                    />
                   </Panel>
                   <Separator />
                   <Panel id="actions" minSize={400}>

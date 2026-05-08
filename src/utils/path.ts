@@ -98,6 +98,53 @@ export function isAbsolute(path: string): boolean {
   return getRoot(path) !== ''
 }
 
+export function relative(from: string, to: string): string {
+  const fromRoot = getRoot(from)
+  const toRoot = getRoot(to)
+
+  if (fromRoot !== toRoot) {
+    return to
+  }
+
+  const fromParts = resolveParts(splitParts(from, fromRoot))
+  const toParts = resolveParts(splitParts(to, toRoot))
+
+  let common = 0
+  while (
+    common < fromParts.length &&
+    common < toParts.length &&
+    fromParts[common] === toParts[common]
+  ) {
+    common++
+  }
+
+  const upLevels = fromParts.length - common
+  const segments = [
+    ...new Array<string>(upLevels).fill('..'),
+    ...toParts.slice(common),
+  ]
+
+  return segments.join(sep)
+}
+
+function resolveParts(parts: string[]): string[] {
+  const resolved: string[] = []
+
+  for (const part of parts) {
+    if (part === '..') {
+      if (resolved.length > 0 && resolved[resolved.length - 1] !== '..') {
+        resolved.pop()
+      } else {
+        resolved.push('..')
+      }
+    } else if (part !== '.') {
+      resolved.push(part)
+    }
+  }
+
+  return resolved
+}
+
 export interface ParsedPath {
   root: string
   dir: string

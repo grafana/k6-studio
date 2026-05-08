@@ -8,7 +8,7 @@ import {
   RoleElementSelector,
 } from '@/schemas/recording'
 
-import { getAriaDetails } from './utils/aria'
+import { getAriaDetails } from './aria'
 
 let _injectedScript: InjectedScript | null = null
 
@@ -19,8 +19,12 @@ function getInjectedScript(): InjectedScript {
   return _injectedScript
 }
 
-function queryAll(parts: { name: string; body: string }[]): Element[] {
+function queryAll(
+  document: Document,
+  parts: { name: string; body: string }[]
+): Element[] {
   const result = getInjectedScript().querySelectorAll({ parts }, document.body)
+
   return typeof result === 'string' ? [] : result
 }
 
@@ -28,6 +32,8 @@ function generateRoleSelector(
   element: Element,
   { roles, name }: AriaDetails
 ): RoleElementSelector | undefined {
+  const { HTMLElement } = element.ownerDocument.defaultView ?? window
+
   if (element instanceof HTMLElement === false) {
     return
   }
@@ -43,7 +49,7 @@ function generateRoleSelector(
   }
 
   const [selector] = applicableRoles.flatMap((role) => {
-    const matches = queryAll([
+    const matches = queryAll(element.ownerDocument, [
       {
         name: 'internal:role',
         body: `${role}[name=${JSON.stringify(name)}s]`,
@@ -68,6 +74,9 @@ function generateRoleSelector(
 }
 
 function generateAltTextSelector(element: Element): string | undefined {
+  const { HTMLImageElement, HTMLAreaElement, HTMLInputElement } =
+    element.ownerDocument.defaultView ?? window
+
   if (
     element instanceof HTMLImageElement === false &&
     element instanceof HTMLAreaElement === false &&
@@ -86,7 +95,7 @@ function generateAltTextSelector(element: Element): string | undefined {
     return undefined
   }
 
-  const matches = queryAll([
+  const matches = queryAll(element.ownerDocument, [
     { name: 'internal:attr', body: `[alt=${JSON.stringify(alt)}s]` },
   ])
 
@@ -101,6 +110,8 @@ function generateLabelSelector(
   element: Element,
   { labels }: AriaDetails
 ): string | undefined {
+  const { HTMLElement } = element.ownerDocument.defaultView ?? window
+
   if (element instanceof HTMLElement === false) {
     return undefined
   }
@@ -108,7 +119,7 @@ function generateLabelSelector(
   for (const label of labels) {
     const trimmed = label.trim()
 
-    const matches = queryAll([
+    const matches = queryAll(element.ownerDocument, [
       { name: 'internal:label', body: `${JSON.stringify(trimmed)}s` },
     ])
 
@@ -127,6 +138,9 @@ function generateLabelSelector(
 }
 
 function generatePlaceholderSelector(element: Element): string | undefined {
+  const { HTMLInputElement, HTMLTextAreaElement } =
+    element.ownerDocument.defaultView ?? window
+
   if (
     element instanceof HTMLInputElement === false &&
     element instanceof HTMLTextAreaElement === false
@@ -140,7 +154,7 @@ function generatePlaceholderSelector(element: Element): string | undefined {
     return undefined
   }
 
-  const matches = queryAll([
+  const matches = queryAll(element.ownerDocument, [
     {
       name: 'internal:attr',
       body: `[placeholder=${JSON.stringify(placeholder)}s]`,
@@ -159,6 +173,8 @@ function generatePlaceholderSelector(element: Element): string | undefined {
 }
 
 function generateTitleSelector(element: Element): string | undefined {
+  const { HTMLElement } = element.ownerDocument.defaultView ?? window
+
   if (element instanceof HTMLElement === false) {
     return undefined
   }
@@ -169,7 +185,7 @@ function generateTitleSelector(element: Element): string | undefined {
     return undefined
   }
 
-  const matches = queryAll([
+  const matches = queryAll(element.ownerDocument, [
     { name: 'internal:attr', body: `[title=${JSON.stringify(title)}s]` },
   ])
 
@@ -185,6 +201,8 @@ function generateTitleSelector(element: Element): string | undefined {
 }
 
 function generateTestIdSelector(element: Element): string | undefined {
+  const { HTMLElement } = element.ownerDocument.defaultView ?? window
+
   if (element instanceof HTMLElement === false) {
     return undefined
   }
@@ -195,7 +213,7 @@ function generateTestIdSelector(element: Element): string | undefined {
     return undefined
   }
 
-  const matches = queryAll([
+  const matches = queryAll(element.ownerDocument, [
     { name: 'internal:attr', body: `[data-testid=${JSON.stringify(testId)}s]` },
   ])
 
@@ -206,12 +224,14 @@ function generateTestIdSelector(element: Element): string | undefined {
   return testId
 }
 
-function generateSelectors(
+export function generateSelectors(
   element: Element,
   aria: AriaDetails
 ): ElementSelector {
   return {
-    css: finder(element, {}),
+    css: finder(element, {
+      root: element.ownerDocument.documentElement,
+    }),
     testId: generateTestIdSelector(element),
     alt: generateAltTextSelector(element),
     label: generateLabelSelector(element, aria),
@@ -221,7 +241,7 @@ function generateSelectors(
   }
 }
 
-export function getEventTarget(element: Element): BrowserEventTarget {
+export function getElementDetails(element: Element): BrowserEventTarget {
   const aria = getAriaDetails(element)
 
   return {

@@ -8,20 +8,23 @@ import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useProxyHealthCheck } from '@/hooks/useProxyHealthCheck'
 import { useRunChecks } from '@/hooks/useRunChecks'
 import { useRunLogs } from '@/hooks/useRunLogs'
+import {
+  selectFilteredRequests,
+  selectGeneratorData,
+  useGeneratorStore,
+} from '@/store/generator'
 import { ValidatorResult } from '@/views/Generator/ValidatorResult'
 
+import { generateScriptPreview } from './Generator.utils'
+
 interface ValidatorDialogProps {
-  script: string
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export function ValidatorDialog({
-  script,
-  open,
-  onOpenChange,
-}: ValidatorDialogProps) {
+export function ValidatorDialog({ open, onOpenChange }: ValidatorDialogProps) {
   const [isRunning, setIsRunning] = useState(false)
+  const [script, setScript] = useState('')
   const { proxyData, resetProxyData } = useListenProxyData()
   const { logs, resetLogs } = useRunLogs()
   const { checks, resetChecks } = useRunChecks()
@@ -51,8 +54,22 @@ export function ValidatorDialog({
     resetState()
     setIsRunning(true)
 
-    await window.studio.script.runScriptFromGenerator(script)
-  }, [resetState, script])
+    const scriptPath = await window.studio.fs.getTempScriptPath()
+
+    const state = useGeneratorStore.getState()
+    const generator = selectGeneratorData(state)
+    const recording = selectFilteredRequests(state)
+
+    const generated = await generateScriptPreview(
+      scriptPath,
+      generator,
+      recording
+    )
+
+    setScript(generated)
+
+    await window.studio.script.runScriptFromGenerator(generated, scriptPath)
+  }, [resetState])
 
   useEffect(() => {
     if (!open) return

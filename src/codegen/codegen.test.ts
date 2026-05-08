@@ -78,6 +78,7 @@ describe('Code generation', () => {
       expect(
         generateScript({
           recording: [],
+          scriptPath: '/project/Scripts/my-script.js',
           generator: {
             version: '2.0',
             recordingPath: 'test',
@@ -220,8 +221,11 @@ describe('Code generation', () => {
   })
 
   describe('generateDataFileDeclarations', () => {
-    it('should generate file declarations', async () => {
-      const files = [{ name: 'users.csv' }, { name: 'products.json' }]
+    it('should generate file declarations with paths relative to the script', async () => {
+      const files = [
+        { name: '/project/Data/users.csv' },
+        { name: '/project/Data/products.json' },
+      ]
 
       const expectedResult = await prettify(`
         const FILES = {
@@ -233,9 +237,11 @@ describe('Code generation', () => {
           }),
         };`)
 
-      expect(await prettify(generateDataFileDeclarations(files))).toBe(
-        expectedResult
-      )
+      expect(
+        await prettify(
+          generateDataFileDeclarations(files, '/project/Scripts/my-script.js')
+        )
+      ).toBe(expectedResult)
     })
   })
 

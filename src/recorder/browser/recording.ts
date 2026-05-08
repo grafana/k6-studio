@@ -2,10 +2,6 @@ import { nanoid } from 'nanoid'
 
 import { BrowserEvent } from '@/schemas/recording'
 
-import { eventManager } from './manager'
-import { BrowserExtensionClient } from './messaging'
-import { getEventTarget } from './target'
-import { getTabId } from './utils'
 import {
   findAssociatedElement,
   findInteractiveElement,
@@ -13,7 +9,12 @@ import {
   isNativeCheckbox,
   isNativeRadio,
   isNonButtonInput,
-} from './utils/dom'
+} from '../../utils/dom/dom'
+import { getElementDetails } from '../../utils/dom/selectors'
+
+import { eventManager } from './manager'
+import { BrowserExtensionClient } from './messaging'
+import { getTabId } from './utils'
 import { SettingsStorage } from './view/SettingsProvider'
 
 export function startRecording(
@@ -121,7 +122,7 @@ export function startRecording(
       type: 'click',
       eventId: nanoid(),
       timestamp: Date.now(),
-      target: getEventTarget(clickTarget),
+      target: getElementDetails(clickTarget),
       button,
       modifiers: {
         ctrl: ev.ctrlKey,
@@ -138,7 +139,7 @@ export function startRecording(
       type: 'select-change',
       eventId: nanoid(),
       timestamp: Date.now(),
-      target: getEventTarget(target),
+      target: getElementDetails(target),
       selected: [...target.selectedOptions].map((option) => option.value),
       multiple: target.multiple,
       tab: getTabId(),
@@ -150,7 +151,7 @@ export function startRecording(
       type: 'input-change',
       eventId: nanoid(),
       timestamp: Date.now(),
-      target: getEventTarget(target),
+      target: getElementDetails(target),
       value: target.value,
       sensitive: false,
       tab: getTabId(),
@@ -173,7 +174,7 @@ export function startRecording(
         type: 'check-change',
         eventId: nanoid(),
         timestamp: Date.now(),
-        target: getEventTarget(target),
+        target: getElementDetails(target),
         checked: target.checked,
         tab: getTabId(),
       })
@@ -190,7 +191,7 @@ export function startRecording(
         type: 'radio-change',
         eventId: nanoid(),
         timestamp: Date.now(),
-        target: getEventTarget(target),
+        target: getElementDetails(target),
         name: target.name,
         value: target.value,
         tab: getTabId(),
@@ -203,7 +204,7 @@ export function startRecording(
       type: 'input-change',
       eventId: nanoid(),
       timestamp: Date.now(),
-      target: getEventTarget(target),
+      target: getElementDetails(target),
       value: target.value,
       sensitive: target.type === 'password',
       tab: getTabId(),
@@ -257,8 +258,8 @@ export function startRecording(
       type: 'submit-form',
       eventId: nanoid(),
       timestamp: Date.now(),
-      form: getEventTarget(ev.target),
-      submitter: getEventTarget(ev.submitter),
+      form: getElementDetails(ev.target),
+      submitter: getElementDetails(ev.submitter),
       tab: getTabId(),
     })
   })

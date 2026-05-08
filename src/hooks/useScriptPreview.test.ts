@@ -43,7 +43,9 @@ describe('useScriptPreview', () => {
   it('should initialize with an empty preview and no error', () => {
     const mockState = createGeneratorState()
     vi.mocked(useGeneratorStore.getState).mockReturnValue(mockState)
-    const { result } = renderHook(() => useScriptPreview())
+    const { result } = renderHook(() =>
+      useScriptPreview('/project/Generators/test.k6g')
+    )
 
     expect(result.current).toEqual({ valid: true, preview: '' })
   })
@@ -61,7 +63,9 @@ describe('useScriptPreview', () => {
     vi.mocked(groupProxyData).mockReturnValue(mockGroupedRequests)
     vi.mocked(generateScriptPreview).mockResolvedValue(mockScript)
 
-    const { result } = renderHook(() => useScriptPreview())
+    const { result } = renderHook(() =>
+      useScriptPreview('/project/Generators/test.k6g')
+    )
 
     await waitFor(() => {
       expect(result.current).toEqual({ valid: true, preview: mockScript })
@@ -82,7 +86,9 @@ describe('useScriptPreview', () => {
     vi.mocked(groupProxyData).mockReturnValue(mockGroupedRequests)
     vi.mocked(generateScriptPreview).mockRejectedValue(mockError)
 
-    const { result } = renderHook(() => useScriptPreview())
+    const { result } = renderHook(() =>
+      useScriptPreview('/project/Generators/test.k6g')
+    )
 
     await waitFor(() => {
       expect(result.current).toEqual({ valid: false, error: mockError })

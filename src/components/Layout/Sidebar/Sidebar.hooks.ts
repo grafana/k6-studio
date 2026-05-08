@@ -88,8 +88,23 @@ export function useFiles(searchTerm: string) {
   }, [files])
 
   return useMemo(() => {
-    if (searchTerm.match(/^\s*$/)) {
-      return files
+    const counts = {
+      recordings: files.recordings.length,
+      tests: files.tests.length,
+      scripts: files.scripts.length,
+      dataFiles: files.dataFiles.length,
+    }
+
+    const isSearching = searchTerm.trim() !== ''
+    const isEmpty = {
+      recordings: counts.recordings === 0 && !isSearching,
+      tests: counts.tests === 0 && !isSearching,
+      scripts: counts.scripts === 0 && !isSearching,
+      dataFiles: counts.dataFiles === 0 && !isSearching,
+    }
+
+    if (!isSearching) {
+      return { ...files, counts, isEmpty }
     }
 
     return {
@@ -97,6 +112,8 @@ export function useFiles(searchTerm: string) {
       tests: searchIndex.tests.search(searchTerm).map(withMatches),
       scripts: searchIndex.scripts.search(searchTerm).map(withMatches),
       dataFiles: searchIndex.dataFiles.search(searchTerm).map(withMatches),
+      counts,
+      isEmpty,
     }
   }, [files, searchIndex, searchTerm])
 }

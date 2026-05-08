@@ -7,13 +7,14 @@ import {
   useGeneratorStore,
   GeneratorStore,
 } from '@/store/generator'
+import * as path from '@/utils/path'
 import { generateScriptPreview } from '@/views/Generator/Generator.utils'
 
 export type ScriptPreview =
   | { valid: true; preview: string }
   | { valid: false; error: Error }
 
-export function useScriptPreview(): ScriptPreview {
+export function useScriptPreview(generatorPath: string): ScriptPreview {
   const [state, setState] = useState<ScriptPreview>({
     valid: true,
     preview: '',
@@ -21,12 +22,19 @@ export function useScriptPreview(): ScriptPreview {
 
   // Connect to the store on mount, disconnect on unmount, regenerate preview on state change
   useEffect(() => {
+    const scriptPath = generatorPathToScriptPath(generatorPath)
+
     const updatePreview = debounce(async (storeState: GeneratorStore) => {
       try {
         const generator = selectGeneratorData(storeState)
         const requests = selectFilteredRequests(storeState)
 
-        const preview = await generateScriptPreview(generator, requests)
+        const preview = await generateScriptPreview(
+          scriptPath,
+          generator,
+          requests
+        )
+
         setState({ valid: true, preview })
       } catch (error) {
         console.error(error)
@@ -47,7 +55,12 @@ export function useScriptPreview(): ScriptPreview {
       updatePreview(state)
     )
     return unsubscribe
-  }, [])
+  }, [generatorPath])
 
   return state
+}
+
+function generatorPathToScriptPath(generatorPath: string) {
+  const { dir, name } = path.parse(generatorPath)
+  return path.join(dir, `${name}.js`)
 }
