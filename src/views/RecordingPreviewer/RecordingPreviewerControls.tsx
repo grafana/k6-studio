@@ -59,26 +59,31 @@ export function RecordingPreviewControls({
     navigate(getRoutePath('home'))
   }
 
-  const handleExportBrowserScript = (fileName: string) => {
+  const handleExportBrowserScript = async (fileName: string) => {
     const test = convertEventsToTest({
       browserEvents,
     })
 
-    emitScript(test)
-      .then((script) => window.studio.script.saveScript(script, fileName))
-      .then((filePath) => {
-        if (!filePath) return
+    try {
+      const path = await window.studio.fs.getScriptPath(fileName)
 
-        navigate(getViewPath('script', filePath))
-      })
-      .catch((err) => {
-        console.error(err)
+      if (path === undefined) {
+        return
+      }
 
-        showToast({
-          title: 'Failed to export browser script.',
-          status: 'error',
-        })
+      const script = await emitScript(test)
+
+      await window.studio.script.saveScript(path, script)
+
+      navigate(getViewPath('script', path))
+    } catch (err) {
+      console.error(err)
+
+      showToast({
+        title: 'Failed to export browser script.',
+        status: 'error',
       })
+    }
   }
 
   return (
