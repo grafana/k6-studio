@@ -176,10 +176,18 @@ const LocatorToBeCheckedActionSchema = ActionBaseSchema.extend({
   options: GenericOptions.optional(),
 })
 
+const ExpectedValueSchema = z.object({
+  current: z.union([z.literal('single'), z.literal('multiple')]),
+  values: z.object({
+    single: z.string().optional(),
+    multiple: z.array(z.string()).optional(),
+  }),
+})
+
 const LocatorToHaveValueActionSchema = ActionBaseSchema.extend({
   method: z.literal('locator.toHaveValue'),
   locator: LocatorOptionsSchema,
-  values: z.array(z.string()),
+  expected: ExpectedValueSchema,
   options: GenericOptions.optional(),
 })
 

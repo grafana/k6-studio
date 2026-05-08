@@ -187,7 +187,12 @@ export function createToHaveValueAction({
   return {
     id: crypto.randomUUID(),
     method: 'locator.toHaveValue',
-    values: [''],
+    expected: {
+      current: 'single',
+      values: {
+        single: '',
+      },
+    },
     locator: locator ?? {
       current: 'role',
       values: {

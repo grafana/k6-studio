@@ -5,7 +5,15 @@ import { LocatorToHaveValueAction } from '@/schemas/browserTest'
 import { LocatorForm } from '../../ActionForms/forms/LocatorForm'
 import { ToHaveValuesForm } from '../../ActionForms/forms/ToHaveValuesForm'
 
-const VALUE_ROLES = ['textbox', 'combobox', 'searchbox', 'spinbutton']
+const SINGLE_VALUE_ROLES = [
+  'textbox',
+  'combobox',
+  'listbox',
+  'searchbox',
+  'spinbutton',
+]
+
+const MULTI_VALUE_ROLES = ['combobox', 'listbox', 'menu', 'radiogroup']
 
 interface ToHaveValueActionBodyProps {
   action: LocatorToHaveValueAction
@@ -22,9 +30,16 @@ export function ToHaveValueActionBody({
     onChange({ ...action, locator })
   }
 
-  const handleChangeValues = (values: string[]) => {
-    onChange({ ...action, values })
+  const handleChangeExpected = (
+    expected: LocatorToHaveValueAction['expected']
+  ) => {
+    onChange({ ...action, expected })
   }
+
+  const suggestedRoles =
+    action.expected.current === 'single'
+      ? SINGLE_VALUE_ROLES
+      : MULTI_VALUE_ROLES
 
   return (
     <Grid
@@ -36,11 +51,14 @@ export function ToHaveValueActionBody({
       Expect
       <LocatorForm
         state={action.locator}
-        suggestedRoles={VALUE_ROLES}
+        suggestedRoles={suggestedRoles}
         onChange={handleChangeLocator}
       />
-      to have value
-      <ToHaveValuesForm values={action.values} onChange={handleChangeValues} />
+      to have {action.expected.current === 'single' ? 'value' : 'values'}
+      <ToHaveValuesForm
+        expected={action.expected}
+        onChange={handleChangeExpected}
+      />
     </Grid>
   )
 }
