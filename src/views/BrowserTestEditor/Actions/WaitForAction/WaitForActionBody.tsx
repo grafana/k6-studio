@@ -5,20 +5,17 @@ import { LocatorWaitForAction } from '@/schemas/browserTest'
 
 import { LocatorForm } from '../../ActionForms/forms/LocatorForm'
 import { WaitForOptionsForm } from '../../ActionForms/forms/WaitForOptionsForm'
-import { WithEditorMetadata } from '../../types'
 
 interface WaitForActionBodyProps {
-  action: WithEditorMetadata<LocatorWaitForAction>
-  onChange: (action: WithEditorMetadata<LocatorWaitForAction>) => void
+  action: LocatorWaitForAction
+  onChange: (action: LocatorWaitForAction) => void
 }
 
 export function WaitForActionBody({
   action,
   onChange,
 }: WaitForActionBodyProps) {
-  const handleChangeLocator = (
-    locator: WithEditorMetadata<LocatorWaitForAction>['locator']
-  ) => {
+  const handleChangeLocator = (locator: LocatorWaitForAction['locator']) => {
     onChange({
       ...action,
       locator,

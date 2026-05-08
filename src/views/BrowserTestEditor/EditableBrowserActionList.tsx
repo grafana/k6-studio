@@ -11,6 +11,7 @@ import { CirclePlusIcon } from 'lucide-react'
 import { ReactNode } from 'react'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
+import { AnyBrowserAction } from '@/schemas/browserTest'
 
 import { SortableBrowserActionList } from './SortableBrowserActionList'
 import {
@@ -26,13 +27,12 @@ import {
   createWaitForAction,
   createWaitForTimeoutAction,
 } from './actionFactories'
-import { BrowserActionInstance } from './types'
 
 interface EditableBrowserActionListProps {
-  actions: BrowserActionInstance[]
-  onAddAction: (action: BrowserActionInstance) => void
+  actions: AnyBrowserAction[]
+  onAddAction: (action: AnyBrowserAction) => void
   onRemoveAction: (actionId: string) => void
-  onChangeAction: (action: BrowserActionInstance) => void
+  onChangeAction: (action: AnyBrowserAction) => void
   onReorderActions: (activeId: string, overId: string) => void
   optionsButton?: ReactNode
 }
@@ -89,7 +89,7 @@ export function EditableBrowserActionList({
 }
 
 interface NewActionMenuProps {
-  onAddAction: (action: BrowserActionInstance) => void
+  onAddAction: (action: AnyBrowserAction) => void
 }
 
 function NewActionMenu({ onAddAction }: NewActionMenuProps) {

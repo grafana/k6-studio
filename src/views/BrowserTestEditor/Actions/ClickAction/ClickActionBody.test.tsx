@@ -6,11 +6,9 @@ import { HighlightLocatorProvider } from '@/components/HighlightLocatorProvider'
 import { LocatorClickAction } from '@/schemas/browserTest'
 import { buildClickAction } from '@/test/factories/browserActions'
 
-import { WithEditorMetadata } from '../../types'
-
 import { ClickActionBody } from './ClickActionBody'
 
-type ClickAction = WithEditorMetadata<LocatorClickAction>
+type ClickAction = LocatorClickAction
 
 function renderBody(
   action: ClickAction,

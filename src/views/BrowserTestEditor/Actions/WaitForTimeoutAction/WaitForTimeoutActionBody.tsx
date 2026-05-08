@@ -3,11 +3,10 @@ import { Grid } from '@radix-ui/themes'
 import { PageWaitForTimeoutAction } from '@/schemas/browserTest'
 
 import { TimeoutForm } from '../../ActionForms/forms/TimeoutForm'
-import { WithEditorMetadata } from '../../types'
 
 interface WaitForTimeoutActionBodyProps {
-  action: WithEditorMetadata<PageWaitForTimeoutAction>
-  onChange: (action: WithEditorMetadata<PageWaitForTimeoutAction>) => void
+  action: PageWaitForTimeoutAction
+  onChange: (action: PageWaitForTimeoutAction) => void
 }
 
 export function WaitForTimeoutActionBody({

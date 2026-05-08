@@ -6,17 +6,14 @@ import { LocatorClickAction, LocatorClickButton } from '@/schemas/browserTest'
 import { ClickButtonForm } from '../../ActionForms/forms/ClickButtonForm'
 import { ClickOptionsForm } from '../../ActionForms/forms/ClickOptionsForm'
 import { LocatorForm } from '../../ActionForms/forms/LocatorForm'
-import { WithEditorMetadata } from '../../types'
 
 interface ClickActionBodyProps {
-  action: WithEditorMetadata<LocatorClickAction>
-  onChange: (action: WithEditorMetadata<LocatorClickAction>) => void
+  action: LocatorClickAction
+  onChange: (action: LocatorClickAction) => void
 }
 
 export function ClickActionBody({ action, onChange }: ClickActionBodyProps) {
-  const handleChangeLocator = (
-    locator: WithEditorMetadata<LocatorClickAction>['locator']
-  ) => {
+  const handleChangeLocator = (locator: LocatorClickAction['locator']) => {
     onChange({ ...action, locator })
   }
 

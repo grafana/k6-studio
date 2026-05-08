@@ -68,6 +68,31 @@ export const ElementLocatorSchema = z.discriminatedUnion('type', [
   GetByTextLocatorSchema,
 ])
 
+const LocatorTypeSchema = z.union([
+  CssLocatorSchema.shape.type,
+  GetByRoleLocatorSchema.shape.type,
+  GetByTestIdLocatorSchema.shape.type,
+  GetByAltTextLocatorSchema.shape.type,
+  GetByLabelLocatorSchema.shape.type,
+  GetByPlaceholderLocatorSchema.shape.type,
+  GetByTitleLocatorSchema.shape.type,
+  GetByTextLocatorSchema.shape.type,
+])
+
+export const LocatorOptionsSchema = z.object({
+  current: LocatorTypeSchema,
+  values: z.object({
+    css: CssLocatorSchema.optional(),
+    role: GetByRoleLocatorSchema.optional(),
+    testid: GetByTestIdLocatorSchema.optional(),
+    alt: GetByAltTextLocatorSchema.optional(),
+    label: GetByLabelLocatorSchema.optional(),
+    placeholder: GetByPlaceholderLocatorSchema.optional(),
+    title: GetByTitleLocatorSchema.optional(),
+    text: GetByTextLocatorSchema.optional(),
+  }),
+})
+
 export type ElementLocator = z.infer<typeof ElementLocatorSchema>
 export type CssLocator = z.infer<typeof CssLocatorSchema>
 export type RoleLocator = z.infer<typeof GetByRoleLocatorSchema>
@@ -77,3 +102,4 @@ export type LabelLocator = z.infer<typeof GetByLabelLocatorSchema>
 export type PlaceholderLocator = z.infer<typeof GetByPlaceholderLocatorSchema>
 export type TitleLocator = z.infer<typeof GetByTitleLocatorSchema>
 export type TextLocator = z.infer<typeof GetByTextLocatorSchema>
+export type LocatorOptions = z.infer<typeof LocatorOptionsSchema>

@@ -1,11 +1,12 @@
-import { BrowserActionInstance, LocatorOptions } from './types'
+import { AnyBrowserAction } from '@/schemas/browserTest'
+import { LocatorOptions } from '@/schemas/locator'
 
 interface LocatorFactoryOptions {
   locator?: LocatorOptions
 }
 
-type ActionByMethod<M extends BrowserActionInstance['method']> = Extract<
-  BrowserActionInstance,
+type ActionByMethod<M extends AnyBrowserAction['method']> = Extract<
+  AnyBrowserAction,
   { method: M }
 >
 

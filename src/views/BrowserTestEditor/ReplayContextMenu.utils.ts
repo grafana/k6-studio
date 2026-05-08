@@ -8,12 +8,13 @@ import {
   getTitleLocator,
 } from '@/codegen/browser/selectors'
 import { PlayerMouseEvent } from '@/components/SessionPlayer/SessionPlayer.hooks'
+import { LocatorOptions } from '@/schemas/locator'
 import { ElementSelector } from '@/schemas/recording'
 import { getAriaDetails } from '@/utils/dom/aria'
 import { findInteractiveElement } from '@/utils/dom/dom'
 import { generateSelectors } from '@/utils/dom/selectors'
 
-import { ContextMenuState, LocatorOptions } from './types'
+import { ContextMenuState } from './types'
 
 export function buildLocatorOptions(
   selectors: ElementSelector

@@ -3,11 +3,10 @@ import { Grid } from '@radix-ui/themes'
 import { PageGotoAction } from '@/schemas/browserTest'
 
 import { UrlForm } from '../../ActionForms/forms/UrlForm'
-import { WithEditorMetadata } from '../../types'
 
 interface GoToActionBodyProps {
-  action: WithEditorMetadata<PageGotoAction>
-  onChange: (action: WithEditorMetadata<PageGotoAction>) => void
+  action: PageGotoAction
+  onChange: (action: PageGotoAction) => void
 }
 
 export function GoToActionBody({ action, onChange }: GoToActionBodyProps) {
