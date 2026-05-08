@@ -18,13 +18,17 @@ import { ValidatorResult } from '@/views/Generator/ValidatorResult'
 import { generateScriptPreview } from './Generator.utils'
 
 interface ValidatorDialogProps {
+  script: string
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export function ValidatorDialog({ open, onOpenChange }: ValidatorDialogProps) {
+export function ValidatorDialog({
+  script,
+  open,
+  onOpenChange,
+}: ValidatorDialogProps) {
   const [isRunning, setIsRunning] = useState(false)
-  const [script, setScript] = useState('')
   const { proxyData, resetProxyData } = useListenProxyData()
   const { logs, resetLogs } = useRunLogs()
   const { checks, resetChecks } = useRunChecks()
@@ -65,8 +69,6 @@ export function ValidatorDialog({ open, onOpenChange }: ValidatorDialogProps) {
       generator,
       recording
     )
-
-    setScript(generated)
 
     await window.studio.script.runScriptFromGenerator(generated, scriptPath)
   }, [resetState])

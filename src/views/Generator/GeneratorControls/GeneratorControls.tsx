@@ -129,6 +129,7 @@ export function GeneratorControls({
             onOpenChange={setIsRunInCloudDialogOpen}
           />
           <ValidatorDialog
+            script={script.preview}
             open={isValidatorDialogOpen}
             onOpenChange={setIsValidatorDialogOpen}
           />
