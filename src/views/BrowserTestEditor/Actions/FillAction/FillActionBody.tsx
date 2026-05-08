@@ -4,19 +4,16 @@ import { LocatorFillAction } from '@/schemas/browserTest'
 
 import { FillValueForm } from '../../ActionForms/forms/FillValueForm'
 import { LocatorForm } from '../../ActionForms/forms/LocatorForm'
-import { WithEditorMetadata } from '../../types'
 
 const FILL_ROLES = ['textbox', 'searchbox', 'combobox']
 
 interface FillActionBodyProps {
-  action: WithEditorMetadata<LocatorFillAction>
-  onChange: (action: WithEditorMetadata<LocatorFillAction>) => void
+  action: LocatorFillAction
+  onChange: (action: LocatorFillAction) => void
 }
 
 export function FillActionBody({ action, onChange }: FillActionBodyProps) {
-  const handleChangeLocator = (
-    locator: WithEditorMetadata<LocatorFillAction>['locator']
-  ) => {
+  const handleChangeLocator = (locator: LocatorFillAction['locator']) => {
     onChange({ ...action, locator })
   }
 

@@ -4,11 +4,10 @@ import { LocatorSelectOptionAction } from '@/schemas/browserTest'
 
 import { LocatorForm } from '../../ActionForms/forms/LocatorForm'
 import { SelectOptionValuesForm } from '../../ActionForms/forms/SelectOptionValuesForm'
-import { WithEditorMetadata } from '../../types'
 
 interface SelectOptionActionBodyProps {
-  action: WithEditorMetadata<LocatorSelectOptionAction>
-  onChange: (action: WithEditorMetadata<LocatorSelectOptionAction>) => void
+  action: LocatorSelectOptionAction
+  onChange: (action: LocatorSelectOptionAction) => void
 }
 
 export function SelectOptionActionBody({
@@ -16,7 +15,7 @@ export function SelectOptionActionBody({
   onChange,
 }: SelectOptionActionBodyProps) {
   const handleChangeLocator = (
-    locator: WithEditorMetadata<LocatorSelectOptionAction>['locator']
+    locator: LocatorSelectOptionAction['locator']
   ) => {
     onChange({ ...action, locator })
   }

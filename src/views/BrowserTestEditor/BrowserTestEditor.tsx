@@ -70,7 +70,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
 
     const browserTestData: BrowserTestFile = {
       ...data,
-      actions: test.plainActions,
+      actions: test.actions,
       options: test.options,
     }
 
