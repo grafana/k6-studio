@@ -16,7 +16,6 @@ import {
   launchProxyAndAttachEmitter,
   stopProxyProcess,
 } from './main/proxy'
-import { cleanUpLegacyTemporaryScripts } from './main/script'
 import { getSettings, initSettings } from './main/settings'
 import { closeWatcher, configureWatcher } from './main/watcher'
 import { showWindow, trackWindowState } from './main/window'
@@ -70,7 +69,6 @@ const createWindow = async () => {
 
   // clean leftover proxies if any, this might happen on windows
   await cleanUpProxies()
-  await cleanUpLegacyTemporaryScripts()
 
   const { width, height, x, y } = k6StudioState.appSettings.windowState
 

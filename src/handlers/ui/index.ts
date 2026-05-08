@@ -9,6 +9,7 @@ import {
   RECORDINGS_PATH,
   GENERATORS_PATH,
   SCRIPTS_PATH,
+  TEMP_SCRIPT_SUFFIX,
   DATA_FILES_PATH,
   BROWSER_TESTS_PATH,
 } from '@/constants/workspace'
@@ -80,6 +81,7 @@ export function initialize() {
       .filter((f) => typeof f !== 'undefined')
 
     const scripts = (await readdir(SCRIPTS_PATH, { withFileTypes: true }))
+      .filter((f) => f.isFile() && !f.name.endsWith(TEMP_SCRIPT_SUFFIX))
       .map((f) => getStudioFileFromPath(path.join(SCRIPTS_PATH, f.name)))
       .filter((f) => typeof f !== 'undefined')
 

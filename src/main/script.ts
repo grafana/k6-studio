@@ -2,10 +2,9 @@ import { dialog, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import { writeFile, unlink } from 'fs/promises'
 import { ChildProcessWithoutNullStreams } from 'node:child_process'
-import { readdir } from 'node:fs/promises'
 import path from 'path'
 
-import { SCRIPTS_PATH, TEMP_K6_ARCHIVE_PATH } from '@/constants/workspace'
+import { TEMP_K6_ARCHIVE_PATH, TEMP_SCRIPT_SUFFIX } from '@/constants/workspace'
 import { ScriptHandler } from '@/handlers/script/types'
 import { getProxyArguments } from '@/main/proxy'
 import { ProxySettings } from '@/types/settings'
@@ -15,8 +14,6 @@ import { createTrackingServer } from '@/utils/k6/tracking'
 import { instrumentScriptFromPath as instrumentScriptFromPath } from './runner/instrumentation'
 
 export type K6Process = ChildProcessWithoutNullStreams
-
-const TEMP_SCRIPT_SUFFIX = '__tmp-k6studio__.js'
 
 export const showScriptSelectDialog = async (browserWindow: BrowserWindow) => {
   const result = await dialog.showOpenDialog(browserWindow, {
@@ -160,24 +157,5 @@ const archiveScript = async (
     }
 
     throw error
-  }
-}
-
-// We used to have temporary scripts created in the `Scripts/` folder which we then filtered. Now
-// that we create the scripts in the temp directory, we no longer need to filter them for the UI.
-// This function is kept to clean up any leftover temp scripts from previous versions.
-export async function cleanUpLegacyTemporaryScripts() {
-  try {
-    const files = await readdir(SCRIPTS_PATH, { withFileTypes: true })
-    const tempScripts = files.filter(
-      (f) => f.isFile() && f.name.endsWith(TEMP_SCRIPT_SUFFIX)
-    )
-
-    // This is a best effort cleanup, so we use `allSettled` to ignore any errors.
-    await Promise.allSettled(
-      tempScripts.map((f) => unlink(path.join(SCRIPTS_PATH, f.name)))
-    )
-  } catch {
-    // Ignore any errors
   }
 }
