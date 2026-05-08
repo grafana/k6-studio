@@ -181,6 +181,28 @@ export function createToBeCheckedAction({
   }
 }
 
+export function createToHaveValueAction({
+  locator,
+}: LocatorFactoryOptions = {}): ActionByMethod<'locator.toHaveValue'> {
+  return {
+    id: crypto.randomUUID(),
+    method: 'locator.toHaveValue',
+    values: [''],
+    locator: locator ?? {
+      current: 'role',
+      values: {
+        role: {
+          type: 'role',
+          role: 'textbox',
+          options: {
+            exact: false,
+          },
+        },
+      },
+    },
+  }
+}
+
 export function createGoToAction(): ActionByMethod<'page.goto'> {
   return {
     id: crypto.randomUUID(),

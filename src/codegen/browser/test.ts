@@ -422,6 +422,20 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
             locator: getLocator(action.locator),
           },
         }
+      case 'locator.toHaveValue': {
+        const [first, ...rest] = action.values
+        return {
+          type: 'assert',
+          nodeId: crypto.randomUUID(),
+          operation: {
+            type: 'has-values',
+            expected: [first ?? '', ...rest],
+          },
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
+      }
       case 'locator.fill':
         return {
           type: 'type-text',

@@ -17,6 +17,7 @@ import {
   createFillAction,
   createSelectOptionAction,
   createToBeCheckedAction,
+  createToHaveValueAction,
   createUncheckAction,
   createWaitForAction,
 } from './actionFactories'
@@ -70,6 +71,12 @@ export function ReplayContextMenu({
               onClick={() => onAddAction(createClearAction({ locator }))}
             >
               Clear input
+            </DropdownMenu.Item>
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item
+              onClick={() => onAddAction(createToHaveValueAction({ locator }))}
+            >
+              Expect to have value
             </DropdownMenu.Item>
           </>
         )}
