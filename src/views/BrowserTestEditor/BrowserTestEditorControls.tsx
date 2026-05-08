@@ -51,7 +51,11 @@ export function BrowserTestEditorControls({
   })
 
   const handleExportScript = async (scriptName: string) => {
-    const scriptPath = await window.studio.fs.getScriptPath(scriptName)
+    const scriptPath = await window.studio.fs.showSaveAsDialog(scriptName)
+
+    if (scriptPath === undefined) {
+      return
+    }
 
     await window.studio.script.saveScript(scriptPath, preview)
   }

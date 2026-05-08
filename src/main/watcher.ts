@@ -6,7 +6,6 @@ import {
   GENERATORS_PATH,
   SCRIPTS_PATH,
   DATA_FILES_PATH,
-  TEMP_SCRIPT_SUFFIX,
   BROWSER_TESTS_PATH,
 } from '@/constants/workspace'
 import { UIHandler } from '@/handlers/ui/types'
@@ -30,7 +29,7 @@ export function configureWatcher(browserWindow: BrowserWindow) {
   k6StudioState.watcher.on('add', (filePath) => {
     const file = getStudioFileFromPath(filePath)
 
-    if (!file || filePath.endsWith(TEMP_SCRIPT_SUFFIX)) {
+    if (!file) {
       return
     }
 
@@ -40,7 +39,7 @@ export function configureWatcher(browserWindow: BrowserWindow) {
   k6StudioState.watcher.on('unlink', (filePath) => {
     const file = getStudioFileFromPath(filePath)
 
-    if (!file || filePath.endsWith(TEMP_SCRIPT_SUFFIX)) {
+    if (!file) {
       return
     }
 

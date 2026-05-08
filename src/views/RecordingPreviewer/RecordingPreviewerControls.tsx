@@ -65,7 +65,7 @@ export function RecordingPreviewControls({
     })
 
     try {
-      const path = await window.studio.fs.getScriptPath(fileName)
+      const path = await window.studio.fs.showSaveAsDialog(fileName)
 
       if (path === undefined) {
         return
