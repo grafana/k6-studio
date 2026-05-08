@@ -15,6 +15,10 @@ vi.mock('ai', () => ({
   streamText: vi.fn(),
 }))
 
+vi.mock('@sentry/electron/main', () => ({
+  captureException: vi.fn(),
+}))
+
 vi.mock('./grafanaAssistantProvider', () => ({
   GrafanaAssistantLanguageModel: vi.fn(),
 }))
@@ -75,6 +79,60 @@ describe('handleStreamChat', () => {
     expect(event.sender.send).toHaveBeenCalledWith(AiHandler.StreamChatEnd, {
       id: 'test-request-id',
     })
+  })
+
+  it('strips undefined values from tool-result outputs before calling streamText', async () => {
+    const { convertToModelMessages, streamText } = await import('ai')
+    vi.mocked(streamText).mockClear()
+
+    const messagesWithUndefined = [
+      {
+        role: 'user' as const,
+        content: [{ type: 'text' as const, text: 'hi' }],
+      },
+      {
+        role: 'tool' as const,
+        content: [
+          {
+            type: 'tool-result' as const,
+            toolCallId: 'call-1',
+            toolName: 'getRequestsMetadata',
+            output: {
+              type: 'json' as const,
+              value: [
+                { id: '1', statusCode: 200 },
+                { id: '2', statusCode: undefined },
+              ],
+            },
+          },
+        ],
+      },
+    ]
+
+    vi.mocked(convertToModelMessages).mockReturnValue(
+      messagesWithUndefined as never
+    )
+    vi.mocked(streamText).mockReturnValue({} as never)
+
+    const { streamMessages } = await import('./streamMessages')
+    vi.mocked(streamMessages).mockResolvedValue()
+
+    const event = createMockEvent()
+    const request = createRequest()
+
+    await handleStreamChat(event, request)
+
+    expect(streamText).toHaveBeenCalledOnce()
+    const passedMessages = vi.mocked(streamText).mock.calls[0]![0].messages
+    const toolMessage = passedMessages![1] as {
+      content: Array<{
+        output: { value: Array<Record<string, unknown>> }
+      }>
+    }
+    const secondItem = toolMessage.content[0]!.output.value[1]
+
+    expect(secondItem).not.toHaveProperty('statusCode')
+    expect(secondItem).toEqual({ id: '2' })
   })
 
   it('sends Unknown error when catch receives a non-Error value', async () => {
