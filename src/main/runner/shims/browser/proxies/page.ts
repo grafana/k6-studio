@@ -3,21 +3,20 @@ import { Page } from 'k6/browser'
 import { createSingleEntryGuard, ProxyOptions, trackLog } from '../utils'
 
 import { locatorProxy } from './locator'
-import { pageDetail } from './symbols'
 import { isLocatorMethod } from './utils'
 
 const shouldInstrument = createSingleEntryGuard()
 
 declare module 'k6/browser' {
   interface Page {
-    [pageDetail]: true
+    [Symbol.pageDetail]: true
   }
 }
 
 export function pageProxy(target: Page): ProxyOptions<Page> {
   // There's no way of checking if an object is a Page instance, but by adding a symbol
   // property we can check for its existence and apply special serialization of the page.
-  target[pageDetail] = true
+  target[Symbol.pageDetail] = true
 
   if (shouldInstrument(target)) {
     target.on('console', (msg) => {
