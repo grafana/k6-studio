@@ -2,6 +2,7 @@ import { dialog, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { createReadStream, createWriteStream } from 'node:fs'
+import { unlink } from 'node:fs/promises'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import path from 'path'
 import * as tar from 'tar-stream'
@@ -92,24 +93,6 @@ export const runScript = async ({
   const archivePath = await archiveScript(scriptPath, browserWindow)
   const modifiedPath = await installEntrypoint(archivePath)
 
-  // // 1. Get an instrumented version of the script content
-  // const modifiedScript = await instrumentScriptFromPath(scriptPath)
-
-  // // 2. Save the enhanced script content to a temp file in the same directory as the original script
-  // // (k6 will look for modules/data files in the same directory as the script)
-  // const dirname = path.dirname(scriptPath)
-
-  // const tempFileName = getTempScriptName()
-  // const tempScriptPath = path.join(dirname, tempFileName)
-
-  // await writeFile(tempScriptPath, modifiedScript)
-
-  // // 3. Archive the script and its dependencies
-  // // const archivePath = await archiveScript(tempScriptPath, browserWindow)
-
-  // // 4. Delete the temp script file
-  // await unlink(tempScriptPath)
-
   const proxyArgs = await getProxyArguments(proxySettings, {
     prefix: '',
   })
@@ -132,7 +115,6 @@ export const runScript = async ({
     browserWindow.webContents.send(ScriptHandler.BrowserReplay, ev.events)
   })
 
-  // 5. Run the test
   const client = new K6Client()
 
   const testRun = client.run({
@@ -210,30 +192,68 @@ const archiveScript = async (
 
 function installEntrypoint(archivePath: string): Promise<string> {
   const resolvers = Promise.withResolvers<string>()
-  const abortController = new AbortController()
 
   const targetPath = path.join(
     path.dirname(archivePath),
-    'modified-' + path.basename(archivePath)
+    'shimmed-' + path.basename(archivePath)
   )
 
-  const readStream = createReadStream(archivePath, {
-    signal: abortController.signal,
-  })
-
-  const writeStream = createWriteStream(targetPath, {
-    signal: abortController.signal,
-  })
+  // We do all of the modifications to the archive in a single pass to avoid having to read
+  // potentially large files multiple times.
+  const readStream = createReadStream(archivePath)
+  const writeStream = createWriteStream(targetPath)
 
   const extract = tar.extract()
   const pack = tar.pack()
 
   let metadata: z.infer<typeof ArchiveManifestSchema> | null = null
   let scriptContent: string | null = null
+  let settled = false
 
   const testingLibs: Array<{ path: string; url: string }> = []
 
+  const fail = (error: unknown) => {
+    if (settled) {
+      return
+    }
+
+    settled = true
+
+    log.error('Failed to install entrypoint', error)
+
+    readStream.destroy()
+    writeStream.destroy()
+    extract.destroy()
+    pack.destroy()
+
+    // Best-effort cleanup of any partial output file.
+    unlink(targetPath).catch(() => {})
+
+    resolvers.reject(error instanceof Error ? error : new Error(String(error)))
+  }
+
+  readStream.on('error', fail)
+  writeStream.on('error', fail)
+  extract.on('error', fail)
+  pack.on('error', fail)
+
+  // A k6 archive is a tarball with the following structure:
+  //
+  // - metadata.json: contains the original entry script path and the options used to run the script
+  // - data: contains the content of the entry script (the path to this file is stored in metadata.json)
+  // - file/: contains all modules and data files imported by the script, incl. the entry script (symlinked to data)
+  // - https/: contains any remote modules imported by the script.
+  //
+  // We never want to modify any of the user's original files, (incl. their filenames, since this would
+  // alter stack traces) so we avoid modifying anything inside file/.
   extract.on('entry', (header, stream, next) => {
+    // The 'data' entry is where the content of the entry script is stored and the code that actually
+    // runs when you start a test. The path given by `metadata.filename` is just a symlink to this file.
+    //
+    // In order to install our entrypoint, we need to modify the content of the 'data' entry but doing
+    // so would overwrite the original script content. To work around this, we store the original script
+    // content in memory until we have the metadata and can write the content at its original path in the
+    // modified archive.
     if (header.name === 'data') {
       const chunks: Buffer[] = []
 
@@ -250,6 +270,7 @@ function installEntrypoint(archivePath: string): Promise<string> {
       return
     }
 
+    // Read and parse the metadata so that we can modify the entrypoint.
     if (header.name === 'metadata.json') {
       const chunks: Buffer[] = []
 
@@ -268,12 +289,18 @@ function installEntrypoint(archivePath: string): Promise<string> {
       return
     }
 
+    // We don't want to release a new version of k6 Studio every time there's a new version of k6-testing,
+    // so we detect imports of k6-testing based on a pattern and install a shim for each version we encounter.
     if (isSupportedTestingLibrary(header.name)) {
+      // We will be installing our shim at the path of the original module, and then import this renamed file in the shim.
       const modifiedPath = path.join(
         path.dirname(header.name),
         'index.original.js'
       )
 
+      // Paths for remote modules look pretty much like URLs but with the protocol separator replaced by a slash,
+      // e.g. https/jslib.k6.io/k6-testing/0.1.0/index.js. We can reconstruct the original URL by reading the
+      // first segment as the protocol.
       const [protocol, ...rest] = modifiedPath.split('/')
       const url = `${protocol}://${rest.join('/')}`
 
@@ -289,79 +316,96 @@ function installEntrypoint(archivePath: string): Promise<string> {
       return
     }
 
+    // Any other entry we just add back to the archive without modification
     stream.pipe(pack.entry(header, next))
   })
 
   extract.on('finish', async () => {
-    if (metadata === null) {
-      abortController.abort()
+    try {
+      if (metadata === null) {
+        throw new Error('Metadata not found in archive')
+      }
 
-      resolvers.reject(new Error('Metadata not found in archive'))
+      if (scriptContent === null) {
+        throw new Error('Script content not found in archive')
+      }
 
-      return
-    }
+      // `open` and `fs.open` read files relative to the entry script, so we need to make sure that
+      // our entry script is placed in the same directory as the original one so that paths are resolved correctly.
+      const scriptPath = fileURLToPath(metadata.filename)
+      const entrypointPath = path.join(
+        path.dirname(scriptPath),
+        getTempScriptName()
+      )
 
-    const scriptPath = fileURLToPath(metadata.filename)
-    const entrypointPath = path.join(
-      path.dirname(scriptPath),
-      getTempScriptName()
-    )
-
-    const modifiedMetadata = {
-      ...metadata,
-      filename: pathToFileURL(entrypointPath).toString(),
-      options: {
-        ...metadata.options,
-        vus: null,
-        iterations: null,
-        stages: null,
-        scenarios: {
-          default: {
-            executor: 'shared-iterations',
-            vus: 1,
-            iterations: 1,
-            options: metadata.options.scenarios?.default?.options,
+      const modifiedMetadata = {
+        ...metadata,
+        // Change the entrypoint to point to our instrumented script instead of the original one.
+        filename: pathToFileURL(entrypointPath).toString(),
+        options: {
+          ...metadata.options,
+          vus: null,
+          iterations: null,
+          stages: null,
+          // Even though the user's script might have multiple scenarios, our entrypoint only has one
+          // and it should always run 1 iteration with 1 VU.
+          scenarios: {
+            default: {
+              executor: 'shared-iterations',
+              vus: 1,
+              iterations: 1,
+              // We do, however, need to remember whether the user is using k6/browser or not
+              options: metadata.options.scenarios?.default?.options,
+            },
           },
         },
-      },
-    }
-
-    pack.entry(
-      { name: 'metadata.json' },
-      JSON.stringify(modifiedMetadata, null, 2)
-    )
-
-    const entrypointScript = await instrumentScriptFromPath(
-      './' + path.basename(scriptPath)
-    )
-
-    pack.entry({ name: 'data' }, entrypointScript)
-    pack.entry(
-      {
-        name: path.join('file', entrypointPath),
-        linkname: 'data',
-      },
-      ''
-    )
-
-    pack.entry({ name: path.join('file', scriptPath) }, scriptContent ?? '')
-
-    if (testingLibs.length > 0) {
-      const shim = await readResource('k6-testing-shim')
-
-      for (const lib of testingLibs) {
-        const newModule = replaceModules(shim, {
-          __K6_TESTING_EXPECT_PATH__: lib.url,
-        })
-
-        pack.entry({ name: lib.path }, newModule)
       }
-    }
 
-    pack.finalize()
+      pack.entry(
+        { name: 'metadata.json' },
+        JSON.stringify(modifiedMetadata, null, 2)
+      )
+
+      const entrypointScript = await instrumentScriptFromPath(
+        './' + path.basename(scriptPath)
+      )
+
+      // Write our entrypoint and setup a symlink.
+      pack.entry({ name: 'data' }, entrypointScript)
+      pack.entry(
+        {
+          name: path.join('file', entrypointPath),
+          linkname: 'data',
+        },
+        ''
+      )
+
+      // Write the original script content at the original entry path
+      pack.entry({ name: path.join('file', scriptPath) }, scriptContent)
+
+      if (testingLibs.length > 0) {
+        const shim = await readResource('k6-testing-shim')
+
+        // Install a shim for each imported k6-testing version.
+        for (const lib of testingLibs) {
+          // Make sure the shim imports the original module that we renamed earlier.
+          const newModule = replaceModules(shim, {
+            __K6_TESTING_EXPECT_PATH__: lib.url,
+          })
+
+          pack.entry({ name: lib.path }, newModule)
+        }
+      }
+
+      pack.finalize()
+    } catch (error) {
+      fail(error)
+    }
   })
 
   writeStream.on('close', () => {
+    if (settled) return
+    settled = true
     resolvers.resolve(targetPath)
   })
 
