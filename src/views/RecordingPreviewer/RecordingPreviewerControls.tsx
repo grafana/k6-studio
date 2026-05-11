@@ -9,13 +9,16 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { emitScript } from '@/codegen/browser'
+import { convertEventsToActions } from '@/codegen/browser/convertEventsToActions'
 import { convertEventsToTest } from '@/codegen/browser/test'
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { RichDropdownMenuItem } from '@/components/RichDropdownMenuItem'
+import { useCreateBrowserTest } from '@/hooks/useCreateBrowserTest'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { getRoutePath, getViewPath } from '@/routeMap'
 import { BrowserEvent } from '@/schemas/recording'
+import { useFeaturesStore } from '@/store/features'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 
@@ -42,7 +45,17 @@ export function RecordingPreviewControls({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const isDiscardable = Boolean(state?.discardable)
 
+  const isBrowserEditorEnabled = useFeaturesStore(
+    (state) => state.features['browser-test-editor']
+  )
+  const createBrowserTest = useCreateBrowserTest()
+
   const handleCreateGenerator = () => createTestGenerator(file.path)
+
+  const handleCreateBrowserTest = () => {
+    const actions = convertEventsToActions(browserEvents)
+    void createBrowserTest(actions)
+  }
 
   const handleDelete = useDeleteFile({
     file,
@@ -116,9 +129,17 @@ export function RecordingPreviewControls({
           <RichDropdownMenuItem
             icon={<MonitorIcon />}
             label="Browser test"
-            description="Export a k6 script simulating browser interactions"
+            description={
+              isBrowserEditorEnabled
+                ? 'Create a browser test from recorded interactions'
+                : 'Export a k6 script simulating browser interactions'
+            }
             disabled={browserEvents.length === 0}
-            onClick={() => setShowExportDialog(true)}
+            onClick={
+              isBrowserEditorEnabled
+                ? handleCreateBrowserTest
+                : () => setShowExportDialog(true)
+            }
           />
         </DropdownMenu.Content>
       </DropdownMenu.Root>
