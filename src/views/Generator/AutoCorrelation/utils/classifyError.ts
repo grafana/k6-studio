@@ -1,5 +1,6 @@
 export type AssistantErrorCategory =
   | 'auth-expired'
+  | 'context-exceeded'
   | 'quota-exceeded'
   | 'network'
   | 'unknown'
@@ -17,6 +18,13 @@ export function classifyError(message: string): AssistantErrorInfo {
     lowerMessage.includes('fetch failed')
   ) {
     return { category: 'network', message }
+  }
+
+  if (
+    lowerMessage.includes('prompt is too long') ||
+    lowerMessage.includes('context_window_exceeded')
+  ) {
+    return { category: 'context-exceeded', message }
   }
 
   if (

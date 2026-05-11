@@ -18,6 +18,7 @@ import {
   createSelectOptionAction,
   createToBeCheckedAction,
   createToHaveValueAction,
+  createToBeVisibleAction,
   createUncheckAction,
   createWaitForAction,
 } from './actionFactories'
@@ -122,6 +123,11 @@ export function ReplayContextMenu({
           </DropdownMenu.Item>
         )}
         <DropdownMenu.Separator />
+        <DropdownMenu.Item
+          onClick={() => onAddAction(createToBeVisibleAction({ locator }))}
+        >
+          Expect to be visible
+        </DropdownMenu.Item>
         <DropdownMenu.Item
           onClick={() => onAddAction(createWaitForAction({ locator }))}
         >

@@ -1,6 +1,9 @@
-import { convertToModelMessages, streamText } from 'ai'
+import { captureException } from '@sentry/electron/main'
+import { convertToModelMessages, ModelMessage, streamText } from 'ai'
 import { ipcMain, IpcMainEvent } from 'electron'
 import log from 'electron-log/main'
+
+import { stripUndefined } from '@/utils/object'
 
 import * as assistantAuth from './a2a/assistantAuth'
 import { GrafanaAssistantLanguageModel } from './grafanaAssistantProvider'
@@ -22,12 +25,14 @@ export async function handleStreamChat(
   event: IpcMainEvent,
   request: StreamChatRequest
 ) {
-  const messages = convertToModelMessages(request.messages)
-
   const abortController = new AbortController()
   activeAbortControllers.set(request.id, abortController)
 
   try {
+    const messages = sanitizeModelMessages(
+      convertToModelMessages(request.messages)
+    )
+
     const response = streamText({
       model: grafanaAssistantModel,
       messages,
@@ -47,6 +52,8 @@ export async function handleStreamChat(
     }
 
     log.error('handleStreamChat error:', error)
+    captureException(error, { tags: { component: 'ai-chat' } })
+
     event.sender.send(AiHandler.StreamChatChunk, {
       id: request.id,
       chunk: {
@@ -60,6 +67,26 @@ export async function handleStreamChat(
   } finally {
     activeAbortControllers.delete(request.id)
   }
+}
+
+// AI SDK's Zod schema rejects `undefined` in tool-result outputs.
+// Strip undefined-valued keys before validation.
+function sanitizeModelMessages(messages: ModelMessage[]): ModelMessage[] {
+  return messages.map((message) => {
+    if (message.role !== 'tool') return message
+
+    return {
+      ...message,
+      content: message.content.map((part) => {
+        if (part.type !== 'tool-result') return part
+
+        return {
+          ...part,
+          output: stripUndefined(part.output) as typeof part.output,
+        }
+      }),
+    }
+  })
 }
 
 function handleAbortStreamChat(

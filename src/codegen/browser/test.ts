@@ -427,6 +427,18 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
             locator: getLocator(action.locator),
           },
         }
+      case 'locator.toBeVisible':
+        return {
+          type: 'assert',
+          nodeId: crypto.randomUUID(),
+          operation: {
+            type: 'is-visible',
+            visible: action.visible,
+          },
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
       case 'locator.toHaveValue': {
         return {
           type: 'assert',

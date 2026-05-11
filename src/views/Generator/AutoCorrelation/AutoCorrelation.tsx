@@ -74,7 +74,14 @@ export function AutoCorrelation({
   }
 
   if (error) {
-    return <ErrorMessage error={error} onRetry={restart} onReset={reset} />
+    return (
+      <ErrorMessage
+        error={error}
+        onRetry={restart}
+        onReset={reset}
+        onClose={close}
+      />
+    )
   }
 
   return (
