@@ -1,5 +1,6 @@
 import { dialog, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
+import type { Options } from 'k6/options'
 import { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { createWriteStream } from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -19,6 +20,7 @@ import {
   instrumentScriptFromPath as instrumentScriptFromPath,
   replaceModules,
 } from './runner/instrumentation'
+import { configureOptions, getDebugTarget } from './runner/utils'
 
 export type K6Process = ChildProcessWithoutNullStreams
 
@@ -305,26 +307,16 @@ function createArchive(scriptPath: string): Promise<string> {
         getTempScriptName()
       )
 
+      // Resolve the options the same way that the entrypoint does
+      const target = getDebugTarget(metadata.options as Options)
+      const options = configureOptions(metadata.options as Options, target)
+
       const modifiedMetadata = {
         ...metadata,
         // Change the entrypoint to point to our instrumented script instead of the original one.
         filename: pathToFileURL(entrypointPath).toString(),
         options: {
-          ...metadata.options,
-          vus: null,
-          iterations: null,
-          stages: null,
-          // Even though the user's script might have multiple scenarios, our entrypoint only has one
-          // and it should always run 1 iteration with 1 VU.
-          scenarios: {
-            default: {
-              executor: 'shared-iterations',
-              vus: 1,
-              iterations: 1,
-              // We do, however, need to remember whether the user is using k6/browser or not
-              options: metadata.options.scenarios?.default?.options,
-            },
-          },
+          ...options,
         },
       }
 
@@ -341,14 +333,14 @@ function createArchive(scriptPath: string): Promise<string> {
       pack.entry({ name: 'data' }, entrypointScript)
       pack.entry(
         {
-          name: path.join('file', entrypointPath),
+          name: path.posix.join('file', entrypointPath),
           linkname: 'data',
         },
         ''
       )
 
       // Write the original script content at the original entry path
-      pack.entry({ name: path.join('file', scriptPath) }, scriptContent)
+      pack.entry({ name: path.posix.join('file', scriptPath) }, scriptContent)
 
       if (testingLibs.length > 0) {
         const shim = await readResource('k6-testing-shim')
