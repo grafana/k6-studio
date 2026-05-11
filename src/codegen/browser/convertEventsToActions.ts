@@ -1,5 +1,6 @@
+import { AnyBrowserAction, LocatorClickModifier } from '@/schemas/browserTest'
 import { LocatorOptions } from '@/schemas/locator'
-import { ElementSelector } from '@/schemas/recording'
+import { BrowserEvent, ClickEvent, ElementSelector } from '@/schemas/recording'
 
 function hasNonEmptyValue(value: string | undefined): value is string {
   return value !== undefined && value.trim() !== ''
@@ -57,4 +58,96 @@ export function toLocatorOptions(selector: ElementSelector): LocatorOptions {
     current: pickBestLocatorType(selector),
     values,
   }
+}
+
+function buildClickOptions(event: ClickEvent) {
+  const modifiers: LocatorClickModifier[] = []
+  if (event.modifiers.alt) modifiers.push('Alt')
+  if (event.modifiers.ctrl) modifiers.push('Control')
+  if (event.modifiers.meta) modifiers.push('Meta')
+  if (event.modifiers.shift) modifiers.push('Shift')
+
+  const isDefaultClick = event.button === 'left' && modifiers.length === 0
+
+  if (isDefaultClick) return undefined
+
+  return {
+    ...(event.button !== 'left' && { button: event.button }),
+    ...(modifiers.length > 0 && { modifiers }),
+  }
+}
+
+function convertEvent(event: BrowserEvent): AnyBrowserAction | undefined {
+  switch (event.type) {
+    case 'navigate-to-page':
+      return { id: crypto.randomUUID(), method: 'page.goto', url: event.url }
+
+    case 'reload-page':
+      return { id: crypto.randomUUID(), method: 'page.reload' }
+
+    case 'click':
+      return {
+        id: crypto.randomUUID(),
+        method: 'locator.click',
+        locator: toLocatorOptions(event.target.selectors),
+        options: buildClickOptions(event),
+      }
+
+    case 'input-change':
+      return {
+        id: crypto.randomUUID(),
+        method: 'locator.fill',
+        locator: toLocatorOptions(event.target.selectors),
+        value: event.value,
+      }
+
+    case 'check-change':
+      return {
+        id: crypto.randomUUID(),
+        method: event.checked ? 'locator.check' : 'locator.uncheck',
+        locator: toLocatorOptions(event.target.selectors),
+      }
+
+    case 'radio-change':
+      return {
+        id: crypto.randomUUID(),
+        method: 'locator.click',
+        locator: toLocatorOptions(event.target.selectors),
+      }
+
+    case 'select-change':
+      return {
+        id: crypto.randomUUID(),
+        method: 'locator.selectOption',
+        locator: toLocatorOptions(event.target.selectors),
+        values: event.selected.map((value) => ({ value })),
+      }
+
+    case 'submit-form':
+      return {
+        id: crypto.randomUUID(),
+        method: 'locator.click',
+        locator: toLocatorOptions(event.submitter.selectors),
+      }
+
+    case 'wait-for':
+      return {
+        id: crypto.randomUUID(),
+        method: 'locator.waitFor',
+        locator: toLocatorOptions(event.target.selectors),
+        options: event.options,
+      }
+
+    case 'assert':
+      return undefined
+  }
+}
+
+export function convertEventsToActions(
+  events: BrowserEvent[]
+): AnyBrowserAction[] {
+  return events.flatMap((event) => {
+    const action = convertEvent(event)
+    return action ? [action] : []
+  })
 }
