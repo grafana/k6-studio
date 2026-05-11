@@ -251,5 +251,30 @@ describe('path (windows)', () => {
         path.relative('C:\\project\\Scripts', 'D:\\project\\Data\\users.csv')
       ).toBe('D:\\project\\Data\\users.csv')
     })
+
+    it('treats segments case-insensitively', () => {
+      expect(
+        path.relative('C:\\Project\\Scripts', 'C:\\project\\Data\\users.csv')
+      ).toBe('..\\Data\\users.csv')
+    })
+
+    it('treats drive letters case-insensitively', () => {
+      expect(
+        path.relative('c:\\Project\\Scripts', 'C:\\Project\\Data\\users.csv')
+      ).toBe('..\\Data\\users.csv')
+    })
+
+    it('treats UNC roots case-insensitively', () => {
+      expect(
+        path.relative(
+          '\\\\Server\\Share\\Scripts',
+          '\\\\server\\share\\Data\\users.csv'
+        )
+      ).toBe('..\\Data\\users.csv')
+    })
+
+    it('returns empty string for paths that differ only in case', () => {
+      expect(path.relative('C:\\Project\\foo', 'c:\\project\\FOO')).toBe('')
+    })
   })
 })

@@ -98,11 +98,19 @@ export function isAbsolute(path: string): boolean {
   return getRoot(path) !== ''
 }
 
+function isSegmentEqual(a: string, b: string) {
+  if (isWindows) {
+    return a.toLowerCase() === b.toLowerCase()
+  }
+
+  return a === b
+}
+
 export function relative(from: string, to: string): string {
   const fromRoot = getRoot(from)
   const toRoot = getRoot(to)
 
-  if (fromRoot !== toRoot) {
+  if (!isSegmentEqual(fromRoot, toRoot)) {
     return to
   }
 
@@ -110,11 +118,19 @@ export function relative(from: string, to: string): string {
   const toParts = resolveParts(splitParts(to, toRoot))
 
   let common = 0
-  while (
-    common < fromParts.length &&
-    common < toParts.length &&
-    fromParts[common] === toParts[common]
-  ) {
+
+  while (common < fromParts.length && common < toParts.length) {
+    const from = fromParts[common]
+    const to = toParts[common]
+
+    if (from === undefined || to === undefined) {
+      throw new Error('Unexpected undefined segment')
+    }
+
+    if (!isSegmentEqual(from, to)) {
+      break
+    }
+
     common++
   }
 
