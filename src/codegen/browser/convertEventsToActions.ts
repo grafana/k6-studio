@@ -71,26 +71,45 @@ export function toLocatorOptions(selector: ElementSelector): LocatorOptions {
   }
 }
 
-function buildClickOptions(event: ClickEvent) {
+function buildClickOptions(event: ClickEvent, nextEvent?: BrowserEvent) {
   const modifiers: LocatorClickModifier[] = []
   if (event.modifiers.alt) modifiers.push('Alt')
   if (event.modifiers.ctrl) modifiers.push('Control')
   if (event.modifiers.meta) modifiers.push('Meta')
   if (event.modifiers.shift) modifiers.push('Shift')
 
-  const isDefaultClick = event.button === 'left' && modifiers.length === 0
+  const waitForNavigation = isFollowedByImplicitNavigation(event, nextEvent)
+  const isDefaultClick =
+    event.button === 'left' && modifiers.length === 0 && !waitForNavigation
 
   if (isDefaultClick) return undefined
 
   return {
     ...(event.button !== 'left' && { button: event.button }),
     ...(modifiers.length > 0 && { modifiers }),
+    ...(waitForNavigation && { waitForNavigation: true }),
   }
 }
 
-function convertEvent(event: BrowserEvent): AnyBrowserAction | undefined {
+function isFollowedByImplicitNavigation(
+  event: BrowserEvent,
+  nextEvent?: BrowserEvent
+): boolean {
+  return (
+    nextEvent?.type === 'navigate-to-page' &&
+    nextEvent.source === 'implicit' &&
+    nextEvent.tab === event.tab
+  )
+}
+
+function convertEvent(
+  event: BrowserEvent,
+  nextEvent?: BrowserEvent
+): AnyBrowserAction | undefined {
   switch (event.type) {
     case 'navigate-to-page':
+      if (event.source === 'implicit') return undefined
+
       return { id: crypto.randomUUID(), method: 'page.goto', url: event.url }
 
     case 'reload-page':
@@ -101,7 +120,7 @@ function convertEvent(event: BrowserEvent): AnyBrowserAction | undefined {
         id: crypto.randomUUID(),
         method: 'locator.click',
         locator: toLocatorOptions(event.target.selectors),
-        options: buildClickOptions(event),
+        options: buildClickOptions(event, nextEvent),
       }
 
     case 'input-change':
@@ -134,12 +153,16 @@ function convertEvent(event: BrowserEvent): AnyBrowserAction | undefined {
         values: event.selected.map((value) => ({ value })),
       }
 
-    case 'submit-form':
+    case 'submit-form': {
+      const waitForNav = isFollowedByImplicitNavigation(event, nextEvent)
+
       return {
         id: crypto.randomUUID(),
         method: 'locator.click',
         locator: toLocatorOptions(event.submitter.selectors),
+        options: waitForNav ? { waitForNavigation: true } : undefined,
       }
+    }
 
     case 'wait-for':
       return {
@@ -157,8 +180,8 @@ function convertEvent(event: BrowserEvent): AnyBrowserAction | undefined {
 export function convertEventsToActions(
   events: BrowserEvent[]
 ): AnyBrowserAction[] {
-  return events.flatMap((event) => {
-    const action = convertEvent(event)
+  return events.flatMap((event, index) => {
+    const action = convertEvent(event, events[index + 1])
     return action ? [action] : []
   })
 }

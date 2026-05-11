@@ -343,6 +343,124 @@ describe('convertEventsToActions', () => {
     })
   })
 
+  it('skips implicit navigate-to-page events', () => {
+    const events: BrowserEvent[] = [
+      {
+        type: 'navigate-to-page',
+        eventId: '1',
+        timestamp: 0,
+        tab: 'tab1',
+        url: 'https://example.com/login',
+        source: 'implicit',
+      },
+    ]
+    const actions = convertEventsToActions(events)
+    expect(actions).toHaveLength(0)
+  })
+
+  it('keeps address-bar and history navigate-to-page events', () => {
+    const events: BrowserEvent[] = [
+      {
+        type: 'navigate-to-page',
+        eventId: '1',
+        timestamp: 0,
+        tab: 'tab1',
+        url: 'https://example.com',
+        source: 'address-bar',
+      },
+      {
+        type: 'navigate-to-page',
+        eventId: '2',
+        timestamp: 100,
+        tab: 'tab1',
+        url: 'https://example.com/page',
+        source: 'history',
+      },
+    ]
+    const actions = convertEventsToActions(events)
+    expect(actions).toHaveLength(2)
+  })
+
+  it('sets waitForNavigation on click followed by implicit navigation', () => {
+    const events: BrowserEvent[] = [
+      {
+        type: 'click',
+        eventId: '1',
+        timestamp: 0,
+        tab: 'tab1',
+        target: makeTarget('a.link'),
+        button: 'left',
+        modifiers: { ctrl: false, shift: false, alt: false, meta: false },
+      },
+      {
+        type: 'navigate-to-page',
+        eventId: '2',
+        timestamp: 100,
+        tab: 'tab1',
+        url: 'https://example.com/next',
+        source: 'implicit',
+      },
+    ]
+    const actions = convertEventsToActions(events)
+    expect(actions).toHaveLength(1)
+    expect(actions[0]).toMatchObject({
+      method: 'locator.click',
+      options: { waitForNavigation: true },
+    })
+  })
+
+  it('does not set waitForNavigation when next navigation is on different tab', () => {
+    const events: BrowserEvent[] = [
+      {
+        type: 'click',
+        eventId: '1',
+        timestamp: 0,
+        tab: 'tab1',
+        target: makeTarget('a.link'),
+        button: 'left',
+        modifiers: { ctrl: false, shift: false, alt: false, meta: false },
+      },
+      {
+        type: 'navigate-to-page',
+        eventId: '2',
+        timestamp: 100,
+        tab: 'tab2',
+        url: 'https://example.com/next',
+        source: 'implicit',
+      },
+    ]
+    const actions = convertEventsToActions(events)
+    expect(actions).toHaveLength(1)
+    expect((actions[0] as { options?: unknown }).options).toBeUndefined()
+  })
+
+  it('sets waitForNavigation on submit-form followed by implicit navigation', () => {
+    const events: BrowserEvent[] = [
+      {
+        type: 'submit-form',
+        eventId: '1',
+        timestamp: 0,
+        tab: 'tab1',
+        form: makeTarget('form'),
+        submitter: makeTarget('button[type=submit]'),
+      },
+      {
+        type: 'navigate-to-page',
+        eventId: '2',
+        timestamp: 100,
+        tab: 'tab1',
+        url: 'https://example.com/dashboard',
+        source: 'implicit',
+      },
+    ]
+    const actions = convertEventsToActions(events)
+    expect(actions).toHaveLength(1)
+    expect(actions[0]).toMatchObject({
+      method: 'locator.click',
+      options: { waitForNavigation: true },
+    })
+  })
+
   it('skips assert events', () => {
     const events: BrowserEvent[] = [
       {
