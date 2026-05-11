@@ -181,6 +181,28 @@ export function createToBeCheckedAction({
   }
 }
 
+export function createToBeVisibleAction({
+  locator,
+}: LocatorFactoryOptions = {}): ActionByMethod<'locator.toBeVisible'> {
+  return {
+    id: crypto.randomUUID(),
+    method: 'locator.toBeVisible',
+    visible: true,
+    locator: locator ?? {
+      current: 'role',
+      values: {
+        role: {
+          type: 'role',
+          role: '',
+          options: {
+            exact: false,
+          },
+        },
+      },
+    },
+  }
+}
+
 export function createGoToAction(): ActionByMethod<'page.goto'> {
   return {
     id: crypto.randomUUID(),
