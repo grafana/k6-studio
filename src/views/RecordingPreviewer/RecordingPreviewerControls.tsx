@@ -77,8 +77,6 @@ export function RecordingPreviewControls({
 
       navigate(getViewPath('script', path))
     } catch (err) {
-      console.error(err)
-
       showToast({
         title: 'Failed to export browser script.',
         status: 'error',

@@ -135,12 +135,9 @@ export function initialize() {
 
         return scriptPath
       } catch (error) {
-        sendToast(browserWindow.webContents, {
-          title: 'Failed to export the script',
-          status: 'error',
-        })
-
         log.error(error)
+
+        throw error
       }
     }
   )
