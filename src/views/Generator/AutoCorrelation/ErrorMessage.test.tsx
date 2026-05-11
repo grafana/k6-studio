@@ -14,6 +14,7 @@ vi.mock('@/assets/grot-crashed.svg', () => ({
 const baseProps = {
   onRetry: vi.fn(),
   onReset: vi.fn(),
+  onClose: vi.fn(),
 }
 
 afterEach(cleanup)
@@ -46,6 +47,17 @@ describe('ErrorMessage', () => {
       />
     )
     expect(screen.getByText('Usage limit reached')).toBeDefined()
+  })
+
+  it('renders "Recording too large" for context exceeded error', () => {
+    render(
+      <ErrorMessage
+        {...baseProps}
+        error={new Error('prompt is too long: 213329 tokens > 200000 maximum')}
+      />
+    )
+    expect(screen.getByText('Recording too large')).toBeDefined()
+    expect(screen.getByRole('button', { name: /Close/ })).toBeDefined()
   })
 
   it('renders "Something went wrong" for unknown error', () => {
