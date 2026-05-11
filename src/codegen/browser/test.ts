@@ -10,6 +10,7 @@ import {
 import { toClickButton, toClickModifiers } from '@/utils/clickOptions'
 import { exhaustive } from '@/utils/typescript'
 
+import { isFollowedByImplicitNavigation } from './navigation'
 import { isLocatorEqual, getElementLocator } from './selectors'
 import {
   TestNode,
@@ -125,9 +126,7 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
   ): { page: NodeRef } | undefined {
     if (
       nextEvent === undefined ||
-      nextEvent.type !== 'navigate-to-page' ||
-      nextEvent.source !== 'implicit' ||
-      nextEvent.tab !== currentEvent.tab
+      !isFollowedByImplicitNavigation(currentEvent, nextEvent)
     ) {
       return undefined
     }

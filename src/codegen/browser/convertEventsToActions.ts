@@ -2,6 +2,8 @@ import { AnyBrowserAction, LocatorClickModifier } from '@/schemas/browserTest'
 import { LocatorOptions } from '@/schemas/locator'
 import { BrowserEvent, ClickEvent, ElementSelector } from '@/schemas/recording'
 
+import { isFollowedByImplicitNavigation } from './navigation'
+
 function hasNonEmptyValue(value: string | undefined): value is string {
   return value !== undefined && value.trim() !== ''
 }
@@ -91,17 +93,6 @@ function buildClickOptions(event: ClickEvent, nextEvent?: BrowserEvent) {
   }
 }
 
-function isFollowedByImplicitNavigation(
-  event: BrowserEvent,
-  nextEvent?: BrowserEvent
-): boolean {
-  return (
-    nextEvent?.type === 'navigate-to-page' &&
-    nextEvent.source === 'implicit' &&
-    nextEvent.tab === event.tab
-  )
-}
-
 function convertEvent(
   event: BrowserEvent,
   nextEvent?: BrowserEvent
@@ -153,16 +144,15 @@ function convertEvent(
         values: event.selected.map((value) => ({ value })),
       }
 
-    case 'submit-form': {
-      const waitForNav = isFollowedByImplicitNavigation(event, nextEvent)
-
+    case 'submit-form':
       return {
         id: crypto.randomUUID(),
         method: 'locator.click',
         locator: toLocatorOptions(event.submitter.selectors),
-        options: waitForNav ? { waitForNavigation: true } : undefined,
+        options: isFollowedByImplicitNavigation(event, nextEvent)
+          ? { waitForNavigation: true }
+          : undefined,
       }
-    }
 
     case 'wait-for':
       return {
