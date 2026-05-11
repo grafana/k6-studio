@@ -22,6 +22,15 @@ describe('classifyError', () => {
     })
   })
 
+  describe('context exceeded errors', () => {
+    it.each([
+      'prompt is too long: 213329 tokens > 200000 maximum',
+      'Execution failed to complete: LLM streaming failed | stopping_reason=context_window_exceeded',
+    ])('classifies "%s" as context-exceeded', (message) => {
+      expect(classifyError(message).category).toBe('context-exceeded')
+    })
+  })
+
   describe('quota errors', () => {
     it.each([
       'Monthly prompt limit of 10 reached for your account.',
