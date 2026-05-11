@@ -15,12 +15,14 @@ interface AutoCorrelationErrorProps {
   error: Error
   onRetry: () => void
   onReset: () => void
+  onClose: () => void
 }
 
 export function ErrorMessage({
   error,
   onRetry,
   onReset,
+  onClose,
 }: AutoCorrelationErrorProps) {
   const { mutate: signOut } = useAssistantSignOut()
 
@@ -30,6 +32,7 @@ export function ErrorMessage({
       handlers={{
         onRetry,
         onReset,
+        onClose,
         onReconnect: () => {
           signOut()
           onReset()
@@ -42,6 +45,7 @@ export function ErrorMessage({
 interface ErrorActionHandlers {
   onRetry: () => void
   onReset: () => void
+  onClose: () => void
   onReconnect: () => void
 }
 
@@ -74,6 +78,16 @@ const ERROR_CONTENT: Record<AssistantErrorInfo['category'], ErrorContent> = {
       <Button onClick={onReconnect}>
         <LinkIcon />
         Reconnect
+      </Button>
+    ),
+  },
+  'context-exceeded': {
+    title: 'Recording too large',
+    message:
+      'This recording has too many requests for AI analysis. Try filtering out unnecessary requests or splitting your recording into smaller sessions.',
+    renderActions: ({ onClose }) => (
+      <Button onClick={onClose} variant="outline">
+        Close
       </Button>
     ),
   },
