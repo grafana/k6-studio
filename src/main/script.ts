@@ -1,8 +1,7 @@
 import { dialog, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import { ChildProcessWithoutNullStreams } from 'node:child_process'
-import { createReadStream, createWriteStream } from 'node:fs'
-import { unlink } from 'node:fs/promises'
+import { createWriteStream } from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import path from 'path'
 import * as tar from 'tar-stream'
@@ -12,7 +11,7 @@ import { TEMP_K6_ARCHIVE_PATH, TEMP_SCRIPT_SUFFIX } from '@/constants/workspace'
 import { ScriptHandler } from '@/handlers/script/types'
 import { getProxyArguments } from '@/main/proxy'
 import { ProxySettings } from '@/types/settings'
-import { ArchiveError, K6Client } from '@/utils/k6/client'
+import { K6Client } from '@/utils/k6/client'
 import { createTrackingServer } from '@/utils/k6/tracking'
 import { readResource } from '@/utils/resources'
 
@@ -90,8 +89,7 @@ export const runScript = async ({
   proxySettings,
   browserWindow,
 }: RunScriptOptions) => {
-  const archivePath = await archiveScript(scriptPath, browserWindow)
-  const modifiedPath = await installEntrypoint(archivePath)
+  const modifiedPath = await createArchive(scriptPath)
 
   const proxyArgs = await getProxyArguments(proxySettings, {
     prefix: '',
@@ -160,47 +158,19 @@ export const runScript = async ({
   return testRun
 }
 
-const archiveScript = async (
-  scriptPath: string,
-  browserWindow: BrowserWindow
-): Promise<string> => {
-  try {
-    const client = new K6Client()
-
-    // Set cwd to script directory for import resolution on Windows
-    const scriptDir = path.dirname(scriptPath)
-
-    await client.archive({
-      scriptPath,
-      outputPath: TEMP_K6_ARCHIVE_PATH,
-      cwd: scriptDir,
-    })
-
-    return TEMP_K6_ARCHIVE_PATH
-  } catch (error) {
-    browserWindow.webContents.send(ScriptHandler.Failed)
-
-    if (error instanceof ArchiveError) {
-      for (const log of error.stderr) {
-        browserWindow.webContents.send(ScriptHandler.Log, log)
-      }
-    }
-
-    throw error
-  }
-}
-
-function installEntrypoint(archivePath: string): Promise<string> {
+function createArchive(scriptPath: string): Promise<string> {
   const resolvers = Promise.withResolvers<string>()
+  const client = new K6Client()
 
-  const targetPath = path.join(
-    path.dirname(archivePath),
-    'shimmed-' + path.basename(archivePath)
-  )
+  const readStream = client.streamArchive({
+    scriptPath: scriptPath,
+    cwd: path.dirname(scriptPath),
+  })
+
+  const targetPath = TEMP_K6_ARCHIVE_PATH
 
   // We do all of the modifications to the archive in a single pass to avoid having to read
   // potentially large files multiple times.
-  const readStream = createReadStream(archivePath)
   const writeStream = createWriteStream(targetPath)
 
   const extract = tar.extract()
@@ -225,9 +195,6 @@ function installEntrypoint(archivePath: string): Promise<string> {
     writeStream.destroy()
     extract.destroy()
     pack.destroy()
-
-    // Best-effort cleanup of any partial output file.
-    unlink(targetPath).catch(() => {})
 
     resolvers.reject(error instanceof Error ? error : new Error(String(error)))
   }
