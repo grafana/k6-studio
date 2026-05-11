@@ -27,7 +27,9 @@ export function toLocatorOptions(selector: ElementSelector): LocatorOptions {
     values.role = {
       type: 'role',
       role: selector.role.role,
-      options: { name: selector.role.name },
+      options: selector.role.name
+        ? { name: selector.role.name, exact: true }
+        : undefined,
     }
   }
 
@@ -36,22 +38,31 @@ export function toLocatorOptions(selector: ElementSelector): LocatorOptions {
   }
 
   if (hasNonEmptyValue(selector.alt)) {
-    values.alt = { type: 'alt', text: selector.alt }
+    values.alt = { type: 'alt', text: selector.alt, options: { exact: true } }
   }
 
   if (hasNonEmptyValue(selector.label)) {
-    values.label = { type: 'label', label: selector.label }
+    values.label = {
+      type: 'label',
+      label: selector.label,
+      options: { exact: true },
+    }
   }
 
   if (hasNonEmptyValue(selector.placeholder)) {
     values.placeholder = {
       type: 'placeholder',
       placeholder: selector.placeholder,
+      options: { exact: true },
     }
   }
 
   if (hasNonEmptyValue(selector.title)) {
-    values.title = { type: 'title', title: selector.title }
+    values.title = {
+      type: 'title',
+      title: selector.title,
+      options: { exact: true },
+    }
   }
 
   return {

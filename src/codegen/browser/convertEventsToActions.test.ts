@@ -24,7 +24,7 @@ describe('toLocatorOptions', () => {
     expect(result.values.role).toEqual({
       type: 'role',
       role: 'button',
-      options: { name: 'Submit' },
+      options: { name: 'Submit', exact: true },
     })
     expect(result.current).toBe('role')
   })
@@ -49,14 +49,22 @@ describe('toLocatorOptions', () => {
   it('populates alt locator when non-empty', () => {
     const selector: ElementSelector = { css: 'img', alt: 'Profile picture' }
     const result = toLocatorOptions(selector)
-    expect(result.values.alt).toEqual({ type: 'alt', text: 'Profile picture' })
+    expect(result.values.alt).toEqual({
+      type: 'alt',
+      text: 'Profile picture',
+      options: { exact: true },
+    })
     expect(result.current).toBe('alt')
   })
 
   it('populates label locator when non-empty', () => {
     const selector: ElementSelector = { css: 'input', label: 'Username' }
     const result = toLocatorOptions(selector)
-    expect(result.values.label).toEqual({ type: 'label', label: 'Username' })
+    expect(result.values.label).toEqual({
+      type: 'label',
+      label: 'Username',
+      options: { exact: true },
+    })
     expect(result.current).toBe('label')
   })
 
@@ -69,6 +77,7 @@ describe('toLocatorOptions', () => {
     expect(result.values.placeholder).toEqual({
       type: 'placeholder',
       placeholder: 'Enter name',
+      options: { exact: true },
     })
     expect(result.current).toBe('placeholder')
   })
@@ -76,7 +85,11 @@ describe('toLocatorOptions', () => {
   it('populates title locator when non-empty', () => {
     const selector: ElementSelector = { css: 'a', title: 'Home link' }
     const result = toLocatorOptions(selector)
-    expect(result.values.title).toEqual({ type: 'title', title: 'Home link' })
+    expect(result.values.title).toEqual({
+      type: 'title',
+      title: 'Home link',
+      options: { exact: true },
+    })
     expect(result.current).toBe('title')
   })
 

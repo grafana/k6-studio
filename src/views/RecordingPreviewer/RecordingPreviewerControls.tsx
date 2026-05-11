@@ -57,6 +57,14 @@ export function RecordingPreviewControls({
     void createBrowserTest(actions)
   }
 
+  const browserTestDescription = isBrowserEditorEnabled
+    ? 'Create a browser test from recorded interactions'
+    : 'Export a k6 script simulating browser interactions'
+
+  const handleBrowserTest = isBrowserEditorEnabled
+    ? handleCreateBrowserTest
+    : () => setShowExportDialog(true)
+
   const handleDelete = useDeleteFile({
     file,
     navigateHomeOnDelete: false,
@@ -129,17 +137,9 @@ export function RecordingPreviewControls({
           <RichDropdownMenuItem
             icon={<MonitorIcon />}
             label="Browser test"
-            description={
-              isBrowserEditorEnabled
-                ? 'Create a browser test from recorded interactions'
-                : 'Export a k6 script simulating browser interactions'
-            }
+            description={browserTestDescription}
             disabled={browserEvents.length === 0}
-            onClick={
-              isBrowserEditorEnabled
-                ? handleCreateBrowserTest
-                : () => setShowExportDialog(true)
-            }
+            onClick={handleBrowserTest}
           />
         </DropdownMenu.Content>
       </DropdownMenu.Root>
