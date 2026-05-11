@@ -4,72 +4,54 @@ import { BrowserEvent, ClickEvent, ElementSelector } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 
 import { isFollowedByImplicitNavigation } from './navigation'
-
-function hasNonEmptyValue(value: string | undefined): value is string {
-  return value !== undefined && value.trim() !== ''
-}
-
-function pickBestLocatorType(
-  selector: ElementSelector
-): LocatorOptions['current'] {
-  if (selector.role !== undefined) return 'role'
-  if (hasNonEmptyValue(selector.label)) return 'label'
-  if (hasNonEmptyValue(selector.alt)) return 'alt'
-  if (hasNonEmptyValue(selector.placeholder)) return 'placeholder'
-  if (hasNonEmptyValue(selector.title)) return 'title'
-  if (hasNonEmptyValue(selector.testId)) return 'testid'
-  return 'css'
-}
+import {
+  getAltTextLocator,
+  getCssLocator,
+  getElementLocator,
+  getLabelLocator,
+  getPlaceholderLocator,
+  getRoleLocator,
+  getTestIdLocator,
+  getTitleLocator,
+} from './selectors'
 
 export function toLocatorOptions(selector: ElementSelector): LocatorOptions {
   const values: LocatorOptions['values'] = {
-    css: { type: 'css', selector: selector.css },
+    css: getCssLocator(selector),
   }
 
-  if (selector.role !== undefined) {
-    values.role = {
-      type: 'role',
-      role: selector.role.role,
-      options: selector.role.name
-        ? { name: selector.role.name, exact: true }
-        : undefined,
-    }
+  const role = getRoleLocator(selector)
+  if (role !== null) {
+    values.role = role
   }
 
-  if (hasNonEmptyValue(selector.testId)) {
-    values.testid = { type: 'testid', testId: selector.testId }
+  const testid = getTestIdLocator(selector)
+  if (testid !== null) {
+    values.testid = testid
   }
 
-  if (hasNonEmptyValue(selector.alt)) {
-    values.alt = { type: 'alt', text: selector.alt, options: { exact: true } }
+  const alt = getAltTextLocator(selector)
+  if (alt !== null) {
+    values.alt = alt
   }
 
-  if (hasNonEmptyValue(selector.label)) {
-    values.label = {
-      type: 'label',
-      label: selector.label,
-      options: { exact: true },
-    }
+  const label = getLabelLocator(selector)
+  if (label !== null) {
+    values.label = label
   }
 
-  if (hasNonEmptyValue(selector.placeholder)) {
-    values.placeholder = {
-      type: 'placeholder',
-      placeholder: selector.placeholder,
-      options: { exact: true },
-    }
+  const placeholder = getPlaceholderLocator(selector)
+  if (placeholder !== null) {
+    values.placeholder = placeholder
   }
 
-  if (hasNonEmptyValue(selector.title)) {
-    values.title = {
-      type: 'title',
-      title: selector.title,
-      options: { exact: true },
-    }
+  const title = getTitleLocator(selector)
+  if (title !== null) {
+    values.title = title
   }
 
   return {
-    current: pickBestLocatorType(selector),
+    current: getElementLocator(selector).type,
     values,
   }
 }
