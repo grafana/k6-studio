@@ -203,6 +203,33 @@ export function createToBeVisibleAction({
   }
 }
 
+interface ToContainTextFactoryOptions extends LocatorFactoryOptions {
+  expected?: string
+}
+
+export function createToContainTextAction({
+  locator,
+  expected = '',
+}: ToContainTextFactoryOptions = {}): ActionByMethod<'locator.toContainText'> {
+  return {
+    id: crypto.randomUUID(),
+    method: 'locator.toContainText',
+    expected,
+    locator: locator ?? {
+      current: 'role',
+      values: {
+        role: {
+          type: 'role',
+          role: '',
+          options: {
+            exact: false,
+          },
+        },
+      },
+    },
+  }
+}
+
 export function createGoToAction(): ActionByMethod<'page.goto'> {
   return {
     id: crypto.randomUUID(),

@@ -434,6 +434,18 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
             locator: getLocator(action.locator),
           },
         }
+      case 'locator.toContainText':
+        return {
+          type: 'assert',
+          nodeId: crypto.randomUUID(),
+          operation: {
+            type: 'text-contains',
+            value: action.expected,
+          },
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
       case 'locator.fill':
         return {
           type: 'type-text',
