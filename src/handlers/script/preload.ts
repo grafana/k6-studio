@@ -32,8 +32,12 @@ export function saveScript(script: string, fileName: string) {
   >
 }
 
-export function runScript(scriptPath: string) {
-  return ipcRenderer.invoke(ScriptHandler.Run, scriptPath) as Promise<void>
+export function runScript(scriptPath: string, scenarioName?: string) {
+  return ipcRenderer.invoke(
+    ScriptHandler.Run,
+    scriptPath,
+    scenarioName
+  ) as Promise<void>
 }
 
 export function stopScript() {

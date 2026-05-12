@@ -7,48 +7,39 @@ import './shims/browser'
 import * as userScript from '__USER_SCRIPT_PATH__'
 import type { Options } from 'k6/options'
 
-const DEFAULT_SCENARIOS: Options['scenarios'] = {
-  default: {
-    executor: 'per-vu-iterations',
-    exec: 'default',
+// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+const userOptions: Options | undefined = userScript.options
+const userScenarios = userOptions?.scenarios
+
+const selectedScenario = __ENV.SCENARIO_NAME
+  ? userScenarios?.[__ENV.SCENARIO_NAME]
+  : undefined
+
+const selectedExec = selectedScenario?.exec ?? 'default'
+
+export const options: Options = {
+  scenarios: {
+    default: {
+      // Always use 1 VU, 1 iteration in the debugger
+      executor: 'per-vu-iterations',
+      vus: 1,
+      iterations: 1,
+      exec: 'default',
+      options: selectedScenario?.options,
+    },
   },
 }
 
-const scenarios: Required<Options>['scenarios'] = Object.fromEntries(
-  Object.entries(
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    (userScript.options as Options)?.scenarios ?? DEFAULT_SCENARIOS
-  ).map(([name, scenario]) => {
-    return [
-      name,
-      {
-        // Always use 1 VU, 1 iteration in the debugger
-        executor: 'per-vu-iterations',
-        vus: 1,
-        iterations: 1,
-        exec: scenario.exec ?? 'default',
-        // Make sure the browser options are carried over
-        options: scenario.options,
-      },
-    ]
-  })
-)
-
-export const options: Options = {
-  scenarios,
-}
-
 export default async function () {
-  // Always prefer the 'default' export if configured, otherwise fallback to the
-  // first scenario.
-  const exec = Object.values(scenarios).find(({ exec }) => exec === 'default')
-    ? 'default'
-    : Object.values(scenarios)[0]?.exec
-  if (exec === undefined) {
-    throw new Error('No scenario found to execute')
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+  const fn = userScript[selectedExec]
+
+  if (typeof fn !== 'function') {
+    throw new Error(`No exported function "${selectedExec}" found in script`)
   }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-  await userScript[exec]()
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+  await fn()
 }
 
 export { handleSummary } from './summary'

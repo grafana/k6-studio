@@ -36,6 +36,7 @@ interface RunScriptOptions {
   usageReport: boolean
   proxySettings: ProxySettings
   browserWindow: BrowserWindow
+  scenarioName?: string
 }
 
 export const runScript = async ({
@@ -43,6 +44,7 @@ export const runScript = async ({
   usageReport,
   proxySettings,
   browserWindow,
+  scenarioName,
 }: RunScriptOptions) => {
   // 1. Get an instrumented version of the script content
   const modifiedScript = await instrumentScriptFromPath(scriptPath)
@@ -99,6 +101,7 @@ export const runScript = async ({
       K6_TRACKING_SERVER_PORT: String(trackingServer?.port),
       K6_BROWSER_ARGS: proxyArgs.join(','),
       K6_TESTING_COLORIZE: 'false',
+      ...(scenarioName ? { SCENARIO_NAME: scenarioName } : {}),
     },
   })
 

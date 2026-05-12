@@ -1,5 +1,6 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 import { app } from 'electron'
+import log from 'electron-log/main'
 import path from 'path'
 import readline from 'readline/promises'
 
@@ -97,9 +98,14 @@ export class K6Client {
       args: [scriptPath],
     })
 
-    const { code, stdout } = await this.#wait(process)
+    const { code, stdout, stderr } = await this.#wait(process)
 
     if (code !== 0) {
+      log.error('Failed to inspect the script', {
+        code,
+        stderr,
+      })
+
       return null
     }
 
