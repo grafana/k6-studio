@@ -154,7 +154,7 @@ export function initialize() {
         trackEvent({
           event: UsageEventName.ScriptExported,
           payload: {
-            isExternal: !scriptPath.startsWith(SCRIPTS_PATH),
+            isExternal: isExternalScript(scriptPath),
           },
         })
 
