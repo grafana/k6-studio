@@ -103,6 +103,56 @@ describe('convertAssertion', () => {
     expect(convertAssertion(event)).toBeUndefined()
   })
 
+  it('converts check assertion (aria, checked) to locator.toBeChecked with inputType:aria', () => {
+    const event = makeAssertEvent({
+      type: 'check',
+      inputType: 'aria',
+      expected: 'checked',
+    })
+    const action = convertAssertion(event)
+    expect(action).toMatchObject({
+      method: 'locator.toBeChecked',
+      checked: true,
+      inputType: 'aria',
+    })
+  })
+
+  it('converts check assertion (aria, unchecked) to locator.toBeChecked with inputType:aria', () => {
+    const event = makeAssertEvent({
+      type: 'check',
+      inputType: 'aria',
+      expected: 'unchecked',
+    })
+    const action = convertAssertion(event)
+    expect(action).toMatchObject({
+      method: 'locator.toBeChecked',
+      checked: false,
+      inputType: 'aria',
+    })
+  })
+
+  it('preserves inputType:native on check assertion (checked)', () => {
+    const event = makeAssertEvent({
+      type: 'check',
+      inputType: 'native',
+      expected: 'checked',
+    })
+    const action = convertAssertion(event)
+    expect(action).toMatchObject({
+      method: 'locator.toBeChecked',
+      inputType: 'native',
+    })
+  })
+
+  it('drops aria check assertion with indeterminate state', () => {
+    const event = makeAssertEvent({
+      type: 'check',
+      inputType: 'aria',
+      expected: 'indeterminate',
+    })
+    expect(convertAssertion(event)).toBeUndefined()
+  })
+
   it('uses toLocatorOptions for the locator field (multi-selector target)', () => {
     const event: AssertEvent = {
       type: 'assert',

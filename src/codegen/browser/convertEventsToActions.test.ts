@@ -350,23 +350,23 @@ describe('convertEventsToActions', () => {
     })
   })
 
-  it('converts assert visibility events to locator.toBeVisible', () => {
+  it('drops assert events that produce no action (indeterminate check)', () => {
     const events: BrowserEvent[] = [
       {
         type: 'assert',
         eventId: '1',
         timestamp: 0,
         tab: 'tab1',
-        target: makeTarget(),
-        assertion: { type: 'visibility', visible: true },
+        target: { selectors: { css: 'input[type="checkbox"]' } },
+        assertion: {
+          type: 'check',
+          inputType: 'native',
+          expected: 'indeterminate',
+        },
       },
     ]
     const actions = convertEventsToActions(events)
-    expect(actions).toHaveLength(1)
-    expect(actions[0]).toMatchObject({
-      method: 'locator.toBeVisible',
-      visible: true,
-    })
+    expect(actions).toEqual([])
   })
 
   it('preserves event order and generates unique ids', () => {

@@ -45,6 +45,7 @@ export function convertAssertion(
         method: 'locator.toBeChecked',
         locator,
         checked: assertion.expected === 'checked',
+        inputType: assertion.inputType,
       }
 
     default:
