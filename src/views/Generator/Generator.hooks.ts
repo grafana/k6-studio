@@ -2,9 +2,11 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
 import { useCallback } from 'react'
 
+import { useScriptExportedToast } from '@/hooks/useScriptExportedToast'
 import { selectGeneratorData, useGeneratorStore } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
 import { GeneratorFileData } from '@/types/generator'
+import * as path from '@/utils/path'
 import { queryClient } from '@/utils/query'
 
 import { exportScript, loadGeneratorFile, loadHarFile } from './Generator.utils'
@@ -87,42 +89,61 @@ export function useIsGeneratorDirty(filePath: string) {
 
 export function useScriptExport(generatorFilePath: string) {
   const showToast = useToast()
+  const showExportedToast = useScriptExportedToast()
+  const scriptName = useGeneratorStore((store) => store.scriptName)
   const setScriptName = useGeneratorStore((store) => store.setScriptName)
   const { mutateAsync: updateGeneratorFile } =
     useUpdateValueInGeneratorFile(generatorFilePath)
 
-  return useCallback(
-    async (scriptName: string) => {
-      setScriptName(scriptName)
+  return useCallback(async () => {
+    const hint = scriptName.endsWith('.js') ? scriptName : `${scriptName}.js`
 
-      try {
-        const scriptPath = await window.studio.fs.showSaveAsDialog(scriptName)
+    let savedScriptName: string | undefined
 
-        if (scriptPath === undefined) {
-          return
-        }
+    try {
+      const scriptPath = await window.studio.fs.showSaveAsDialog(hint)
 
-        await exportScript(scriptPath)
-      } catch (error) {
-        log.error(error)
-
-        showToast({
-          title: 'Failed to export script',
-          status: 'error',
-        })
+      if (scriptPath === undefined) {
+        return
       }
 
-      try {
-        await updateGeneratorFile({ key: 'scriptName', value: scriptName })
-      } catch (error) {
-        log.error(error)
+      savedScriptName = path.name(scriptPath)
 
-        showToast({
-          title: 'Failed to update script name',
-          status: 'error',
-        })
-      }
-    },
-    [showToast, setScriptName, updateGeneratorFile]
-  )
+      setScriptName(savedScriptName)
+
+      await exportScript(scriptPath)
+
+      showExportedToast(scriptPath)
+    } catch (error) {
+      log.error(error)
+
+      showToast({
+        title: 'Failed to export script',
+        status: 'error',
+      })
+
+      return
+    }
+
+    if (!savedScriptName) {
+      return
+    }
+
+    try {
+      await updateGeneratorFile({ key: 'scriptName', value: savedScriptName })
+    } catch (error) {
+      log.error(error)
+
+      showToast({
+        title: 'Failed to update script name',
+        status: 'error',
+      })
+    }
+  }, [
+    scriptName,
+    showToast,
+    showExportedToast,
+    setScriptName,
+    updateGeneratorFile,
+  ])
 }
