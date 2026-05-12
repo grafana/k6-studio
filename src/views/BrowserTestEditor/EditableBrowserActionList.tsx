@@ -30,10 +30,7 @@ import {
   createWaitForAction,
   createWaitForTimeoutAction,
 } from './actionFactories'
-import { BrowserActionStates } from './types'
-
 interface EditableBrowserActionListProps {
-  states: BrowserActionStates
   actions: AnyBrowserAction[]
   onAddAction: (action: AnyBrowserAction) => void
   onRemoveAction: (actionId: string) => void
@@ -43,7 +40,6 @@ interface EditableBrowserActionListProps {
 }
 
 export function EditableBrowserActionList({
-  states,
   actions,
   onAddAction,
   onRemoveAction,
@@ -83,7 +79,6 @@ export function EditableBrowserActionList({
           <EmptyMessage message="Build your browser test by adding actions." />
         ) : (
           <SortableBrowserActionList
-            states={states}
             actions={actions}
             onReorderActions={onReorderActions}
             onRemoveAction={onRemoveAction}

@@ -5,49 +5,65 @@ import type { ReactNode } from 'react'
 
 import { BrowserDebuggerEvent } from '@/main/runner/schema'
 import { AnyBrowserAction } from '@/schemas/browserTest'
+import { ActionStatus, getStatusColor } from '@/utils/browserActionStatus'
 
 import { OptionsSummary } from './Actions/components/OptionsSummary'
+import { useBrowserActionState } from './ValidationProvider'
 import { getActionEditorForAction } from './actionEditorRegistry'
 
 interface EditableActionProps {
-  state: BrowserDebuggerEvent | undefined
   action: AnyBrowserAction
   onRemove: (actionId: string) => void
   onChange: (action: AnyBrowserAction) => void
   dragHandle?: ReactNode
 }
 
+function getActionStatus(
+  isValidating: boolean,
+  event: BrowserDebuggerEvent | undefined
+): ActionStatus | undefined {
+  if (event?.state === 'end') {
+    return event.result.type
+  }
+
+  if (!isValidating) {
+    return undefined
+  }
+
+  if (event?.state === 'begin') {
+    return 'running'
+  }
+
+  return 'pending'
+}
+
 export function EditableAction({
-  state,
   action,
   dragHandle,
   onRemove,
   onChange,
 }: EditableActionProps) {
+  const { isValidating, state } = useBrowserActionState(action.id)
+
   const handleRemove = () => {
     onRemove(action.id)
   }
 
   const editor = getActionEditorForAction(action)
 
+  const status = getActionStatus(isValidating, state)
+  const color = status ? getStatusColor(status, 9) : 'transparent'
+  const opacity = status === 'pending' ? 0.7 : 1
+
   return (
     <Flex
       direction="column"
       gap="1"
       p="2"
-      data-result={state?.result?.type}
       css={css`
         font-size: var(--font-size-1);
-        border-left: 4px solid transparent;
-
-        &[data-result='pass'] {
-          border-color: var(--green-11);
-        }
-
-        &[data-result='fail'],
-        &[data-result='error'] {
-          border-color: var(--red-11);
-        }
+        border-left: 4px solid ${color};
+        opacity: ${opacity};
       `}
     >
       <Flex align="center" gap="2">

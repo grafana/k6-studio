@@ -24,12 +24,11 @@ import { css } from '@emotion/react'
 import { Flex } from '@radix-ui/themes'
 import { useState } from 'react'
 
-import { BrowserDebuggerEvent } from '@/main/runner/schema'
 import { AnyBrowserAction } from '@/schemas/browserTest'
 
 import { EditableAction } from './EditableAction'
 import { EditableActionDragHandle } from './EditableActionDragHandle'
-import { BrowserActionStates } from './types'
+import { useIsValidating } from './ValidationProvider'
 
 enum Position {
   Before = 'before',
@@ -37,7 +36,6 @@ enum Position {
 }
 
 interface SortableBrowserActionListProps {
-  states: BrowserActionStates
   actions: AnyBrowserAction[]
   onReorderActions: (activeId: string, overId: string) => void
   onRemoveAction: (actionId: string) => void
@@ -45,13 +43,14 @@ interface SortableBrowserActionListProps {
 }
 
 export function SortableBrowserActionList({
-  states,
   actions,
   onReorderActions,
   onRemoveAction,
   onChangeAction,
 }: SortableBrowserActionListProps) {
+  const isValidating = useIsValidating()
   const [active, setActive] = useState<AnyBrowserAction | null>(null)
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -74,7 +73,7 @@ export function SortableBrowserActionList({
   }
 
   return (
-    <Flex direction="column">
+    <Flex direction="column" inert={isValidating}>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -89,7 +88,6 @@ export function SortableBrowserActionList({
           {actions.map((action) => (
             <SortableEditableAction
               key={action.id}
-              state={states[action.id]?.[0]}
               action={action}
               onChange={onChangeAction}
               onRemove={onRemoveAction}
@@ -98,7 +96,6 @@ export function SortableBrowserActionList({
           <DragOverlay modifiers={[restrictToFirstScrollableAncestor]}>
             {active ? (
               <EditableAction
-                state={states[active.id]?.[0]}
                 action={active}
                 dragHandle={<EditableActionDragHandle overlay />}
                 onChange={onChangeAction}
@@ -113,14 +110,12 @@ export function SortableBrowserActionList({
 }
 
 interface SortableEditableActionProps {
-  state: BrowserDebuggerEvent | undefined
   action: AnyBrowserAction
   onRemove: (actionId: string) => void
   onChange: (action: AnyBrowserAction) => void
 }
 
 function SortableEditableAction({
-  state,
   action,
   onRemove,
   onChange,
@@ -189,7 +184,6 @@ function SortableEditableAction({
       `}
     >
       <EditableAction
-        state={state}
         action={action}
         dragHandle={<EditableActionDragHandle {...attributes} {...listeners} />}
         onChange={onChange}

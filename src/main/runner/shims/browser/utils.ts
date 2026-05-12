@@ -189,8 +189,6 @@ export function createProxy<T extends object>({
     get(target, property) {
       if (property === '$trace') {
         return (traceId: string) => {
-          console.log('Tracing with id:', traceId)
-
           return createProxy({
             traceId,
             target,
