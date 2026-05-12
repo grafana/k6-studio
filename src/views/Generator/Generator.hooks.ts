@@ -107,7 +107,7 @@ export function useScriptExport(generatorFilePath: string) {
         return
       }
 
-      savedScriptName = path.name(scriptPath)
+      savedScriptName = path.basename(scriptPath)
 
       setScriptName(savedScriptName)
 
