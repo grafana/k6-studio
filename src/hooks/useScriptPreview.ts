@@ -7,25 +7,42 @@ import {
   useGeneratorStore,
   GeneratorStore,
 } from '@/store/generator'
+import * as path from '@/utils/path'
 import { generateScriptPreview } from '@/views/Generator/Generator.utils'
 
-export function useScriptPreview() {
-  const [preview, setPreview] = useState('')
-  const [error, setError] = useState<Error>()
+export type ScriptPreview =
+  | { valid: true; preview: string }
+  | { valid: false; error: Error }
+
+export function useScriptPreview(generatorPath: string): ScriptPreview {
+  const [state, setState] = useState<ScriptPreview>({
+    valid: true,
+    preview: '',
+  })
 
   // Connect to the store on mount, disconnect on unmount, regenerate preview on state change
   useEffect(() => {
-    const updatePreview = debounce(async (state: GeneratorStore) => {
-      try {
-        setError(undefined)
-        const generator = selectGeneratorData(state)
-        const requests = selectFilteredRequests(state)
+    const scriptPath = generatorPathToScriptPath(generatorPath)
 
-        const script = await generateScriptPreview(generator, requests)
-        setPreview(script)
-      } catch (e) {
-        console.error(e)
-        setError(e as Error)
+    const updatePreview = debounce(async (storeState: GeneratorStore) => {
+      try {
+        const generator = selectGeneratorData(storeState)
+        const requests = selectFilteredRequests(storeState)
+
+        const preview = await generateScriptPreview(
+          scriptPath,
+          generator,
+          requests
+        )
+
+        setState({ valid: true, preview })
+      } catch (error) {
+        console.error(error)
+
+        setState({
+          valid: false,
+          error: error instanceof Error ? error : new Error(String(error)),
+        })
       }
     }, 100)
 
@@ -38,7 +55,12 @@ export function useScriptPreview() {
       updatePreview(state)
     )
     return unsubscribe
-  }, [])
+  }, [generatorPath])
 
-  return { preview, error, hasError: !!error }
+  return state
+}
+
+function generatorPathToScriptPath(generatorPath: string) {
+  const { dir, name } = path.parse(generatorPath)
+  return path.join(dir, `${name}.js`)
 }

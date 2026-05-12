@@ -14,7 +14,7 @@ import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog
 import { useCurrentFile } from '@/hooks/useCurrentFile'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
-import { useScriptPreview } from '@/hooks/useScriptPreview'
+import { ScriptPreview } from '@/hooks/useScriptPreview'
 import { useGeneratorStore } from '@/store/generator'
 
 import { ExportScriptDialog } from '../ExportScriptDialog'
@@ -24,9 +24,14 @@ import { ValidatorDialog } from '../ValidatorDialog'
 interface GeneratorControlsProps {
   onSave: () => void
   isDirty: boolean
+  script: ScriptPreview
 }
 
-export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
+export function GeneratorControls({
+  onSave,
+  isDirty,
+  script,
+}: GeneratorControlsProps) {
   const scriptName = useGeneratorStore((store) => store.scriptName)
 
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
@@ -34,9 +39,8 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
     useState(false)
   const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
   const file = useCurrentFile('generator')
-  const { preview, hasError } = useScriptPreview()
   const proxyStatus = useProxyStatus()
-  const isScriptExportable = !hasError && !!preview
+  const isScriptExportable = script.valid && !!script.preview
 
   const handleExportScript = useScriptExport(file.path)
 
@@ -117,11 +121,15 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
         <>
           <RunInCloudDialog
             open={isRunInCloudDialogOpen}
-            script={{ type: 'raw', name: file.fileName, content: preview }}
+            script={{
+              type: 'raw',
+              name: file.fileName,
+              content: script.preview,
+            }}
             onOpenChange={setIsRunInCloudDialogOpen}
           />
           <ValidatorDialog
-            script={preview}
+            script={script.preview}
             open={isValidatorDialogOpen}
             onOpenChange={setIsValidatorDialogOpen}
           />
