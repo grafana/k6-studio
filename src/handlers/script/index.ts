@@ -81,8 +81,8 @@ export function initialize() {
       browserWindow.webContents.send(ScriptHandler.Failed)
 
       if (error instanceof ArchiveError) {
-        for (const log of error.stderr) {
-          browserWindow.webContents.send(ScriptHandler.Log, log)
+        for (const logEntry of error.stderr) {
+          browserWindow.webContents.send(ScriptHandler.Log, logEntry)
         }
       }
 
@@ -130,8 +130,8 @@ export function initialize() {
         browserWindow.webContents.send(ScriptHandler.Failed)
 
         if (error instanceof ArchiveError) {
-          for (const log of error.stderr) {
-            browserWindow.webContents.send(ScriptHandler.Log, log)
+          for (const logEntry of error.stderr) {
+            browserWindow.webContents.send(ScriptHandler.Log, logEntry)
           }
         }
 
