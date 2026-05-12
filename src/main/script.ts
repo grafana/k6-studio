@@ -301,9 +301,9 @@ function createArchive(scriptPath: string): Promise<string> {
 
       // `open` and `fs.open` read files relative to the entry script, so we need to make sure that
       // our entry script is placed in the same directory as the original one so that paths are resolved correctly.
-      const scriptPath = fileURLToPath(metadata.filename)
-      const entrypointPath = path.join(
-        path.dirname(scriptPath),
+      const scriptPath = fileURLToPath(metadata.filename, { windows: false })
+      const entrypointPath = path.posix.join(
+        path.posix.dirname(scriptPath),
         getTempScriptName()
       )
 
@@ -326,7 +326,7 @@ function createArchive(scriptPath: string): Promise<string> {
       )
 
       const entrypointScript = await instrumentScriptFromPath(
-        './' + path.basename(scriptPath)
+        './' + path.posix.basename(scriptPath)
       )
 
       // Write our entrypoint and setup a hard link.
