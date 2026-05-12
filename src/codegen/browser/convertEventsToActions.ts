@@ -2,6 +2,7 @@ import { AnyBrowserAction, LocatorClickModifier } from '@/schemas/browserTest'
 import { BrowserEvent, ClickEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 
+import { convertAssertion } from './convertAssertion'
 import { toLocatorOptions } from './locator'
 import { isFollowedByImplicitNavigation } from './navigation'
 
@@ -95,7 +96,7 @@ function convertEvent(
       }
 
     case 'assert':
-      return undefined
+      return convertAssertion(event)
 
     default:
       return exhaustive(event)

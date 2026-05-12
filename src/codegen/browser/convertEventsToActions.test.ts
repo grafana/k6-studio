@@ -328,7 +328,29 @@ describe('convertEventsToActions', () => {
     })
   })
 
-  it('skips assert events', () => {
+  it('converts assert events into matching assertion actions', () => {
+    const events: BrowserEvent[] = [
+      {
+        type: 'assert',
+        eventId: '1',
+        timestamp: 0,
+        tab: 'tab1',
+        target: { selectors: { css: 'h1.title' } },
+        assertion: {
+          type: 'text',
+          operation: { type: 'contains', value: 'Welcome' },
+        },
+      },
+    ]
+    const actions = convertEventsToActions(events)
+    expect(actions).toHaveLength(1)
+    expect(actions[0]).toMatchObject({
+      method: 'locator.toContainText',
+      expected: 'Welcome',
+    })
+  })
+
+  it('converts assert visibility events to locator.toBeVisible', () => {
     const events: BrowserEvent[] = [
       {
         type: 'assert',
@@ -340,7 +362,11 @@ describe('convertEventsToActions', () => {
       },
     ]
     const actions = convertEventsToActions(events)
-    expect(actions).toHaveLength(0)
+    expect(actions).toHaveLength(1)
+    expect(actions[0]).toMatchObject({
+      method: 'locator.toBeVisible',
+      visible: true,
+    })
   })
 
   it('preserves event order and generates unique ids', () => {
