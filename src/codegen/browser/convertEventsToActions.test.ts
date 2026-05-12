@@ -360,7 +360,7 @@ describe('convertEventsToActions', () => {
         target: { selectors: { css: 'input[type="checkbox"]' } },
         assertion: {
           type: 'check',
-          inputType: 'native',
+          inputType: 'aria',
           expected: 'indeterminate',
         },
       },
