@@ -43,6 +43,10 @@ function buildScenarioGraph(scenario: model.Scenario) {
 
   for (const node of scenario.nodes) {
     switch (node.type) {
+      case 'trace':
+        graph.connect(node.nodeId, node.inputs.previous.nodeId, 'reference')
+        break
+
       case 'page':
         break
 

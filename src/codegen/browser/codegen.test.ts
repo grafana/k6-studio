@@ -1471,3 +1471,64 @@ it('emits minimal options when options has empty thresholds and zones', async ({
     '__snapshots__/browser/browser-empty-settings.ts'
   )
 })
+
+it('should emit a trace-call on pages and locators', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'trace',
+          nodeId: 'page-trace',
+          traceId: 'my-page',
+          inputs: { previous: { nodeId: 'page' } },
+        },
+        {
+          type: 'goto',
+          nodeId: 'goto',
+          url: 'https://example.com',
+          source: 'address-bar',
+          inputs: {
+            page: { nodeId: 'page-trace' },
+          },
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          locator: { type: 'css', selector: 'button' },
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'trace',
+          nodeId: 'locator-trace',
+          traceId: 'my-locator',
+          inputs: { previous: { nodeId: 'locator' } },
+        },
+        {
+          type: 'click',
+          nodeId: 'click',
+          button: 'left',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          inputs: {
+            locator: { nodeId: 'locator-trace' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/trace-calls-on-pages-and-locators.ts'
+  )
+})

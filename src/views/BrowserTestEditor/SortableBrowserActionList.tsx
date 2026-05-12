@@ -24,9 +24,11 @@ import { css } from '@emotion/react'
 import { Flex } from '@radix-ui/themes'
 import { useState } from 'react'
 
+import { BrowserDebuggerEvent } from '@/main/runner/schema'
+
 import { EditableAction } from './EditableAction'
 import { EditableActionDragHandle } from './EditableActionDragHandle'
-import { BrowserActionInstance } from './types'
+import { BrowserActionInstance, BrowserActionStates } from './types'
 
 enum Position {
   Before = 'before',
@@ -34,6 +36,7 @@ enum Position {
 }
 
 interface SortableBrowserActionListProps {
+  states: BrowserActionStates
   actions: BrowserActionInstance[]
   onReorderActions: (activeId: string, overId: string) => void
   onRemoveAction: (actionId: string) => void
@@ -41,6 +44,7 @@ interface SortableBrowserActionListProps {
 }
 
 export function SortableBrowserActionList({
+  states,
   actions,
   onReorderActions,
   onRemoveAction,
@@ -84,6 +88,7 @@ export function SortableBrowserActionList({
           {actions.map((action) => (
             <SortableEditableAction
               key={action.id}
+              state={states[action.id]?.[0]}
               action={action}
               onChange={onChangeAction}
               onRemove={onRemoveAction}
@@ -92,6 +97,7 @@ export function SortableBrowserActionList({
           <DragOverlay modifiers={[restrictToFirstScrollableAncestor]}>
             {active ? (
               <EditableAction
+                state={states[active.id]?.[0]}
                 action={active}
                 dragHandle={<EditableActionDragHandle overlay />}
                 onChange={onChangeAction}
@@ -106,12 +112,14 @@ export function SortableBrowserActionList({
 }
 
 interface SortableEditableActionProps {
+  state: BrowserDebuggerEvent | undefined
   action: BrowserActionInstance
   onRemove: (actionId: string) => void
   onChange: (action: BrowserActionInstance) => void
 }
 
 function SortableEditableAction({
+  state,
   action,
   onRemove,
   onChange,
@@ -180,6 +188,7 @@ function SortableEditableAction({
       `}
     >
       <EditableAction
+        state={state}
         action={action}
         dragHandle={<EditableActionDragHandle {...attributes} {...listeners} />}
         onChange={onChange}

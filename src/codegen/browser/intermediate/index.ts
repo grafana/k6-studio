@@ -7,6 +7,16 @@ import * as ir from './ast'
 import { IntermediateContext } from './context'
 import { substituteVariables } from './variables'
 
+function emitTraceNode(context: IntermediateContext, node: m.TraceNode) {
+  const previous = context.reference(node.inputs.previous)
+
+  context.inline(node, {
+    type: 'TraceExpression',
+    traceId: node.traceId,
+    target: previous,
+  })
+}
+
 function emitPageNode(context: IntermediateContext, node: m.PageNode) {
   const expression: ir.NewPageExpression = {
     type: 'NewPageExpression',
@@ -445,6 +455,9 @@ function emitWaitForTimeoutNode(
 
 function emitNode(context: IntermediateContext, node: m.TestNode) {
   switch (node.type) {
+    case 'trace':
+      return emitTraceNode(context, node)
+
     case 'page':
       return emitPageNode(context, node)
 

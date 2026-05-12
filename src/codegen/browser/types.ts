@@ -12,6 +12,14 @@ export interface NodeRef {
   nodeId: NodeId
 }
 
+export interface TraceNode extends NodeBase {
+  type: 'trace'
+  traceId: string
+  inputs: {
+    previous: NodeRef
+  }
+}
+
 export interface PageNode extends NodeBase {
   type: 'page'
 }
@@ -154,6 +162,7 @@ export interface WaitForTimeoutNode extends NodeBase {
 }
 
 export type TestNode =
+  | TraceNode
   | PageNode
   | GotoNode
   | ReloadNode

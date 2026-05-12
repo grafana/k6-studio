@@ -501,6 +501,16 @@ function emitPromiseAllExpression(
     .done()
 }
 
+function emitTraceExpression(
+  context: ScenarioContext,
+  expression: ir.TraceExpression
+): ts.Expression {
+  const target = emitExpression(context, expression.target)
+  const traceId = string(expression.traceId)
+
+  return new ExpressionBuilder(target).member('$trace').call([traceId]).done()
+}
+
 function emitExpression(
   context: ScenarioContext,
   expression: ir.Expression
@@ -592,6 +602,9 @@ function emitExpression(
 
     case 'PromiseAllExpression':
       return emitPromiseAllExpression(context, expression)
+
+    case 'TraceExpression':
+      return emitTraceExpression(context, expression)
 
     default:
       return exhaustive(expression)

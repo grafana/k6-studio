@@ -3,11 +3,14 @@ import { Flex, IconButton, Tooltip } from '@radix-ui/themes'
 import { Trash2Icon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
+import { BrowserDebuggerEvent } from '@/main/runner/schema'
+
 import { OptionsSummary } from './Actions/components/OptionsSummary'
 import { getActionEditorForAction } from './actionEditorRegistry'
 import { BrowserActionInstance } from './types'
 
 interface EditableActionProps {
+  state: BrowserDebuggerEvent | undefined
   action: BrowserActionInstance
   onRemove: (actionId: string) => void
   onChange: (action: BrowserActionInstance) => void
@@ -15,6 +18,7 @@ interface EditableActionProps {
 }
 
 export function EditableAction({
+  state,
   action,
   dragHandle,
   onRemove,
@@ -31,8 +35,19 @@ export function EditableAction({
       direction="column"
       gap="1"
       p="2"
+      data-result={state?.result?.type}
       css={css`
         font-size: var(--font-size-1);
+        border-left: 4px solid transparent;
+
+        &[data-result='pass'] {
+          border-color: var(--green-11);
+        }
+
+        &[data-result='fail'],
+        &[data-result='error'] {
+          border-color: var(--red-11);
+        }
       `}
     >
       <Flex align="center" gap="2">

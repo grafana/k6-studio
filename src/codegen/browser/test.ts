@@ -295,12 +295,32 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
 }
 
 function buildBrowserNodeGraphFromActions(
-  browserActions: BrowserActionInstance[]
+  browserActions: BrowserActionInstance[],
+  trace = false
 ) {
   const nodes: TestNode[] = []
   let previousLocatorNode: LocatorNode | null = null
 
   let currentPage: PageNode | undefined = undefined
+
+  function withTrace(action: BrowserActionInstance, nodeRef: NodeRef) {
+    if (!trace) {
+      return nodeRef
+    }
+
+    const traceNode: TestNode = {
+      type: 'trace',
+      nodeId: crypto.randomUUID(),
+      traceId: action.id,
+      inputs: {
+        previous: nodeRef,
+      },
+    }
+
+    nodes.push(traceNode)
+
+    return toNodeRef(traceNode)
+  }
 
   // We create the page lazily so that we don't emit a page node if
   // the test is empty.
@@ -319,6 +339,7 @@ function buildBrowserNodeGraphFromActions(
 
   function getLocator({ current, values }: LocatorOptions): NodeRef {
     const currentLocator = values[current]
+
     if (!currentLocator) {
       throw new Error(
         `Current locator of type "${current}" not found in locator values.`
@@ -363,7 +384,7 @@ function buildBrowserNodeGraphFromActions(
           url: action.url,
           source: 'address-bar',
           inputs: {
-            page: getPage(),
+            page: withTrace(action, getPage()),
           },
         }
       case 'page.reload':
@@ -371,7 +392,7 @@ function buildBrowserNodeGraphFromActions(
           type: 'reload',
           nodeId: crypto.randomUUID(),
           inputs: {
-            page: getPage(),
+            page: withTrace(action, getPage()),
           },
         }
       case 'locator.waitFor':
@@ -379,7 +400,7 @@ function buildBrowserNodeGraphFromActions(
           type: 'wait-for',
           nodeId: crypto.randomUUID(),
           inputs: {
-            locator: getLocator(action.locator),
+            locator: withTrace(action, getLocator(action.locator)),
           },
           options: action.options,
         }
@@ -393,7 +414,7 @@ function buildBrowserNodeGraphFromActions(
             ? { page: getPage() }
             : undefined,
           inputs: {
-            locator: getLocator(action.locator),
+            locator: withTrace(action, getLocator(action.locator)),
           },
         }
       case 'locator.check':
@@ -402,7 +423,7 @@ function buildBrowserNodeGraphFromActions(
           nodeId: crypto.randomUUID(),
           checked: true,
           inputs: {
-            locator: getLocator(action.locator),
+            locator: withTrace(action, getLocator(action.locator)),
           },
         }
       case 'locator.uncheck':
@@ -411,7 +432,7 @@ function buildBrowserNodeGraphFromActions(
           nodeId: crypto.randomUUID(),
           checked: false,
           inputs: {
-            locator: getLocator(action.locator),
+            locator: withTrace(action, getLocator(action.locator)),
           },
         }
       case 'locator.fill':
@@ -420,7 +441,7 @@ function buildBrowserNodeGraphFromActions(
           nodeId: crypto.randomUUID(),
           value: action.value,
           inputs: {
-            locator: getLocator(action.locator),
+            locator: withTrace(action, getLocator(action.locator)),
           },
         }
       case 'locator.clear':
@@ -428,7 +449,7 @@ function buildBrowserNodeGraphFromActions(
           type: 'clear',
           nodeId: crypto.randomUUID(),
           inputs: {
-            locator: getLocator(action.locator),
+            locator: withTrace(action, getLocator(action.locator)),
           },
         }
       case 'locator.selectOption': {
@@ -447,7 +468,7 @@ function buildBrowserNodeGraphFromActions(
           selected,
           multiple: selected.length > 1,
           inputs: {
-            locator: getLocator(action.locator),
+            locator: withTrace(action, getLocator(action.locator)),
           },
         }
       }
@@ -457,7 +478,7 @@ function buildBrowserNodeGraphFromActions(
           nodeId: crypto.randomUUID(),
           timeout: action.timeout,
           inputs: {
-            page: getPage(),
+            page: withTrace(action, getPage()),
           },
         }
       case 'page.waitForNavigation':
@@ -496,13 +517,15 @@ export function convertEventsToTest({ browserEvents }: Recording): Test {
 export function convertActionsToTest({
   browserActions,
   options,
+  trace = false,
 }: {
   browserActions: BrowserActionInstance[]
   options?: BrowserTestOptions
+  trace?: boolean
 }): Test {
   return {
     defaultScenario: {
-      nodes: buildBrowserNodeGraphFromActions(browserActions),
+      nodes: buildBrowserNodeGraphFromActions(browserActions, trace),
     },
     scenarios: {},
     options,

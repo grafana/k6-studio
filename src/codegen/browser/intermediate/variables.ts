@@ -59,6 +59,12 @@ function substituteExpression(
     case 'TextLocatorOptionsExpression':
       return node
 
+    case 'TraceExpression':
+      return {
+        ...node,
+        target: substituteExpression(node.target, substitutions),
+      }
+
     case 'ClosePageExpression':
       return {
         ...node,

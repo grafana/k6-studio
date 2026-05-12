@@ -84,6 +84,9 @@ function isBrowserScenario(scenario: ir.Scenario) {
       case 'ExpectExpression':
         return visit(node.actual) || visitAssertion(node.expected)
 
+      case 'TraceExpression':
+        return visit(node.target)
+
       default:
         return exhaustive(node)
     }

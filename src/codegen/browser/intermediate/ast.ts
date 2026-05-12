@@ -76,6 +76,12 @@ export interface RoleLocatorOptionsExpression {
   }
 }
 
+export interface TraceExpression {
+  type: 'TraceExpression'
+  traceId: string
+  target: Expression
+}
+
 export interface NewRoleLocatorExpression {
   type: 'NewRoleLocatorExpression'
   role: Expression
@@ -247,6 +253,7 @@ export type Expression =
   | WaitForNavigationExpression
   | WaitForTimeoutExpression
   | PromiseAllExpression
+  | TraceExpression
 
 export interface VariableDeclaration {
   type: 'VariableDeclaration'

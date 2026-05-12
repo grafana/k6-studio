@@ -147,7 +147,42 @@ export function useValidatorScript(
     [browserActions]
   )
 
-  return useBrowserScriptPreview(validatorActions, options)
+  const [script, setScript] = useState('')
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const generatePreview = useCallback(
+    debounce(
+      async (
+        actions: BrowserActionInstance[],
+        currentOptions: BrowserTestOptions | undefined
+      ) => {
+        try {
+          const test = convertActionsToTest({
+            browserActions: actions,
+            options: currentOptions,
+            trace: true,
+          })
+
+          const script = await emitScript(test)
+          setScript(script)
+        } catch (error) {
+          setScript(
+            `// Failed to generate script preview:\n// ${error instanceof Error ? error.message : String(error)}`
+          )
+        }
+      },
+      300
+    ),
+    []
+  )
+
+  useEffect(() => {
+    void generatePreview(validatorActions, options)
+
+    return () => generatePreview.cancel()
+  }, [validatorActions, options, generatePreview])
+
+  return script
 }
 
 // Browser tests start with `shared-iterations` and no stages, but the

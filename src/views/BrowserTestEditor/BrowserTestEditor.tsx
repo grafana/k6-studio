@@ -62,6 +62,11 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
     name: file.fileName,
   })
 
+  const states = Object.groupBy(
+    session.browser.actions,
+    (action) => action.eventId
+  )
+
   const handleSave = () => {
     if (!test.isDirty || !data) {
       return
@@ -186,6 +191,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                   <Separator />
                   <Panel id="actions" minSize={400}>
                     <EditableBrowserActionList
+                      states={states}
                       actions={test.actions}
                       onAddAction={test.addAction}
                       onRemoveAction={test.removeAction}

@@ -1,3 +1,4 @@
+import { BrowserDebuggerEvent } from '@/main/runner/schema'
 import { AnyBrowserAction } from '@/schemas/browserTest'
 import { ElementLocator } from '@/schemas/locator'
 
@@ -11,3 +12,7 @@ export type WithEditorMetadata<T> = (T extends { locator: ElementLocator }
   : T) & { id: string }
 
 export type BrowserActionInstance = WithEditorMetadata<AnyBrowserAction>
+
+export type BrowserActionStates = Partial<
+  Record<string, BrowserDebuggerEvent[]>
+>
