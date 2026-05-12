@@ -29,6 +29,7 @@ export type {
   LocatorToBeCheckedAction,
   LocatorToHaveValueAction,
   LocatorToBeVisibleAction,
+  LocatorToContainTextAction,
   LocatorTypeAction,
   LocatorUncheckAction,
   LocatorWaitForAction,

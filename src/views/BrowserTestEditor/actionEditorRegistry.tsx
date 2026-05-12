@@ -28,6 +28,7 @@ import {
   ToBeCheckedActionBody,
   ToHaveValueActionBody,
   ToBeVisibleActionBody,
+  ToContainTextActionBody,
   UncheckActionBody,
   WaitForActionBody,
   WaitForTimeoutActionBody,
@@ -117,6 +118,12 @@ const actionEditors: ActionEditorRegistry = {
     icon: <EyeIcon aria-hidden="true" />,
     render: ({ action, onChange }) => (
       <ToBeVisibleActionBody action={action} onChange={onChange} />
+    ),
+  },
+  'locator.toContainText': {
+    icon: <EyeIcon aria-hidden="true" />,
+    render: ({ action, onChange }) => (
+      <ToContainTextActionBody action={action} onChange={onChange} />
     ),
   },
   'page.goto': {
