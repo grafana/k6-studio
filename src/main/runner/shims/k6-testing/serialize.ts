@@ -2,8 +2,6 @@ import { ElementLocator } from '@/schemas/locator'
 
 import { SerializedValue } from '../../schema'
 
-import { locatorDetail, pageDetail } from './proxies/symbols'
-
 export function serializeValue(value: unknown): SerializedValue {
   if (value === null) {
     return null
@@ -36,14 +34,14 @@ export function serializeValue(value: unknown): SerializedValue {
         return { type: 'regex', pattern: value.source, flags: value.flags }
       }
 
-      if (locatorDetail in value) {
+      if (Symbol.locatorDetail in value) {
         return {
           type: 'locator',
-          locator: value[locatorDetail] as ElementLocator,
+          locator: value[Symbol.locatorDetail] as ElementLocator,
         }
       }
 
-      if (pageDetail in value) {
+      if (Symbol.pageDetail in value) {
         return { type: 'page' }
       }
 

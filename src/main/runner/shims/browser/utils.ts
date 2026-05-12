@@ -6,13 +6,8 @@ import {
   ActionBeginEvent,
   ActionResultSchema,
   AnyBrowserDebugEvent,
-  AssertionBeginEvent,
-  AssertionEndEvent,
-  BrowserDebuggerBeginEvent,
-  BrowserDebuggerEndEvent,
 } from '../../schema'
-
-import { serializeValue } from './serialize'
+import { TrackingClient } from '../utils'
 
 export const TRACKING_SERVER_URL = __ENV.K6_TRACKING_SERVER_PORT
   ? `http://localhost:${__ENV.K6_TRACKING_SERVER_PORT}`
@@ -38,7 +33,32 @@ export function createSequence() {
   }
 }
 
-const nextId = createSequence()
+/**
+ * This function create a gate that allows an item to pass only once.
+ * Subsequent calls with the same item will return false.
+ */
+export function createSingleEntryGuard() {
+  const nextId = createSequence()
+
+  // Ideally we could use a WeakSet here but k6 has poor support and it
+  // prevents the k6 process from exiting when used with browser entities
+  // such as Page or BrowserContext.
+  const items = new Set<string>()
+
+  return (item: { __id?: string }) => {
+    item.__id ??= nextId()
+
+    if (items.has(item.__id)) {
+      return false
+    }
+
+    items.add(item.__id)
+
+    return true
+  }
+}
+
+const client = new TrackingClient('browser')
 
 export function trackLog(entry: LogEntry) {
   if (TRACKING_SERVER_URL === null) {
@@ -59,35 +79,6 @@ export function trackLog(entry: LogEntry) {
     })
 }
 
-function sendBeginEvent<T extends BrowserDebuggerBeginEvent>(event: T) {
-  try {
-    const body = JSON.stringify(event)
-
-    http.post(`${TRACKING_SERVER_URL}/track/${event.eventId}/begin`, body, {
-      headers: { 'Content-Type': 'application/json' },
-    })
-  } catch {
-    // We don't want to interfere with the script execution so
-    // we swallow all errors here.
-    return null
-  }
-
-  return event
-}
-
-function sendEndEvent<T extends BrowserDebuggerEndEvent>(event: T) {
-  try {
-    const body = JSON.stringify(event)
-
-    http.post(`${TRACKING_SERVER_URL}/track/${event.eventId}/end`, body, {
-      headers: { 'Content-Type': 'application/json' },
-    })
-  } catch {
-    // We don't want to interfere with the script execution so
-    // we swallow all errors here.
-  }
-}
-
 function beginAction(action: AnyBrowserDebugEvent | undefined | null) {
   if (TRACKING_SERVER_URL === null) {
     return null
@@ -97,10 +88,10 @@ function beginAction(action: AnyBrowserDebugEvent | undefined | null) {
     return null
   }
 
-  return sendBeginEvent({
+  return client.begin({
     type: 'action',
     state: 'begin',
-    eventId: nextId(),
+    eventId: client.nextId(),
     timestamp: {
       started: Date.now(),
     },
@@ -113,7 +104,7 @@ function endAction(event: ActionBeginEvent | null, result: ActionResultSchema) {
     return
   }
 
-  sendEndEvent({
+  client.end({
     ...event,
     state: 'end',
     timestamp: {
@@ -264,106 +255,4 @@ export function createProxy<T extends object>({
       }
     },
   })
-}
-
-const KNOWN_MATCHERS = new Set([
-  'toBeChecked',
-  'toBeDisabled',
-  'toBeEditable',
-  'toBeEmpty',
-  'toBeEnabled',
-  'toBeHidden',
-  'toBeVisible',
-  'toHaveAttribute',
-  'toHaveText',
-  'toContainText',
-  'toHaveTitle',
-  'toHaveValue',
-  'toBe',
-  'toBeCloseTo',
-  'toBeGreaterThan',
-  'toBeGreaterThanOrEqual',
-  'toBeLessThan',
-  'toBeLessThanOrEqual',
-  'toBeDefined',
-  'toBeFalsy',
-  'toBeInstanceOf',
-  'toBeNaN',
-  'toBeNull',
-  'toBeTruthy',
-  'toBeUndefined',
-  'toEqual',
-  'toContain',
-  'toContainEqual',
-  'toHaveLength',
-  'toHaveProperty',
-])
-
-export function beginAssertion(
-  name: string,
-  negated: boolean,
-  actual: unknown,
-  args: unknown[]
-): AssertionBeginEvent | null {
-  if (TRACKING_SERVER_URL === null) {
-    return null
-  }
-
-  return sendBeginEvent({
-    type: 'assertion',
-    state: 'begin',
-    eventId: nextId(),
-    timestamp: { started: Date.now() },
-    actual: serializeValue(actual),
-    assertion: {
-      name,
-      matcher: KNOWN_MATCHERS.has(name) ? name : undefined,
-      negated,
-      args: args.map(serializeValue),
-    } as unknown as AssertionBeginEvent['assertion'],
-  })
-}
-
-export function endAssertion(
-  event: AssertionBeginEvent | null,
-  result: AssertionEndEvent['result']
-) {
-  if (event === null) {
-    return
-  }
-
-  sendEndEvent({
-    ...event,
-    state: 'end',
-    timestamp: {
-      ...event.timestamp,
-      ended: Date.now(),
-    },
-    result,
-  })
-}
-
-/**
- * This function create a gate that allows an item to pass only once.
- * Subsequent calls with the same item will return false.
- */
-export function createSingleEntryGuard() {
-  const nextId = createSequence()
-
-  // Ideally we could use a WeakSet here but k6 has poor support and it
-  // prevents the k6 process from exiting when used with browser entities
-  // such as Page or BrowserContext.
-  const items = new Set<string>()
-
-  return (item: { __id?: string }) => {
-    item.__id ??= nextId()
-
-    if (items.has(item.__id)) {
-      return false
-    }
-
-    items.add(item.__id)
-
-    return true
-  }
 }
