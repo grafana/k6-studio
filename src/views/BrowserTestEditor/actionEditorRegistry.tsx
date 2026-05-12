@@ -11,7 +11,6 @@ import {
   SquareCheckBigIcon,
   SquareIcon,
   TextCursorInputIcon,
-  TextIcon,
   TimerIcon,
 } from 'lucide-react'
 import { ReactElement, ReactNode } from 'react'
@@ -122,7 +121,7 @@ const actionEditors: ActionEditorRegistry = {
     ),
   },
   'locator.toContainText': {
-    icon: <TextIcon aria-hidden="true" />,
+    icon: <EyeIcon aria-hidden="true" />,
     render: ({ action, onChange }) => (
       <ToContainTextActionBody action={action} onChange={onChange} />
     ),
