@@ -8,6 +8,8 @@ import {
   TRACKING_SERVER_URL,
 } from './utils'
 
+import '../symbols'
+
 declare module 'k6/browser' {
   // We extend these interfaces to ba able to track specific instances
   interface Page {
