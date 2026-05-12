@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import { LocatorToBeCheckedAction } from '@/schemas/browserTest'
-import { buildClickAction } from '@/test/factories/browserActions'
+import {
+  buildClickAction,
+  buildToBeCheckedAction,
+} from '@/test/factories/browserActions'
 
 import { convertActionsToTest, convertEventsToTest } from './test'
 
@@ -174,25 +176,24 @@ describe('convertActionsToTest', () => {
     expect(clickNode?.waitForNavigation).toBeUndefined()
   })
 
-  it('threads inputType through toBeChecked action to is-checked IR operation', () => {
-    const action: LocatorToBeCheckedAction = {
-      id: 'assert-1',
-      method: 'locator.toBeChecked',
-      checked: true,
-      inputType: 'aria',
-      locator: {
-        current: 'css',
-        values: { css: { type: 'css', selector: '[role="checkbox"]' } },
-      },
-    }
-
-    const test = convertActionsToTest({ browserActions: [action] })
+  it('threads inputType:aria through toBeChecked to is-checked IR operation', () => {
+    const test = convertActionsToTest({
+      browserActions: [
+        buildToBeCheckedAction({
+          inputType: 'aria',
+          checked: true,
+          locator: {
+            current: 'css',
+            values: { css: { type: 'css', selector: '[role="checkbox"]' } },
+          },
+        }),
+      ],
+    })
 
     const assertNode = test.defaultScenario?.nodes.find(
       (node) => node.type === 'assert'
     )
 
-    expect(assertNode).toBeDefined()
     expect(assertNode?.operation).toMatchObject({
       type: 'is-checked',
       inputType: 'aria',
@@ -200,19 +201,12 @@ describe('convertActionsToTest', () => {
     })
   })
 
-  it('defaults inputType to native when threading toBeChecked action through to IR', () => {
-    const action: LocatorToBeCheckedAction = {
-      id: 'assert-1',
-      method: 'locator.toBeChecked',
-      checked: false,
-      inputType: 'native',
-      locator: {
-        current: 'css',
-        values: { css: { type: 'css', selector: 'input[type="checkbox"]' } },
-      },
-    }
-
-    const test = convertActionsToTest({ browserActions: [action] })
+  it('threads inputType:native through toBeChecked to is-checked IR operation', () => {
+    const test = convertActionsToTest({
+      browserActions: [
+        buildToBeCheckedAction({ inputType: 'native', checked: false }),
+      ],
+    })
 
     const assertNode = test.defaultScenario?.nodes.find(
       (node) => node.type === 'assert'
