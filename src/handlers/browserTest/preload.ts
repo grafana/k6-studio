@@ -1,11 +1,14 @@
 import { ipcRenderer } from 'electron'
 
-import { BrowserTestFile } from '@/schemas/browserTest'
+import { AnyBrowserAction, BrowserTestFile } from '@/schemas/browserTest'
 
 import { BrowserTestHandler } from './types'
 
-export function create() {
-  return ipcRenderer.invoke(BrowserTestHandler.Create) as Promise<string>
+export function create(actions?: AnyBrowserAction[]) {
+  return ipcRenderer.invoke(
+    BrowserTestHandler.Create,
+    actions
+  ) as Promise<string>
 }
 
 export function open(filePath: string) {
