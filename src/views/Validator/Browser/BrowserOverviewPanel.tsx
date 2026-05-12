@@ -69,7 +69,7 @@ export function BrowserOverviewPanel({
           <SessionPlayer
             key={session.id}
             session={session}
-            highlightedLocator={highlightedLocator}
+            highlightedElement={highlightedLocator}
           />
         </PersistentTabs.Content>
       </Flex>

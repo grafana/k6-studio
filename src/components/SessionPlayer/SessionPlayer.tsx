@@ -11,7 +11,7 @@ import { DebugSession } from '@/views/Validator/types'
 import { AddressBar } from './AddressBar'
 import { LocatorHighlights } from './LocatorHighlights'
 import { OnSeekEvent, PlaybackControls } from './PlaybackControls'
-import { usePlayer } from './SessionPlayer.hooks'
+import { PlayerMouseEvent, usePlayer } from './SessionPlayer.hooks'
 import { getPageState } from './SessionPlayer.utils'
 import { Viewport } from './Viewport'
 import { Page } from './types'
@@ -29,7 +29,10 @@ interface SessionPlayerProps {
   placeholder?: string
   initialPage?: Page
   initialContent?: ReactNode
-  highlightedLocator: ElementLocator | null
+  controls?: ReactNode
+  highlightedElement: ElementLocator | Element | null
+  interactive?: boolean
+  onClick?: (ev: PlayerMouseEvent) => void
 }
 
 export function SessionPlayer({
@@ -37,13 +40,18 @@ export function SessionPlayer({
   placeholder = 'Enter a URL to start...',
   initialPage = DEFAULT_PAGE,
   initialContent,
-  highlightedLocator,
+  controls,
+  highlightedElement,
+  interactive = false,
+  onClick,
 }: SessionPlayerProps) {
   const [mount, setMount] = useState<HTMLDivElement | null>(null)
 
   const { loading, state, time, page, play, pause, seek, player } = usePlayer({
     session,
     mount,
+    interactive,
+    onClick,
   })
 
   const handleSeek = ({ time, commit }: OnSeekEvent) => {
@@ -110,7 +118,7 @@ export function SessionPlayer({
             {pageState === 'loaded' && (
               <LocatorHighlights
                 player={player}
-                locator={highlightedLocator ?? null}
+                target={highlightedElement ?? null}
               />
             )}
           </Box>
@@ -124,6 +132,7 @@ export function SessionPlayer({
         actions={session.browser.actions.filter(
           (action) => action.type === 'action' || isBrowserAssertion(action)
         )}
+        controls={controls}
         onPlay={handlePlay}
         onPause={handlePause}
         onSeek={handleSeek}

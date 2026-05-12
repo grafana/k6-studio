@@ -4,16 +4,16 @@ import { Trash2Icon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import { BrowserDebuggerEvent } from '@/main/runner/schema'
+import { AnyBrowserAction } from '@/schemas/browserTest'
 
 import { OptionsSummary } from './Actions/components/OptionsSummary'
 import { getActionEditorForAction } from './actionEditorRegistry'
-import { BrowserActionInstance } from './types'
 
 interface EditableActionProps {
   state: BrowserDebuggerEvent | undefined
-  action: BrowserActionInstance
+  action: AnyBrowserAction
   onRemove: (actionId: string) => void
-  onChange: (action: BrowserActionInstance) => void
+  onChange: (action: AnyBrowserAction) => void
   dragHandle?: ReactNode
 }
 

@@ -27,6 +27,12 @@ function substituteAssertion(
     case 'HasValueAssertion':
       return {
         type: 'HasValueAssertion',
+        expected: substituteExpression(assertion.expected, substitutions),
+      }
+
+    case 'HasValuesAssertion':
+      return {
+        type: 'HasValuesAssertion',
         expected: mapNonEmpty(assertion.expected, (value) =>
           substituteExpression(value, substitutions)
         ),

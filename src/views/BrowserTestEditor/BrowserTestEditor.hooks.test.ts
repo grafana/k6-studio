@@ -103,9 +103,10 @@ describe('useBrowserTestState options round-trip', () => {
     // options reflect what would be saved to file
     const wouldSave = {
       version: '1.0' as const,
-      actions: result.current.plainActions,
+      actions: result.current.actions,
       options: result.current.options,
     }
+
     expect(wouldSave.options.thresholds[0]?.metric).toBe(
       'browser_web_vital_lcp'
     )

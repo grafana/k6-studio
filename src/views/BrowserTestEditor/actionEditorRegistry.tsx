@@ -3,6 +3,7 @@ import {
   CircleQuestionMarkIcon,
   ClockIcon,
   EraserIcon,
+  EyeIcon,
   GlobeIcon,
   ListChecksIcon,
   MousePointerClickIcon,
@@ -14,6 +15,8 @@ import {
 } from 'lucide-react'
 import { ReactElement, ReactNode } from 'react'
 
+import { AnyBrowserAction } from '@/schemas/browserTest'
+
 import {
   CheckActionBody,
   ClearActionBody,
@@ -22,35 +25,38 @@ import {
   GoToActionBody,
   PageReloadActionBody,
   SelectOptionActionBody,
+  ToBeCheckedActionBody,
+  ToHaveValueActionBody,
+  ToBeVisibleActionBody,
+  ToContainTextActionBody,
   UncheckActionBody,
   WaitForActionBody,
   WaitForTimeoutActionBody,
 } from './Actions'
-import { BrowserActionInstance } from './types'
 
-type ActionByMethod<M extends BrowserActionInstance['method']> = Extract<
-  BrowserActionInstance,
+type ActionByMethod<M extends AnyBrowserAction['method']> = Extract<
+  AnyBrowserAction,
   { method: M }
 >
 
-interface ActionEditorProps<M extends BrowserActionInstance['method']> {
+interface ActionEditorProps<M extends AnyBrowserAction['method']> {
   action: ActionByMethod<M>
   onChange: (action: ActionByMethod<M>) => void
 }
 
-interface ActionEditorDefinition<M extends BrowserActionInstance['method']> {
+interface ActionEditorDefinition<M extends AnyBrowserAction['method']> {
   icon: ReactNode
   render: (props: ActionEditorProps<M>) => ReactElement
   summaryExcludeKeys?: readonly string[]
 }
 
 type ActionEditorRegistry = {
-  [M in BrowserActionInstance['method']]?: ActionEditorDefinition<M>
+  [M in AnyBrowserAction['method']]?: ActionEditorDefinition<M>
 }
 
 const notImplementedIcon = <CircleQuestionMarkIcon aria-hidden="true" />
 
-const notImplementedRender = <M extends BrowserActionInstance['method']>({
+const notImplementedRender = <M extends AnyBrowserAction['method']>({
   action,
 }: ActionEditorProps<M>) => (
   <>
@@ -96,6 +102,30 @@ const actionEditors: ActionEditorRegistry = {
       <SelectOptionActionBody action={action} onChange={onChange} />
     ),
   },
+  'locator.toBeChecked': {
+    icon: <EyeIcon aria-hidden="true" />,
+    render: ({ action, onChange }) => (
+      <ToBeCheckedActionBody action={action} onChange={onChange} />
+    ),
+  },
+  'locator.toHaveValue': {
+    icon: <EyeIcon aria-hidden="true" />,
+    render: ({ action, onChange }) => (
+      <ToHaveValueActionBody action={action} onChange={onChange} />
+    ),
+  },
+  'locator.toBeVisible': {
+    icon: <EyeIcon aria-hidden="true" />,
+    render: ({ action, onChange }) => (
+      <ToBeVisibleActionBody action={action} onChange={onChange} />
+    ),
+  },
+  'locator.toContainText': {
+    icon: <EyeIcon aria-hidden="true" />,
+    render: ({ action, onChange }) => (
+      <ToContainTextActionBody action={action} onChange={onChange} />
+    ),
+  },
   'page.goto': {
     icon: <GlobeIcon aria-hidden="true" />,
     render: ({ action, onChange }) => (
@@ -120,7 +150,7 @@ const actionEditors: ActionEditorRegistry = {
   },
 }
 
-export function getActionEditor<M extends BrowserActionInstance['method']>(
+export function getActionEditor<M extends AnyBrowserAction['method']>(
   method: M
 ): ActionEditorDefinition<M> {
   const editor = actionEditors[method]
@@ -135,7 +165,7 @@ export function getActionEditor<M extends BrowserActionInstance['method']>(
   } as ActionEditorDefinition<M>
 }
 
-export function getActionEditorForAction<A extends BrowserActionInstance>(
+export function getActionEditorForAction<A extends AnyBrowserAction>(
   action: A
 ): ActionEditorDefinition<A['method']> {
   return getActionEditor(action.method)

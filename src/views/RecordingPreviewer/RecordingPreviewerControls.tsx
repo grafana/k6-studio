@@ -1,16 +1,24 @@
-import { css } from '@emotion/react'
-import { Button, DropdownMenu, Flex, IconButton, Text } from '@radix-ui/themes'
-import { ChevronDownIcon, EllipsisVerticalIcon } from 'lucide-react'
+import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
+import {
+  ChevronDownIcon,
+  EllipsisVerticalIcon,
+  MonitorIcon,
+  ServerCogIcon,
+} from 'lucide-react'
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { emitScript } from '@/codegen/browser'
+import { convertEventsToActions } from '@/codegen/browser/convertEventsToActions'
 import { convertEventsToTest } from '@/codegen/browser/test'
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
+import { RichDropdownMenuItem } from '@/components/RichDropdownMenuItem'
+import { useCreateBrowserTest } from '@/hooks/useCreateBrowserTest'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { getRoutePath, getViewPath } from '@/routeMap'
 import { BrowserEvent } from '@/schemas/recording'
+import { useFeaturesStore } from '@/store/features'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 
@@ -37,7 +45,25 @@ export function RecordingPreviewControls({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const isDiscardable = Boolean(state?.discardable)
 
+  const isBrowserEditorEnabled = useFeaturesStore(
+    (state) => state.features['browser-test-editor']
+  )
+  const createBrowserTest = useCreateBrowserTest()
+
   const handleCreateGenerator = () => createTestGenerator(file.path)
+
+  const handleCreateBrowserTest = () => {
+    const actions = convertEventsToActions(browserEvents)
+    void createBrowserTest(actions)
+  }
+
+  const browserTestDescription = isBrowserEditorEnabled
+    ? 'Create a browser test from recorded interactions'
+    : 'Export a k6 script simulating browser interactions'
+
+  const handleBrowserTest = isBrowserEditorEnabled
+    ? handleCreateBrowserTest
+    : () => setShowExportDialog(true)
 
   const handleDelete = useDeleteFile({
     file,
@@ -54,26 +80,29 @@ export function RecordingPreviewControls({
     navigate(getRoutePath('home'))
   }
 
-  const handleExportBrowserScript = (fileName: string) => {
+  const handleExportBrowserScript = async (fileName: string) => {
     const test = convertEventsToTest({
       browserEvents,
     })
 
-    emitScript(test)
-      .then((script) => window.studio.script.saveScript(script, fileName))
-      .then((filePath) => {
-        if (!filePath) return
+    try {
+      const path = await window.studio.fs.showSaveAsDialog(fileName)
 
-        navigate(getViewPath('script', filePath))
-      })
-      .catch((err) => {
-        console.error(err)
+      if (path === undefined) {
+        return
+      }
 
-        showToast({
-          title: 'Failed to export browser script.',
-          status: 'error',
-        })
+      const script = await emitScript(test)
+
+      await window.studio.script.saveScript(path, script)
+
+      navigate(getViewPath('script', path))
+    } catch (err) {
+      showToast({
+        title: 'Failed to export browser script.',
+        status: 'error',
       })
+    }
   }
 
   return (
@@ -102,16 +131,18 @@ export function RecordingPreviewControls({
           </Button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <MenuItem
+          <RichDropdownMenuItem
+            icon={<ServerCogIcon />}
             label="HTTP test"
             description="Generate a k6 script from HTTP requests using rules"
             onClick={handleCreateGenerator}
           />
-          <MenuItem
+          <RichDropdownMenuItem
+            icon={<MonitorIcon />}
             label="Browser test"
-            description="Export a k6 script simulating browser interactions"
+            description={browserTestDescription}
             disabled={browserEvents.length === 0}
-            onClick={() => setShowExportDialog(true)}
+            onClick={handleBrowserTest}
           />
         </DropdownMenu.Content>
       </DropdownMenu.Root>
@@ -143,29 +174,5 @@ export function RecordingPreviewControls({
         onExport={handleExportBrowserScript}
       />
     </>
-  )
-}
-
-interface MenuItemProps {
-  label: string
-  description?: string
-  disabled?: boolean
-  onClick?: () => void
-}
-
-function MenuItem({ label, description, disabled, onClick }: MenuItemProps) {
-  return (
-    <DropdownMenu.Item
-      disabled={disabled}
-      onClick={onClick}
-      css={css`
-        height: auto;
-      `}
-    >
-      <Flex direction="column" align="start" py="1" maxWidth="320px">
-        <Text>{label}</Text>
-        {description && <Text size="1">{description}</Text>}
-      </Flex>
-    </DropdownMenu.Item>
   )
 }

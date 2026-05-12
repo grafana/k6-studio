@@ -112,6 +112,11 @@ export interface IsCheckedAssertion {
   expected: CheckState
 }
 
+export interface HasValueAssertion {
+  type: 'has-value'
+  expected: string
+}
+
 export interface HasValuesAssertion {
   type: 'has-values'
   expected: [string, ...string[]]
@@ -121,6 +126,7 @@ export type AssertionOperation =
   | TextContainsAssertion
   | IsVisibleAssertion
   | IsCheckedAssertion
+  | HasValueAssertion
   | HasValuesAssertion
 
 export interface AssertNode extends NodeBase {

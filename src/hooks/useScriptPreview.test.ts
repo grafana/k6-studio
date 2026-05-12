@@ -43,11 +43,11 @@ describe('useScriptPreview', () => {
   it('should initialize with an empty preview and no error', () => {
     const mockState = createGeneratorState()
     vi.mocked(useGeneratorStore.getState).mockReturnValue(mockState)
-    const { result } = renderHook(() => useScriptPreview())
+    const { result } = renderHook(() =>
+      useScriptPreview('/project/Generators/test.k6g')
+    )
 
-    expect(result.current.preview).toBe('')
-    expect(result.current.error).toBeUndefined()
-    expect(result.current.hasError).toBe(false)
+    expect(result.current).toEqual({ valid: true, preview: '' })
   })
 
   it('should update the preview when the store state changes', async () => {
@@ -63,12 +63,12 @@ describe('useScriptPreview', () => {
     vi.mocked(groupProxyData).mockReturnValue(mockGroupedRequests)
     vi.mocked(generateScriptPreview).mockResolvedValue(mockScript)
 
-    const { result } = renderHook(() => useScriptPreview())
+    const { result } = renderHook(() =>
+      useScriptPreview('/project/Generators/test.k6g')
+    )
 
     await waitFor(() => {
-      expect(result.current.preview).toBe(mockScript)
-      expect(result.current.error).toBeUndefined()
-      expect(result.current.hasError).toBe(false)
+      expect(result.current).toEqual({ valid: true, preview: mockScript })
     })
   })
 
@@ -86,12 +86,12 @@ describe('useScriptPreview', () => {
     vi.mocked(groupProxyData).mockReturnValue(mockGroupedRequests)
     vi.mocked(generateScriptPreview).mockRejectedValue(mockError)
 
-    const { result } = renderHook(() => useScriptPreview())
+    const { result } = renderHook(() =>
+      useScriptPreview('/project/Generators/test.k6g')
+    )
 
     await waitFor(() => {
-      expect(result.current.preview).toBe('')
-      expect(result.current.error).toBe(mockError)
-      expect(result.current.hasError).toBe(true)
+      expect(result.current).toEqual({ valid: false, error: mockError })
     })
   })
 })

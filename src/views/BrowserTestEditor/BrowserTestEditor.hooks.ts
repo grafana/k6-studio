@@ -11,22 +11,20 @@ import {
   usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
 import {
+  AnyBrowserAction,
   BrowserTestFile,
   BrowserTestOptions,
   BrowserThreshold,
   defaultBrowserTestOptions,
 } from '@/schemas/browserTest'
 import { useToast } from '@/store/ui/useToast'
+import { StudioFile } from '@/types'
 import { LoadProfileExecutorOptions, LoadZoneData } from '@/types/testOptions'
 import { getInitialStages } from '@/utils/generator'
 import { stripUndefined } from '@/utils/object'
 import { queryClient } from '@/utils/query'
 
-import {
-  fromBrowserActionInstance,
-  toBrowserActionInstance,
-} from './actionAdapters'
-import { BrowserActionInstance } from './types'
+import { useDebugSession } from '../Validator/Validator.hooks'
 
 export function useBrowserTest(filePath: string) {
   return useQuery<BrowserTestFile>({
@@ -88,8 +86,9 @@ export function useBrowserTestEditorLayout() {
 }
 
 export function useBrowserScriptPreview(
-  browserActions: BrowserActionInstance[],
-  options?: BrowserTestOptions
+  browserActions: AnyBrowserAction[],
+  options?: BrowserTestOptions,
+  trace = false
 ) {
   const [preview, setPreview] = useState('')
 
@@ -97,13 +96,15 @@ export function useBrowserScriptPreview(
   const generatePreview = useCallback(
     debounce(
       async (
-        actions: BrowserActionInstance[],
-        currentOptions: BrowserTestOptions | undefined
+        actions: AnyBrowserAction[],
+        currentOptions: BrowserTestOptions | undefined,
+        trace: boolean
       ) => {
         try {
           const test = convertActionsToTest({
             browserActions: actions,
             options: currentOptions,
+            trace,
           })
 
           const script = await emitScript(test)
@@ -120,69 +121,54 @@ export function useBrowserScriptPreview(
   )
 
   useEffect(() => {
-    void generatePreview(browserActions, options)
+    void generatePreview(browserActions, options, trace)
 
     return () => generatePreview.cancel()
-  }, [browserActions, options, generatePreview])
+  }, [browserActions, options, trace, generatePreview])
 
   return preview
 }
 
-export function useValidatorScript(
-  browserActions: BrowserActionInstance[],
+interface UseBrowserTestValidatorOptions {
+  file: StudioFile
+  actions: AnyBrowserAction[]
   options?: BrowserTestOptions
-) {
+}
+
+export function useBrowserTestValidator({
+  file,
+  actions,
+  options,
+}: UseBrowserTestValidatorOptions) {
+  const [shutdownDelay, setShutdownDelay] = useState(3000)
+
   // We add a timeout to the end of the script to give the page time to load the page, so that
   // there's something that the user can interact with. If we don't do this, k6 will stop before
   // any DOM mutations have been recorded.
-  const validatorActions: BrowserActionInstance[] = useMemo(
+  const actionsWithTimeout: AnyBrowserAction[] = useMemo(
     () => [
-      ...browserActions,
+      ...actions,
       {
         id: '_validator_timeout_',
         method: 'page.waitForTimeout',
-        timeout: 3000,
+        timeout: isNaN(shutdownDelay) ? 3000 : shutdownDelay,
       },
     ],
-    [browserActions]
+    [actions, shutdownDelay]
   )
 
-  const [script, setScript] = useState('')
+  const script = useBrowserScriptPreview(actionsWithTimeout, options, true)
+  const session = useDebugSession({
+    type: 'raw',
+    content: script,
+    name: file.fileName,
+  })
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const generatePreview = useCallback(
-    debounce(
-      async (
-        actions: BrowserActionInstance[],
-        currentOptions: BrowserTestOptions | undefined
-      ) => {
-        try {
-          const test = convertActionsToTest({
-            browserActions: actions,
-            options: currentOptions,
-            trace: true,
-          })
-
-          const script = await emitScript(test)
-          setScript(script)
-        } catch (error) {
-          setScript(
-            `// Failed to generate script preview:\n// ${error instanceof Error ? error.message : String(error)}`
-          )
-        }
-      },
-      300
-    ),
-    []
-  )
-
-  useEffect(() => {
-    void generatePreview(validatorActions, options)
-
-    return () => generatePreview.cancel()
-  }, [validatorActions, options, generatePreview])
-
-  return script
+  return {
+    ...session,
+    shutdownDelay,
+    setShutdownDelay,
+  }
 }
 
 // Browser tests start with `shared-iterations` and no stages, but the
@@ -205,9 +191,8 @@ export function useBrowserTestState(
   const { actions = [], options = defaultBrowserTestOptions } =
     browserTestFile ?? {}
 
-  const [actionState, setActionState] = useState<BrowserActionInstance[]>(
-    actions.map(toBrowserActionInstance)
-  )
+  const [actionState, setActionState] = useState(actions)
+
   const [optionsState, setOptionsState] = useState<BrowserTestOptions>(() => ({
     ...options,
     loadProfile: withSeededStages(options.loadProfile),
@@ -227,11 +212,11 @@ export function useBrowserTestState(
     )
   }, [browserTestFile])
 
-  const addAction = (action: BrowserActionInstance) => {
+  const addAction = (action: AnyBrowserAction) => {
     setActionState([...actionState, action])
   }
 
-  const updateAction = (updatedAction: BrowserActionInstance) => {
+  const updateAction = (updatedAction: AnyBrowserAction) => {
     setActionState(
       actionState.map((action) =>
         action.id === updatedAction.id ? updatedAction : action
@@ -281,11 +266,6 @@ export function useBrowserTestState(
     []
   )
 
-  const plainActions = useMemo(
-    () => actionState.map(fromBrowserActionInstance),
-    [actionState]
-  )
-
   const isDirty = useMemo(() => {
     // Baseline widens stages to match the in-memory state so seeded defaults
     // aren't seen as edits. Compare strips undefined keys (RHF emits cleared
@@ -296,14 +276,13 @@ export function useBrowserTestState(
       loadProfile: withSeededStages(options.loadProfile),
     }
     return (
-      !isEqual(stripUndefined(plainActions), stripUndefined(actions)) ||
+      !isEqual(stripUndefined(actionState), stripUndefined(actions)) ||
       !isEqual(stripUndefined(optionsState), stripUndefined(baseline))
     )
-  }, [plainActions, actions, optionsState, options])
+  }, [actions, actionState, optionsState, options])
 
   return {
     actions: actionState,
-    plainActions,
     addAction,
     updateAction,
     removeAction,

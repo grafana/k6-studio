@@ -3,19 +3,16 @@ import { Grid } from '@radix-ui/themes'
 import { LocatorClearAction } from '@/schemas/browserTest'
 
 import { LocatorForm } from '../../ActionForms/forms/LocatorForm'
-import { WithEditorMetadata } from '../../types'
 
 const CLEAR_ROLES = ['textbox', 'searchbox', 'combobox']
 
 interface ClearActionBodyProps {
-  action: WithEditorMetadata<LocatorClearAction>
-  onChange: (action: WithEditorMetadata<LocatorClearAction>) => void
+  action: LocatorClearAction
+  onChange: (action: LocatorClearAction) => void
 }
 
 export function ClearActionBody({ action, onChange }: ClearActionBodyProps) {
-  const handleChangeLocator = (
-    locator: WithEditorMetadata<LocatorClearAction>['locator']
-  ) => {
+  const handleChangeLocator = (locator: LocatorClearAction['locator']) => {
     onChange({ ...action, locator })
   }
 

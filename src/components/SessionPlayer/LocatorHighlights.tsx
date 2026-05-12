@@ -5,14 +5,14 @@ import { ElementLocator } from '@/schemas/locator'
 
 interface LocatorHighlightsProps {
   player: Replayer | null
-  locator: ElementLocator | null
+  target: ElementLocator | Element | null
 }
 
-export function LocatorHighlights({ player, locator }: LocatorHighlightsProps) {
+export function LocatorHighlights({ player, target }: LocatorHighlightsProps) {
   return (
     <ElementHighlights
-      element={player?.iframe?.contentDocument?.documentElement ?? null}
-      locator={locator}
+      root={player?.iframe?.contentDocument?.documentElement ?? null}
+      target={target}
     />
   )
 }

@@ -1,30 +1,34 @@
 import { z } from 'zod/v4'
 
-import { ElementLocatorSchema } from '@/schemas/locator'
+import { LocatorOptionsSchema } from '@/schemas/locator'
 
 function safe<T>(schema: z.ZodType<T>) {
   return schema.optional().catch(undefined)
 }
 
+const ActionBaseSchema = z.object({
+  id: z.string().default(() => crypto.randomUUID()),
+})
+
 const GenericOptions = z.unknown()
 
-const PageGotoActionSchema = z.object({
+const PageGotoActionSchema = ActionBaseSchema.extend({
   method: z.literal('page.goto'),
   url: z.string(),
   options: GenericOptions.optional(),
 })
 
-const PageReloadActionSchema = z.object({
+const PageReloadActionSchema = ActionBaseSchema.extend({
   method: z.literal('page.reload'),
   options: GenericOptions.optional(),
 })
 
-const PageWaitForNavigationActionSchema = z.object({
+const PageWaitForNavigationActionSchema = ActionBaseSchema.extend({
   method: z.literal('page.waitForNavigation'),
   options: GenericOptions.optional(),
 })
 
-const PageWaitForTimeoutActionSchema = z.object({
+const PageWaitForTimeoutActionSchema = ActionBaseSchema.extend({
   method: z.literal('page.waitForTimeout'),
   // NaN is converted to null by `JSON.stringify` so we type this
   // as nullable and transform it back to NaN to allow invalid data
@@ -35,7 +39,7 @@ const PageWaitForTimeoutActionSchema = z.object({
     .transform((value) => value ?? NaN),
 })
 
-const PageCloseActionSchema = z.object({
+const PageCloseActionSchema = ActionBaseSchema.extend({
   method: z.literal('page.close'),
 })
 
@@ -58,40 +62,40 @@ const LocatorClickOptionSchema = z
   })
   .passthrough()
 
-const LocatorClickActionSchema = z.object({
+const LocatorClickActionSchema = ActionBaseSchema.extend({
   method: z.literal('locator.click'),
-  locator: ElementLocatorSchema,
+  locator: LocatorOptionsSchema,
   options: LocatorClickOptionSchema.optional(),
 })
 
-const LocatorDoubleClickActionSchema = z.object({
+const LocatorDoubleClickActionSchema = ActionBaseSchema.extend({
   method: z.literal('locator.dblclick'),
-  locator: ElementLocatorSchema,
+  locator: LocatorOptionsSchema,
   options: LocatorClickOptionSchema.optional(),
 })
 
-const LocatorFillActionSchema = z.object({
+const LocatorFillActionSchema = ActionBaseSchema.extend({
   method: z.literal('locator.fill'),
-  locator: ElementLocatorSchema,
+  locator: LocatorOptionsSchema,
   value: z.string(),
   options: GenericOptions.optional(),
 })
 
-const LocatorCheckActionSchema = z.object({
+const LocatorCheckActionSchema = ActionBaseSchema.extend({
   method: z.literal('locator.check'),
-  locator: ElementLocatorSchema,
+  locator: LocatorOptionsSchema,
   options: GenericOptions.optional(),
 })
 
-const LocatorUncheckActionSchema = z.object({
+const LocatorUncheckActionSchema = ActionBaseSchema.extend({
   method: z.literal('locator.uncheck'),
-  locator: ElementLocatorSchema,
+  locator: LocatorOptionsSchema,
   options: GenericOptions.optional(),
 })
 
-const LocatorSelectOptionActionSchema = z.object({
+const LocatorSelectOptionActionSchema = ActionBaseSchema.extend({
   method: z.literal('locator.selectOption'),
-  locator: ElementLocatorSchema,
+  locator: LocatorOptionsSchema,
   values: z.array(
     z.object({
       value: z.string().optional(),
@@ -102,9 +106,9 @@ const LocatorSelectOptionActionSchema = z.object({
   options: GenericOptions.optional(),
 })
 
-const LocatorWaitForActionSchema = z.object({
+const LocatorWaitForActionSchema = ActionBaseSchema.extend({
   method: z.literal('locator.waitFor'),
-  locator: ElementLocatorSchema,
+  locator: LocatorOptionsSchema,
   options: z
     .object({
       state: z
@@ -120,48 +124,84 @@ const LocatorWaitForActionSchema = z.object({
     .optional(),
 })
 
-const LocatorHoverActionSchema = z.object({
+const LocatorHoverActionSchema = ActionBaseSchema.extend({
   method: z.literal('locator.hover'),
-  locator: ElementLocatorSchema,
+  locator: LocatorOptionsSchema,
   options: GenericOptions.optional(),
 })
 
-const LocatorSetCheckedActionSchema = z.object({
+const LocatorSetCheckedActionSchema = ActionBaseSchema.extend({
   method: z.literal('locator.setChecked'),
-  locator: ElementLocatorSchema,
+  locator: LocatorOptionsSchema,
   checked: z.boolean(),
   options: GenericOptions.optional(),
 })
 
-const LocatorTypeActionSchema = z.object({
+const LocatorTypeActionSchema = ActionBaseSchema.extend({
   method: z.literal('locator.type'),
-  locator: ElementLocatorSchema,
+  locator: LocatorOptionsSchema,
   text: z.string(),
   options: GenericOptions.optional(),
 })
 
-const LocatorPressActionSchema = z.object({
+const LocatorPressActionSchema = ActionBaseSchema.extend({
   method: z.literal('locator.press'),
-  locator: ElementLocatorSchema,
+  locator: LocatorOptionsSchema,
   key: z.string(),
   options: GenericOptions.optional(),
 })
 
-const LocatorClearActionSchema = z.object({
+const LocatorClearActionSchema = ActionBaseSchema.extend({
   method: z.literal('locator.clear'),
-  locator: ElementLocatorSchema,
+  locator: LocatorOptionsSchema,
   options: GenericOptions.optional(),
 })
 
-const LocatorTapActionSchema = z.object({
+const LocatorTapActionSchema = ActionBaseSchema.extend({
   method: z.literal('locator.tap'),
-  locator: ElementLocatorSchema,
+  locator: LocatorOptionsSchema,
   options: GenericOptions.optional(),
 })
 
-const LocatorFocusActionSchema = z.object({
+const LocatorFocusActionSchema = ActionBaseSchema.extend({
   method: z.literal('locator.focus'),
-  locator: ElementLocatorSchema,
+  locator: LocatorOptionsSchema,
+  options: GenericOptions.optional(),
+})
+
+const LocatorToBeCheckedActionSchema = ActionBaseSchema.extend({
+  method: z.literal('locator.toBeChecked'),
+  locator: LocatorOptionsSchema,
+  checked: z.boolean(),
+  options: GenericOptions.optional(),
+})
+
+const ExpectedValueSchema = z.object({
+  current: z.union([z.literal('single'), z.literal('multiple')]),
+  values: z.object({
+    single: z.string().optional(),
+    multiple: z.array(z.string()).optional(),
+  }),
+})
+
+const LocatorToHaveValueActionSchema = ActionBaseSchema.extend({
+  method: z.literal('locator.toHaveValue'),
+  locator: LocatorOptionsSchema,
+  expected: ExpectedValueSchema,
+  options: GenericOptions.optional(),
+})
+
+const LocatorToBeVisibleActionSchema = ActionBaseSchema.extend({
+  method: z.literal('locator.toBeVisible'),
+  locator: LocatorOptionsSchema,
+  visible: z.boolean(),
+  options: GenericOptions.optional(),
+})
+
+const LocatorToContainTextActionSchema = ActionBaseSchema.extend({
+  method: z.literal('locator.toContainText'),
+  locator: LocatorOptionsSchema,
+  expected: z.string(),
   options: GenericOptions.optional(),
 })
 
@@ -185,6 +225,10 @@ export const AnyBrowserActionSchema = z.discriminatedUnion('method', [
   LocatorSelectOptionActionSchema,
   LocatorSetCheckedActionSchema,
   LocatorTapActionSchema,
+  LocatorToBeCheckedActionSchema,
+  LocatorToHaveValueActionSchema,
+  LocatorToBeVisibleActionSchema,
+  LocatorToContainTextActionSchema,
   LocatorTypeActionSchema,
   LocatorUncheckActionSchema,
   LocatorWaitForActionSchema,
@@ -224,6 +268,18 @@ export type LocatorSetCheckedAction = z.infer<
   typeof LocatorSetCheckedActionSchema
 >
 export type LocatorTapAction = z.infer<typeof LocatorTapActionSchema>
+export type LocatorToBeCheckedAction = z.infer<
+  typeof LocatorToBeCheckedActionSchema
+>
+export type LocatorToHaveValueAction = z.infer<
+  typeof LocatorToHaveValueActionSchema
+>
+export type LocatorToBeVisibleAction = z.infer<
+  typeof LocatorToBeVisibleActionSchema
+>
+export type LocatorToContainTextAction = z.infer<
+  typeof LocatorToContainTextActionSchema
+>
 export type LocatorTypeAction = z.infer<typeof LocatorTypeActionSchema>
 export type LocatorUncheckAction = z.infer<typeof LocatorUncheckActionSchema>
 export type LocatorWaitForAction = z.infer<typeof LocatorWaitForActionSchema>
