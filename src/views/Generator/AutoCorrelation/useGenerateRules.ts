@@ -169,7 +169,10 @@ export const useGenerateRules = ({
 
   async function runValidation() {
     clearValidation()
+    const scriptPath = await window.studio.fs.getTempScriptPath()
+
     const script = await generateScriptPreview(
+      scriptPath,
       {
         ...generator,
         rules: [...generator.rules, ...suggestedRulesRef.current],
@@ -179,6 +182,7 @@ export const useGenerateRules = ({
 
     const validationResult = await validateScript(
       script,
+      scriptPath,
       abortControllerRef.current?.signal,
       false
     )

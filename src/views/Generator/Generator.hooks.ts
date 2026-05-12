@@ -96,7 +96,13 @@ export function useScriptExport(generatorFilePath: string) {
       setScriptName(scriptName)
 
       try {
-        await exportScript(scriptName)
+        const scriptPath = await window.studio.fs.showSaveAsDialog(scriptName)
+
+        if (scriptPath === undefined) {
+          return
+        }
+
+        await exportScript(scriptPath)
       } catch (error) {
         log.error(error)
 

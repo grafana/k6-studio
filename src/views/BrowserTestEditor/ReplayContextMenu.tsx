@@ -5,6 +5,7 @@ import { LocatorOptions } from '@/schemas/locator'
 import { AriaDetails } from '@/schemas/recording'
 
 import {
+  getTextInputValue,
   isCheckbox,
   isRadio,
   isSelect,
@@ -17,6 +18,7 @@ import {
   createFillAction,
   createSelectOptionAction,
   createToBeCheckedAction,
+  createToHaveValueAction,
   createToBeVisibleAction,
   createUncheckAction,
   createWaitForAction,
@@ -71,6 +73,24 @@ export function ReplayContextMenu({
               onClick={() => onAddAction(createClearAction({ locator }))}
             >
               Clear input
+            </DropdownMenu.Item>
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item
+              onClick={() =>
+                onAddAction(
+                  createToHaveValueAction({
+                    locator,
+                    expected: {
+                      current: 'single',
+                      values: {
+                        single: getTextInputValue(target),
+                      },
+                    },
+                  })
+                )
+              }
+            >
+              Expect to have value
             </DropdownMenu.Item>
           </>
         )}

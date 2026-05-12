@@ -24,11 +24,13 @@ import { generateOptions } from './options'
 interface GenerateScriptParams {
   recording: ProxyData[]
   generator: GeneratorFileData
+  scriptPath: string
 }
 
 export function generateScript({
   recording,
   generator,
+  scriptPath,
 }: GenerateScriptParams): string {
   const hasBinaryContent = recording.some(
     ({ request }) => request.content != null && isBinaryContent(request.content)
@@ -42,8 +44,8 @@ export function generateScript({
     export const options = ${generateOptions(generator.options)}
 
     ${generateVariableDeclarations(generator.testData.variables)}
-    ${generateDataFileDeclarations(generator.testData.files)}
-    ${generateGetUniqueItemFunction(generator.testData.files)}
+    ${generateDataFileDeclarations(generator.testData.files, scriptPath)}
+    ${generateGetUniqueItemFunction(generator.testData.files)} 
 
     export default function() {
       ${generateVUCode(recording, generator.rules, generator.options.thinkTime)}
@@ -93,25 +95,30 @@ export function generateVariableDeclarations(variables: Variable[]): string {
   return `const VARS = {\n${variableKeyValuePairs}\n};`
 }
 
-export function generateDataFileDeclarations(files: DataFile[]): string {
+export function generateDataFileDeclarations(
+  files: DataFile[],
+  scriptPath: string
+): string {
   if (files.length === 0) {
     return ''
   }
 
+  const scriptDir = path.dirname(scriptPath)
+
   const fileKeyValuePairs = files
     .map(({ name }) => {
-      const baseName = path.basename(name)
       const displayName = path.name(name)
+      const relativePath = path.relative(scriptDir, name)
       const isCSV = name.toLowerCase().endsWith('csv')
 
       if (isCSV) {
         return `
-        "${displayName}": await csv.parse(await fs.open('../Data/${baseName}'), { asObjects: true })`
+        "${displayName}": await csv.parse(await fs.open('${relativePath}'), { asObjects: true })`
       }
 
       return `
         "${displayName}": new SharedArray("${displayName}", () => {
-          const data = JSON.parse(open('../Data/${baseName}'));
+          const data = JSON.parse(open('${relativePath}'));
           return Array.isArray(data) ? data : [data];
         })`
     })

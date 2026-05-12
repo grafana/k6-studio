@@ -3,7 +3,7 @@ import log from 'electron-log/main'
 import { readFile, writeFile, unlink } from 'fs/promises'
 import path from 'path'
 
-import { SCRIPTS_PATH, TEMP_GENERATOR_SCRIPT_PATH } from '@/constants/workspace'
+import { SCRIPTS_PATH } from '@/constants/workspace'
 import { waitForProxy } from '@/main/proxy'
 import { showScriptSelectDialog, runScript } from '@/main/script'
 import { trackEvent } from '@/services/usageTracking'
@@ -103,22 +103,23 @@ export function initialize() {
 
   ipcMain.handle(
     ScriptHandler.RunFromGenerator,
-    async (event, script: string, shouldTrack = true) => {
+    async (event, script: string, scriptPath: string, shouldTrack = true) => {
       console.info(`${ScriptHandler.RunFromGenerator} event received`)
 
       const browserWindow = browserWindowFromEvent(event)
 
       try {
-        await writeFile(TEMP_GENERATOR_SCRIPT_PATH, script)
+        await writeFile(scriptPath, script)
+
+        const browserWindow = browserWindowFromEvent(event)
 
         currentTestRun = await runScript({
           browserWindow,
-          scriptPath: TEMP_GENERATOR_SCRIPT_PATH,
+          scriptPath,
           proxySettings: k6StudioState.appSettings.proxy,
           usageReport: k6StudioState.appSettings.telemetry.usageReport,
         })
 
-        await unlink(TEMP_GENERATOR_SCRIPT_PATH)
         if (shouldTrack) {
           trackEvent({
             event: UsageEventName.ScriptValidated,
@@ -137,34 +138,36 @@ export function initialize() {
         }
 
         throw error
+      } finally {
+        await unlink(scriptPath).catch(() => {
+          // Best case effort cleanup.
+        })
       }
     }
   )
 
   ipcMain.handle(
     ScriptHandler.Save,
-    async (event, script: string, fileName: string = 'script.js') => {
+    async (event, scriptPath: string, script: string) => {
       console.info(`${ScriptHandler.Save} event received`)
       const browserWindow = browserWindowFromEvent(event)
       try {
-        const filePath = path.join(SCRIPTS_PATH, fileName)
-        await writeFile(filePath, script)
+        await writeFile(scriptPath, script)
 
         trackEvent({
           event: UsageEventName.ScriptExported,
         })
+
         sendToast(browserWindow.webContents, {
           title: 'Script exported successfully',
           status: 'success',
         })
 
-        return filePath
+        return scriptPath
       } catch (error) {
-        sendToast(browserWindow.webContents, {
-          title: 'Failed to export the script',
-          status: 'error',
-        })
         log.error(error)
+
+        throw error
       }
     }
   )

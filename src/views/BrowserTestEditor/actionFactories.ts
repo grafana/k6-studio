@@ -1,4 +1,7 @@
-import { AnyBrowserAction } from '@/schemas/browserTest'
+import {
+  AnyBrowserAction,
+  LocatorToHaveValueAction,
+} from '@/schemas/browserTest'
 import { LocatorOptions } from '@/schemas/locator'
 
 interface LocatorFactoryOptions {
@@ -172,6 +175,38 @@ export function createToBeCheckedAction({
         role: {
           type: 'role',
           role: 'checkbox',
+          options: {
+            exact: false,
+          },
+        },
+      },
+    },
+  }
+}
+
+type CreateToHaveValueActionOptions = LocatorFactoryOptions & {
+  expected?: LocatorToHaveValueAction['expected']
+}
+
+export function createToHaveValueAction({
+  locator,
+  expected,
+}: CreateToHaveValueActionOptions = {}): ActionByMethod<'locator.toHaveValue'> {
+  return {
+    id: crypto.randomUUID(),
+    method: 'locator.toHaveValue',
+    expected: expected ?? {
+      current: 'single',
+      values: {
+        single: '',
+      },
+    },
+    locator: locator ?? {
+      current: 'role',
+      values: {
+        role: {
+          type: 'role',
+          role: 'textbox',
           options: {
             exact: false,
           },
