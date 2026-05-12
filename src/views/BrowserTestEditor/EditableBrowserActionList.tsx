@@ -25,6 +25,7 @@ import {
   createToBeCheckedAction,
   createToHaveValueAction,
   createToBeVisibleAction,
+  createToContainTextAction,
   createUncheckAction,
   createWaitForAction,
   createWaitForTimeoutAction,
@@ -139,6 +140,11 @@ function NewActionMenu({ onAddAction }: NewActionMenuProps) {
           onClick={() => onAddAction(createToBeVisibleAction())}
         >
           Expect to be visible
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => onAddAction(createToContainTextAction())}
+        >
+          Expect to contain text
         </DropdownMenu.Item>
         <DropdownMenu.Separator />
         <DropdownMenu.Item onClick={() => onAddAction(createWaitForAction())}>

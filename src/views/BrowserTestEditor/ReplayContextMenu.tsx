@@ -20,6 +20,7 @@ import {
   createToBeCheckedAction,
   createToHaveValueAction,
   createToBeVisibleAction,
+  createToContainTextAction,
   createUncheckAction,
   createWaitForAction,
 } from './actionFactories'
@@ -141,6 +142,19 @@ export function ReplayContextMenu({
         >
           Expect to be visible
         </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() =>
+            onAddAction(
+              createToContainTextAction({
+                locator,
+                expected: target.textContent ?? '',
+              })
+            )
+          }
+        >
+          Expect to contain text
+        </DropdownMenu.Item>
+        <DropdownMenu.Separator />
         <DropdownMenu.Item
           onClick={() => onAddAction(createWaitForAction({ locator }))}
         >
