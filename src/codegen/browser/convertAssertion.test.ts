@@ -78,6 +78,7 @@ describe('convertAssertion', () => {
     expect(action).toMatchObject({
       method: 'locator.toBeChecked',
       checked: true,
+      inputType: 'native',
     })
   })
 
@@ -128,19 +129,6 @@ describe('convertAssertion', () => {
       method: 'locator.toBeChecked',
       checked: false,
       inputType: 'aria',
-    })
-  })
-
-  it('preserves inputType:native on check assertion (checked)', () => {
-    const event = makeAssertEvent({
-      type: 'check',
-      inputType: 'native',
-      expected: 'checked',
-    })
-    const action = convertAssertion(event)
-    expect(action).toMatchObject({
-      method: 'locator.toBeChecked',
-      inputType: 'native',
     })
   })
 

@@ -27,7 +27,7 @@ export function buildToBeCheckedAction(
   overrides: Partial<LocatorToBeCheckedAction> = {}
 ): LocatorToBeCheckedAction {
   return {
-    id: 'assert-1',
+    id: crypto.randomUUID(),
     method: 'locator.toBeChecked',
     checked: true,
     inputType: 'native',
