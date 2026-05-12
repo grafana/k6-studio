@@ -27,6 +27,7 @@ export type {
   LocatorSetCheckedAction,
   LocatorTapAction,
   LocatorToBeCheckedAction,
+  LocatorToHaveValueAction,
   LocatorToBeVisibleAction,
   LocatorToContainTextAction,
   LocatorTypeAction,

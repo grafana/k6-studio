@@ -10,24 +10,30 @@ import { harToProxyData } from '@/utils/harToProxyData'
 import { prettify } from '@/utils/prettify'
 
 export async function generateScriptPreview(
+  scriptPath: string,
   generator: GeneratorFileData,
   recording: ProxyData[]
 ) {
   const script = generateScript({
     generator,
     recording,
+    scriptPath,
   })
 
   return prettify(script)
 }
 
-export async function exportScript(fileName: string) {
+export async function exportScript(scriptPath: string) {
   const generator = selectGeneratorData(useGeneratorStore.getState())
   const filteredRequests = selectFilteredRequests(useGeneratorStore.getState())
 
-  const script = await generateScriptPreview(generator, filteredRequests)
+  const script = await generateScriptPreview(
+    scriptPath,
+    generator,
+    filteredRequests
+  )
 
-  await window.studio.script.saveScript(script, fileName)
+  await window.studio.script.saveScript(scriptPath, script)
 }
 
 export const loadGeneratorFile = async (filePath: string) => {

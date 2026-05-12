@@ -8,6 +8,7 @@ import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
 import { useCurrentFile } from '@/hooks/useCurrentFile'
+import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { getRoutePath } from '@/routeMap'
 import { useGeneratorStore, selectGeneratorData } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
@@ -32,6 +33,7 @@ export function Generator() {
   const navigate = useNavigate()
 
   const file = useCurrentFile('generator')
+  const scriptPreview = useScriptPreview(file.path)
 
   const {
     data: generatorFileData,
@@ -144,7 +146,11 @@ export function Generator() {
       title="Generator"
       subTitle={<FileNameHeader file={file} isDirty={isDirty} />}
       actions={
-        <GeneratorControls onSave={handleSaveGenerator} isDirty={isDirty} />
+        <GeneratorControls
+          onSave={handleSaveGenerator}
+          isDirty={isDirty}
+          script={scriptPreview}
+        />
       }
       loading={isLoading}
     >
@@ -153,6 +159,7 @@ export function Generator() {
           <Allotment vertical>
             <Allotment.Pane minSize={200}>
               <GeneratorTabs
+                script={scriptPreview}
                 selectedRequest={selectedRequest}
                 onSelectRequest={setSelectedRequest}
               />
