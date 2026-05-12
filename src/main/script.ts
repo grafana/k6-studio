@@ -239,6 +239,17 @@ function createArchive(scriptPath: string): Promise<string> {
       return
     }
 
+    // We assume that any link to 'data' is the entry script and ignore it to avoid duplicate entries
+    // after adding the entry for the original script content. It should be safe because of the way that
+    // k6 creates archives and it's the best we can do since we might not know the name of the entry
+    // script from the metadata yet.
+    if (header.linkname === 'data') {
+      stream.on('end', next)
+      stream.resume()
+
+      return
+    }
+
     // Read and parse the metadata so that we can modify the entrypoint.
     if (header.name === 'metadata.json') {
       const chunks: Buffer[] = []
