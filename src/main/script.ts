@@ -210,14 +210,14 @@ function createArchive(scriptPath: string): Promise<string> {
   //
   // - metadata.json: contains the original entry script path and the options used to run the script
   // - data: contains the content of the entry script (the path to this file is stored in metadata.json)
-  // - file/: contains all modules and data files imported by the script, incl. the entry script (symlinked to data)
+  // - file/: contains all modules and data files imported by the script, incl. the entry script (hard linked to data)
   // - https/: contains any remote modules imported by the script.
   //
   // We never want to modify any of the user's original files, (incl. their filenames, since this would
   // alter stack traces) so we avoid modifying anything inside file/.
   extract.on('entry', (header, stream, next) => {
     // The 'data' entry is where the content of the entry script is stored and the code that actually
-    // runs when you start a test. The path given by `metadata.filename` is just a symlink to this file.
+    // runs when you start a test. The path given by `metadata.filename` is just a hard link to this file.
     //
     // In order to install our entrypoint, we need to modify the content of the 'data' entry but doing
     // so would overwrite the original script content. To work around this, we store the original script
@@ -329,10 +329,11 @@ function createArchive(scriptPath: string): Promise<string> {
         './' + path.basename(scriptPath)
       )
 
-      // Write our entrypoint and setup a symlink.
+      // Write our entrypoint and setup a hard link.
       pack.entry({ name: 'data' }, entrypointScript)
       pack.entry(
         {
+          type: 'link',
           name: path.posix.join('file', entrypointPath),
           linkname: 'data',
         },

@@ -111,8 +111,6 @@ export function initialize() {
       try {
         await writeFile(scriptPath, script)
 
-        const browserWindow = browserWindowFromEvent(event)
-
         currentTestRun = await runScript({
           browserWindow,
           scriptPath,
