@@ -176,6 +176,21 @@ const LocatorToBeCheckedActionSchema = ActionBaseSchema.extend({
   options: GenericOptions.optional(),
 })
 
+const ExpectedValueSchema = z.object({
+  current: z.union([z.literal('single'), z.literal('multiple')]),
+  values: z.object({
+    single: z.string().optional(),
+    multiple: z.array(z.string()).optional(),
+  }),
+})
+
+const LocatorToHaveValueActionSchema = ActionBaseSchema.extend({
+  method: z.literal('locator.toHaveValue'),
+  locator: LocatorOptionsSchema,
+  expected: ExpectedValueSchema,
+  options: GenericOptions.optional(),
+})
+
 const LocatorToBeVisibleActionSchema = ActionBaseSchema.extend({
   method: z.literal('locator.toBeVisible'),
   locator: LocatorOptionsSchema,
@@ -204,6 +219,7 @@ export const AnyBrowserActionSchema = z.discriminatedUnion('method', [
   LocatorSetCheckedActionSchema,
   LocatorTapActionSchema,
   LocatorToBeCheckedActionSchema,
+  LocatorToHaveValueActionSchema,
   LocatorToBeVisibleActionSchema,
   LocatorTypeActionSchema,
   LocatorUncheckActionSchema,
@@ -246,6 +262,9 @@ export type LocatorSetCheckedAction = z.infer<
 export type LocatorTapAction = z.infer<typeof LocatorTapActionSchema>
 export type LocatorToBeCheckedAction = z.infer<
   typeof LocatorToBeCheckedActionSchema
+>
+export type LocatorToHaveValueAction = z.infer<
+  typeof LocatorToHaveValueActionSchema
 >
 export type LocatorToBeVisibleAction = z.infer<
   typeof LocatorToBeVisibleActionSchema

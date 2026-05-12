@@ -98,6 +98,34 @@ export function isSelect(element: Element, roles: string[]): boolean {
   return roles.includes('combobox') || roles.includes('listbox')
 }
 
+export function getTextInputValue(element: Element): string {
+  const { HTMLInputElement, HTMLTextAreaElement } =
+    element.ownerDocument?.defaultView ?? window
+
+  if (element instanceof HTMLTextAreaElement) {
+    return element.value
+  }
+
+  if (element instanceof HTMLInputElement) {
+    if (
+      [
+        'text',
+        'email',
+        'password',
+        'search',
+        'url',
+        'tel',
+        'number',
+        '',
+      ].includes(element.type.toLowerCase())
+    ) {
+      return element.value
+    }
+  }
+
+  return element.textContent
+}
+
 export function createContextMenuState(
   event: PlayerMouseEvent
 ): ContextMenuState {

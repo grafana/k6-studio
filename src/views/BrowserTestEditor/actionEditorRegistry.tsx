@@ -26,6 +26,7 @@ import {
   PageReloadActionBody,
   SelectOptionActionBody,
   ToBeCheckedActionBody,
+  ToHaveValueActionBody,
   ToBeVisibleActionBody,
   UncheckActionBody,
   WaitForActionBody,
@@ -104,6 +105,12 @@ const actionEditors: ActionEditorRegistry = {
     icon: <EyeIcon aria-hidden="true" />,
     render: ({ action, onChange }) => (
       <ToBeCheckedActionBody action={action} onChange={onChange} />
+    ),
+  },
+  'locator.toHaveValue': {
+    icon: <EyeIcon aria-hidden="true" />,
+    render: ({ action, onChange }) => (
+      <ToHaveValueActionBody action={action} onChange={onChange} />
     ),
   },
   'locator.toBeVisible': {

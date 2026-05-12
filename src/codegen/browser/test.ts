@@ -30,6 +30,11 @@ function toNodeRef(node: TestNode): NodeRef {
   }
 }
 
+function toNonEmptyStrings(values: string[]): [string, ...string[]] {
+  const [first, ...rest] = values
+  return [first ?? '', ...rest]
+}
+
 function toAssertionOperation(assertion: Assertion): AssertionOperation {
   switch (assertion.type) {
     case 'text':
@@ -53,8 +58,8 @@ function toAssertionOperation(assertion: Assertion): AssertionOperation {
 
     case 'text-input':
       return {
-        type: 'has-values',
-        expected: [assertion.expected],
+        type: 'has-value',
+        expected: assertion.expected,
       }
 
     default:
@@ -434,6 +439,27 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
             locator: getLocator(action.locator),
           },
         }
+      case 'locator.toHaveValue': {
+        return {
+          type: 'assert',
+          nodeId: crypto.randomUUID(),
+          operation:
+            action.expected.current === 'multiple'
+              ? {
+                  type: 'has-values',
+                  expected: toNonEmptyStrings(
+                    action.expected.values.multiple ?? []
+                  ),
+                }
+              : {
+                  type: 'has-value',
+                  expected: action.expected.values.single ?? '',
+                },
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
+      }
       case 'locator.fill':
         return {
           type: 'type-text',

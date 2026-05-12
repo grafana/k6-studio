@@ -893,8 +893,8 @@ it('should assert that input has single value using toHaveValue', async ({
           type: 'assert',
           nodeId: 'assert-has-value',
           operation: {
-            type: 'has-values',
-            expected: ['value1'],
+            type: 'has-value',
+            expected: 'value1',
           },
           inputs: {
             locator: { nodeId: 'locator' },
