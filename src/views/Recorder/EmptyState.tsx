@@ -18,12 +18,14 @@ import {
   InfoIcon,
   TriangleAlertIcon,
 } from 'lucide-react'
-import { ReactNode } from 'react'
+import { ReactNode, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 import { z } from 'zod'
 
 import { FieldGroup } from '@/components/Form'
+import { StartRecordingNavigationState } from '@/components/Layout/Sidebar/RecentURLsPanel'
 import { ProxyHealthWarning } from '@/components/ProxyHealthWarning'
 import { TextButton } from '@/components/TextButton'
 import { useProxyHealthCheck } from '@/hooks/useProxyHealthCheck'
@@ -51,6 +53,11 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
   const proxyStatus = useProxyStatus()
   const { data: isBrowserInstalled } = useBrowserCheck()
 
+  const location = useLocation()
+  const navigate = useNavigate()
+  const navigationState = location.state as StartRecordingNavigationState | null
+  const prefilledURL = navigationState?.prefilledURL ?? ''
+
   const [captureBrowser = true, setCaptureBrowser] = useLocalStorage(
     'start-recording.capture.browser',
     true
@@ -63,9 +70,18 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
     setValue,
   } = useForm<RecorderEmptyStateFields>({
     resolver: zodResolver(RecorderEmptyStateSchema),
-    defaultValues: { url: '' },
+    defaultValues: { url: prefilledURL },
     shouldFocusError: false,
   })
+
+  useEffect(() => {
+    if (!navigationState?.prefilledURL) {
+      return
+    }
+
+    setValue('url', navigationState.prefilledURL)
+    navigate(location.pathname, { replace: true, state: null })
+  }, [navigationState?.prefilledURL, navigate, location.pathname, setValue])
 
   const { recentURLs, addURL, removeURL } = useRecentURLs({ limit: 3 })
 

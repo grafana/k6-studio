@@ -2,6 +2,7 @@ import { css } from '@emotion/react'
 import {
   ContextMenu,
   Flex,
+  Grid,
   IconButton,
   Reset,
   ScrollArea,
@@ -9,7 +10,7 @@ import {
 } from '@radix-ui/themes'
 import { DiscIcon, GlobeIcon } from 'lucide-react'
 import { useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 
 import { useOverflowCheck } from '@/hooks/useOverflowCheck'
@@ -20,7 +21,8 @@ import { getRoutePath } from '@/routeMap'
 import { SidebarEmptyState } from './SidebarEmptyState'
 
 export interface StartRecordingNavigationState {
-  autoStart: LaunchBrowserOptions
+  autoStart?: LaunchBrowserOptions
+  prefilledURL?: string
 }
 
 export function RecentURLsPanel() {
@@ -84,22 +86,25 @@ function RecentURLItem({
   onStartRecording,
   onRemove,
 }: RecentURLItemProps) {
-  const linkRef = useRef<HTMLLIElement>(null)
+  const linkRef = useRef<HTMLAnchorElement>(null)
   const hasOverflow = useOverflowCheck(linkRef)
+
+  const navigationState: StartRecordingNavigationState = {
+    prefilledURL: url,
+  }
 
   return (
     <ContextMenu.Root>
       <ContextMenu.Trigger>
-        <li
-          ref={linkRef}
+        <Grid
+          asChild
+          columns="min-content 1fr auto"
+          align="center"
+          pl="3"
+          pr="2"
           css={css`
-            display: grid;
-            grid-template-columns: min-content 1fr auto;
-            align-items: center;
+            position: relative;
             gap: var(--space-2);
-            padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
-            font-size: 12px;
-            line-height: 22px;
             color: var(--gray-11);
 
             & > button {
@@ -125,36 +130,62 @@ function RecentURLItem({
             }
           `}
         >
-          <GlobeIcon color="var(--indigo-9)" />
-          <Tooltip
-            content={url}
-            side="right"
-            sideOffset={32}
-            hidden={!hasOverflow}
-          >
-            <span
-              ref={linkRef}
-              css={css`
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-              `}
+          <li>
+            <GlobeIcon color="var(--indigo-9)" />
+            <Tooltip
+              content={url}
+              side="right"
+              sideOffset={32}
+              hidden={!hasOverflow}
             >
-              {url}
-            </span>
-          </Tooltip>
-          <Tooltip content="Start recording">
-            <IconButton
-              variant="ghost"
-              color="gray"
-              size="1"
-              aria-label={`Start recording ${url}`}
-              onClick={() => onStartRecording(url)}
-            >
-              <DiscIcon />
-            </IconButton>
-          </Tooltip>
-        </li>
+              <NavLink
+                ref={linkRef}
+                to={getRoutePath('recorder')}
+                state={navigationState}
+                css={css`
+                  display: block;
+                  padding: var(--space-1) 0;
+                  font-size: 12px;
+                  line-height: 22px;
+                  color: var(--gray-11);
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  white-space: nowrap;
+                  text-decoration: none;
+
+                  &::after {
+                    content: '';
+                    position: absolute;
+                    inset: 0;
+                  }
+
+                  &:focus-visible::after {
+                    outline: 2px solid var(--focus-8);
+                    outline-offset: -1px;
+                    border-radius: 4px;
+                  }
+                `}
+              >
+                {url}
+              </NavLink>
+            </Tooltip>
+            <Tooltip content="Start recording">
+              <IconButton
+                variant="ghost"
+                color="gray"
+                size="1"
+                aria-label={`Start recording ${url}`}
+                css={css`
+                  position: relative;
+                  z-index: 1;
+                `}
+                onClick={() => onStartRecording(url)}
+              >
+                <DiscIcon />
+              </IconButton>
+            </Tooltip>
+          </li>
+        </Grid>
       </ContextMenu.Trigger>
       <ContextMenu.Content size="1">
         <ContextMenu.Item onClick={() => onStartRecording(url)}>
