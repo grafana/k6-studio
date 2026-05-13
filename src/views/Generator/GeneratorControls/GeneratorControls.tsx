@@ -14,29 +14,27 @@ import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog
 import { useCurrentFile } from '@/hooks/useCurrentFile'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
-import { useScriptPreview } from '@/hooks/useScriptPreview'
-import { useGeneratorStore } from '@/store/generator'
+import { ScriptPreview } from '@/hooks/useScriptPreview'
 
-import { ExportScriptDialog } from '../ExportScriptDialog'
 import { useScriptExport } from '../Generator.hooks'
 import { ValidatorDialog } from '../ValidatorDialog'
 
 interface GeneratorControlsProps {
   onSave: () => void
   isDirty: boolean
+  script: ScriptPreview
 }
 
-export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
-  const scriptName = useGeneratorStore((store) => store.scriptName)
-
+export function GeneratorControls({
+  onSave,
+  isDirty,
+  script,
+}: GeneratorControlsProps) {
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
-  const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
-    useState(false)
   const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
   const file = useCurrentFile('generator')
-  const { preview, hasError } = useScriptPreview()
   const proxyStatus = useProxyStatus()
-  const isScriptExportable = !hasError && !!preview
+  const isScriptExportable = script.valid && !!script.preview
 
   const handleExportScript = useScriptExport(file.path)
 
@@ -60,7 +58,7 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
         </Tooltip>
         <Tooltip content="Export script">
           <IconButton
-            onClick={() => setIsExportScriptDialogOpen(true)}
+            onClick={handleExportScript}
             disabled={!isScriptExportable}
             variant="ghost"
             color="gray"
@@ -117,19 +115,17 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
         <>
           <RunInCloudDialog
             open={isRunInCloudDialogOpen}
-            script={{ type: 'raw', name: file.fileName, content: preview }}
+            script={{
+              type: 'raw',
+              name: file.fileName,
+              content: script.preview,
+            }}
             onOpenChange={setIsRunInCloudDialogOpen}
           />
           <ValidatorDialog
-            script={preview}
+            script={script.preview}
             open={isValidatorDialogOpen}
             onOpenChange={setIsValidatorDialogOpen}
-          />
-          <ExportScriptDialog
-            open={isExportScriptDialogOpen}
-            scriptName={scriptName}
-            onExport={handleExportScript}
-            onOpenChange={setIsExportScriptDialogOpen}
           />
         </>
       )}

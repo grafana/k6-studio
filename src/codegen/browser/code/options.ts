@@ -24,6 +24,7 @@ function isBrowserScenario(scenario: ir.Scenario) {
       case 'IsIndeterminateAssertion':
       case 'IsAttributeEqualToAssertion':
       case 'HasValueAssertion':
+      case 'HasValuesAssertion':
         return true
 
       default:

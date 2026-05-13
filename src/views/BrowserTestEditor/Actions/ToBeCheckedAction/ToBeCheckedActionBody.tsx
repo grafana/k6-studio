@@ -4,13 +4,12 @@ import { LocatorToBeCheckedAction } from '@/schemas/browserTest'
 
 import { CheckedStateForm } from '../../ActionForms/forms/CheckedStateForm'
 import { LocatorForm } from '../../ActionForms/forms/LocatorForm'
-import { WithEditorMetadata } from '../../types'
 
 const CHECKED_ROLES = ['checkbox', 'radio', 'switch']
 
 interface ToBeCheckedActionBodyProps {
-  action: WithEditorMetadata<LocatorToBeCheckedAction>
-  onChange: (action: WithEditorMetadata<LocatorToBeCheckedAction>) => void
+  action: LocatorToBeCheckedAction
+  onChange: (action: LocatorToBeCheckedAction) => void
 }
 
 export function ToBeCheckedActionBody({
@@ -18,7 +17,7 @@ export function ToBeCheckedActionBody({
   onChange,
 }: ToBeCheckedActionBodyProps) {
   const handleChangeLocator = (
-    locator: WithEditorMetadata<LocatorToBeCheckedAction>['locator']
+    locator: LocatorToBeCheckedAction['locator']
   ) => {
     onChange({ ...action, locator })
   }

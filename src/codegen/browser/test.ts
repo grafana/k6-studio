@@ -1,6 +1,7 @@
 import { keyBy } from 'lodash-es'
 
-import { BrowserTestOptions } from '@/schemas/browserTest'
+import { AnyBrowserAction, BrowserTestOptions } from '@/schemas/browserTest'
+import { LocatorOptions } from '@/schemas/locator'
 import {
   Assertion,
   BrowserEvent,
@@ -8,11 +9,8 @@ import {
 } from '@/schemas/recording'
 import { toClickButton, toClickModifiers } from '@/utils/clickOptions'
 import { exhaustive } from '@/utils/typescript'
-import {
-  BrowserActionInstance,
-  LocatorOptions,
-} from '@/views/BrowserTestEditor/types'
 
+import { isFollowedByImplicitNavigation } from './navigation'
 import { isLocatorEqual, getElementLocator } from './selectors'
 import {
   TestNode,
@@ -31,6 +29,11 @@ function toNodeRef(node: TestNode): NodeRef {
   return {
     nodeId: node.nodeId,
   }
+}
+
+function toNonEmptyStrings(values: string[]): [string, ...string[]] {
+  const [first, ...rest] = values
+  return [first ?? '', ...rest]
 }
 
 function toAssertionOperation(assertion: Assertion): AssertionOperation {
@@ -56,8 +59,8 @@ function toAssertionOperation(assertion: Assertion): AssertionOperation {
 
     case 'text-input':
       return {
-        type: 'has-values',
-        expected: [assertion.expected],
+        type: 'has-value',
+        expected: assertion.expected,
       }
 
     default:
@@ -128,9 +131,7 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
   ): { page: NodeRef } | undefined {
     if (
       nextEvent === undefined ||
-      nextEvent.type !== 'navigate-to-page' ||
-      nextEvent.source !== 'implicit' ||
-      nextEvent.tab !== currentEvent.tab
+      !isFollowedByImplicitNavigation(currentEvent, nextEvent)
     ) {
       return undefined
     }
@@ -294,9 +295,7 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
   return nodes
 }
 
-function buildBrowserNodeGraphFromActions(
-  browserActions: BrowserActionInstance[]
-) {
+function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
   const nodes: TestNode[] = []
   let previousLocatorNode: LocatorNode | null = null
 
@@ -354,7 +353,7 @@ function buildBrowserNodeGraphFromActions(
     return toNodeRef(previousLocatorNode)
   }
 
-  function toNode(action: BrowserActionInstance): TestNode {
+  function toNode(action: AnyBrowserAction): TestNode {
     switch (action.method) {
       case 'page.goto':
         return {
@@ -422,6 +421,51 @@ function buildBrowserNodeGraphFromActions(
             type: 'is-checked',
             inputType: 'native',
             expected: action.checked ? 'checked' : 'unchecked',
+          },
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
+      case 'locator.toBeVisible':
+        return {
+          type: 'assert',
+          nodeId: crypto.randomUUID(),
+          operation: {
+            type: 'is-visible',
+            visible: action.visible,
+          },
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
+      case 'locator.toHaveValue': {
+        return {
+          type: 'assert',
+          nodeId: crypto.randomUUID(),
+          operation:
+            action.expected.current === 'multiple'
+              ? {
+                  type: 'has-values',
+                  expected: toNonEmptyStrings(
+                    action.expected.values.multiple ?? []
+                  ),
+                }
+              : {
+                  type: 'has-value',
+                  expected: action.expected.values.single ?? '',
+                },
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
+      }
+      case 'locator.toContainText':
+        return {
+          type: 'assert',
+          nodeId: crypto.randomUUID(),
+          operation: {
+            type: 'text-contains',
+            value: action.expected,
           },
           inputs: {
             locator: getLocator(action.locator),
@@ -510,7 +554,7 @@ export function convertActionsToTest({
   browserActions,
   options,
 }: {
-  browserActions: BrowserActionInstance[]
+  browserActions: AnyBrowserAction[]
   options?: BrowserTestOptions
 }): Test {
   return {

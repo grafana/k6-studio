@@ -51,9 +51,12 @@ export function useDebugSession(script: Script) {
     resetSession()
 
     if (script.type === 'raw') {
-      await window.studio.script.runScriptFromGenerator(input).catch(() => {
-        setState('stopped')
-      })
+      const scriptPath = await window.studio.fs.getTempScriptPath()
+      await window.studio.script
+        .runScriptFromGenerator(input, scriptPath)
+        .catch(() => {
+          setState('stopped')
+        })
       return
     }
 

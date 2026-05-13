@@ -1,9 +1,8 @@
 import { LocatorClickAction } from '@/schemas/browserTest'
-import { WithEditorMetadata } from '@/views/BrowserTestEditor/types'
 
 export function buildClickAction(
-  overrides: Partial<WithEditorMetadata<LocatorClickAction>> = {}
-): WithEditorMetadata<LocatorClickAction> {
+  overrides: Partial<LocatorClickAction> = {}
+): LocatorClickAction {
   return {
     id: crypto.randomUUID(),
     method: 'locator.click',

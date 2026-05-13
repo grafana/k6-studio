@@ -5,21 +5,21 @@ import {
   MonitorIcon,
   ServerCogIcon,
 } from 'lucide-react'
-import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { emitScript } from '@/codegen/browser'
+import { convertEventsToActions } from '@/codegen/browser/convertEventsToActions'
 import { convertEventsToTest } from '@/codegen/browser/test'
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { RichDropdownMenuItem } from '@/components/RichDropdownMenuItem'
+import { useCreateBrowserTest } from '@/hooks/useCreateBrowserTest'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { getRoutePath, getViewPath } from '@/routeMap'
 import { BrowserEvent } from '@/schemas/recording'
+import { useFeaturesStore } from '@/store/features'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
-
-import { ExportScriptDialog } from '../Generator/ExportScriptDialog'
 
 interface RecordingPreviewControlsProps {
   file: StudioFile
@@ -30,7 +30,6 @@ export function RecordingPreviewControls({
   file,
   browserEvents,
 }: RecordingPreviewControlsProps) {
-  const [showExportDialog, setShowExportDialog] = useState(false)
   const showToast = useToast()
   const navigate = useNavigate()
   const createTestGenerator = useCreateGenerator()
@@ -42,7 +41,21 @@ export function RecordingPreviewControls({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const isDiscardable = Boolean(state?.discardable)
 
+  const isBrowserEditorEnabled = useFeaturesStore(
+    (state) => state.features['browser-test-editor']
+  )
+  const createBrowserTest = useCreateBrowserTest()
+
   const handleCreateGenerator = () => createTestGenerator(file.path)
+
+  const handleCreateBrowserTest = () => {
+    const actions = convertEventsToActions(browserEvents)
+    void createBrowserTest(actions)
+  }
+
+  const browserTestDescription = isBrowserEditorEnabled
+    ? 'Create a browser test from recorded interactions'
+    : 'Export a k6 script simulating browser interactions'
 
   const handleDelete = useDeleteFile({
     file,
@@ -59,27 +72,36 @@ export function RecordingPreviewControls({
     navigate(getRoutePath('home'))
   }
 
-  const handleExportBrowserScript = (fileName: string) => {
+  const handleExportBrowserScript = async () => {
     const test = convertEventsToTest({
       browserEvents,
     })
 
-    emitScript(test)
-      .then((script) => window.studio.script.saveScript(script, fileName))
-      .then((filePath) => {
-        if (!filePath) return
+    try {
+      const path = await window.studio.fs.showSaveAsDialog(
+        'my-browser-script.js'
+      )
 
-        navigate(getViewPath('script', filePath))
-      })
-      .catch((err) => {
-        console.error(err)
+      if (path === undefined) {
+        return
+      }
 
-        showToast({
-          title: 'Failed to export browser script.',
-          status: 'error',
-        })
+      const script = await emitScript(test)
+
+      await window.studio.script.saveScript(path, script)
+
+      navigate(getViewPath('script', path))
+    } catch (err) {
+      showToast({
+        title: 'Failed to export browser script.',
+        status: 'error',
       })
+    }
   }
+
+  const handleBrowserTest = isBrowserEditorEnabled
+    ? handleCreateBrowserTest
+    : handleExportBrowserScript
 
   return (
     <>
@@ -116,9 +138,9 @@ export function RecordingPreviewControls({
           <RichDropdownMenuItem
             icon={<MonitorIcon />}
             label="Browser test"
-            description="Export a k6 script simulating browser interactions"
+            description={browserTestDescription}
             disabled={browserEvents.length === 0}
-            onClick={() => setShowExportDialog(true)}
+            onClick={handleBrowserTest}
           />
         </DropdownMenu.Content>
       </DropdownMenu.Root>
@@ -143,12 +165,6 @@ export function RecordingPreviewControls({
           />
         </DropdownMenu.Content>
       </DropdownMenu.Root>
-      <ExportScriptDialog
-        open={showExportDialog}
-        scriptName="my-browser-script.js"
-        onOpenChange={setShowExportDialog}
-        onExport={handleExportBrowserScript}
-      />
     </>
   )
 }

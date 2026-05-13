@@ -8,12 +8,13 @@ import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { SessionPlayer } from '@/components/SessionPlayer/SessionPlayer'
 import { PlayerMouseEvent } from '@/components/SessionPlayer/SessionPlayer.hooks'
 import { PersistentTabs } from '@/components/primitives/PersistentTabs'
+import { AnyBrowserAction } from '@/schemas/browserTest'
 import { DebugSession } from '@/views/Validator/types'
 
 import { ReplayContextMenu } from './ReplayContextMenu'
 import { createContextMenuState } from './ReplayContextMenu.utils'
 import { ShutdownDelayControl } from './ShutdownDelayControl'
-import { BrowserActionInstance, ContextMenuState } from './types'
+import { ContextMenuState } from './types'
 
 interface BrowserTestPreviewProps {
   state: ContextMenuState | null
@@ -21,7 +22,7 @@ interface BrowserTestPreviewProps {
   previewScript: string
   shutdownDelay: number
   onStateChange: (state: ContextMenuState | null) => void
-  onAddAction: (action: BrowserActionInstance) => void
+  onAddAction: (action: AnyBrowserAction) => void
   onShutdownDelayChange: (timeout: number) => void
 }
 

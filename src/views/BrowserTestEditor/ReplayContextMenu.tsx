@@ -1,8 +1,11 @@
 import { DropdownMenu } from '@radix-ui/themes'
 
+import { AnyBrowserAction } from '@/schemas/browserTest'
+import { LocatorOptions } from '@/schemas/locator'
 import { AriaDetails } from '@/schemas/recording'
 
 import {
+  getTextInputValue,
   isCheckbox,
   isRadio,
   isSelect,
@@ -15,10 +18,12 @@ import {
   createFillAction,
   createSelectOptionAction,
   createToBeCheckedAction,
+  createToHaveValueAction,
+  createToBeVisibleAction,
+  createToContainTextAction,
   createUncheckAction,
   createWaitForAction,
 } from './actionFactories'
-import { BrowserActionInstance, LocatorOptions } from './types'
 
 interface ReplayContextMenuProps {
   target: Element
@@ -26,7 +31,7 @@ interface ReplayContextMenuProps {
   aria: AriaDetails
   locator: LocatorOptions
   onClose: () => void
-  onAddAction: (action: BrowserActionInstance) => void
+  onAddAction: (action: AnyBrowserAction) => void
 }
 
 export function ReplayContextMenu({
@@ -69,6 +74,24 @@ export function ReplayContextMenu({
               onClick={() => onAddAction(createClearAction({ locator }))}
             >
               Clear input
+            </DropdownMenu.Item>
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item
+              onClick={() =>
+                onAddAction(
+                  createToHaveValueAction({
+                    locator,
+                    expected: {
+                      current: 'single',
+                      values: {
+                        single: getTextInputValue(target),
+                      },
+                    },
+                  })
+                )
+              }
+            >
+              Expect to have value
             </DropdownMenu.Item>
           </>
         )}
@@ -113,6 +136,24 @@ export function ReplayContextMenu({
             Click
           </DropdownMenu.Item>
         )}
+        <DropdownMenu.Separator />
+        <DropdownMenu.Item
+          onClick={() => onAddAction(createToBeVisibleAction({ locator }))}
+        >
+          Expect to be visible
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() =>
+            onAddAction(
+              createToContainTextAction({
+                locator,
+                expected: target.textContent ?? '',
+              })
+            )
+          }
+        >
+          Expect to contain text
+        </DropdownMenu.Item>
         <DropdownMenu.Separator />
         <DropdownMenu.Item
           onClick={() => onAddAction(createWaitForAction({ locator }))}

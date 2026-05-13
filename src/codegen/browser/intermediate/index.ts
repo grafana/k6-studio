@@ -367,9 +367,19 @@ function emitAssertion(
 
       return { type: 'IsCheckedAssertion' }
 
-    case 'has-values': {
+    case 'has-value': {
       return {
         type: 'HasValueAssertion',
+        expected: {
+          type: 'StringLiteral',
+          value: assertion.expected,
+        },
+      }
+    }
+
+    case 'has-values': {
+      return {
+        type: 'HasValuesAssertion',
         expected: mapNonEmpty(assertion.expected, (value) => {
           return {
             type: 'StringLiteral',

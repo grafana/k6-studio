@@ -126,6 +126,28 @@ describe('path (posix)', () => {
       })
     })
   })
+
+  describe('relative', () => {
+    it('returns path between siblings', () => {
+      expect(path.relative('/project/Scripts', '/project/Data/users.csv')).toBe(
+        '../Data/users.csv'
+      )
+    })
+
+    it('returns child path with no leading dot', () => {
+      expect(path.relative('/project', '/project/Scripts/foo.js')).toBe(
+        'Scripts/foo.js'
+      )
+    })
+
+    it('returns empty string for identical paths', () => {
+      expect(path.relative('/project/foo', '/project/foo')).toBe('')
+    })
+
+    it('returns parent path with ..', () => {
+      expect(path.relative('/project/foo/bar', '/project/foo')).toBe('..')
+    })
+  })
 })
 
 describe('path (windows)', () => {
@@ -215,5 +237,68 @@ describe('path (windows)', () => {
       expect(result.root).toBe('\\\\server\\')
       expect(result.base).toBe('file.txt')
     })
+  })
+
+  describe('relative', () => {
+    it('returns path between siblings', () => {
+      expect(
+        path.relative('C:\\project\\Scripts', 'C:\\project\\Data\\users.csv')
+      ).toBe('..\\Data\\users.csv')
+    })
+
+    it('returns absolute path when roots differ', () => {
+      expect(
+        path.relative('C:\\project\\Scripts', 'D:\\project\\Data\\users.csv')
+      ).toBe('D:\\project\\Data\\users.csv')
+    })
+
+    it('treats segments case-insensitively', () => {
+      expect(
+        path.relative('C:\\Project\\Scripts', 'C:\\project\\Data\\users.csv')
+      ).toBe('..\\Data\\users.csv')
+    })
+
+    it('treats drive letters case-insensitively', () => {
+      expect(
+        path.relative('c:\\Project\\Scripts', 'C:\\Project\\Data\\users.csv')
+      ).toBe('..\\Data\\users.csv')
+    })
+
+    it('treats UNC roots case-insensitively', () => {
+      expect(
+        path.relative(
+          '\\\\Server\\Share\\Scripts',
+          '\\\\server\\share\\Data\\users.csv'
+        )
+      ).toBe('..\\Data\\users.csv')
+    })
+
+    it('returns empty string for paths that differ only in case', () => {
+      expect(path.relative('C:\\Project\\foo', 'c:\\project\\FOO')).toBe('')
+    })
+  })
+})
+
+describe('toPosix', () => {
+  let path: typeof PathModule
+
+  beforeEach(async () => {
+    path = await importPath('linux')
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('converts backslashes to forward slashes', () => {
+    expect(path.toPosix('..\\Data\\users.csv')).toBe('../Data/users.csv')
+  })
+
+  it('leaves forward slashes unchanged', () => {
+    expect(path.toPosix('../Data/users.csv')).toBe('../Data/users.csv')
+  })
+
+  it('handles empty string', () => {
+    expect(path.toPosix('')).toBe('')
   })
 })

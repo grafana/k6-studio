@@ -4,12 +4,11 @@ import { ElementLocator } from '@/schemas/locator'
 
 import { ProxyOptions } from '../utils'
 
-import { locatorDetail } from './symbols'
 import { isLocatorMethod } from './utils'
 
 declare module 'k6/browser' {
   interface Locator {
-    [locatorDetail]: ElementLocator
+    [Symbol.locatorDetail]: ElementLocator
   }
 }
 
@@ -19,7 +18,7 @@ export function locatorProxy(
 ): ProxyOptions<Locator> {
   // There's no API to get whether the locator was created using getByRole, getByText, etc. so we assign
   // that information to the locator object itself so it can be used in serialization and tracking.
-  target[locatorDetail] = locator
+  target[Symbol.locatorDetail] = locator
 
   return {
     target,

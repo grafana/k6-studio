@@ -1,11 +1,15 @@
-import { BrowserActionInstance, LocatorOptions } from './types'
+import {
+  AnyBrowserAction,
+  LocatorToHaveValueAction,
+} from '@/schemas/browserTest'
+import { LocatorOptions } from '@/schemas/locator'
 
 interface LocatorFactoryOptions {
   locator?: LocatorOptions
 }
 
-type ActionByMethod<M extends BrowserActionInstance['method']> = Extract<
-  BrowserActionInstance,
+type ActionByMethod<M extends AnyBrowserAction['method']> = Extract<
+  AnyBrowserAction,
   { method: M }
 >
 
@@ -171,6 +175,87 @@ export function createToBeCheckedAction({
         role: {
           type: 'role',
           role: 'checkbox',
+          options: {
+            exact: false,
+          },
+        },
+      },
+    },
+  }
+}
+
+type CreateToHaveValueActionOptions = LocatorFactoryOptions & {
+  expected?: LocatorToHaveValueAction['expected']
+}
+
+export function createToHaveValueAction({
+  locator,
+  expected,
+}: CreateToHaveValueActionOptions = {}): ActionByMethod<'locator.toHaveValue'> {
+  return {
+    id: crypto.randomUUID(),
+    method: 'locator.toHaveValue',
+    expected: expected ?? {
+      current: 'single',
+      values: {
+        single: '',
+      },
+    },
+    locator: locator ?? {
+      current: 'role',
+      values: {
+        role: {
+          type: 'role',
+          role: 'textbox',
+          options: {
+            exact: false,
+          },
+        },
+      },
+    },
+  }
+}
+
+export function createToBeVisibleAction({
+  locator,
+}: LocatorFactoryOptions = {}): ActionByMethod<'locator.toBeVisible'> {
+  return {
+    id: crypto.randomUUID(),
+    method: 'locator.toBeVisible',
+    visible: true,
+    locator: locator ?? {
+      current: 'role',
+      values: {
+        role: {
+          type: 'role',
+          role: '',
+          options: {
+            exact: false,
+          },
+        },
+      },
+    },
+  }
+}
+
+interface ToContainTextFactoryOptions extends LocatorFactoryOptions {
+  expected?: string
+}
+
+export function createToContainTextAction({
+  locator,
+  expected = '',
+}: ToContainTextFactoryOptions = {}): ActionByMethod<'locator.toContainText'> {
+  return {
+    id: crypto.randomUUID(),
+    method: 'locator.toContainText',
+    expected,
+    locator: locator ?? {
+      current: 'role',
+      values: {
+        role: {
+          type: 'role',
+          role: '',
           options: {
             exact: false,
           },

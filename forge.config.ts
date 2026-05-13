@@ -66,6 +66,7 @@ const config: ForgeConfig = {
       './resources/json_output.py',
       './resources/entrypoint.js',
       './resources/replay.js',
+      './resources/k6-testing.js',
       ...getPlatformSpecificResources(),
     ],
     windowsSign,
@@ -137,6 +138,11 @@ const config: ForgeConfig = {
           // Entry doesn't really matter here.
           entry: 'src/main/runner/shims/browser/replay.ts',
           config: 'vite.replay.config.ts',
+        },
+        {
+          // Entry doesn't really matter here.
+          entry: 'src/main/runner/shims/k6-testing/index.ts',
+          config: 'vite.k6-testing.config.ts',
         },
       ],
       renderer: [

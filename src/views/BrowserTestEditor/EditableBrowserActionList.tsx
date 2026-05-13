@@ -11,6 +11,7 @@ import { CirclePlusIcon } from 'lucide-react'
 import { ReactNode } from 'react'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
+import { AnyBrowserAction } from '@/schemas/browserTest'
 
 import { SortableBrowserActionList } from './SortableBrowserActionList'
 import {
@@ -22,17 +23,19 @@ import {
   createPageReloadAction,
   createSelectOptionAction,
   createToBeCheckedAction,
+  createToHaveValueAction,
+  createToBeVisibleAction,
+  createToContainTextAction,
   createUncheckAction,
   createWaitForAction,
   createWaitForTimeoutAction,
 } from './actionFactories'
-import { BrowserActionInstance } from './types'
 
 interface EditableBrowserActionListProps {
-  actions: BrowserActionInstance[]
-  onAddAction: (action: BrowserActionInstance) => void
+  actions: AnyBrowserAction[]
+  onAddAction: (action: AnyBrowserAction) => void
   onRemoveAction: (actionId: string) => void
-  onChangeAction: (action: BrowserActionInstance) => void
+  onChangeAction: (action: AnyBrowserAction) => void
   onReorderActions: (activeId: string, overId: string) => void
   optionsButton?: ReactNode
 }
@@ -89,7 +92,7 @@ export function EditableBrowserActionList({
 }
 
 interface NewActionMenuProps {
-  onAddAction: (action: BrowserActionInstance) => void
+  onAddAction: (action: AnyBrowserAction) => void
 }
 
 function NewActionMenu({ onAddAction }: NewActionMenuProps) {
@@ -127,6 +130,21 @@ function NewActionMenu({ onAddAction }: NewActionMenuProps) {
           onClick={() => onAddAction(createToBeCheckedAction())}
         >
           Expect to be checked
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => onAddAction(createToHaveValueAction())}
+        >
+          Expect to have value
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => onAddAction(createToBeVisibleAction())}
+        >
+          Expect to be visible
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => onAddAction(createToContainTextAction())}
+        >
+          Expect to contain text
         </DropdownMenu.Item>
         <DropdownMenu.Separator />
         <DropdownMenu.Item onClick={() => onAddAction(createWaitForAction())}>

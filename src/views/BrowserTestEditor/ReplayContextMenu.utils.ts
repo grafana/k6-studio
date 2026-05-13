@@ -8,12 +8,13 @@ import {
   getTitleLocator,
 } from '@/codegen/browser/selectors'
 import { PlayerMouseEvent } from '@/components/SessionPlayer/SessionPlayer.hooks'
+import { LocatorOptions } from '@/schemas/locator'
 import { ElementSelector } from '@/schemas/recording'
 import { getAriaDetails } from '@/utils/dom/aria'
 import { findInteractiveElement } from '@/utils/dom/dom'
 import { generateSelectors } from '@/utils/dom/selectors'
 
-import { ContextMenuState, LocatorOptions } from './types'
+import { ContextMenuState } from './types'
 
 export function buildLocatorOptions(
   selectors: ElementSelector
@@ -95,6 +96,34 @@ export function isSelect(element: Element, roles: string[]): boolean {
   }
 
   return roles.includes('combobox') || roles.includes('listbox')
+}
+
+export function getTextInputValue(element: Element): string {
+  const { HTMLInputElement, HTMLTextAreaElement } =
+    element.ownerDocument?.defaultView ?? window
+
+  if (element instanceof HTMLTextAreaElement) {
+    return element.value
+  }
+
+  if (element instanceof HTMLInputElement) {
+    if (
+      [
+        'text',
+        'email',
+        'password',
+        'search',
+        'url',
+        'tel',
+        'number',
+        '',
+      ].includes(element.type.toLowerCase())
+    ) {
+      return element.value
+    }
+  }
+
+  return element.textContent
 }
 
 export function createContextMenuState(

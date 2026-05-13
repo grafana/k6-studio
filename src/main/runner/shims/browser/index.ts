@@ -1,8 +1,4 @@
-// eslint-disable-next-line import/no-unresolved
-import { expect } from 'https://jslib.k6.io/k6-testing/0.6.1/index.js'
 import { BrowserContext, browser } from 'k6/browser'
-
-import type { AssertionBeginEvent, AssertionEndEvent } from '../../schema'
 
 import { pageProxy } from './proxies/page'
 import {
@@ -10,9 +6,9 @@ import {
   createProxy,
   ProxyOptions,
   TRACKING_SERVER_URL,
-  beginAssertion,
-  endAssertion,
 } from './utils'
+
+import '../symbols'
 
 declare module 'k6/browser' {
   // We extend these interfaces to ba able to track specific instances
@@ -23,55 +19,6 @@ declare module 'k6/browser' {
   interface BrowserContext {
     __id?: string
   }
-}
-
-interface OnBeginContext {
-  received: unknown
-  negated: boolean
-  matcher: {
-    name: string
-    args: unknown[]
-  }
-}
-
-interface OnEndContext {
-  result:
-    | { state: 'pass' }
-    | { state: 'fail'; message: { custom?: string }; error: unknown }
-    | { state: 'error'; error: unknown }
-}
-
-if ('use' in expect && typeof expect.use === 'function') {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-  expect.use({
-    name: 'k6-studio-tracking',
-    onBegin(context: OnBeginContext) {
-      return beginAssertion(
-        context.matcher.name,
-        context.negated,
-        context.received,
-        context.matcher.args
-      )
-    },
-    onEnd(context: OnEndContext, state: AssertionBeginEvent | null) {
-      const result =
-        context.result.state === 'pass'
-          ? { type: 'pass' }
-          : context.result.state === 'fail'
-            ? {
-                type: 'fail',
-                message: context.result.message.custom,
-                error: context.result.error,
-              }
-            : {
-                type: 'error',
-                message: String(context.result.error),
-                error: context.result.error,
-              }
-
-      endAssertion(state, result as AssertionEndEvent['result'])
-    },
-  })
 }
 
 // NOTE: This placeholder is replaced with the actual session replay script during the instrumentation process.
