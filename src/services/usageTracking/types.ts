@@ -96,6 +96,9 @@ interface ScriptCopiedEvent {
 
 interface ScriptExportedEvent {
   event: UsageEventName.ScriptExported
+  payload: {
+    isExternal: boolean
+  }
 }
 
 interface ScriptValidatedEvent {

@@ -8,7 +8,7 @@ import { waitForProxy } from '@/main/proxy'
 import { showScriptSelectDialog, runScript } from '@/main/script'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
-import { browserWindowFromEvent, sendToast } from '@/utils/electron'
+import { browserWindowFromEvent } from '@/utils/electron'
 import { ArchiveError, K6Client } from '@/utils/k6/client'
 import { TestRun } from '@/utils/k6/testRun'
 import { isExternalScript } from '@/utils/workspace'
@@ -146,19 +146,16 @@ export function initialize() {
 
   ipcMain.handle(
     ScriptHandler.Save,
-    async (event, scriptPath: string, script: string) => {
+    async (_, scriptPath: string, script: string) => {
       console.info(`${ScriptHandler.Save} event received`)
-      const browserWindow = browserWindowFromEvent(event)
       try {
         await writeFile(scriptPath, script)
 
         trackEvent({
           event: UsageEventName.ScriptExported,
-        })
-
-        sendToast(browserWindow.webContents, {
-          title: 'Script exported successfully',
-          status: 'success',
+          payload: {
+            isExternal: isExternalScript(scriptPath),
+          },
         })
 
         return scriptPath
