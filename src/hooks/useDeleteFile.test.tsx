@@ -17,7 +17,7 @@ vi.mock('@/routeMap', () => ({ getRoutePath: vi.fn() }))
 
 describe('useDeleteFile', () => {
   const navigate = vi.fn()
-  const showToast = vi.fn()
+  const showToast = vi.fn<(payload: AddToastPayload) => void>()
   const trashFile = vi.fn()
   const file: StudioFile = {
     type: 'recording',
@@ -36,8 +36,8 @@ describe('useDeleteFile', () => {
     usePendingDeletesStore.setState({ paths: new Set() })
   })
 
-  function lastToast(): AddToastPayload {
-    return showToast.mock.calls.at(-1)![0] as AddToastPayload
+  function lastToast() {
+    return showToast.mock.calls.at(-1)![0]
   }
 
   it('marks the file as pending and shows "Moved to Trash" with Undo', () => {
@@ -110,9 +110,6 @@ describe('useDeleteFile', () => {
     })
 
     expect(trashFile).toHaveBeenCalledWith(file)
-    // pending stays set until chokidar's unlink → onRemoveFile listener fires
-    // (see Sidebar.hooks.ts). Clearing here would create a render frame where
-    // the file is back in the sidebar before FolderContent updates.
     expect(usePendingDeletesStore.getState().paths.has(file.path)).toBe(true)
   })
 

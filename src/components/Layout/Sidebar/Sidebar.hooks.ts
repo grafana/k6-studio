@@ -17,7 +17,6 @@ function toFileMap(files: StudioFile[]) {
 
 function useFolderContent() {
   const pendingPaths = usePendingDeletesStore((state) => state.paths)
-  const notPending = (file: StudioFile) => !pendingPaths.has(file.path)
 
   const recordings = useStudioUIStore((s) => orderByFileName(s.recordings))
   const generators = useStudioUIStore((s) => orderByFileName(s.generators))
@@ -60,14 +59,17 @@ function useFolderContent() {
     [removeFile]
   )
 
-  return {
-    recordings: recordings.filter(notPending),
-    tests: [...generators, ...browserTests]
-      .filter(notPending)
-      .sort((a, b) => a.displayName.localeCompare(b.displayName)),
-    scripts: scripts.filter(notPending),
-    dataFiles: dataFiles.filter(notPending),
-  }
+  return useMemo(() => {
+    const notPending = (file: StudioFile) => !pendingPaths.has(file.path)
+    return {
+      recordings: recordings.filter(notPending),
+      tests: [...generators, ...browserTests]
+        .filter(notPending)
+        .sort((a, b) => a.displayName.localeCompare(b.displayName)),
+      scripts: scripts.filter(notPending),
+      dataFiles: dataFiles.filter(notPending),
+    }
+  }, [recordings, generators, browserTests, scripts, dataFiles, pendingPaths])
 }
 
 export function useFiles(searchTerm: string) {

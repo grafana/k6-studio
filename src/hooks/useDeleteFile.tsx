@@ -45,9 +45,8 @@ export function useDeleteFile({
       }
       try {
         await window.studio.ui.trashFile(file)
-        // pending cleared by chokidar's onRemoveFile listener atomically
-        // with FolderContent removal. Clearing here creates a render
-        // frame where the file briefly reappears in the sidebar.
+        // keep pending; chokidar's onRemoveFile clears it atomically with
+        // the sidebar update so the row doesn't flash back in.
       } catch (error) {
         log.error(error)
         showToast({
