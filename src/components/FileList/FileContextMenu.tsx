@@ -2,7 +2,6 @@ import { ContextMenu, DropdownMenu, IconButton } from '@radix-ui/themes'
 import { EllipsisIcon } from 'lucide-react'
 import { PropsWithChildren } from 'react'
 
-import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { StudioFile } from '@/types'
 
@@ -25,7 +24,6 @@ export function FileContextMenu({
       <ContextMenu.Trigger>{children}</ContextMenu.Trigger>
 
       <SharedFileMenuContent
-        file={file}
         items={items}
         MenuContent={ContextMenu.Content}
         MenuItemComponent={ContextMenu.Item}
@@ -50,7 +48,6 @@ export function FileActionsMenu({
       </DropdownMenu.Trigger>
 
       <SharedFileMenuContent
-        file={file}
         items={items}
         MenuContent={DropdownMenu.Content}
         MenuItemComponent={DropdownMenu.Item}
@@ -98,14 +95,12 @@ type MenuContentComponent =
   | typeof DropdownMenu.Content
 
 interface SharedFileMenuContentProps {
-  file: StudioFile
   items: FileContextMenuItem[]
   MenuContent: MenuContentComponent
   MenuItemComponent: MenuItemComponent
 }
 
 function SharedFileMenuContent({
-  file,
   items,
   MenuContent,
   MenuItemComponent,
@@ -115,7 +110,6 @@ function SharedFileMenuContent({
       {items.map((item) => (
         <SharedMenuItem
           key={item.label}
-          file={file}
           item={item}
           MenuItemComponent={MenuItemComponent}
         />
@@ -125,35 +119,17 @@ function SharedFileMenuContent({
 }
 
 interface SharedMenuItemProps {
-  file: StudioFile
   item: FileContextMenuItem
   MenuItemComponent: MenuItemComponent
 }
 
-function SharedMenuItem({
-  file,
-  item,
-  MenuItemComponent,
-}: SharedMenuItemProps) {
-  if (item.destructive) {
-    return (
-      <DeleteFileDialog
-        file={file}
-        onConfirm={item.onClick}
-        trigger={
-          <MenuItemComponent
-            color="red"
-            onSelect={(event) => event.preventDefault()}
-            onClick={(event) => event.preventDefault()}
-          >
-            {item.label}
-          </MenuItemComponent>
-        }
-      />
-    )
-  }
-
+function SharedMenuItem({ item, MenuItemComponent }: SharedMenuItemProps) {
   return (
-    <MenuItemComponent onClick={item.onClick}>{item.label}</MenuItemComponent>
+    <MenuItemComponent
+      color={item.destructive ? 'red' : undefined}
+      onClick={item.onClick}
+    >
+      {item.label}
+    </MenuItemComponent>
   )
 }

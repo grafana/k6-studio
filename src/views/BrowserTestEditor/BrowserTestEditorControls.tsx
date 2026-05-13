@@ -14,7 +14,6 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 
-import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
@@ -116,18 +115,9 @@ export function BrowserTestEditorControls({
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DeleteFileDialog
-            file={file}
-            onConfirm={handleDelete}
-            trigger={
-              <DropdownMenu.Item
-                color="red"
-                onClick={(e) => e.preventDefault()}
-              >
-                Delete browser test
-              </DropdownMenu.Item>
-            }
-          />
+          <DropdownMenu.Item color="red" onClick={handleDelete}>
+            Delete browser test
+          </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
       <RunInCloudDialog
