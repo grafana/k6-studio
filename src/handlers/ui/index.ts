@@ -49,6 +49,12 @@ export function initialize() {
     return unlink(filePath)
   })
 
+  ipcMain.handle(UIHandler.TrashFile, async (_, file: StudioFile) => {
+    console.info(`${UIHandler.TrashFile} event received`)
+    const filePath = getFilePath(file)
+    return shell.trashItem(filePath)
+  })
+
   ipcMain.on(UIHandler.OpenFolder, (_, file: StudioFile) => {
     console.info(`${UIHandler.OpenFolder} event received`)
     const filePath = getFilePath(file)
