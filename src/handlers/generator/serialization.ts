@@ -1,22 +1,33 @@
 import path from 'path'
 
-import { DATA_FILES_PATH, RECORDINGS_PATH } from '@/constants/workspace'
 import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { GeneratorFileData } from '@/types/generator'
 
-export function deserializeGenerator(data: string): GeneratorFileData {
+// We use empty strings to represent missing paths, so these functions preserve the empty
+// string when converting between absolute and relative paths.
+function toAbsolute(basePath: string, relativePath: string) {
+  return relativePath ? path.resolve(basePath, relativePath) : ''
+}
+
+function toRelative(basePath: string, absolutePath: string) {
+  return absolutePath ? path.relative(basePath, absolutePath) : ''
+}
+
+export function deserializeGenerator(
+  filePath: string,
+  data: string
+): GeneratorFileData {
   const generator = GeneratorFileDataSchema.parse(JSON.parse(data))
+  const generatorDir = path.dirname(filePath)
 
   return {
     ...generator,
-    recordingPath: generator.recordingPath
-      ? path.join(RECORDINGS_PATH, generator.recordingPath)
-      : generator.recordingPath,
+    recordingPath: toAbsolute(generatorDir, generator.recordingPath),
     testData: {
       ...generator.testData,
       files: generator.testData.files.map((file) => ({
         ...file,
-        name: path.join(DATA_FILES_PATH, file.name),
+        name: toAbsolute(generatorDir, file.name),
       })),
     },
     rules: generator.rules.map((rule) => {
@@ -28,7 +39,7 @@ export function deserializeGenerator(data: string): GeneratorFileData {
           ...rule,
           value: {
             ...rule.value,
-            fileName: path.join(DATA_FILES_PATH, rule.value.fileName),
+            fileName: toAbsolute(generatorDir, rule.value.fileName),
           },
         }
       }
@@ -39,18 +50,19 @@ export function deserializeGenerator(data: string): GeneratorFileData {
 }
 
 export function serializeGenerator(
+  filePath: string,
   generator: GeneratorFileData
 ): GeneratorFileData {
+  const generatorDir = path.dirname(filePath)
+
   return {
     ...generator,
-    recordingPath: generator.recordingPath
-      ? path.basename(generator.recordingPath)
-      : generator.recordingPath,
+    recordingPath: toRelative(generatorDir, generator.recordingPath),
     testData: {
       ...generator.testData,
       files: generator.testData.files.map((file) => ({
         ...file,
-        name: path.basename(file.name),
+        name: toRelative(generatorDir, file.name),
       })),
     },
     rules: generator.rules.map((rule) => {
@@ -62,7 +74,7 @@ export function serializeGenerator(
           ...rule,
           value: {
             ...rule.value,
-            fileName: path.basename(rule.value.fileName),
+            fileName: toRelative(generatorDir, rule.value.fileName),
           },
         }
       }

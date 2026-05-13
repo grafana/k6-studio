@@ -80,7 +80,7 @@ describe('Code generation', () => {
           recording: [],
           scriptPath: '/project/Scripts/my-script.js',
           generator: {
-            version: '2.0',
+            version: '3.0',
             recordingPath: 'test',
             options: {
               loadProfile: {
@@ -119,7 +119,7 @@ describe('Code generation', () => {
 
   describe('generateImports', () => {
     const generator: GeneratorFileData = {
-      version: '2.0',
+      version: '3.0',
       recordingPath: 'test',
       options: {
         loadProfile: {
