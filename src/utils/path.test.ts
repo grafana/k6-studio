@@ -278,3 +278,27 @@ describe('path (windows)', () => {
     })
   })
 })
+
+describe('toPosix', () => {
+  let path: typeof PathModule
+
+  beforeEach(async () => {
+    path = await importPath('linux')
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('converts backslashes to forward slashes', () => {
+    expect(path.toPosix('..\\Data\\users.csv')).toBe('../Data/users.csv')
+  })
+
+  it('leaves forward slashes unchanged', () => {
+    expect(path.toPosix('../Data/users.csv')).toBe('../Data/users.csv')
+  })
+
+  it('handles empty string', () => {
+    expect(path.toPosix('')).toBe('')
+  })
+})
