@@ -5,7 +5,6 @@ import {
   MonitorIcon,
   ServerCogIcon,
 } from 'lucide-react'
-import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { emitScript } from '@/codegen/browser'
@@ -22,8 +21,6 @@ import { useFeaturesStore } from '@/store/features'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 
-import { ExportScriptDialog } from '../Generator/ExportScriptDialog'
-
 interface RecordingPreviewControlsProps {
   file: StudioFile
   browserEvents: BrowserEvent[]
@@ -33,7 +30,6 @@ export function RecordingPreviewControls({
   file,
   browserEvents,
 }: RecordingPreviewControlsProps) {
-  const [showExportDialog, setShowExportDialog] = useState(false)
   const showToast = useToast()
   const navigate = useNavigate()
   const createTestGenerator = useCreateGenerator()
@@ -61,10 +57,6 @@ export function RecordingPreviewControls({
     ? 'Create a browser test from recorded interactions'
     : 'Export a k6 script simulating browser interactions'
 
-  const handleBrowserTest = isBrowserEditorEnabled
-    ? handleCreateBrowserTest
-    : () => setShowExportDialog(true)
-
   const handleDelete = useDeleteFile({
     file,
     navigateHomeOnDelete: false,
@@ -80,13 +72,15 @@ export function RecordingPreviewControls({
     navigate(getRoutePath('home'))
   }
 
-  const handleExportBrowserScript = async (fileName: string) => {
+  const handleExportBrowserScript = async () => {
     const test = convertEventsToTest({
       browserEvents,
     })
 
     try {
-      const path = await window.studio.fs.showSaveAsDialog(fileName)
+      const path = await window.studio.fs.showSaveAsDialog(
+        'my-browser-script.js'
+      )
 
       if (path === undefined) {
         return
@@ -104,6 +98,10 @@ export function RecordingPreviewControls({
       })
     }
   }
+
+  const handleBrowserTest = isBrowserEditorEnabled
+    ? handleCreateBrowserTest
+    : handleExportBrowserScript
 
   return (
     <>
@@ -167,12 +165,6 @@ export function RecordingPreviewControls({
           />
         </DropdownMenu.Content>
       </DropdownMenu.Root>
-      <ExportScriptDialog
-        open={showExportDialog}
-        scriptName="my-browser-script.js"
-        onOpenChange={setShowExportDialog}
-        onExport={handleExportBrowserScript}
-      />
     </>
   )
 }
