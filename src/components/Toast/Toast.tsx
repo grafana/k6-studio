@@ -20,13 +20,13 @@ export function Toast({ toast }: { toast: ToastProps }) {
     }
   }
 
+  const icon =
+    toast.icon ??
+    (toast.status !== 'default' ? <StatusIcon status={toast.status} /> : null)
+
   return (
     <ToastRoot onOpenChange={handleOpenChange}>
-      {toast.status !== 'default' && (
-        <ToastIcon>
-          <StatusIcon status={toast.status} />
-        </ToastIcon>
-      )}
+      {icon && <ToastIcon>{icon}</ToastIcon>}
       <Box flexGrow="1">
         <ToastTitle>{toast.title}</ToastTitle>
         {toast.description && (

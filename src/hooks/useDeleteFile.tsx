@@ -1,5 +1,6 @@
 import { Button } from '@radix-ui/themes'
 import log from 'electron-log/renderer'
+import { Trash2Icon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import { FileTypeToLabel } from '@/constants/files'
@@ -60,6 +61,7 @@ export function useDeleteFile({
     showToast({
       title: 'Moved to Trash',
       description: file.displayName,
+      icon: <Trash2Icon color="var(--gray-11)" />,
       action: (
         <Button size="1" variant="soft" onClick={handleUndo}>
           Undo
