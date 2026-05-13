@@ -1,8 +1,11 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 import { app } from 'electron'
 import log from 'electron-log/main'
+import { createWriteStream } from 'fs'
 import path from 'path'
 import readline from 'readline/promises'
+import { PassThrough, Readable } from 'stream'
+import { pipeline } from 'stream/promises'
 
 import { LogEntry, LogEntrySchema } from '@/schemas/k6'
 import { getArch, getPlatform } from '@/utils/electron'
@@ -71,26 +74,56 @@ export class K6Client {
     this.#executablePath = executablePath
   }
 
-  async archive({ scriptPath, outputPath, cwd }: ArchiveArgs): Promise<void> {
-    const process = this.#spawn('archive', {
-      args: [
-        outputPath && ['--archive-out', outputPath],
-        ['--log-format', 'json'],
-        scriptPath,
-      ],
+  async archive({
+    scriptPath,
+    outputPath = 'archive.tar',
+    cwd,
+  }: ArchiveArgs): Promise<void> {
+    const stream = this.streamArchive({ scriptPath, cwd })
+    const sink = createWriteStream(outputPath)
+
+    await pipeline(stream, sink)
+  }
+
+  streamArchive({
+    scriptPath,
+    cwd,
+  }: Omit<ArchiveArgs, 'outputPath'>): Readable {
+    const k6Process = this.#spawn('archive', {
+      args: [['--archive-out', '-'], ['--log-format', 'json'], scriptPath],
       cwd,
     })
 
-    const { code, stderr } = await this.#wait(process)
+    const stderr: string[] = []
 
-    if (code !== 0) {
+    readline.createInterface(k6Process.stderr).on('line', (line) => {
+      stderr.push(line)
+    })
+
+    const output = new PassThrough()
+
+    k6Process.stdout.pipe(output, { end: false })
+
+    k6Process.on('error', (error) => {
+      output.destroy(error)
+    })
+
+    k6Process.on('close', (code) => {
+      if (code === 0) {
+        output.end()
+
+        return
+      }
+
       const parsedErrors = stderr
         .map((line) => parseJsonAsSchema(line, LogEntrySchema))
         .filter((entry) => entry.success)
         .map((entry) => entry.data)
 
-      throw new ArchiveError(code, parsedErrors)
-    }
+      output.destroy(new ArchiveError(code, parsedErrors))
+    })
+
+    return output
   }
 
   async inspect({ scriptPath }: InspectArgs): Promise<K6TestOptions | null> {

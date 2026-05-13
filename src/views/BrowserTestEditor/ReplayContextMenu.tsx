@@ -5,6 +5,7 @@ import { LocatorOptions } from '@/schemas/locator'
 import { AriaDetails } from '@/schemas/recording'
 
 import {
+  getTextInputValue,
   isCheckbox,
   isRadio,
   isSelect,
@@ -17,6 +18,9 @@ import {
   createFillAction,
   createSelectOptionAction,
   createToBeCheckedAction,
+  createToHaveValueAction,
+  createToBeVisibleAction,
+  createToContainTextAction,
   createUncheckAction,
   createWaitForAction,
 } from './actionFactories'
@@ -71,6 +75,24 @@ export function ReplayContextMenu({
             >
               Clear input
             </DropdownMenu.Item>
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item
+              onClick={() =>
+                onAddAction(
+                  createToHaveValueAction({
+                    locator,
+                    expected: {
+                      current: 'single',
+                      values: {
+                        single: getTextInputValue(target),
+                      },
+                    },
+                  })
+                )
+              }
+            >
+              Expect to have value
+            </DropdownMenu.Item>
           </>
         )}
         {isCheckbox(target, aria.roles) && (
@@ -114,6 +136,24 @@ export function ReplayContextMenu({
             Click
           </DropdownMenu.Item>
         )}
+        <DropdownMenu.Separator />
+        <DropdownMenu.Item
+          onClick={() => onAddAction(createToBeVisibleAction({ locator }))}
+        >
+          Expect to be visible
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() =>
+            onAddAction(
+              createToContainTextAction({
+                locator,
+                expected: target.textContent ?? '',
+              })
+            )
+          }
+        >
+          Expect to contain text
+        </DropdownMenu.Item>
         <DropdownMenu.Separator />
         <DropdownMenu.Item
           onClick={() => onAddAction(createWaitForAction({ locator }))}

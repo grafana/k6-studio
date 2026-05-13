@@ -4,6 +4,7 @@ import { readFile, writeFile } from 'fs/promises'
 import { K6_BROWSER_TEST_FILE_EXTENSION } from '@/constants/files'
 import { BROWSER_TESTS_PATH } from '@/constants/workspace'
 import {
+  type AnyBrowserAction,
   BrowserTestFile,
   BrowserTestFileDataSchema,
   defaultBrowserTestOptions,
@@ -15,28 +16,31 @@ import { createFileWithUniqueName } from '@/utils/fileSystem'
 import { BrowserTestHandler } from './types'
 
 export function initialize() {
-  ipcMain.handle(BrowserTestHandler.Create, async () => {
-    console.info(`${BrowserTestHandler.Create} event received`)
+  ipcMain.handle(
+    BrowserTestHandler.Create,
+    async (_, actions?: AnyBrowserAction[]) => {
+      console.info(`${BrowserTestHandler.Create} event received`)
 
-    const emptyBrowserTest: BrowserTestFile = {
-      version: '1.0',
-      actions: [],
-      options: defaultBrowserTestOptions,
+      const browserTest: BrowserTestFile = {
+        version: '1.0',
+        actions: actions ?? [],
+        options: defaultBrowserTestOptions,
+      }
+
+      const filePath = await createFileWithUniqueName({
+        data: JSON.stringify(browserTest, null, 2),
+        directory: BROWSER_TESTS_PATH,
+        ext: K6_BROWSER_TEST_FILE_EXTENSION,
+        prefix: 'Browser',
+      })
+
+      trackEvent({
+        event: UsageEventName.BrowserTestCreated,
+      })
+
+      return filePath
     }
-
-    const filePath = await createFileWithUniqueName({
-      data: JSON.stringify(emptyBrowserTest, null, 2),
-      directory: BROWSER_TESTS_PATH,
-      ext: K6_BROWSER_TEST_FILE_EXTENSION,
-      prefix: 'Browser',
-    })
-
-    trackEvent({
-      event: UsageEventName.BrowserTestCreated,
-    })
-
-    return filePath
-  })
+  )
 
   ipcMain.handle(BrowserTestHandler.Open, async (_, filePath: string) => {
     console.info(`${BrowserTestHandler.Open} event received`)

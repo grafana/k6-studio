@@ -18,16 +18,21 @@ export function openScript(scriptPath: string) {
   ) as Promise<OpenScriptResult>
 }
 
-export function runScriptFromGenerator(script: string, shouldTrack = true) {
+export function runScriptFromGenerator(
+  script: string,
+  scriptPath: string,
+  shouldTrack = true
+) {
   return ipcRenderer.invoke(
     ScriptHandler.RunFromGenerator,
     script,
+    scriptPath,
     shouldTrack
   ) as Promise<void>
 }
 
-export function saveScript(script: string, fileName: string) {
-  return ipcRenderer.invoke(ScriptHandler.Save, script, fileName) as Promise<
+export function saveScript(scriptPath: string, script: string) {
+  return ipcRenderer.invoke(ScriptHandler.Save, scriptPath, script) as Promise<
     string | undefined
   >
 }

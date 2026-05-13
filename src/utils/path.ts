@@ -98,6 +98,69 @@ export function isAbsolute(path: string): boolean {
   return getRoot(path) !== ''
 }
 
+function isSegmentEqual(a: string, b: string) {
+  if (isWindows) {
+    return a.toLowerCase() === b.toLowerCase()
+  }
+
+  return a === b
+}
+
+export function relative(from: string, to: string): string {
+  const fromRoot = getRoot(from)
+  const toRoot = getRoot(to)
+
+  if (!isSegmentEqual(fromRoot, toRoot)) {
+    return to
+  }
+
+  const fromParts = resolveParts(splitParts(from, fromRoot))
+  const toParts = resolveParts(splitParts(to, toRoot))
+
+  let common = 0
+
+  while (common < fromParts.length && common < toParts.length) {
+    const from = fromParts[common]
+    const to = toParts[common]
+
+    if (from === undefined || to === undefined) {
+      throw new Error('Unexpected undefined segment')
+    }
+
+    if (!isSegmentEqual(from, to)) {
+      break
+    }
+
+    common++
+  }
+
+  const upLevels = fromParts.length - common
+  const segments = [
+    ...new Array<string>(upLevels).fill('..'),
+    ...toParts.slice(common),
+  ]
+
+  return segments.join(sep)
+}
+
+function resolveParts(parts: string[]): string[] {
+  const resolved: string[] = []
+
+  for (const part of parts) {
+    if (part === '..') {
+      if (resolved.length > 0 && resolved[resolved.length - 1] !== '..') {
+        resolved.pop()
+      } else {
+        resolved.push('..')
+      }
+    } else if (part !== '.') {
+      resolved.push(part)
+    }
+  }
+
+  return resolved
+}
+
 export interface ParsedPath {
   root: string
   dir: string

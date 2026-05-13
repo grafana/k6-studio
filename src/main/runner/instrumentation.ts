@@ -1,13 +1,6 @@
-import { parse } from '@typescript-eslint/typescript-estree'
+import { parse, TSESTree as ts } from '@typescript-eslint/typescript-estree'
 import { generate } from 'astring'
-import path from 'path'
 
-import {
-  identifier,
-  importDeclaration,
-  namedImport,
-  string,
-} from '@/codegen/estree'
 import { baseProps, NodeType } from '@/codegen/estree/nodes'
 import { traverse } from '@/codegen/estree/traverse'
 import { readResource } from '@/utils/resources'
@@ -25,6 +18,50 @@ const parseScript = (input: string) => {
   })
 }
 
+export function replaceModules(
+  script: ts.Program | string,
+  replacements: Record<string, string>
+) {
+  const ast = typeof script === 'string' ? parseScript(script) : script
+
+  if (ast === undefined) {
+    throw new Error('Failed to parse script for import replacement')
+  }
+
+  traverse(ast, {
+    [NodeType.ImportDeclaration](node) {
+      const replacement = replacements[node.source.value]
+
+      if (replacement) {
+        node.source.value = replacement
+        node.source.raw = JSON.stringify(replacement)
+      }
+    },
+    [NodeType.ExportAllDeclaration](node) {
+      if (node.source) {
+        const replacement = replacements[node.source.value]
+
+        if (replacement) {
+          node.source.value = replacement
+          node.source.raw = JSON.stringify(replacement)
+        }
+      }
+    },
+    [NodeType.ExportNamedDeclaration](node) {
+      if (node.source) {
+        const replacement = replacements[node.source.value]
+
+        if (replacement) {
+          node.source.value = replacement
+          node.source.raw = JSON.stringify(replacement)
+        }
+      }
+    },
+  })
+
+  return generate(ast)
+}
+
 export const instrumentScript = ({
   entryScript,
   replayScript,
@@ -36,20 +73,11 @@ export const instrumentScript = ({
     throw new Error('Failed to parse entry script')
   }
 
-  // Use relative import path with ./ prefix for cross-platform compatibility
-  const scriptBasename = path.basename(scriptPath)
-  const relativePath = `./${scriptBasename}`
-
   traverse(entryAst, {
     [NodeType.ImportDeclaration](node) {
       if (node.source.value === '__USER_SCRIPT_PATH__') {
-        node.source.value = relativePath
-        node.source.raw = JSON.stringify(relativePath)
-      }
-
-      if (node.source.value === 'https://jslib.k6.io/k6-testing/') {
-        node.source.value = relativePath
-        node.source.raw = JSON.stringify(relativePath)
+        node.source.value = scriptPath
+        node.source.raw = JSON.stringify(scriptPath)
       }
     },
     [NodeType.VariableDeclarator](node) {
@@ -66,30 +94,6 @@ export const instrumentScript = ({
       }
     },
   })
-
-  // If a k6-testing override has been we'll replace any existing import of the k6-testing library
-  // and instead insert an import with the provided override.
-  if (K6_TESTING_OVERRIDE) {
-    const overrideImport = importDeclaration({
-      source: string(K6_TESTING_OVERRIDE),
-      specifiers: [
-        namedImport({
-          imported: identifier('expect'),
-          local: identifier('expect'),
-        }),
-      ],
-    })
-
-    entryAst.body = [
-      overrideImport,
-      ...entryAst.body.filter((node) => {
-        return (
-          node.type !== NodeType.ImportDeclaration ||
-          !node.source.value.startsWith('https://jslib.k6.io/k6-testing/')
-        )
-      }),
-    ]
-  }
 
   return generate(entryAst)
 }

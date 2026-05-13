@@ -11,6 +11,10 @@ import {
 import { ElementSelector } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 
+function hasNonEmptyString(value: string | undefined): value is string {
+  return value !== undefined && value.trim() !== ''
+}
+
 export function getRoleLocator(selectors: ElementSelector): RoleLocator | null {
   if (selectors.role === undefined) {
     return null
@@ -28,7 +32,7 @@ export function getRoleLocator(selectors: ElementSelector): RoleLocator | null {
 export function getAltTextLocator(
   selectors: ElementSelector
 ): AltLocator | null {
-  if (selectors.alt === undefined) {
+  if (!hasNonEmptyString(selectors.alt)) {
     return null
   }
 
@@ -42,7 +46,7 @@ export function getAltTextLocator(
 export function getLabelLocator(
   selectors: ElementSelector
 ): LabelLocator | null {
-  if (selectors.label === undefined) {
+  if (!hasNonEmptyString(selectors.label)) {
     return null
   }
 
@@ -56,7 +60,7 @@ export function getLabelLocator(
 export function getPlaceholderLocator(
   selectors: ElementSelector
 ): PlaceholderLocator | null {
-  if (selectors.placeholder === undefined) {
+  if (!hasNonEmptyString(selectors.placeholder)) {
     return null
   }
 
@@ -70,7 +74,7 @@ export function getPlaceholderLocator(
 export function getTitleLocator(
   selectors: ElementSelector
 ): TitleLocator | null {
-  if (selectors.title === undefined) {
+  if (!hasNonEmptyString(selectors.title)) {
     return null
   }
 
@@ -84,7 +88,7 @@ export function getTitleLocator(
 export function getTestIdLocator(
   selectors: ElementSelector
 ): TestIdLocator | null {
-  if (selectors.testId === undefined || selectors.testId.trim() === '') {
+  if (!hasNonEmptyString(selectors.testId)) {
     return null
   }
 

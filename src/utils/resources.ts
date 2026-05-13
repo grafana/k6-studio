@@ -6,6 +6,7 @@ const RESOURCE_INDEX = {
   'browser-script': 'browser/index.js',
   'replay-script': 'replay.js',
   'entrypoint-script': 'entrypoint.js',
+  'k6-testing-shim': 'k6-testing.js',
 }
 
 export type ResourceName = keyof typeof RESOURCE_INDEX

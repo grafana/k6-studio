@@ -397,19 +397,18 @@ function emitExpectExpression(
         .await(context)
         .done()
 
-    case 'HasValueAssertion': {
+    case 'HasValueAssertion':
+      return new ExpressionBuilder(expect)
+        .member('toHaveValue')
+        .call([emitExpression(context, expression.expected.expected)])
+        .await(context)
+        .done()
+
+    case 'HasValuesAssertion': {
       const expectedValues = mapNonEmpty(
         expression.expected.expected,
         (value) => emitExpression(context, value)
       )
-
-      if (expectedValues.length === 1) {
-        return new ExpressionBuilder(expect)
-          .member('toHaveValue')
-          .call([expectedValues[0]])
-          .await(context)
-          .done()
-      }
 
       return new ExpressionBuilder(expect)
         .member('toHaveValues')
