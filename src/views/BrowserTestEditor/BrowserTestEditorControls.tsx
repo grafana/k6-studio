@@ -116,7 +116,7 @@ export function BrowserTestEditorControls({
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           <DropdownMenu.Item color="red" onClick={handleDelete}>
-            Delete browser test
+            Move to Trash
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>

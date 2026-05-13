@@ -38,7 +38,7 @@ export function DataFileControls({ file }: DataFileControlsProps) {
           </DropdownMenu.Item>
           <DropdownMenu.Separator />
           <DropdownMenu.Item color="red" onClick={handleDelete}>
-            Delete
+            Move to Trash
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>

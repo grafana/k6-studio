@@ -79,7 +79,7 @@ function useFileContextMenuItems({
   return [
     { label: 'Rename', onClick: onRename },
     { label: 'Open containing folder', onClick: handleOpenFolder },
-    { label: 'Delete', destructive: true, onClick: handleDelete },
+    { label: 'Move to Trash', destructive: true, onClick: handleDelete },
   ]
 }
 

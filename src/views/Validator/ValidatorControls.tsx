@@ -79,7 +79,7 @@ export function ValidatorControls({
           </Tooltip>
           {canDelete && (
             <DropdownMenu.Item color="red" onClick={handleDelete}>
-              Delete
+              Move to Trash
             </DropdownMenu.Item>
           )}
         </DropdownMenu.Content>

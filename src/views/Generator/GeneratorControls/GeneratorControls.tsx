@@ -97,7 +97,7 @@ export function GeneratorControls({
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           <DropdownMenu.Item color="red" onClick={handleDelete}>
-            Delete generator
+            Move to Trash
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>

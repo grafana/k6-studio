@@ -143,7 +143,7 @@ export function RecordingPreviewControls({
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           <DropdownMenu.Item color="red" onClick={handleDeleteRecordingConfirm}>
-            Delete
+            Move to Trash
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
