@@ -62,7 +62,13 @@ export function RecordingPreviewControls({
   })
 
   const handleDiscardConfirm = () => {
-    handleDelete()
+    handleDelete({
+      toastTitle: 'Recording discarded',
+      onUndo: () =>
+        navigate(getViewPath('recording', file.path), {
+          state: { discardable: true },
+        }),
+    })
     navigate(getRoutePath('recorder'))
   }
 

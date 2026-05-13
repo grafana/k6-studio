@@ -148,4 +148,29 @@ describe('useDeleteFile', () => {
 
     expect(showToast).toHaveBeenCalledTimes(1)
   })
+
+  it('accepts custom toast title and runs onUndo after Undo', () => {
+    const onUndo = vi.fn()
+    const { result } = renderHook(() =>
+      useDeleteFile({ file, navigateHomeOnDelete: false })
+    )
+
+    act(() => {
+      result.current({ toastTitle: 'Recording discarded', onUndo })
+    })
+
+    expect(lastToast()).toMatchObject({
+      title: 'Recording discarded',
+      description: 'test-file',
+    })
+
+    const action = lastToast().action
+    const rendered = render(<>{action}</>)
+
+    act(() => {
+      fireEvent.click(rendered.getByRole('button', { name: /undo/i }))
+    })
+
+    expect(onUndo).toHaveBeenCalledTimes(1)
+  })
 })

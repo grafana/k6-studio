@@ -1,5 +1,6 @@
 import { Button } from '@radix-ui/themes'
 import log from 'electron-log/renderer'
+import type { SyntheticEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { FileTypeToLabel } from '@/constants/files'
@@ -13,6 +14,17 @@ interface UseDeleteFileArgs {
   navigateHomeOnDelete?: boolean
 }
 
+export interface DeleteFileInvocationOptions {
+  toastTitle?: string
+  onUndo?: () => void
+}
+
+function isSyntheticEventCandidate(
+  value: SyntheticEvent | DeleteFileInvocationOptions | undefined
+): value is SyntheticEvent {
+  return typeof value === 'object' && value !== null && 'nativeEvent' in value
+}
+
 export function useDeleteFile({
   file,
   navigateHomeOnDelete,
@@ -22,7 +34,11 @@ export function useDeleteFile({
   const addPending = usePendingDeletesStore((state) => state.add)
   const removePending = usePendingDeletesStore((state) => state.remove)
 
-  return () => {
+  return (eventOrOptions?: SyntheticEvent | DeleteFileInvocationOptions) => {
+    const options = isSyntheticEventCandidate(eventOrOptions)
+      ? undefined
+      : eventOrOptions
+
     if (usePendingDeletesStore.getState().paths.has(file.path)) {
       return
     }
@@ -37,6 +53,7 @@ export function useDeleteFile({
     const handleUndo = () => {
       undone = true
       removePending(file.path)
+      options?.onUndo?.()
     }
 
     const handleDismiss = async () => {
@@ -59,7 +76,7 @@ export function useDeleteFile({
     }
 
     showToast({
-      title: 'Moved to Trash',
+      title: options?.toastTitle ?? 'Moved to Trash',
       description: file.displayName,
       status: 'success',
       action: (
