@@ -1,12 +1,14 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { useUpdateEffect } from 'react-use'
 import { ZodType } from 'zod'
 
 class LocalStorageSyncEvent<T> extends CustomEvent<{
   key: string
+  senderId: string
   value: T
 }> {
-  constructor(key: string, value: T) {
-    super('local-storage-sync', { detail: { key, value } })
+  constructor(key: string, senderId: string, value: T) {
+    super('local-storage-sync', { detail: { key, senderId, value } })
   }
 }
 
@@ -15,67 +17,62 @@ export function useSyncedLocalStorage<T>(
   schema: ZodType<T>,
   defaultValue: T
 ): [T, (value: T) => void] {
+  const senderId = useId()
   const defaultValueRef = useRef(defaultValue)
+  const schemaRef = useRef(schema)
+  schemaRef.current = schema
 
-  const [storedValue, setStoredValue] = useState<T>(() => {
+  const readFromStorage = useCallback((): T => {
     let item: string | null = null
 
     try {
       item = localStorage.getItem(key)
     } catch {
-      return defaultValue
+      return defaultValueRef.current
     }
 
     if (item === null) {
-      return defaultValue
+      return defaultValueRef.current
     }
 
+    let json: unknown
     try {
-      return schema.parse(JSON.parse(item))
+      json = JSON.parse(item)
     } catch {
-      return defaultValue
-    }
-  })
-
-  useEffect(() => {
-    let item: string | null = null
-
-    try {
-      item = localStorage.getItem(key)
-    } catch {
-      setStoredValue(defaultValueRef.current)
-      return
+      localStorage.setItem(key, JSON.stringify(defaultValueRef.current))
+      return defaultValueRef.current
     }
 
-    if (item === null) {
-      setStoredValue(defaultValueRef.current)
-      return
+    const parsed = schemaRef.current.safeParse(json)
+
+    if (!parsed.success) {
+      localStorage.setItem(key, JSON.stringify(defaultValueRef.current))
+      return defaultValueRef.current
     }
 
-    try {
-      setStoredValue(schema.parse(JSON.parse(item)))
-    } catch {
-      setStoredValue(defaultValueRef.current)
-    }
-  }, [key, schema])
+    return parsed.data
+  }, [key])
+
+  const [storedValue, setStoredValue] = useState<T>(readFromStorage)
+
+  useUpdateEffect(() => {
+    setStoredValue(readFromStorage())
+  }, [readFromStorage])
 
   useEffect(() => {
     const handleSyncEvent = (event: Event) => {
       if (
         event instanceof LocalStorageSyncEvent === false ||
-        event.detail.key !== key
+        event.detail.key !== key ||
+        event.detail.senderId === senderId
       ) {
         return
       }
 
-      try {
-        const parsed = schema.safeParse(event.detail.value)
+      const parsed = schemaRef.current.safeParse(event.detail.value)
 
-        if (parsed.success) {
-          setStoredValue(parsed.data)
-        }
-      } catch {
-        // Ignore parsing errors
+      if (parsed.success) {
+        setStoredValue(parsed.data)
       }
     }
 
@@ -90,14 +87,17 @@ export function useSyncedLocalStorage<T>(
         return
       }
 
+      let json: unknown
       try {
-        const parsed = schema.safeParse(JSON.parse(event.newValue))
-
-        if (parsed.success) {
-          setStoredValue(parsed.data)
-        }
+        json = JSON.parse(event.newValue)
       } catch {
-        // Ignore parsing errors
+        return
+      }
+
+      const parsed = schemaRef.current.safeParse(json)
+
+      if (parsed.success) {
+        setStoredValue(parsed.data)
       }
     }
 
@@ -108,7 +108,7 @@ export function useSyncedLocalStorage<T>(
       window.removeEventListener('local-storage-sync', handleSyncEvent)
       window.removeEventListener('storage', handleStorageEvent)
     }
-  }, [key, schema])
+  }, [key, senderId])
 
   const setValue = useCallback(
     (value: T) => {
@@ -117,12 +117,12 @@ export function useSyncedLocalStorage<T>(
       try {
         localStorage.setItem(key, JSON.stringify(value))
       } catch {
-        // Ignore storage errors (quota, privacy mode, etc.)
+        return
       }
 
-      window.dispatchEvent(new LocalStorageSyncEvent(key, value))
+      window.dispatchEvent(new LocalStorageSyncEvent(key, senderId, value))
     },
-    [key]
+    [key, senderId]
   )
 
   return [storedValue, setValue]
