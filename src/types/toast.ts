@@ -3,7 +3,6 @@ export interface Toast {
   status: 'default' | 'success' | 'error'
   title: string
   description?: string
-  icon?: React.ReactNode
   action?: React.ReactNode
   onDismiss?: () => void
 }

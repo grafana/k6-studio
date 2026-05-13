@@ -95,7 +95,7 @@ describe('useDeleteFile', () => {
     expect(trashFile).not.toHaveBeenCalled()
   })
 
-  it('toast dismiss without Undo calls trashFile and clears pending', async () => {
+  it('toast dismiss without Undo calls trashFile; pending stays for chokidar to clear', async () => {
     const { result } = renderHook(() =>
       useDeleteFile({ file, navigateHomeOnDelete: false })
     )
@@ -110,7 +110,10 @@ describe('useDeleteFile', () => {
     })
 
     expect(trashFile).toHaveBeenCalledWith(file)
-    expect(usePendingDeletesStore.getState().paths.has(file.path)).toBe(false)
+    // pending stays set until chokidar's unlink → onRemoveFile listener fires
+    // (see Sidebar.hooks.ts). Clearing here would create a render frame where
+    // the file is back in the sidebar before FolderContent updates.
+    expect(usePendingDeletesStore.getState().paths.has(file.path)).toBe(true)
   })
 
   it('trashFile failure surfaces an error toast and clears pending', async () => {

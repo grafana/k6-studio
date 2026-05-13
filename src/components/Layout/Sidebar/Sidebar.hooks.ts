@@ -51,11 +51,14 @@ function useFolderContent() {
     [addFile]
   )
 
-  useEffect(() => {
-    window.studio.ui.onRemoveFile((file) => {
-      removeFile(file)
-    })
-  }, [removeFile])
+  useEffect(
+    () =>
+      window.studio.ui.onRemoveFile((file) => {
+        removeFile(file)
+        usePendingDeletesStore.getState().remove(file.path)
+      }),
+    [removeFile]
+  )
 
   return {
     recordings: recordings.filter(notPending),
