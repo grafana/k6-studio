@@ -3,6 +3,7 @@ import { orderBy } from 'lodash-es'
 import { useEffect, useMemo } from 'react'
 
 import { useStudioUIStore } from '@/store/ui'
+import { usePendingDeletesStore } from '@/store/ui/usePendingDeletes'
 import { StudioFile } from '@/types'
 import { withMatches } from '@/utils/fuse'
 
@@ -15,6 +16,9 @@ function toFileMap(files: StudioFile[]) {
 }
 
 function useFolderContent() {
+  const pendingPaths = usePendingDeletesStore((state) => state.paths)
+  const notPending = (file: StudioFile) => !pendingPaths.has(file.path)
+
   const recordings = useStudioUIStore((s) => orderByFileName(s.recordings))
   const generators = useStudioUIStore((s) => orderByFileName(s.generators))
   const browserTests = useStudioUIStore((s) => orderByFileName(s.browserTests))
@@ -54,12 +58,12 @@ function useFolderContent() {
   }, [removeFile])
 
   return {
-    recordings,
-    tests: [...generators, ...browserTests].sort((a, b) =>
-      a.displayName.localeCompare(b.displayName)
-    ),
-    scripts,
-    dataFiles,
+    recordings: recordings.filter(notPending),
+    tests: [...generators, ...browserTests]
+      .filter(notPending)
+      .sort((a, b) => a.displayName.localeCompare(b.displayName)),
+    scripts: scripts.filter(notPending),
+    dataFiles: dataFiles.filter(notPending),
   }
 }
 
