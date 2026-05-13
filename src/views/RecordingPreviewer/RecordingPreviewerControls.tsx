@@ -62,13 +62,13 @@ export function RecordingPreviewControls({
     navigateHomeOnDelete: false,
   })
 
-  const handleDiscardConfirm = async () => {
-    await handleDelete()
+  const handleDiscardConfirm = () => {
+    handleDelete()
     navigate(getRoutePath('recorder'))
   }
 
-  const handleDeleteRecordingConfirm = async () => {
-    await handleDelete()
+  const handleDeleteRecordingConfirm = () => {
+    handleDelete()
     navigate(getRoutePath('home'))
   }
 
