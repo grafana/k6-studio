@@ -4,6 +4,7 @@ export interface Toast {
   title: string
   description?: string
   action?: React.ReactNode
+  onDismiss?: () => void
 }
 
 export type AddToastPayload = Omit<Toast, 'id' | 'status'> & {

@@ -14,8 +14,14 @@ import {
 } from './Toast.styles'
 
 export function Toast({ toast }: { toast: ToastProps }) {
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      toast.onDismiss?.()
+    }
+  }
+
   return (
-    <ToastRoot>
+    <ToastRoot onOpenChange={handleOpenChange}>
       {toast.status !== 'default' && (
         <ToastIcon>
           <StatusIcon status={toast.status} />
