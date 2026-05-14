@@ -1,6 +1,7 @@
 import { Box, IconButton } from '@radix-ui/themes'
 import { CircleCheckIcon, CircleXIcon, XIcon } from 'lucide-react'
 
+import { useToastStore } from '@/store/ui/useToast'
 import { Toast as ToastProps } from '@/types/toast'
 import { exhaustive } from '@/utils/typescript'
 
@@ -14,14 +15,28 @@ import {
 } from './Toast.styles'
 
 export function Toast({ toast }: { toast: ToastProps }) {
+  const dismiss = useToastStore((state) => state.dismiss)
+  const remove = useToastStore((state) => state.remove)
+
   const handleOpenChange = (open: boolean) => {
-    if (!open) {
+    if (!open && toast.open) {
+      dismiss(toast.id)
       toast.onDismiss?.()
     }
   }
 
+  const handleAnimationEnd = () => {
+    if (!toast.open) {
+      remove(toast.id)
+    }
+  }
+
   return (
-    <ToastRoot onOpenChange={handleOpenChange}>
+    <ToastRoot
+      open={toast.open}
+      onOpenChange={handleOpenChange}
+      onAnimationEnd={handleAnimationEnd}
+    >
       {toast.status !== 'default' && (
         <ToastIcon>
           <StatusIcon status={toast.status} />
