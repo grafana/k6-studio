@@ -173,6 +173,14 @@ export function toPosix(path: string): string {
   return path.replace(/\\/g, '/')
 }
 
+export function toNative(path: string): string {
+  if (isWindows) {
+    return path.replace(/\//g, '\\')
+  }
+
+  return toPosix(path)
+}
+
 export function parse(path: string): ParsedPath {
   const root = getRoot(path)
   const base = basename(path)

@@ -45,7 +45,8 @@ describe('Generator migration', () => {
     }
 
     const migration = migrate(v0Generator)
-    expect(migration.version).toBe('2.0')
+    expect(migration.version).toBe('3.0')
     expect(migration.options.thresholds).toEqual([])
+    expect(migration.recordingPath).toBe('../Recordings/test')
   })
 })
