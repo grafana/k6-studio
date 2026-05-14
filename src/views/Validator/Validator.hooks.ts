@@ -45,25 +45,30 @@ export function useDebugSession(script: Script) {
     resetChecks()
   }, [resetChecks, resetLogs, resetProxyData, resetBrowserSession])
 
-  const startDebugging = useCallback(async () => {
-    setState('running')
+  const startDebugging = useCallback(
+    async (scenarioName?: string) => {
+      setState('running')
 
-    resetSession()
+      resetSession()
 
-    if (script.type === 'raw') {
-      const scriptPath = await window.studio.fs.getTempScriptPath()
-      await window.studio.script
-        .runScriptFromGenerator(input, scriptPath)
-        .catch(() => {
-          setState('stopped')
-        })
-      return
-    }
+      if (script.type === 'raw') {
+        const scriptPath = await window.studio.fs.getTempScriptPath()
 
-    await window.studio.script.runScript(input).catch(() => {
-      setState('stopped')
-    })
-  }, [resetSession, script.type, input])
+        await window.studio.script
+          .runScriptFromGenerator(input, scriptPath)
+          .catch(() => {
+            setState('stopped')
+          })
+
+        return
+      }
+
+      await window.studio.script.runScript(input, scenarioName).catch(() => {
+        setState('stopped')
+      })
+    },
+    [resetSession, script.type, input]
+  )
 
   const stopDebugging = useCallback(() => {
     window.studio.script.stopScript()

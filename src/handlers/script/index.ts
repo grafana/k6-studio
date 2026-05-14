@@ -42,7 +42,11 @@ export function initialize() {
 
     const options = await new K6Client()
       .inspect({ scriptPath })
-      .catch(() => ({}))
+      .catch((err) => {
+        log.error('Failed to inspect the script', err)
+
+        return null
+      })
 
     return {
       script,
@@ -51,44 +55,48 @@ export function initialize() {
     }
   })
 
-  ipcMain.handle(ScriptHandler.Run, async (event, scriptPath: string) => {
-    console.info(`${ScriptHandler.Run} event received`)
+  ipcMain.handle(
+    ScriptHandler.Run,
+    async (event, scriptPath: string, scenarioName?: string) => {
+      console.info(`${ScriptHandler.Run} event received`)
 
-    const browserWindow = browserWindowFromEvent(event)
+      const browserWindow = browserWindowFromEvent(event)
 
-    try {
-      await waitForProxy()
+      try {
+        await waitForProxy()
 
-      const absolute = path.isAbsolute(scriptPath)
-      const resolvedScriptPath = absolute
-        ? scriptPath
-        : path.join(SCRIPTS_PATH, scriptPath)
+        const absolute = path.isAbsolute(scriptPath)
+        const resolvedScriptPath = absolute
+          ? scriptPath
+          : path.join(SCRIPTS_PATH, scriptPath)
 
-      currentTestRun = await runScript({
-        browserWindow,
-        scriptPath: resolvedScriptPath,
-        proxySettings: k6StudioState.appSettings.proxy,
-        usageReport: k6StudioState.appSettings.telemetry.usageReport,
-      })
+        currentTestRun = await runScript({
+          browserWindow,
+          scriptPath: resolvedScriptPath,
+          proxySettings: k6StudioState.appSettings.proxy,
+          usageReport: k6StudioState.appSettings.telemetry.usageReport,
+          scenarioName,
+        })
 
-      trackEvent({
-        event: UsageEventName.ScriptValidated,
-        payload: {
-          isExternal: isExternalScript(resolvedScriptPath),
-        },
-      })
-    } catch (error) {
-      browserWindow.webContents.send(ScriptHandler.Failed)
+        trackEvent({
+          event: UsageEventName.ScriptValidated,
+          payload: {
+            isExternal: isExternalScript(resolvedScriptPath),
+          },
+        })
+      } catch (error) {
+        browserWindow.webContents.send(ScriptHandler.Failed)
 
-      if (error instanceof ArchiveError) {
-        for (const logEntry of error.stderr) {
-          browserWindow.webContents.send(ScriptHandler.Log, logEntry)
+        if (error instanceof ArchiveError) {
+          for (const logEntry of error.stderr) {
+            browserWindow.webContents.send(ScriptHandler.Log, logEntry)
+          }
         }
-      }
 
-      throw error
+        throw error
+      }
     }
-  })
+  )
 
   ipcMain.on(ScriptHandler.Stop, () => {
     console.info(`${ScriptHandler.Stop} event received`)
