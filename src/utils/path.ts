@@ -169,6 +169,10 @@ export interface ParsedPath {
   name: string
 }
 
+export function toPosix(path: string): string {
+  return path.replace(/\\/g, '/')
+}
+
 export function parse(path: string): ParsedPath {
   const root = getRoot(path)
   const base = basename(path)

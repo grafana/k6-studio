@@ -108,7 +108,7 @@ export function generateDataFileDeclarations(
   const fileKeyValuePairs = files
     .map(({ name }) => {
       const displayName = path.name(name)
-      const relativePath = path.relative(scriptDir, name)
+      const relativePath = path.toPosix(path.relative(scriptDir, name))
       const isCSV = name.toLowerCase().endsWith('csv')
 
       if (isCSV) {
