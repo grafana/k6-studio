@@ -186,7 +186,7 @@ jobs:
           echo "%__strip /bin/true" >> ~/.rpmmacros
 
           pnpm run publish
-          pnpm run publish -- --arch=arm64
+          pnpm run publish --arch=arm64
 
       - name: cleanup macos certificates
         if: startsWith(matrix.platform, 'macos-')
