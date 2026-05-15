@@ -1,22 +1,32 @@
-import { css } from '@emotion/react'
-import { Flex } from '@radix-ui/themes'
-import { User2Icon } from 'lucide-react'
+import { UserInfo } from '@/schemas/profile'
+import { getInitials } from '@/utils/initials'
 
-export function Avatar() {
+interface AvatarProps {
+  user: UserInfo
+  size?: number
+}
+
+export function Avatar({ user, size = 100 }: AvatarProps) {
+  const initials = getInitials(user)
+  const fontSize = Math.round(size * 0.4)
+
   return (
-    <Flex
-      align="center"
-      justify="center"
-      css={css`
-        width: 100px;
-        height: 100px;
-        border: 4px solid var(--accent-9);
-        color: var(--accent-9);
-        border-radius: 50%;
-        font-size: 64px;
-      `}
+    <span
+      css={{
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        background: 'var(--orange-9)',
+        color: 'white',
+        fontSize,
+        fontWeight: 600,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        userSelect: 'none',
+      }}
     >
-      <User2Icon />
-    </Flex>
+      {initials}
+    </span>
   )
 }

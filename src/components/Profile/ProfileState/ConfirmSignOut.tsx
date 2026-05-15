@@ -1,5 +1,8 @@
 import { Button, Flex, Heading } from '@radix-ui/themes'
 
+import { profilesQueryKey } from '@/hooks/useAuthStatus'
+import { queryClient } from '@/utils/query'
+
 import { ConfirmSignOutState, SignedInState, SignedOutState } from './types'
 
 interface ConfirmSignOutProps {
@@ -13,6 +16,8 @@ export function ConfirmSignOut({ state, onStateChange }: ConfirmSignOutProps) {
       const { current, profiles } = await window.studio.auth.signOut(
         state.stack
       )
+
+      await queryClient.invalidateQueries({ queryKey: profilesQueryKey })
 
       if (current === null) {
         onStateChange({
