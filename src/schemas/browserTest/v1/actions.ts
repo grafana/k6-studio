@@ -173,6 +173,9 @@ const LocatorToBeCheckedActionSchema = ActionBaseSchema.extend({
   method: z.literal('locator.toBeChecked'),
   locator: LocatorOptionsSchema,
   checked: z.boolean(),
+  inputType: z
+    .union([z.literal('aria'), z.literal('native')])
+    .default('native'),
   options: GenericOptions.optional(),
 })
 
