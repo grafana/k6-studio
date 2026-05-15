@@ -7,7 +7,7 @@ import { configureSystemProxy } from '@/services/http'
 import { AppSettingsSchema } from '../schemas/settings'
 import { AppSettings } from '../types/settings'
 import { getPlatform } from '../utils/electron'
-import { existsSync, open, readFileSync, writeFile } from '../utils/fs'
+import { exists, open, readFile, writeFile } from '../utils/fs'
 import { safeJsonParse } from '../utils/json'
 import { getExecutableNameFromPlist } from '../utils/plist'
 
@@ -39,11 +39,11 @@ const filePath = path.join(app.getPath('userData'), fileName)
  * don't sit on the user's machine after they upgrade.
  */
 export async function initSettings() {
-  if (!existsSync(filePath)) {
+  if (!(await exists(filePath))) {
     return writeFile(filePath, JSON.stringify(defaultSettings))
   }
 
-  const raw = readFileSync(filePath, 'utf-8')
+  const raw = await readFile(filePath, 'utf-8')
   const rawParsed = safeJsonParse<{ version?: unknown }>(raw)
 
   if (!rawParsed) {
@@ -140,21 +140,23 @@ export async function selectBrowserExecutable() {
     filters: [{ name: 'Executables', extensions: extensions[getPlatform()] }],
   })
 
-  function getFilePaths() {
+  async function getFilePaths() {
     if (getPlatform() === 'mac') {
-      return filePaths.map((filePath) => {
-        const plistPath = path.join(filePath, 'Contents', 'Info.plist')
-        const executableName = getExecutableNameFromPlist(plistPath)
-        if (executableName) {
-          return path.join(filePath, 'Contents', 'MacOS', executableName)
-        }
-        return filePath
-      })
+      return Promise.all(
+        filePaths.map(async (filePath) => {
+          const plistPath = path.join(filePath, 'Contents', 'Info.plist')
+          const executableName = await getExecutableNameFromPlist(plistPath)
+          if (executableName) {
+            return path.join(filePath, 'Contents', 'MacOS', executableName)
+          }
+          return filePath
+        })
+      )
     }
     return filePaths
   }
 
-  return { canceled, bookmarks, filePaths: getFilePaths() }
+  return { canceled, bookmarks, filePaths: await getFilePaths() }
 }
 
 export async function selectUpstreamCertificate() {

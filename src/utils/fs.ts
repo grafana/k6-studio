@@ -1,10 +1,10 @@
 /* eslint-disable no-restricted-imports */
-import { writeFile } from 'fs/promises'
+import { access, writeFile } from 'fs/promises'
 import path from 'path'
 
 import { isNodeJsErrnoException } from './typescript'
 
-export { createWriteStream, existsSync, readFileSync } from 'fs'
+export { createWriteStream } from 'fs'
 export {
   access,
   copyFile,
@@ -20,6 +20,15 @@ export {
   writeFile,
 } from 'fs/promises'
 export { FSWatcher, watch } from 'chokidar'
+
+export async function exists(filePath: string): Promise<boolean> {
+  try {
+    await access(filePath)
+    return true
+  } catch {
+    return false
+  }
+}
 
 export async function createFileWithUniqueName({
   directory,

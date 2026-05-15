@@ -16,7 +16,7 @@ import {
   findOpenPort,
   sendToast,
 } from '../utils/electron'
-import { existsSync, readFile, readFileSync } from '../utils/fs'
+import { exists, readFile } from '../utils/fs'
 import { safeJsonParse } from '../utils/json'
 
 import { expandHomeDir } from './file'
@@ -278,11 +278,17 @@ const getProxyCertificatePath = () => {
   return path.join(getCertificatesPath(), 'mitmproxy-ca-cert.pem')
 }
 
-export const getProxyCertificateContent = () => {
+export const getProxyCertificateContent = async () => {
   const certPath = expandHomeDir(getProxyCertificatePath())
-  if (certPath && existsSync(certPath)) {
-    return readFileSync(certPath)
+
+  if (!certPath) {
+    return
   }
+
+  if (await exists(certPath)) {
+    return readFile(certPath)
+  }
+
   return undefined
 }
 

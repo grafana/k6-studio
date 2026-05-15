@@ -10,7 +10,7 @@ import {
   BROWSER_TESTS_PATH,
 } from '../constants/workspace'
 
-import { existsSync, mkdir } from './fs'
+import { mkdir } from './fs'
 
 const REQUIRED_FOLDERS = [
   PROJECT_PATH,
@@ -24,9 +24,7 @@ const REQUIRED_FOLDERS = [
 
 export const setupProjectStructure = async () => {
   for (const folder of REQUIRED_FOLDERS) {
-    if (!existsSync(folder)) {
-      await mkdir(folder)
-    }
+    await mkdir(folder, { recursive: true })
   }
 }
 
