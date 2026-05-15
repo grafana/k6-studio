@@ -1,4 +1,3 @@
-import { watch } from 'chokidar'
 import { BrowserWindow } from 'electron'
 
 import {
@@ -10,6 +9,7 @@ import {
   BROWSER_TESTS_PATH,
 } from '@/constants/workspace'
 import { UIHandler } from '@/handlers/ui/types'
+import { watch } from '@/utils/fs'
 
 import { getStudioFileFromPath } from './file'
 

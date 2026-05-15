@@ -96,6 +96,10 @@ module.exports = {
             name: 'node:fs/promises',
             message: "Import from '@/utils/fs' instead.",
           },
+          {
+            name: 'chokidar',
+            message: "Import from '@/utils/fs' instead.",
+          },
         ],
       },
     ],

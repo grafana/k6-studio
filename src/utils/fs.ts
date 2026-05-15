@@ -19,6 +19,7 @@ export {
   unlink,
   writeFile,
 } from 'fs/promises'
+export { FSWatcher, watch } from 'chokidar'
 
 export async function createFileWithUniqueName({
   directory,

@@ -1,11 +1,10 @@
-import { FSWatcher, watch } from 'chokidar'
 import { BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import { spawn } from 'node:child_process'
 import path from 'path'
 
 import { getPlatform } from '../utils/electron'
-import { readFile } from '../utils/fs'
+import { FSWatcher, readFile, watch } from '../utils/fs'
 
 let watcher: FSWatcher
 
