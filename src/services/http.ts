@@ -1,8 +1,8 @@
 import log from 'electron-log/main'
-import { readFile } from 'node:fs/promises'
 import { getGlobalDispatcher, ProxyAgent, setGlobalDispatcher } from 'undici'
 
 import { UpstreamProxySettings } from '@/schemas/settings'
+import { readFile } from '@/utils/fs'
 
 const DEFAULT_DISPATCHER = getGlobalDispatcher()
 

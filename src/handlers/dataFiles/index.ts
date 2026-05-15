@@ -1,6 +1,5 @@
 import { COPYFILE_EXCL } from 'constants'
 import { ipcMain, dialog } from 'electron'
-import { stat, copyFile, readFile } from 'fs/promises'
 import path from 'path'
 import invariant from 'tiny-invariant'
 
@@ -9,6 +8,7 @@ import { DATA_FILES_PATH } from '@/constants/workspace'
 import { DataFilePreview } from '@/types/testData'
 import { parseDataFile } from '@/utils/dataFile'
 import { browserWindowFromEvent } from '@/utils/electron'
+import { copyFile, readFile, stat } from '@/utils/fs'
 
 import { DataFileHandler } from './types'
 

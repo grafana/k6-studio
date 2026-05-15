@@ -1,10 +1,8 @@
 import { app, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import find from 'find-process'
-import { readFile } from 'fs/promises'
 import forge from 'node-forge'
 import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
 import path from 'path'
 import readline from 'readline/promises'
 import kill from 'tree-kill'
@@ -18,6 +16,7 @@ import {
   findOpenPort,
   sendToast,
 } from '../utils/electron'
+import { existsSync, readFile, readFileSync } from '../utils/fs'
 import { safeJsonParse } from '../utils/json'
 
 import { expandHomeDir } from './file'

@@ -1,6 +1,5 @@
 import { ipcMain, nativeTheme, shell, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
-import { unlink, readdir, access, rename } from 'fs/promises'
 import path from 'path'
 import invariant from 'tiny-invariant'
 
@@ -18,6 +17,7 @@ import { StudioFile } from '@/types'
 import { getBrowserPath } from '@/utils/browser'
 import { reportNewIssue } from '@/utils/bugReport'
 import { sendToast } from '@/utils/electron'
+import { access, readdir, rename, unlink } from '@/utils/fs'
 import { isNodeJsErrnoException } from '@/utils/typescript'
 
 import { UIHandler } from './types'

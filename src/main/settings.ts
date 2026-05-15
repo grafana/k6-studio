@@ -1,7 +1,5 @@
 import { app, BrowserWindow, dialog, nativeTheme } from 'electron'
 import log from 'electron-log/main'
-import { existsSync, readFileSync } from 'fs'
-import { writeFile, open } from 'fs/promises'
 import path from 'path'
 
 import { configureSystemProxy } from '@/services/http'
@@ -9,6 +7,7 @@ import { configureSystemProxy } from '@/services/http'
 import { AppSettingsSchema } from '../schemas/settings'
 import { AppSettings } from '../types/settings'
 import { getPlatform } from '../utils/electron'
+import { existsSync, open, readFileSync, writeFile } from '../utils/fs'
 import { safeJsonParse } from '../utils/json'
 import { getExecutableNameFromPlist } from '../utils/plist'
 

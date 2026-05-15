@@ -1,7 +1,24 @@
+/* eslint-disable no-restricted-imports */
 import { writeFile } from 'fs/promises'
 import path from 'path'
 
 import { isNodeJsErrnoException } from './typescript'
+
+export { createWriteStream, existsSync, readFileSync } from 'fs'
+export {
+  access,
+  copyFile,
+  mkdir,
+  mkdtemp,
+  open,
+  readdir,
+  readFile,
+  rename,
+  rm,
+  stat,
+  unlink,
+  writeFile,
+} from 'fs/promises'
 
 export async function createFileWithUniqueName({
   directory,

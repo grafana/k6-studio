@@ -1,5 +1,4 @@
 import { ipcMain, shell } from 'electron'
-import { rm, writeFile } from 'fs/promises'
 import { basename, extname, isAbsolute, join } from 'path'
 
 import { SCRIPTS_PATH } from '@/constants/workspace'
@@ -8,6 +7,7 @@ import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent } from '@/utils/electron'
 import { logError } from '@/utils/errors'
+import { rm, writeFile } from '@/utils/fs'
 
 import { RunInCloudStateMachine } from './states'
 import { CloudHandlers, RawScript, Script } from './types'

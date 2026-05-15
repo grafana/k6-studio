@@ -1,6 +1,7 @@
 import log from 'electron-log/main'
-import { readFileSync } from 'fs'
 import { parse } from 'plist'
+
+import { readFileSync } from './fs'
 
 export function getExecutableNameFromPlist(plistPath: string) {
   const plistContent = readFileSync(plistPath, 'utf-8')

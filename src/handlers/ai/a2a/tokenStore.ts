@@ -1,10 +1,10 @@
 import { app } from 'electron'
 import log from 'electron-log/main'
-import { readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { z } from 'zod'
 
 import { decryptString, encryptString } from '@/main/encryption'
+import { readFile, writeFile } from '@/utils/fs'
 
 const AssistantTokenDataSchema = z.object({
   accessToken: z.string(),

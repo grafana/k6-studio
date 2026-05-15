@@ -1,5 +1,4 @@
 import { ipcMain } from 'electron'
-import { writeFile, readFile } from 'fs/promises'
 import path from 'path'
 
 import { K6_GENERATOR_FILE_EXTENSION } from '@/constants/files'
@@ -7,7 +6,7 @@ import { GENERATORS_PATH } from '@/constants/workspace'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { GeneratorFileData } from '@/types/generator'
-import { createFileWithUniqueName } from '@/utils/fileSystem'
+import { createFileWithUniqueName, readFile, writeFile } from '@/utils/fs'
 import { createNewGeneratorFile } from '@/utils/generator'
 
 import { deserializeGenerator, serializeGenerator } from './serialization'

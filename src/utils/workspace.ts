@@ -1,5 +1,3 @@
-import { existsSync } from 'fs'
-import { mkdir } from 'fs/promises'
 import path from 'path'
 
 import {
@@ -11,6 +9,8 @@ import {
   TEMP_PATH,
   BROWSER_TESTS_PATH,
 } from '../constants/workspace'
+
+import { existsSync, mkdir } from './fs'
 
 const REQUIRED_FOLDERS = [
   PROJECT_PATH,

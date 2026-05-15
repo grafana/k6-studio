@@ -1,8 +1,8 @@
 import { app } from 'electron'
-import { readFile, writeFile } from 'fs/promises'
 import path from 'path'
 
 import { Profile, ProfileSchema } from '@/schemas/profile'
+import { readFile, writeFile } from '@/utils/fs'
 
 const fileName =
   process.env.NODE_ENV === 'development'

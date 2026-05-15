@@ -1,7 +1,6 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 import { app } from 'electron'
 import log from 'electron-log/main'
-import { createWriteStream } from 'fs'
 import path from 'path'
 import readline from 'readline/promises'
 import { PassThrough, Readable } from 'stream'
@@ -9,6 +8,7 @@ import { pipeline } from 'stream/promises'
 
 import { LogEntry, LogEntrySchema } from '@/schemas/k6'
 import { getArch, getPlatform } from '@/utils/electron'
+import { createWriteStream } from '@/utils/fs'
 
 import { parseJsonAsSchema } from '../json'
 

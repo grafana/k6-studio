@@ -1,10 +1,10 @@
-import { mkdir, mkdtemp, writeFile } from 'fs/promises'
 import os from 'os'
 import path from 'path'
 
 import { getProxyArguments } from '@/main/proxy'
 import { AppSettings } from '@/types/settings'
 import { getBrowserPath } from '@/utils/browser'
+import { mkdir, mkdtemp, writeFile } from '@/utils/fs'
 
 const CHROME_DEV_PREFERENCES = JSON.stringify({
   devtools: {

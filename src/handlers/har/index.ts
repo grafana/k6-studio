@@ -1,5 +1,4 @@
 import { ipcMain, dialog } from 'electron'
-import { readFile, copyFile } from 'fs/promises'
 import path from 'path'
 
 import { RECORDINGS_PATH } from '@/constants/workspace'
@@ -7,7 +6,7 @@ import { Recording, RecordingSchema } from '@/schemas/recording'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent } from '@/utils/electron'
-import { createFileWithUniqueName } from '@/utils/fileSystem'
+import { copyFile, createFileWithUniqueName, readFile } from '@/utils/fs'
 
 import { HarHandler } from './types'
 

@@ -76,6 +76,29 @@ module.exports = {
       },
     ],
     'import/no-unresolved': ['error', { ignore: ['^k6'] }],
+    'no-restricted-imports': [
+      'error',
+      {
+        paths: [
+          {
+            name: 'fs',
+            message: "Import from '@/utils/fs' instead.",
+          },
+          {
+            name: 'fs/promises',
+            message: "Import from '@/utils/fs' instead.",
+          },
+          {
+            name: 'node:fs',
+            message: "Import from '@/utils/fs' instead.",
+          },
+          {
+            name: 'node:fs/promises',
+            message: "Import from '@/utils/fs' instead.",
+          },
+        ],
+      },
+    ],
   },
 
   parserOptions: {
@@ -83,4 +106,13 @@ module.exports = {
     tsconfigRootDir: __dirname,
     project: ['./tsconfig.json'],
   },
+
+  overrides: [
+    {
+      files: ['**/*.test.ts', 'scripts/**', 'vite.*.config.ts'],
+      rules: {
+        'no-restricted-imports': 'off',
+      },
+    },
+  ],
 }
