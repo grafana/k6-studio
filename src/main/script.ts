@@ -93,7 +93,7 @@ export const runScript = async ({
   browserWindow,
   scenarioName,
 }: RunScriptOptions) => {
-  const modifiedPath = await createArchive(scriptPath)
+  const modifiedPath = await createArchive(scriptPath, scenarioName)
 
   const proxyArgs = await getProxyArguments(proxySettings, {
     prefix: '',
