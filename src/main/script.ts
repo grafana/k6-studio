@@ -83,6 +83,7 @@ interface RunScriptOptions {
   usageReport: boolean
   proxySettings: ProxySettings
   browserWindow: BrowserWindow
+  scenarioName?: string
 }
 
 export const runScript = async ({
@@ -90,6 +91,7 @@ export const runScript = async ({
   usageReport,
   proxySettings,
   browserWindow,
+  scenarioName,
 }: RunScriptOptions) => {
   const modifiedPath = await createArchive(scriptPath)
 
@@ -129,6 +131,7 @@ export const runScript = async ({
       K6_TRACKING_SERVER_PORT: String(trackingServer?.port),
       K6_BROWSER_ARGS: proxyArgs.join(','),
       K6_TESTING_COLORIZE: 'false',
+      ...(scenarioName ? { SCENARIO_NAME: scenarioName } : {}),
     },
   })
 
@@ -160,7 +163,10 @@ export const runScript = async ({
   return testRun
 }
 
-function createArchive(scriptPath: string): Promise<string> {
+function createArchive(
+  scriptPath: string,
+  scenarioName?: string
+): Promise<string> {
   const resolvers = Promise.withResolvers<string>()
   const client = new K6Client()
 
@@ -319,7 +325,7 @@ function createArchive(scriptPath: string): Promise<string> {
       )
 
       // Resolve the options the same way that the entrypoint does
-      const target = getDebugTarget(metadata.options as Options)
+      const target = getDebugTarget(metadata.options as Options, scenarioName)
       const options = configureOptions(metadata.options as Options, target)
 
       const modifiedMetadata = {
