@@ -1,23 +1,27 @@
 /* eslint-disable no-restricted-imports */
+import {
+  FSWatcher as ChokidarFSWatcher,
+  ChokidarOptions,
+  watch as chokidarWatch,
+} from 'chokidar'
 import { PathLike } from 'fs'
 import { access, writeFile } from 'fs/promises'
 import * as fs from 'fs/promises'
 import path from 'path'
+import { normalize } from 'pathe'
 
+import { EventEmitter } from './events'
 import { isNodeJsErrnoException } from './typescript'
 
 export { createWriteStream } from 'fs'
 export {
   copyFile,
-  mkdir,
-  mkdtemp,
   readFile,
   rename,
   stat,
   unlink,
   writeFile,
 } from 'fs/promises'
-export { FSWatcher, watch } from 'chokidar'
 
 export async function exists(filePath: string): Promise<boolean> {
   try {
@@ -28,8 +32,31 @@ export async function exists(filePath: string): Promise<boolean> {
   }
 }
 
+export async function mkdir(
+  path: PathLike,
+  options?: Parameters<typeof fs.mkdir>[1]
+): Promise<string | undefined> {
+  const created = await fs.mkdir(path, options)
+
+  if (created === undefined) {
+    return undefined
+  }
+
+  return normalize(created)
+}
+
+export async function mkdtemp(prefix: string): Promise<string> {
+  return normalize(await fs.mkdtemp(prefix))
+}
+
 export async function readdir(path: PathLike) {
-  return fs.readdir(path, { withFileTypes: true })
+  const entries = await fs.readdir(path, { withFileTypes: true })
+
+  for (const entry of entries) {
+    entry.parentPath = normalize(entry.parentPath)
+  }
+
+  return entries
 }
 
 export async function createFileWithUniqueName({
@@ -69,5 +96,50 @@ export async function createFileWithUniqueName({
     }
   } while (!fileCreated)
 
-  return path.join(directory, uniqueFileName)
+  return normalize(path.join(directory, uniqueFileName))
+}
+
+interface FSWatcherEventMap {
+  add: string
+  change: string
+  unlink: string
+}
+
+/**
+ * Proxy over chokidar's FSWatcher that normalizes emitted paths to POSIX
+ * separators via pathe.
+ */
+export class FSWatcher extends EventEmitter<FSWatcherEventMap> {
+  #watcher: ChokidarFSWatcher
+
+  constructor(paths: string | string[], options?: ChokidarOptions) {
+    super()
+
+    this.#watcher = chokidarWatch(paths, options)
+
+    this.#watcher.on('add', (path) => this.emit('add', normalize(path)))
+    this.#watcher.on('change', (path) => this.emit('change', normalize(path)))
+    this.#watcher.on('unlink', (path) => this.emit('unlink', normalize(path)))
+  }
+
+  add(paths: string | string[]): this {
+    this.#watcher.add(paths)
+    return this
+  }
+
+  unwatch(paths: string | string[]): this {
+    this.#watcher.unwatch(paths)
+    return this
+  }
+
+  close(): Promise<void> {
+    return this.#watcher.close()
+  }
+}
+
+export function watch(
+  paths: string | string[],
+  options?: ChokidarOptions
+): FSWatcher {
+  return new FSWatcher(paths, options)
 }
