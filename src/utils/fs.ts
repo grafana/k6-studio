@@ -1,5 +1,7 @@
 /* eslint-disable no-restricted-imports */
+import { PathLike } from 'fs'
 import { access, writeFile } from 'fs/promises'
+import * as fs from 'fs/promises'
 import path from 'path'
 
 import { isNodeJsErrnoException } from './typescript'
@@ -9,7 +11,6 @@ export {
   copyFile,
   mkdir,
   mkdtemp,
-  readdir,
   readFile,
   rename,
   stat,
@@ -25,6 +26,10 @@ export async function exists(filePath: string): Promise<boolean> {
   } catch {
     return false
   }
+}
+
+export async function readdir(path: PathLike) {
+  return fs.readdir(path, { withFileTypes: true })
 }
 
 export async function createFileWithUniqueName({
