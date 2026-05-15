@@ -17,8 +17,7 @@ import { StudioFile } from '@/types'
 import { getBrowserPath } from '@/utils/browser'
 import { reportNewIssue } from '@/utils/bugReport'
 import { sendToast } from '@/utils/electron'
-import { access, readdir, rename, unlink } from '@/utils/fs'
-import { isNodeJsErrnoException } from '@/utils/typescript'
+import { exists, readdir, rename, unlink } from '@/utils/fs'
 
 import { UIHandler } from './types'
 
@@ -130,18 +129,10 @@ export function initialize() {
           fileName: newFileName,
         })
 
-        try {
-          await access(newPath)
+        if (await exists(newPath)) {
           throw new Error(`File with name ${newFileName} already exists`)
-        } catch (error) {
-          // Only rename if the error code is ENOENT (file does not exist)
-          if (isNodeJsErrnoException(error) && error.code === 'ENOENT') {
-            await rename(oldPath, newPath)
-            return
-          }
-
-          throw error
         }
+        await rename(oldPath, newPath)
       } catch (e) {
         log.error(e)
         browserWindow &&

@@ -7,7 +7,7 @@ import { configureSystemProxy } from '@/services/http'
 import { AppSettingsSchema } from '../schemas/settings'
 import { AppSettings } from '../types/settings'
 import { getPlatform } from '../utils/electron'
-import { exists, open, readFile, writeFile } from '../utils/fs'
+import { exists, readFile, writeFile } from '../utils/fs'
 import { safeJsonParse } from '../utils/json'
 import { getExecutableNameFromPlist } from '../utils/plist'
 
@@ -73,9 +73,8 @@ export async function initSettings() {
  * @returns The current settings as JSON
  */
 export async function getSettings() {
-  const fileHandle = await open(filePath, 'r')
   try {
-    const settings = await fileHandle?.readFile({ encoding: 'utf-8' })
+    const settings = await readFile(filePath, 'utf-8')
     // TODO: https://github.com/grafana/k6-studio/issues/277
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const currentSettings = JSON.parse(settings)
@@ -88,8 +87,6 @@ export async function getSettings() {
     // if the file is invalid during runtime,
     // return a valid settings object so the app can keep running
     return defaultSettings
-  } finally {
-    await fileHandle?.close()
   }
 }
 

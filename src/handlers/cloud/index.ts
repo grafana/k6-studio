@@ -7,7 +7,7 @@ import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent } from '@/utils/electron'
 import { logError } from '@/utils/errors'
-import { rm, writeFile } from '@/utils/fs'
+import { unlink, writeFile } from '@/utils/fs'
 
 import { RunInCloudStateMachine } from './states'
 import { CloudHandlers, RawScript, Script } from './types'
@@ -23,7 +23,7 @@ async function createTempFile(script: RawScript) {
     path: tempFilePath,
     dispose() {
       try {
-        return rm(tempFilePath)
+        return unlink(tempFilePath)
       } catch {
         return
       }

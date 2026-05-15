@@ -6,15 +6,12 @@ import { isNodeJsErrnoException } from './typescript'
 
 export { createWriteStream } from 'fs'
 export {
-  access,
   copyFile,
   mkdir,
   mkdtemp,
-  open,
   readdir,
   readFile,
   rename,
-  rm,
   stat,
   unlink,
   writeFile,
