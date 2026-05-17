@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, nativeTheme } from 'electron'
+import { app, BrowserWindow, nativeTheme } from 'electron'
 import log from 'electron-log/main'
 import path from 'path'
 
@@ -7,7 +7,7 @@ import { configureSystemProxy } from '@/services/http'
 import { AppSettingsSchema } from '../schemas/settings'
 import { AppSettings } from '../types/settings'
 import { getPlatform } from '../utils/electron'
-import { exists, readFile, writeFile } from '../utils/fs'
+import { exists, readFile, showOpenDialog, writeFile } from '../utils/fs'
 import { safeJsonParse } from '../utils/json'
 import { getExecutableNameFromPlist } from '../utils/plist'
 
@@ -128,14 +128,17 @@ function getSettingsDiff(
   return diff
 }
 
-export async function selectBrowserExecutable() {
+export async function selectBrowserExecutable(browserWindow: BrowserWindow) {
   const extensions = { mac: ['app'], win: ['exe'], linux: ['*'] }
 
-  const { canceled, filePaths, bookmarks } = await dialog.showOpenDialog({
-    title: 'Select browser executable',
-    properties: ['openFile'],
-    filters: [{ name: 'Executables', extensions: extensions[getPlatform()] }],
-  })
+  const { canceled, filePaths, bookmarks } = await showOpenDialog(
+    browserWindow,
+    {
+      title: 'Select browser executable',
+      properties: ['openFile'],
+      filters: [{ name: 'Executables', extensions: extensions[getPlatform()] }],
+    }
+  )
 
   async function getFilePaths() {
     if (getPlatform() === 'mac') {
@@ -156,8 +159,8 @@ export async function selectBrowserExecutable() {
   return { canceled, bookmarks, filePaths: await getFilePaths() }
 }
 
-export async function selectUpstreamCertificate() {
-  return dialog.showOpenDialog({
+export async function selectUpstreamCertificate(browserWindow: BrowserWindow) {
+  return showOpenDialog(browserWindow, {
     title: 'Select certificate',
     properties: ['openFile'],
     filters: [{ name: 'Proxy certificate', extensions: ['pem', 'cer', 'p12'] }],

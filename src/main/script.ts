@@ -1,4 +1,4 @@
-import { dialog, BrowserWindow } from 'electron'
+import { BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import type { Options } from 'k6/options'
 import { ChildProcessWithoutNullStreams } from 'node:child_process'
@@ -11,7 +11,7 @@ import { TEMP_K6_ARCHIVE_PATH, TEMP_SCRIPT_SUFFIX } from '@/constants/workspace'
 import { ScriptHandler } from '@/handlers/script/types'
 import { getProxyArguments } from '@/main/proxy'
 import { ProxySettings } from '@/types/settings'
-import { createWriteStream } from '@/utils/fs'
+import { createWriteStream, showOpenDialog } from '@/utils/fs'
 import { K6Client } from '@/utils/k6/client'
 import { createTrackingServer } from '@/utils/k6/tracking'
 import { readResource } from '@/utils/resources'
@@ -63,7 +63,7 @@ const ArchiveManifestSchema = z.looseObject({
 })
 
 export const showScriptSelectDialog = async (browserWindow: BrowserWindow) => {
-  const result = await dialog.showOpenDialog(browserWindow, {
+  const result = await showOpenDialog(browserWindow, {
     properties: ['openFile'],
     filters: [{ name: 'k6 test script', extensions: ['js'] }],
   })

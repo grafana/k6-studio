@@ -100,6 +100,11 @@ module.exports = {
             name: 'chokidar',
             message: "Import from '@/utils/fs' instead.",
           },
+          {
+            name: 'electron',
+            importNames: ['dialog'],
+            message: "Import the dialog wrappers from '@/utils/fs' instead.",
+          },
         ],
       },
     ],

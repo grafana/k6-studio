@@ -46,14 +46,14 @@ export function initialize() {
     }
   })
 
-  ipcMain.handle(SettingsHandler.SelectBrowserExecutable, async () => {
+  ipcMain.handle(SettingsHandler.SelectBrowserExecutable, async (event) => {
     console.info(`${SettingsHandler.SelectBrowserExecutable} event received`)
-    return selectBrowserExecutable()
+    return selectBrowserExecutable(browserWindowFromEvent(event))
   })
 
-  ipcMain.handle(SettingsHandler.SelectUpstreamCertificate, async () => {
+  ipcMain.handle(SettingsHandler.SelectUpstreamCertificate, async (event) => {
     console.info(`${SettingsHandler.SelectUpstreamCertificate} event received`)
-    return selectUpstreamCertificate()
+    return selectUpstreamCertificate(browserWindowFromEvent(event))
   })
 
   ipcMain.handle(SettingsHandler.IsEncryptionAvailable, () => {

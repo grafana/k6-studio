@@ -1,9 +1,10 @@
-import { app, dialog, ipcMain } from 'electron'
+import { app, ipcMain } from 'electron'
 import path from 'path'
 
 import { SCRIPTS_PATH } from '@/constants/workspace'
 import { getTempScriptName } from '@/main/script'
 import { browserWindowFromEvent } from '@/utils/electron'
+import { showSaveDialog } from '@/utils/fs'
 
 import { FsHandler } from './types'
 
@@ -19,7 +20,7 @@ export function initialize() {
 
       const defaultPath = path.join(SCRIPTS_PATH, fileName ?? 'script.js')
 
-      const result = await dialog.showSaveDialog(browserWindow, {
+      const result = await showSaveDialog(browserWindow, {
         defaultPath,
         filters: [{ name: 'k6 test script', extensions: ['js'] }],
       })

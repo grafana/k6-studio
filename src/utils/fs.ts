@@ -4,6 +4,14 @@ import {
   ChokidarOptions,
   watch as chokidarWatch,
 } from 'chokidar'
+import {
+  BrowserWindow,
+  dialog,
+  OpenDialogOptions,
+  OpenDialogReturnValue,
+  SaveDialogOptions,
+  SaveDialogReturnValue,
+} from 'electron'
 import { PathLike } from 'fs'
 import { access, writeFile } from 'fs/promises'
 import * as fs from 'fs/promises'
@@ -142,4 +150,28 @@ export function watch(
   options?: ChokidarOptions
 ): FSWatcher {
   return new FSWatcher(paths, options)
+}
+
+export async function showOpenDialog(
+  browserWindow: BrowserWindow,
+  options: OpenDialogOptions
+): Promise<OpenDialogReturnValue> {
+  const result = await dialog.showOpenDialog(browserWindow, options)
+
+  return {
+    ...result,
+    filePaths: result.filePaths.map(normalize),
+  }
+}
+
+export async function showSaveDialog(
+  browserWindow: BrowserWindow,
+  options: SaveDialogOptions
+): Promise<SaveDialogReturnValue> {
+  const result = await dialog.showSaveDialog(browserWindow, options)
+
+  return {
+    ...result,
+    filePath: result.filePath ? normalize(result.filePath) : result.filePath,
+  }
 }

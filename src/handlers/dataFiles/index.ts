@@ -1,5 +1,5 @@
 import { COPYFILE_EXCL } from 'constants'
-import { ipcMain, dialog } from 'electron'
+import { ipcMain } from 'electron'
 import path from 'path'
 import invariant from 'tiny-invariant'
 
@@ -8,7 +8,7 @@ import { DATA_FILES_PATH } from '@/constants/workspace'
 import { DataFilePreview } from '@/types/testData'
 import { parseDataFile } from '@/utils/dataFile'
 import { browserWindowFromEvent } from '@/utils/electron'
-import { copyFile, readFile, stat } from '@/utils/fs'
+import { copyFile, readFile, showOpenDialog, stat } from '@/utils/fs'
 
 import { DataFileHandler } from './types'
 
@@ -16,7 +16,7 @@ export function initialize() {
   ipcMain.handle(DataFileHandler.Import, async (event) => {
     const browserWindow = browserWindowFromEvent(event)
 
-    const dialogResult = await dialog.showOpenDialog(browserWindow, {
+    const dialogResult = await showOpenDialog(browserWindow, {
       message: 'Import data file',
       properties: ['openFile'],
       filters: [{ name: 'Supported data files', extensions: ['csv', 'json'] }],
