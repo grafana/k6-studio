@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron'
-import path from 'path'
+import * as path from 'pathe'
 
 import { RECORDINGS_PATH } from '@/constants/workspace'
 import { Recording, RecordingSchema } from '@/schemas/recording'

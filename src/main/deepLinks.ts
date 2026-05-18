@@ -1,6 +1,6 @@
 import { app, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
-import path from 'path'
+import * as path from 'pathe'
 
 import { AppHandler } from '@/handlers/app/types'
 

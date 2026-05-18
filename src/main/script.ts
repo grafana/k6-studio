@@ -3,7 +3,7 @@ import log from 'electron-log/main'
 import type { Options } from 'k6/options'
 import { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import path from 'path'
+import * as path from 'pathe'
 import * as tar from 'tar-stream'
 import { z } from 'zod'
 

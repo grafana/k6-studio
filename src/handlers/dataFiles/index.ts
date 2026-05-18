@@ -1,6 +1,6 @@
 import { COPYFILE_EXCL } from 'constants'
 import { ipcMain } from 'electron'
-import path from 'path'
+import * as path from 'pathe'
 import invariant from 'tiny-invariant'
 
 import { MAX_DATA_FILE_SIZE } from '@/constants/files'

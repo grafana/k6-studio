@@ -1,6 +1,6 @@
 import { ipcMain, nativeTheme, shell, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
-import path from 'path'
+import * as path from 'pathe'
 import invariant from 'tiny-invariant'
 
 import { INVALID_FILENAME_CHARS } from '@/constants/files'

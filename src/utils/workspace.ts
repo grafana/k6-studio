@@ -1,4 +1,4 @@
-import path from 'path'
+import * as path from 'pathe'
 
 import {
   DATA_FILES_PATH,

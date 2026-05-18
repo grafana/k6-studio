@@ -1,6 +1,6 @@
 import { app, BrowserWindow, nativeTheme } from 'electron'
 import log from 'electron-log/main'
-import path from 'path'
+import * as path from 'pathe'
 
 import { configureSystemProxy } from '@/services/http'
 

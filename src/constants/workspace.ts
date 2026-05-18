@@ -1,5 +1,5 @@
 import { app } from 'electron'
-import path from 'path'
+import * as path from 'pathe'
 
 export const PROJECT_PATH = path.join(app.getPath('documents'), 'k6-studio')
 export const RECORDINGS_PATH = path.join(PROJECT_PATH, 'Recordings')

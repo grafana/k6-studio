@@ -1,5 +1,5 @@
 import { ipcMain, shell } from 'electron'
-import { basename, extname, isAbsolute, join } from 'path'
+import { basename, extname, isAbsolute, join } from 'pathe'
 
 import { SCRIPTS_PATH } from '@/constants/workspace'
 import { getTempScriptName } from '@/main/script'

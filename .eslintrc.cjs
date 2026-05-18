@@ -105,6 +105,14 @@ module.exports = {
             importNames: ['dialog'],
             message: "Import the dialog wrappers from '@/utils/fs' instead.",
           },
+          {
+            name: 'path',
+            message: "Import from 'pathe' instead.",
+          },
+          {
+            name: 'node:path',
+            message: "Import from 'pathe' instead.",
+          },
         ],
       },
     ],
@@ -118,7 +126,13 @@ module.exports = {
 
   overrides: [
     {
-      files: ['**/*.test.ts', 'scripts/**', 'vite.*.config.ts'],
+      files: [
+        '**/*.test.ts',
+        'scripts/**',
+        'vite.*.config.ts',
+        'forge.config.ts',
+        'windowsSign.ts',
+      ],
       rules: {
         'no-restricted-imports': 'off',
       },

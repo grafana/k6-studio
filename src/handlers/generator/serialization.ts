@@ -1,4 +1,4 @@
-import path from 'path'
+import * as path from 'pathe'
 
 import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { GeneratorFileData } from '@/types/generator'

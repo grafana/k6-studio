@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
 import log from 'electron-log/main'
-import path from 'path'
+import * as path from 'pathe'
 
 import { SCRIPTS_PATH } from '@/constants/workspace'
 import { waitForProxy } from '@/main/proxy'

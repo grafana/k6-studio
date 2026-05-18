@@ -8,6 +8,7 @@ import { ChromeDevToolsClient, Transport } from '@/utils/cdp/client'
 import { PipeTransport } from '@/utils/cdp/transports/pipe'
 import { WebSocketTransport } from '@/utils/cdp/transports/webSocket'
 import { EventEmitter } from '@/utils/events'
+import { toNativePath } from '@/utils/fs'
 import { readResource } from '@/utils/resources'
 import { exhaustive } from '@/utils/typescript'
 
@@ -193,7 +194,7 @@ export async function launchBrowserWithDevToolsProtocol(
       reject,
     } = Promise.withResolvers<CDPRecordingSession>()
 
-    const process = spawn(path, args, {
+    const process = spawn(toNativePath(path), args, {
       stdio: ['ignore', 'ignore', 'ignore', 'pipe', 'pipe'],
     })
 

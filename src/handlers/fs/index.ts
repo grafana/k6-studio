@@ -1,5 +1,5 @@
 import { app, ipcMain } from 'electron'
-import path from 'path'
+import * as path from 'pathe'
 
 import { SCRIPTS_PATH } from '@/constants/workspace'
 import { getTempScriptName } from '@/main/script'

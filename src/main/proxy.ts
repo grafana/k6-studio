@@ -3,7 +3,7 @@ import log from 'electron-log/main'
 import find from 'find-process'
 import forge from 'node-forge'
 import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
-import path from 'path'
+import * as path from 'pathe'
 import readline from 'readline/promises'
 import kill from 'tree-kill'
 
@@ -16,7 +16,7 @@ import {
   findOpenPort,
   sendToast,
 } from '../utils/electron'
-import { exists, readFile } from '../utils/fs'
+import { exists, readFile, toNativePath } from '../utils/fs'
 import { safeJsonParse } from '../utils/json'
 
 import { expandHomeDir } from './file'
@@ -58,9 +58,9 @@ export const launchProxy = (
   const proxyArgs = [
     '-q',
     '-s',
-    proxyScript,
+    toNativePath(proxyScript),
     '--set',
-    `confdir=${certificatesPath}`,
+    `confdir=${toNativePath(certificatesPath)}`,
     '--listen-port',
     `${proxySettings.port}`,
     '--mode',
@@ -81,11 +81,11 @@ export const launchProxy = (
   if (proxySettings.mode === 'upstream' && proxySettings.certificatePath) {
     proxyArgs.push(
       '--set',
-      `ssl_verify_upstream_trusted_ca=${proxySettings.certificatePath}`
+      `ssl_verify_upstream_trusted_ca=${toNativePath(proxySettings.certificatePath)}`
     )
   }
 
-  const proxy = spawn(proxyPath, proxyArgs)
+  const proxy = spawn(toNativePath(proxyPath), proxyArgs)
 
   // we use a reader to read entire lines from stdout instead of buffered data
   const stdoutReader = readline.createInterface(proxy.stdout)

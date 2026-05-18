@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron'
-import path from 'path'
+import * as path from 'pathe'
 
 import { K6_GENERATOR_FILE_EXTENSION } from '@/constants/files'
 import { GENERATORS_PATH } from '@/constants/workspace'

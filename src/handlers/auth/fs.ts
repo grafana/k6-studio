@@ -1,5 +1,5 @@
 import { app } from 'electron'
-import path from 'path'
+import * as path from 'pathe'
 
 import { Profile, ProfileSchema } from '@/schemas/profile'
 import { readFile, writeFile } from '@/utils/fs'
