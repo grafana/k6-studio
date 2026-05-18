@@ -1,14 +1,5 @@
 import http from 'node:http'
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   CallbackResult,
@@ -218,27 +209,6 @@ describe('handleCallbackRequest', () => {
 })
 
 describe('startCallbackServer', () => {
-  // The callback server's reject() fires from Node's HTTP parser,
-  // which can trigger a brief "unhandled rejection" before Promise.race
-  // processes it. This is harmless and only affects tests with real TCP.
-  const pendingRejections = new Set<Promise<unknown>>()
-  function trackRejection(promise: Promise<unknown>) {
-    pendingRejections.add(promise)
-  }
-  function clearTracked(promise: Promise<unknown>) {
-    pendingRejections.delete(promise)
-  }
-
-  beforeAll(() => {
-    process.on('unhandledRejection', trackRejection)
-    process.on('rejectionHandled', clearTracked)
-  })
-
-  afterAll(() => {
-    process.off('unhandledRejection', trackRejection)
-    process.off('rejectionHandled', clearTracked)
-  })
-
   function sendCallback(port: number, state: string) {
     return new Promise<void>((resolve, reject) => {
       http
