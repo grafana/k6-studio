@@ -137,6 +137,7 @@ export async function selectBrowserExecutable(browserWindow: BrowserWindow) {
       title: 'Select browser executable',
       properties: ['openFile'],
       filters: [{ name: 'Executables', extensions: extensions[getPlatform()] }],
+      useNativePaths: true,
     }
   )
 
@@ -144,10 +145,15 @@ export async function selectBrowserExecutable(browserWindow: BrowserWindow) {
     if (getPlatform() === 'mac') {
       return Promise.all(
         filePaths.map(async (filePath) => {
-          const plistPath = path.join(filePath, 'Contents', 'Info.plist')
+          const plistPath = path.native.join(filePath, 'Contents', 'Info.plist')
           const executableName = await getExecutableNameFromPlist(plistPath)
           if (executableName) {
-            return path.join(filePath, 'Contents', 'MacOS', executableName)
+            return path.native.join(
+              filePath,
+              'Contents',
+              'MacOS',
+              executableName
+            )
           }
           return filePath
         })
@@ -164,6 +170,7 @@ export async function selectUpstreamCertificate(browserWindow: BrowserWindow) {
     title: 'Select certificate',
     properties: ['openFile'],
     filters: [{ name: 'Proxy certificate', extensions: ['pem', 'cer', 'p12'] }],
+    useNativePaths: true,
   })
 }
 

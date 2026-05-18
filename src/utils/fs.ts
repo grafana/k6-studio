@@ -152,11 +152,19 @@ export function watch(
   return new FSWatcher(paths, options)
 }
 
+type ExtendedOpenDialogOptions = OpenDialogOptions & {
+  useNativePaths?: boolean
+}
+
 export async function showOpenDialog(
   browserWindow: BrowserWindow,
-  options: OpenDialogOptions
+  { useNativePaths = false, ...dialogOptions }: ExtendedOpenDialogOptions
 ): Promise<OpenDialogReturnValue> {
-  const result = await dialog.showOpenDialog(browserWindow, options)
+  const result = await dialog.showOpenDialog(browserWindow, dialogOptions)
+
+  if (useNativePaths) {
+    return result
+  }
 
   return {
     ...result,
