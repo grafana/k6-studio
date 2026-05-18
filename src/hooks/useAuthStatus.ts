@@ -1,14 +1,9 @@
-import { useQuery } from '@tanstack/react-query'
-
 import { AuthStatus } from '@/handlers/auth/types'
 
-export const profilesQueryKey = ['profiles']
+import { useProfiles } from './useProfiles'
 
 export function useAuthStatus(): AuthStatus {
-  const { data: profiles } = useQuery({
-    queryKey: profilesQueryKey,
-    queryFn: window.studio.auth.getProfiles,
-  })
+  const { data: profiles } = useProfiles()
 
   const current = profiles?.stacks[profiles.currentStack]
   return current

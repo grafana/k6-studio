@@ -8,8 +8,7 @@ import {
   Text,
 } from '@radix-ui/themes'
 
-import { profilesQueryKey } from '@/hooks/useAuthStatus'
-import { queryClient } from '@/utils/query'
+import { invalidateProfiles } from '@/hooks/useProfiles'
 
 import { Avatar } from '../Avatar'
 
@@ -48,7 +47,7 @@ export function SignedIn({ state, onStateChange }: SignedInStateProps) {
     window.studio.auth
       .changeStack(stack.id)
       .then(async ({ current, profiles }) => {
-        await queryClient.invalidateQueries({ queryKey: profilesQueryKey })
+        await invalidateProfiles()
         onStateChange({
           type: 'signed-in',
           current,
