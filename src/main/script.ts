@@ -319,8 +319,8 @@ function createArchive(
       // `open` and `fs.open` read files relative to the entry script, so we need to make sure that
       // our entry script is placed in the same directory as the original one so that paths are resolved correctly.
       const scriptPath = fileURLToPath(metadata.filename, { windows: false })
-      const entrypointPath = path.posix.join(
-        path.posix.dirname(scriptPath),
+      const entrypointPath = path.join(
+        path.dirname(scriptPath),
         getTempScriptName()
       )
 
@@ -343,7 +343,7 @@ function createArchive(
       )
 
       const entrypointScript = await instrumentScriptFromPath(
-        './' + path.posix.basename(scriptPath)
+        './' + path.basename(scriptPath)
       )
 
       // Write our entrypoint and setup a hard link.
@@ -351,14 +351,14 @@ function createArchive(
       pack.entry(
         {
           type: 'link',
-          name: path.posix.join('file', entrypointPath),
+          name: path.join('file', entrypointPath),
           linkname: 'data',
         },
         ''
       )
 
       // Write the original script content at the original entry path
-      pack.entry({ name: path.posix.join('file', scriptPath) }, scriptContent)
+      pack.entry({ name: path.join('file', scriptPath) }, scriptContent)
 
       if (testingLibs.length > 0) {
         const shim = await readResource('k6-testing-shim')
