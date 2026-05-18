@@ -35,6 +35,16 @@ if (
   HTMLElement.prototype.releasePointerCapture = vi.fn()
 }
 
+if (typeof window !== 'undefined') {
+  // jsdom logs "Not implemented: window.getComputedStyle(elt, pseudoElt)" when
+  // pseudo-element styles are requested (e.g. by Playwright's injectedScript
+  // role-queries). The underlying call still returns the element's computed
+  // style, so dropping the pseudo argument is equivalent and avoids the noise.
+  const originalGetComputedStyle = window.getComputedStyle.bind(window)
+  window.getComputedStyle = ((element: Element) =>
+    originalGetComputedStyle(element)) as typeof window.getComputedStyle
+}
+
 afterEach(() => {
   cleanup()
 })
