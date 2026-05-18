@@ -1,6 +1,5 @@
 import { ipcMain, nativeTheme, shell, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
-import * as path from 'pathe'
 import invariant from 'tiny-invariant'
 
 import { INVALID_FILENAME_CHARS } from '@/constants/files'
@@ -18,6 +17,7 @@ import { getBrowserPath } from '@/utils/browser'
 import { reportNewIssue } from '@/utils/bugReport'
 import { sendToast } from '@/utils/electron'
 import { exists, readdir, rename, unlink } from '@/utils/fs'
+import * as path from '@/utils/path'
 
 import { UIHandler } from './types'
 

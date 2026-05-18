@@ -107,11 +107,15 @@ module.exports = {
           },
           {
             name: 'path',
-            message: "Import from 'pathe' instead.",
+            message: "Import from '@/utils/path' instead.",
           },
           {
             name: 'node:path',
-            message: "Import from 'pathe' instead.",
+            message: "Import from '@/utils/path' instead.",
+          },
+          {
+            name: 'pathe',
+            message: "Import from '@/utils/path' instead.",
           },
         ],
       },

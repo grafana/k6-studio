@@ -1,5 +1,4 @@
 import os from 'os'
-import * as path from 'pathe'
 
 import {
   K6_BROWSER_TEST_FILE_EXTENSION,
@@ -13,6 +12,7 @@ import {
   BROWSER_TESTS_PATH,
 } from '@/constants/workspace'
 import { StudioFile } from '@/types'
+import * as path from '@/utils/path'
 import { exhaustive } from '@/utils/typescript'
 
 export function getStudioFileFromPath(

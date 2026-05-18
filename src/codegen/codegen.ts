@@ -45,7 +45,7 @@ export function generateScript({
 
     ${generateVariableDeclarations(generator.testData.variables)}
     ${generateDataFileDeclarations(generator.testData.files, scriptPath)}
-    ${generateGetUniqueItemFunction(generator.testData.files)} 
+    ${generateGetUniqueItemFunction(generator.testData.files)}
 
     export default function() {
       ${generateVUCode(recording, generator.rules, generator.options.thinkTime)}
@@ -108,7 +108,7 @@ export function generateDataFileDeclarations(
   const fileKeyValuePairs = files
     .map(({ name }) => {
       const displayName = path.name(name)
-      const relativePath = path.toPosix(path.relative(scriptDir, name))
+      const relativePath = path.relative(scriptDir, name)
       const isCSV = name.toLowerCase().endsWith('csv')
 
       if (isCSV) {

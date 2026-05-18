@@ -1,10 +1,11 @@
 import os from 'os'
-import * as path from 'pathe'
 
 import { getProxyArguments } from '@/main/proxy'
 import { AppSettings } from '@/types/settings'
 import { getBrowserPath } from '@/utils/browser'
-import { mkdir, mkdtemp, toNativePath, writeFile } from '@/utils/fs'
+import { mkdir, mkdtemp, writeFile } from '@/utils/fs'
+import * as path from '@/utils/path'
+import { toNativePath } from '@/utils/path'
 
 const CHROME_DEV_PREFERENCES = JSON.stringify({
   devtools: {

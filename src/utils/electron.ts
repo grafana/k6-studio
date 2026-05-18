@@ -1,12 +1,13 @@
 import { app, BrowserWindow, nativeImage, WebContents } from 'electron'
 import net from 'net'
 import { platform, arch } from 'os'
-import * as path from 'pathe'
 
 import { Arch, Platform } from '@/types/electron'
 import { AddToastPayload } from '@/types/toast'
 
 import { UIHandler } from '../handlers/ui/types'
+
+import * as path from './path'
 
 export function getPlatform(): Platform {
   switch (platform()) {

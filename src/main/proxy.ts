@@ -3,9 +3,10 @@ import log from 'electron-log/main'
 import find from 'find-process'
 import forge from 'node-forge'
 import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
-import * as path from 'pathe'
 import readline from 'readline/promises'
 import kill from 'tree-kill'
+
+import * as path from '@/utils/path'
 
 import { ProxyHandler } from '../handlers/proxy/types'
 import { ProxyData } from '../types'
@@ -16,8 +17,9 @@ import {
   findOpenPort,
   sendToast,
 } from '../utils/electron'
-import { exists, readFile, toNativePath } from '../utils/fs'
+import { exists, readFile } from '../utils/fs'
 import { safeJsonParse } from '../utils/json'
+import { toNativePath } from '../utils/path'
 
 import { expandHomeDir } from './file'
 export type ProxyProcess = ChildProcessWithoutNullStreams

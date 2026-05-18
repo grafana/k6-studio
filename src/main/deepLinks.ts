@@ -1,8 +1,8 @@
 import { app, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
-import * as path from 'pathe'
 
 import { AppHandler } from '@/handlers/app/types'
+import * as path from '@/utils/path'
 
 import { CUSTOM_APP_PROTOCOL } from './deepLinks.constants'
 

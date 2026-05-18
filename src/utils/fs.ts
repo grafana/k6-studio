@@ -15,11 +15,10 @@ import {
 import { PathLike } from 'fs'
 import { access, writeFile } from 'fs/promises'
 import * as fs from 'fs/promises'
-import { sep as nativeSep } from 'node:path'
-import * as path from 'pathe'
-import { normalize } from 'pathe'
 
 import { EventEmitter } from './events'
+import * as path from './path'
+import { normalize } from './path'
 import { isNodeJsErrnoException } from './typescript'
 
 export { createWriteStream } from 'fs'
@@ -175,13 +174,4 @@ export async function showSaveDialog(
     ...result,
     filePath: result.filePath ? normalize(result.filePath) : result.filePath,
   }
-}
-
-/**
- * Convert a POSIX-style path (as produced by `pathe`) to the platform's native
- * representation. Use at boundaries where a native path is required, e.g.
- * arguments passed to `spawn`.
- */
-export function toNativePath(p: string): string {
-  return p.split('/').join(nativeSep)
 }

@@ -1,8 +1,8 @@
 import { app } from 'electron'
-import * as path from 'pathe'
 
 import { Profile, ProfileSchema } from '@/schemas/profile'
 import { readFile, writeFile } from '@/utils/fs'
+import * as path from '@/utils/path'
 
 const fileName =
   process.env.NODE_ENV === 'development'

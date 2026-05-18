@@ -1,10 +1,11 @@
 import { BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import { spawn } from 'node:child_process'
-import * as path from 'pathe'
 
 import { getPlatform } from '../utils/electron'
-import { FSWatcher, readFile, toNativePath, watch } from '../utils/fs'
+import { FSWatcher, readFile, watch } from '../utils/fs'
+import * as path from '../utils/path'
+import { toNativePath } from '../utils/path'
 
 let watcher: FSWatcher
 

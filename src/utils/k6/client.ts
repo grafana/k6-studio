@@ -1,16 +1,17 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 import { app } from 'electron'
 import log from 'electron-log/main'
-import * as path from 'pathe'
 import readline from 'readline/promises'
 import { PassThrough, Readable } from 'stream'
 import { pipeline } from 'stream/promises'
 
 import { LogEntry, LogEntrySchema } from '@/schemas/k6'
 import { getArch, getPlatform } from '@/utils/electron'
-import { createWriteStream, toNativePath } from '@/utils/fs'
+import { createWriteStream } from '@/utils/fs'
 
 import { parseJsonAsSchema } from '../json'
+import * as path from '../path'
+import { toNativePath } from '../path'
 
 import { K6TestOptions, TestOptionsSchema } from './schema'
 import { TestRun } from './testRun'

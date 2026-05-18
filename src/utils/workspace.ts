@@ -1,5 +1,3 @@
-import * as path from 'pathe'
-
 import {
   DATA_FILES_PATH,
   PROJECT_PATH,
@@ -11,6 +9,7 @@ import {
 } from '../constants/workspace'
 
 import { mkdir } from './fs'
+import * as path from './path'
 
 const REQUIRED_FOLDERS = [
   PROJECT_PATH,

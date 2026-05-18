@@ -1,6 +1,5 @@
 import { ipcMain } from 'electron'
 import log from 'electron-log/main'
-import * as path from 'pathe'
 
 import { SCRIPTS_PATH } from '@/constants/workspace'
 import { waitForProxy } from '@/main/proxy'
@@ -11,6 +10,7 @@ import { browserWindowFromEvent } from '@/utils/electron'
 import { readFile, unlink, writeFile } from '@/utils/fs'
 import { ArchiveError, K6Client } from '@/utils/k6/client'
 import { TestRun } from '@/utils/k6/testRun'
+import * as path from '@/utils/path'
 import { isExternalScript } from '@/utils/workspace'
 
 import { ScriptHandler } from './types'

@@ -1,10 +1,10 @@
 import { app, ipcMain } from 'electron'
-import * as path from 'pathe'
 
 import { SCRIPTS_PATH } from '@/constants/workspace'
 import { getTempScriptName } from '@/main/script'
 import { browserWindowFromEvent } from '@/utils/electron'
 import { showSaveDialog } from '@/utils/fs'
+import * as path from '@/utils/path'
 
 import { FsHandler } from './types'
 

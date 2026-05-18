@@ -8,7 +8,7 @@ import { ChromeDevToolsClient, Transport } from '@/utils/cdp/client'
 import { PipeTransport } from '@/utils/cdp/transports/pipe'
 import { WebSocketTransport } from '@/utils/cdp/transports/webSocket'
 import { EventEmitter } from '@/utils/events'
-import { toNativePath } from '@/utils/fs'
+import { toNativePath } from '@/utils/path'
 import { readResource } from '@/utils/resources'
 import { exhaustive } from '@/utils/typescript'
 

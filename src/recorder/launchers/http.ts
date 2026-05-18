@@ -1,7 +1,7 @@
 import { ChildProcess, spawn } from 'child_process'
 
 import { EventEmitter } from '@/utils/events'
-import { toNativePath } from '@/utils/fs'
+import { toNativePath } from '@/utils/path'
 
 import {
   BrowserLaunchError,

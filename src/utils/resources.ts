@@ -1,7 +1,7 @@
 import { app } from 'electron'
-import * as path from 'pathe'
 
 import { readFile } from './fs'
+import * as path from './path'
 
 const RESOURCE_INDEX = {
   'browser-script': 'browser/index.js',

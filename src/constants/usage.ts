@@ -1,5 +1,6 @@
 import { app } from 'electron'
-import * as path from 'pathe'
+
+import * as path from '@/utils/path'
 
 export const TRACKING_URL = 'https://stats.grafana.org/k6-studio-usage-report'
 export const INSTALLATION_ID_FILE = path.join(

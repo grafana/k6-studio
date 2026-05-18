@@ -1,8 +1,8 @@
 import { app, BrowserWindow, nativeTheme } from 'electron'
 import log from 'electron-log/main'
-import * as path from 'pathe'
 
 import { configureSystemProxy } from '@/services/http'
+import * as path from '@/utils/path'
 
 import { AppSettingsSchema } from '../schemas/settings'
 import { AppSettings } from '../types/settings'

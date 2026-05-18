@@ -3,7 +3,6 @@ import log from 'electron-log/main'
 import type { Options } from 'k6/options'
 import { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import * as path from 'pathe'
 import * as tar from 'tar-stream'
 import { z } from 'zod'
 
@@ -14,6 +13,7 @@ import { ProxySettings } from '@/types/settings'
 import { createWriteStream, showOpenDialog } from '@/utils/fs'
 import { K6Client } from '@/utils/k6/client'
 import { createTrackingServer } from '@/utils/k6/tracking'
+import * as path from '@/utils/path'
 import { readResource } from '@/utils/resources'
 
 import {

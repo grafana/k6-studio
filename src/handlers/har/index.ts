@@ -1,5 +1,4 @@
 import { ipcMain } from 'electron'
-import * as path from 'pathe'
 
 import { RECORDINGS_PATH } from '@/constants/workspace'
 import { Recording, RecordingSchema } from '@/schemas/recording'
@@ -12,6 +11,7 @@ import {
   readFile,
   showOpenDialog,
 } from '@/utils/fs'
+import * as path from '@/utils/path'
 
 import { HarHandler } from './types'
 
