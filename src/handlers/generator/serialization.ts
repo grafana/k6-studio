@@ -2,8 +2,6 @@ import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { GeneratorFileData } from '@/types/generator'
 import * as path from '@/utils/path'
 
-// Paths are stored as posix-style relative paths so generator files are
-// portable across platforms, and resolved to native absolute paths on read.
 // Empty strings represent missing paths and are preserved.
 function toAbsolute(basePath: string, relativePath: string) {
   return relativePath ? path.resolve(basePath, relativePath) : ''

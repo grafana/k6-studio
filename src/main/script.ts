@@ -331,7 +331,7 @@ function createArchive(
       const modifiedMetadata = {
         ...metadata,
         // Change the entrypoint to point to our instrumented script instead of the original one.
-        filename: pathToFileURL(entrypointPath).toString(),
+        filename: pathToFileURL(entrypointPath, { windows: false }).toString(),
         options: {
           ...options,
         },
