@@ -8,7 +8,6 @@ import {
 } from '@radix-ui/themes'
 import { BugIcon, EllipsisVerticalIcon } from 'lucide-react'
 
-import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { RichDropdownMenuItem } from '@/components/RichDropdownMenuItem'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
@@ -119,18 +118,9 @@ export function ValidatorControls({
             </DropdownMenu.Item>
           </Tooltip>
           {canDelete && (
-            <DeleteFileDialog
-              file={file}
-              onConfirm={handleDelete}
-              trigger={
-                <DropdownMenu.Item
-                  color="red"
-                  onClick={(e) => e.preventDefault()}
-                >
-                  Delete
-                </DropdownMenu.Item>
-              }
-            />
+            <DropdownMenu.Item color="red" onClick={handleDelete}>
+              Move to Trash
+            </DropdownMenu.Item>
           )}
         </DropdownMenu.Content>
       </DropdownMenu.Root>

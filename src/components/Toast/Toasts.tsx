@@ -8,6 +8,7 @@ import { ToastViewport } from './Toast.styles'
 
 export function Toasts() {
   const toasts = useToastStore((state) => state.toasts)
+  const providerResetKey = useToastStore((state) => state.providerResetKey)
   const addToast = useToast()
 
   useEffect(() => {
@@ -17,13 +18,11 @@ export function Toasts() {
   }, [addToast])
 
   return (
-    <>
-      <RadixToast.Provider swipeDirection="right">
-        {toasts.map((toast) => (
-          <Toast toast={toast} key={toast.id} />
-        ))}
-        <ToastViewport />
-      </RadixToast.Provider>
-    </>
+    <RadixToast.Provider key={providerResetKey} swipeDirection="right">
+      {toasts.map((toast) => (
+        <Toast toast={toast} key={toast.id} />
+      ))}
+      <ToastViewport />
+    </RadixToast.Provider>
   )
 }

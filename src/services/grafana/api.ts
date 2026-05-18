@@ -43,7 +43,9 @@ export async function fetchStacks(
   signal?: AbortSignal
 ): Promise<{ stacks: Stack[]; profile: UserProfileInfo }> {
   const profileResponse = await fetch(`${GRAFANA_API_URL}/oauth2/user`, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     signal,
   })
 

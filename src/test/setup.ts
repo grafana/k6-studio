@@ -1,5 +1,8 @@
 import { cleanup } from '@testing-library/react'
+import { enableMapSet } from 'immer'
 import { afterEach, vi } from 'vitest'
+
+enableMapSet()
 
 vi.mock('electron-log/main', () => ({
   default: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },

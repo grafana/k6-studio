@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 
-import { AuthStatus, toAuthStatus } from '@/handlers/auth/types'
+import { AuthStatus } from '@/handlers/auth/types'
 
 export const profilesQueryKey = ['profiles']
 
@@ -10,5 +10,8 @@ export function useAuthStatus(): AuthStatus {
     queryFn: window.studio.auth.getProfiles,
   })
 
-  return profiles ? toAuthStatus(profiles) : { type: 'signed-out' }
+  const current = profiles?.stacks[profiles.currentStack]
+  return current
+    ? { type: 'signed-in', stack: current }
+    : { type: 'signed-out' }
 }

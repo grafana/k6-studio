@@ -60,7 +60,6 @@ export function initialize() {
         throw new Error(`User has not signed in to stack with id ${stackId}.`)
       }
 
-      // Don't re-fetch profile here: stored token is the k6 PAT, not the GCom OAuth token /oauth2/user needs.
       const newProfile: Profile = {
         ...profileData,
         profiles: {
@@ -80,7 +79,7 @@ export function initialize() {
 
   ipcMain.handle(
     AuthHandler.SignOut,
-    async (_event, stack: StackInfo): Promise<SignOutResponse> => {
+    async (_ev, stack: StackInfo): Promise<SignOutResponse> => {
       const profileData = await getProfileData()
 
       delete profileData.tokens[stack.id]
