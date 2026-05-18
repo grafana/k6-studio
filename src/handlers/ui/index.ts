@@ -1,6 +1,6 @@
 import { ipcMain, nativeTheme, shell, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
-import { unlink, readdir, access, rename } from 'fs/promises'
+import { readdir, access, rename } from 'fs/promises'
 import path from 'path'
 import invariant from 'tiny-invariant'
 
@@ -42,11 +42,10 @@ export function initialize() {
     return false
   })
 
-  ipcMain.handle(UIHandler.DeleteFile, async (_, file: StudioFile) => {
-    console.info(`${UIHandler.DeleteFile} event received`)
-
+  ipcMain.handle(UIHandler.TrashFile, async (_, file: StudioFile) => {
+    console.info(`${UIHandler.TrashFile} event received`)
     const filePath = getFilePath(file)
-    return unlink(filePath)
+    return shell.trashItem(filePath)
   })
 
   ipcMain.on(UIHandler.OpenFolder, (_, file: StudioFile) => {

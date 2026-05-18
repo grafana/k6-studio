@@ -8,7 +8,6 @@ import {
 import { useState } from 'react'
 
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
-import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { RunInCloudButton } from '@/components/RunInCloudDialog/RunInCloudButton'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { useCurrentFile } from '@/hooks/useCurrentFile'
@@ -97,18 +96,9 @@ export function GeneratorControls({
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DeleteFileDialog
-            file={file}
-            onConfirm={handleDelete}
-            trigger={
-              <DropdownMenu.Item
-                color="red"
-                onClick={(e) => e.preventDefault()}
-              >
-                Delete generator
-              </DropdownMenu.Item>
-            }
-          />
+          <DropdownMenu.Item color="red" onClick={handleDelete}>
+            Move to Trash
+          </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
       {isScriptExportable && (
