@@ -287,7 +287,7 @@ describe('toPosix', () => {
   })
 
   afterEach(() => {
-    vi.restoreAllMocks()
+    vi.unstubAllGlobals()
   })
 
   it('converts backslashes to forward slashes', () => {
@@ -300,5 +300,29 @@ describe('toPosix', () => {
 
   it('handles empty string', () => {
     expect(path.toPosix('')).toBe('')
+  })
+})
+
+describe('toNative', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('converts to posix separators on posix systems', async () => {
+    const path = await importPath('linux')
+
+    expect(path.toNative('..\\Data\\users.csv')).toBe('../Data/users.csv')
+  })
+
+  it('converts to windows separators on windows systems', async () => {
+    const path = await importPath('win32')
+
+    expect(path.toNative('../Data/users.csv')).toBe('..\\Data\\users.csv')
+  })
+
+  it('handles empty string', async () => {
+    const path = await importPath('linux')
+
+    expect(path.toNative('')).toBe('')
   })
 })

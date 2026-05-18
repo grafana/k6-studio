@@ -14,7 +14,7 @@ const userScript = untypedScript as Record<string, () => Promise<void>> & {
 }
 
 const userOptions = userScript.options ?? {}
-const target = getDebugTarget(userOptions)
+const target = getDebugTarget(userOptions, __ENV.SCENARIO_NAME)
 
 export const options = configureOptions(userOptions, target)
 
