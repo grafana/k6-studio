@@ -83,7 +83,7 @@ export const launchProxy = (
   if (proxySettings.mode === 'upstream' && proxySettings.certificatePath) {
     proxyArgs.push(
       '--set',
-      `ssl_verify_upstream_trusted_ca=${proxySettings.certificatePath}`
+      `ssl_verify_upstream_trusted_ca=${toNativePath(proxySettings.certificatePath)}`
     )
   }
 

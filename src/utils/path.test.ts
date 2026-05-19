@@ -1,6 +1,16 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import * as path from './path'
+import type * as PathModule from './path'
+
+async function importPath(
+  platform: 'win32' | 'linux'
+): Promise<typeof PathModule> {
+  vi.resetModules()
+  vi.stubGlobal('window', { studio: { platform } })
+  vi.stubGlobal('process', { ...process, platform })
+  return import('./path')
+}
 
 describe('name', () => {
   it('returns filename without extension', () => {
@@ -21,17 +31,27 @@ describe('name', () => {
 })
 
 describe('toNativePath', () => {
-  it('joins segments with the OS native separator', () => {
-    expect(path.toNativePath('a/b/c')).toBe(
-      ['a', 'b', 'c'].join(path.native.sep)
-    )
+  afterEach(() => {
+    vi.unstubAllGlobals()
   })
 
-  it('leaves a path without separators unchanged', () => {
+  it('joins segments with backslashes on windows', async () => {
+    const path = await importPath('win32')
+    expect(path.toNativePath('a/b/c')).toBe('a\\b\\c')
+  })
+
+  it('leaves forward slashes unchanged on non-windows', async () => {
+    const path = await importPath('linux')
+    expect(path.toNativePath('a/b/c')).toBe('a/b/c')
+  })
+
+  it('leaves a path without separators unchanged on windows', async () => {
+    const path = await importPath('win32')
     expect(path.toNativePath('foo')).toBe('foo')
   })
 
-  it('handles empty string', () => {
+  it('handles empty string on windows', async () => {
+    const path = await importPath('win32')
     expect(path.toNativePath('')).toBe('')
   })
 })

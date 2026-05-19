@@ -94,7 +94,7 @@ export function getFilePath(
 export function expandHomeDir(inputPath?: string) {
   if (!inputPath) return inputPath
   if (inputPath.startsWith('~')) {
-    return path.native.join(os.homedir(), inputPath.slice(1))
+    return path.join(os.homedir(), inputPath.slice(1))
   }
   return inputPath
 }
