@@ -11,7 +11,7 @@ import {
   DATA_FILES_PATH,
   BROWSER_TESTS_PATH,
 } from '@/constants/workspace'
-import { getFilePath, getStudioFileFromPath } from '@/main/file'
+import { getStudioFileFromPath } from '@/main/file'
 import { StudioFile } from '@/types'
 import { getBrowserPath } from '@/utils/browser'
 import { reportNewIssue } from '@/utils/bugReport'
@@ -44,20 +44,19 @@ export function initialize() {
   ipcMain.handle(UIHandler.DeleteFile, async (_, file: StudioFile) => {
     console.info(`${UIHandler.DeleteFile} event received`)
 
-    const filePath = getFilePath(file)
-    return unlink(filePath)
+    return unlink(file.path)
   })
 
   ipcMain.on(UIHandler.OpenFolder, (_, file: StudioFile) => {
     console.info(`${UIHandler.OpenFolder} event received`)
-    const filePath = getFilePath(file)
-    return shell.showItemInFolder(filePath)
+
+    return shell.showItemInFolder(path.toNativePath(file.path))
   })
 
   ipcMain.handle(UIHandler.OpenFileInDefaultApp, (_, file: StudioFile) => {
     console.info(`${UIHandler.OpenFileInDefaultApp} event received`)
-    const filePath = getFilePath(file)
-    return shell.openPath(filePath)
+
+    return shell.openPath(path.toNativePath(file.path))
   })
 
   ipcMain.handle(UIHandler.GetFiles, async () => {
@@ -103,12 +102,7 @@ export function initialize() {
 
   ipcMain.handle(
     UIHandler.RenameFile,
-    async (
-      e,
-      oldFileName: string,
-      newFileName: string,
-      type: StudioFile['type']
-    ) => {
+    async (e, file: StudioFile, newFileName: string) => {
       console.info(`${UIHandler.RenameFile} event received`)
       const browserWindow = BrowserWindow.fromWebContents(e.sender)
 
@@ -118,19 +112,13 @@ export function initialize() {
           'Invalid file name'
         )
 
-        const oldPath = getFilePath({
-          type,
-          fileName: oldFileName,
-        })
-        const newPath = getFilePath({
-          type,
-          fileName: newFileName,
-        })
+        const newPath = path.join(path.dirname(file.path), newFileName)
 
         if (await exists(newPath)) {
           throw new Error(`File with name ${newFileName} already exists`)
         }
-        await rename(oldPath, newPath)
+
+        await rename(file.path, newPath)
       } catch (e) {
         log.error(e)
         browserWindow &&

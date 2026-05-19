@@ -14,10 +14,12 @@ import { getPlatform } from './electron'
 
 function getChromePath() {
   try {
-    return computeSystemExecutablePath({
-      browser: Browser.CHROME,
-      channel: ChromeReleaseChannel.STABLE,
-    })
+    return path.normalize(
+      computeSystemExecutablePath({
+        browser: Browser.CHROME,
+        channel: ChromeReleaseChannel.STABLE,
+      })
+    )
   } catch (e) {
     log.error(e)
     return undefined
