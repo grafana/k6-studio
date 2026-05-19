@@ -26,8 +26,8 @@ export function openFileInDefaultApp(file: StudioFile) {
   ) as Promise<string>
 }
 
-export function deleteFile(file: StudioFile) {
-  return ipcRenderer.invoke(UIHandler.DeleteFile, file) as Promise<void>
+export function trashFile(file: StudioFile) {
+  return ipcRenderer.invoke(UIHandler.TrashFile, file) as Promise<void>
 }
 
 export function getFiles() {

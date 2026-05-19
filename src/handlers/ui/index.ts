@@ -16,7 +16,7 @@ import { StudioFile } from '@/types'
 import { getBrowserPath } from '@/utils/browser'
 import { reportNewIssue } from '@/utils/bugReport'
 import { sendToast } from '@/utils/electron'
-import { exists, readdir, rename, unlink } from '@/utils/fs'
+import { exists, readdir, rename } from '@/utils/fs'
 import * as path from '@/utils/path'
 
 import { UIHandler } from './types'
@@ -41,10 +41,10 @@ export function initialize() {
     return false
   })
 
-  ipcMain.handle(UIHandler.DeleteFile, async (_, file: StudioFile) => {
-    console.info(`${UIHandler.DeleteFile} event received`)
+  ipcMain.handle(UIHandler.TrashFile, async (_, file: StudioFile) => {
+    console.info(`${UIHandler.TrashFile} event received`)
 
-    return unlink(file.path)
+    return shell.trashItem(path.toNativePath(file.path))
   })
 
   ipcMain.on(UIHandler.OpenFolder, (_, file: StudioFile) => {

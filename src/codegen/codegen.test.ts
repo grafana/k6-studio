@@ -29,6 +29,10 @@ import {
   isBinaryContent,
 } from './codegen'
 
+vi.mock('./options', () => ({
+  generateOptions: () => '{}',
+}))
+
 const fakeDate = new Date('2000-01-01T00:00:00Z')
 
 const thinkTime: ThinkTime = {
@@ -41,10 +45,6 @@ const thinkTime: ThinkTime = {
 
 describe('Code generation', () => {
   beforeAll(() => {
-    vi.mock('./options', () => ({
-      generateOptions: () => '{}',
-    }))
-
     vi.stubGlobal('__APP_VERSION__', '0.0.0')
     vi.setSystemTime(fakeDate)
   })

@@ -103,7 +103,7 @@ jobs:
           SENTRY_ORG: ${{ vars.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
         run: |
-          pnpm run publish -- --arch=x64
+          pnpm run publish --arch=x64
 
       - name: Get azure secrets
         id: get-azure-secrets
@@ -186,7 +186,7 @@ jobs:
           echo "%__strip /bin/true" >> ~/.rpmmacros
 
           pnpm run publish
-          pnpm run publish -- --arch=arm64
+          pnpm run publish --arch=arm64
 
       - name: cleanup macos certificates
         if: startsWith(matrix.platform, 'macos-')

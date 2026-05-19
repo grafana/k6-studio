@@ -138,9 +138,15 @@ export async function startCallbackServer(
   await once(server, 'listening')
   const { port } = server.address() as AddressInfo
 
+  const raced = Promise.race([result, aborted]).finally(closeServer)
+
+  // Surpress unhandled rejection warning if abort is triggered before
+  // the returned promise is awaited.
+  raced.catch(() => {})
+
   return {
     port,
-    result: Promise.race([result, aborted]).finally(closeServer),
+    result: raced,
   }
 }
 

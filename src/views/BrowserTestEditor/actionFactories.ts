@@ -169,6 +169,7 @@ export function createToBeCheckedAction({
     id: crypto.randomUUID(),
     method: 'locator.toBeChecked',
     checked: true,
+    inputType: 'native',
     locator: locator ?? {
       current: 'role',
       values: {
