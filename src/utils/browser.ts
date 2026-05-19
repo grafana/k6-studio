@@ -8,6 +8,7 @@ import log from 'electron-log/main'
 import { promisify } from 'util'
 
 import { RecorderSettings } from '@/types/settings'
+import * as path from '@/utils/path'
 
 import { getPlatform } from './electron'
 
@@ -36,7 +37,7 @@ async function getChromiumPath() {
       return undefined
     }
 
-    return stdout.trim()
+    return path.normalize(stdout.trim())
   } catch (error) {
     log.error(error)
     return undefined
