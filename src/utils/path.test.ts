@@ -4,7 +4,7 @@ import * as path from './path'
 import type * as PathModule from './path'
 
 async function importPath(
-  platform: 'win32' | 'linux'
+  platform: 'win32' | 'linux' | 'darwin'
 ): Promise<typeof PathModule> {
   vi.resetModules()
   vi.stubGlobal('window', { studio: { platform } })
@@ -53,5 +53,48 @@ describe('toNativePath', () => {
   it('handles empty string on windows', async () => {
     const path = await importPath('win32')
     expect(path.toNativePath('')).toBe('')
+  })
+})
+
+describe('key', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('lower-cases on windows', async () => {
+    const path = await importPath('win32')
+    expect(path.key('C:/Users/Foo/Bar.exe')).toBe('c:/users/foo/bar.exe')
+  })
+
+  it('lower-cases on macOS', async () => {
+    const path = await importPath('darwin')
+    expect(path.key('/Users/Foo/Bar.app')).toBe('/users/foo/bar.app')
+  })
+
+  it('preserves case on linux', async () => {
+    const path = await importPath('linux')
+    expect(path.key('/Users/Foo/Bar')).toBe('/Users/Foo/Bar')
+  })
+})
+
+describe('equal', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('compares case-insensitively on macOS', async () => {
+    const path = await importPath('darwin')
+    expect(path.equal('/Foo/Bar', '/foo/bar')).toBe(true)
+  })
+
+  it('compares case-insensitively on windows', async () => {
+    const path = await importPath('win32')
+    expect(path.equal('C:/Foo', 'c:/foo')).toBe(true)
+  })
+
+  it('compares case-sensitively on linux', async () => {
+    const path = await importPath('linux')
+    expect(path.equal('/Foo', '/foo')).toBe(false)
+    expect(path.equal('/foo', '/foo')).toBe(true)
   })
 })

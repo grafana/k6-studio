@@ -18,53 +18,43 @@ import { exhaustive } from '@/utils/typescript'
 export function getStudioFileFromPath(
   filePath: string
 ): StudioFile | undefined {
+  const parsedPath = path.parse(filePath)
+
   const file = {
-    displayName: path.parse(filePath).name,
-    fileName: path.basename(filePath),
+    displayName: parsedPath.name,
+    fileName: parsedPath.base,
     path: filePath,
   }
 
-  if (
-    filePath.startsWith(RECORDINGS_PATH) &&
-    path.extname(filePath) === '.har'
-  ) {
+  if (parsedPath.ext === '.har') {
     return {
       type: 'recording',
       ...file,
     }
   }
 
-  if (
-    filePath.startsWith(BROWSER_TESTS_PATH) &&
-    path.extname(filePath) === K6_BROWSER_TEST_FILE_EXTENSION
-  ) {
+  if (parsedPath.ext === K6_BROWSER_TEST_FILE_EXTENSION) {
     return {
       type: 'browser-test',
       ...file,
     }
   }
 
-  if (
-    filePath.startsWith(GENERATORS_PATH) &&
-    path.extname(filePath) === K6_GENERATOR_FILE_EXTENSION
-  ) {
+  if (parsedPath.ext === K6_GENERATOR_FILE_EXTENSION) {
     return {
       type: 'generator',
       ...file,
     }
   }
 
-  if (filePath.startsWith(SCRIPTS_PATH) && path.extname(filePath) === '.js') {
+  if (parsedPath.ext === '.js') {
     return {
       type: 'script',
       ...file,
     }
   }
 
-  if (
-    filePath.startsWith(DATA_FILES_PATH) &&
-    (path.extname(filePath) === '.json' || path.extname(filePath) === '.csv')
-  ) {
+  if (parsedPath.ext === '.json' || parsedPath.ext === '.csv') {
     return {
       type: 'data-file',
       ...file,

@@ -33,7 +33,10 @@ export function useRenameFile(file: StudioFile) {
       removeFile(file)
       addFile(updatedFile)
 
-      if (activeFilePath !== file.path) {
+      if (
+        activeFilePath === undefined ||
+        !path.equal(activeFilePath, file.path)
+      ) {
         return
       }
 

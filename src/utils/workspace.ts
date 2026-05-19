@@ -28,5 +28,5 @@ export const setupProjectStructure = async () => {
 }
 
 export function isExternalScript(scriptPath: string) {
-  return path.dirname(scriptPath) !== path.normalize(SCRIPTS_PATH)
+  return !path.equal(path.dirname(scriptPath), SCRIPTS_PATH)
 }
