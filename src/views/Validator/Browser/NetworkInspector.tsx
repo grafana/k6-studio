@@ -4,16 +4,19 @@ import { useState } from 'react'
 
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
-import { ProxyData } from '@/types'
+import { ProxyData, StudioFile } from '@/types'
 import { RequestsSection } from '@/views/Recorder/RequestsSection'
 
 import { DebugSession } from '../types'
 
+import { ExportNetworkTrafficButton } from './ExportNetworkTrafficButton'
+
 interface NetworkInspectorProps {
+  file: StudioFile
   session: DebugSession
 }
 
-export function NetworkInspector({ session }: NetworkInspectorProps) {
+export function NetworkInspector({ file, session }: NetworkInspectorProps) {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const groups = useProxyDataGroups(session.requests)
 
@@ -24,6 +27,9 @@ export function NetworkInspector({ session }: NetworkInspectorProps) {
           <RequestsSection
             proxyData={session.requests}
             autoScroll={session.state === 'running'}
+            actions={
+              <ExportNetworkTrafficButton file={file} session={session} />
+            }
             selectedRequestId={selectedRequest?.id}
             groups={groups}
             onSelectRequest={setSelectedRequest}

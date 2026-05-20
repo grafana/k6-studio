@@ -7,7 +7,10 @@ export function extractUniqueHosts(requests: ProxyData[]) {
   return uniq(requests.map((request) => request.request.host).filter(Boolean))
 }
 
-export function groupHostsByParty(hosts: string[]) {
+export function groupHostsByParty(hosts: string[]): {
+  firstParty: string[]
+  thirdParty: string[]
+} {
   return hosts.reduce(
     (acc, host) => {
       const key = isHostThirdParty(host) ? 'thirdParty' : 'firstParty'

@@ -1,5 +1,5 @@
 import { ipcMain, dialog } from 'electron'
-import { readFile, copyFile } from 'fs/promises'
+import { readFile, copyFile, writeFile } from 'fs/promises'
 import path from 'path'
 
 import { RECORDINGS_PATH } from '@/constants/workspace'
@@ -47,6 +47,28 @@ export function initialize() {
       })
 
       return RecordingSchema.parse(JSON.parse(data))
+    }
+  )
+
+  ipcMain.handle(
+    HarHandler.ExportFile,
+    async (event, data: Recording, hint: string) => {
+      console.info(`${HarHandler.ExportFile} event received`)
+
+      const browserWindow = browserWindowFromEvent(event)
+
+      const result = await dialog.showSaveDialog(browserWindow, {
+        defaultPath: path.join(RECORDINGS_PATH, hint),
+        filters: [{ name: 'HAR', extensions: ['har'] }],
+      })
+
+      if (result.canceled || !result.filePath) {
+        return undefined
+      }
+
+      await writeFile(result.filePath, JSON.stringify(data, null, 2))
+
+      return result.filePath
     }
   )
 

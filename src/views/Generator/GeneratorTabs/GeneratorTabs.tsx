@@ -11,7 +11,7 @@ import {
 } from '@/store/generator'
 import { ProxyData } from '@/types'
 
-import { Allowlist } from '../Allowlist'
+import { AllowlistDialog } from '../Allowlist/AllowlistDialog'
 import { TestData } from '../TestData'
 import { TestOptions } from '../TestOptions'
 
@@ -68,7 +68,7 @@ export function GeneratorTabs({
               <Flex pr="2" pl="4" gap="4">
                 <TestOptions />
                 <TestData />
-                <Allowlist />
+                <AllowlistDialog />
               </Flex>
             </Flex>
           </Tabs.List>

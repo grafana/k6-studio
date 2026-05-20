@@ -92,6 +92,7 @@ function Content({ file }: ValidatorProps) {
     >
       <Flex flexGrow="1" direction="column" align="stretch">
         <Debugger
+          file={file}
           script={data?.script ?? ''}
           options={data?.options ?? {}}
           session={session}

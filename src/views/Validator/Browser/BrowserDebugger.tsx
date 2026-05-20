@@ -12,6 +12,7 @@ import {
   useDefaultLayout,
   usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
+import { StudioFile } from '@/types'
 
 import {
   HighlightLocatorProvider,
@@ -24,12 +25,14 @@ import { BrowserOverviewPanel } from './BrowserOverviewPanel'
 import { NetworkInspector } from './NetworkInspector'
 
 interface BrowserDebuggerProps {
+  file: StudioFile
   script: string
   session: DebugSession
   onDebugScript: () => void
 }
 
 export function BrowserDebuggerContent({
+  file,
   script,
   session,
   onDebugScript,
@@ -128,7 +131,7 @@ export function BrowserDebuggerContent({
                 `}
                 value="network"
               >
-                <NetworkInspector session={session} />
+                <NetworkInspector file={file} session={session} />
               </Tabs.Content>
             </Flex>
           </Panel>
