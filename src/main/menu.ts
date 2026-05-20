@@ -1,4 +1,11 @@
-import { Menu, shell } from 'electron'
+import { BrowserWindow, Menu, shell } from 'electron'
+
+import { PROJECT_PATH } from '@/constants/workspace'
+import { AppHandler } from '@/handlers/app/types'
+import { UIHandler } from '@/handlers/ui/types'
+import { getStudioFileFromPath } from '@/main/file'
+import { getViewPath } from '@/routeMap'
+import { showOpenDialog } from '@/utils/fs'
 
 import { reportNewIssue } from '../utils/bugReport'
 import { getPlatform } from '../utils/electron'
@@ -12,7 +19,75 @@ const isMac = getPlatform() === 'mac'
 // https://www.electronjs.org/docs/latest/api/menu
 const template: Electron.MenuItemConstructorOptions[] = [
   ...getAppMenu(),
-  { role: 'fileMenu' },
+  {
+    label: 'File',
+    submenu: [
+      {
+        label: 'Open',
+        accelerator: 'CmdOrCtrl+O',
+        click: async (_, window) => {
+          if (window instanceof BrowserWindow === false) {
+            return
+          }
+
+          const {
+            filePaths: [filePath],
+          } = await showOpenDialog(window, {
+            defaultPath: PROJECT_PATH,
+            properties: ['openFile'],
+          })
+
+          if (!filePath) {
+            return
+          }
+
+          const file = getStudioFileFromPath(filePath)
+
+          if (!file) {
+            return
+          }
+
+          window.webContents.send(
+            AppHandler.Navigate,
+            getViewPath(file.type, file.path)
+          )
+        },
+      },
+      { type: 'separator' },
+      {
+        id: 'save',
+        label: 'Save',
+        accelerator: 'CmdOrCtrl+S',
+        enabled: false,
+        click: (menuItem, window) => {
+          if (window instanceof BrowserWindow === false) {
+            return
+          }
+
+          window.webContents.send(UIHandler.RequestSave, {
+            menuItem: menuItem.id,
+            saveAs: false,
+          })
+        },
+      },
+      {
+        id: 'save-as',
+        label: 'Save As...',
+        accelerator: 'CmdOrCtrl+Shift+S',
+        enabled: false,
+        click: (menuItem, window) => {
+          if (window instanceof BrowserWindow === false) {
+            return
+          }
+
+          window.webContents.send(UIHandler.RequestSave, {
+            menuItem: menuItem.id,
+            saveAs: true,
+          })
+        },
+      },
+    ],
+  },
   { role: 'editMenu' },
   {
     label: 'View',

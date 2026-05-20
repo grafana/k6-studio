@@ -23,7 +23,7 @@ export async function generateScriptPreview(
   return prettify(script)
 }
 
-export async function exportScript(scriptPath: string) {
+export async function generateScriptFromGenerator(scriptPath: string) {
   const generator = selectGeneratorData(useGeneratorStore.getState())
   const filteredRequests = selectFilteredRequests(useGeneratorStore.getState())
 
@@ -33,7 +33,7 @@ export async function exportScript(scriptPath: string) {
     filteredRequests
   )
 
-  await window.studio.script.saveScript(scriptPath, script)
+  return script
 }
 
 export const loadGeneratorFile = async (filePath: string) => {

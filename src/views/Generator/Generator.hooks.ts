@@ -2,14 +2,16 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
 import { useCallback } from 'react'
 
-import { useScriptExportedToast } from '@/hooks/useScriptExportedToast'
+import { useExportScript } from '@/hooks/useExportScript'
 import { selectGeneratorData, useGeneratorStore } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
-import { GeneratorFileData } from '@/types/generator'
 import * as path from '@/utils/path'
-import { queryClient } from '@/utils/query'
 
-import { exportScript, loadGeneratorFile, loadHarFile } from './Generator.utils'
+import {
+  generateScriptFromGenerator,
+  loadGeneratorFile,
+  loadHarFile,
+} from './Generator.utils'
 
 export function useLoadHarFile(fileName?: string) {
   return useQuery({
@@ -39,38 +41,6 @@ export function useUpdateValueInGeneratorFile(filePath: string) {
   })
 }
 
-export function useSaveGeneratorFile(filePath: string) {
-  const showToast = useToast()
-
-  return useMutation({
-    mutationFn: async (generator: GeneratorFileData) => {
-      await window.studio.generator.saveGenerator(generator, filePath)
-
-      await queryClient.invalidateQueries({
-        queryKey: ['generator', filePath],
-      })
-    },
-
-    onSuccess: () => {
-      showToast({
-        title: 'Generator saved',
-        status: 'success',
-      })
-    },
-
-    onError: (error) => {
-      console.error('Failed to save generator', error)
-
-      showToast({
-        title: 'Failed to save generator',
-        status: 'error',
-        description: error.message,
-      })
-      log.error(error)
-    },
-  })
-}
-
 export function useIsGeneratorDirty(filePath: string) {
   const generatorState = useGeneratorStore(selectGeneratorData)
   const { data } = useLoadGeneratorFile(filePath)
@@ -89,61 +59,37 @@ export function useIsGeneratorDirty(filePath: string) {
 
 export function useScriptExport(generatorFilePath: string) {
   const showToast = useToast()
-  const showExportedToast = useScriptExportedToast()
+
   const scriptName = useGeneratorStore((store) => store.scriptName)
   const setScriptName = useGeneratorStore((store) => store.setScriptName)
+
   const { mutateAsync: updateGeneratorFile } =
     useUpdateValueInGeneratorFile(generatorFilePath)
 
-  return useCallback(async () => {
-    const hint = scriptName.endsWith('.js') ? scriptName : `${scriptName}.js`
-
-    let savedScriptName: string | undefined
-
-    try {
-      const scriptPath = await window.studio.fs.showSaveAsDialog(hint)
-
-      if (scriptPath === undefined) {
-        return
-      }
-
-      savedScriptName = path.basename(scriptPath)
+  const exportScript = useExportScript({
+    fileName: scriptName,
+    content: (filePath) => {
+      return generateScriptFromGenerator(filePath)
+    },
+    async onSuccess(location) {
+      const savedScriptName = path.basename(location.path)
 
       setScriptName(savedScriptName)
 
-      await exportScript(scriptPath)
+      try {
+        await updateGeneratorFile({ key: 'scriptName', value: savedScriptName })
+      } catch (error) {
+        log.error(error)
 
-      showExportedToast(scriptPath)
-    } catch (error) {
-      log.error(error)
+        showToast({
+          title: 'Failed to update script name',
+          status: 'error',
+        })
+      }
+    },
+  })
 
-      showToast({
-        title: 'Failed to export script',
-        status: 'error',
-      })
-
-      return
-    }
-
-    if (!savedScriptName) {
-      return
-    }
-
-    try {
-      await updateGeneratorFile({ key: 'scriptName', value: savedScriptName })
-    } catch (error) {
-      log.error(error)
-
-      showToast({
-        title: 'Failed to update script name',
-        status: 'error',
-      })
-    }
-  }, [
-    scriptName,
-    showToast,
-    showExportedToast,
-    setScriptName,
-    updateGeneratorFile,
-  ])
+  return useCallback(async () => {
+    return exportScript({})
+  }, [exportScript])
 }

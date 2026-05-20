@@ -1,12 +1,42 @@
-import { app, ipcMain } from 'electron'
+import { app, ipcMain, FileFilter } from 'electron'
 
-import { SCRIPTS_PATH } from '@/constants/workspace'
+import {
+  K6_BROWSER_TEST_FILE_EXTENSION,
+  K6_GENERATOR_FILE_EXTENSION,
+} from '@/constants/files'
+import {
+  BROWSER_TESTS_PATH,
+  GENERATORS_PATH,
+  SCRIPTS_PATH,
+} from '@/constants/workspace'
 import { getTempScriptName } from '@/main/script'
 import { browserWindowFromEvent } from '@/utils/electron'
-import { showSaveDialog } from '@/utils/fs'
+import { showSaveDialog, writeFile } from '@/utils/fs'
 import * as path from '@/utils/path'
 
-import { FsHandler } from './types'
+import { serializeContent } from './serialization'
+import { FileContent, FileLocation, FsHandler, StorageLocation } from './types'
+
+function getDefaultPath(location: StorageLocation) {
+  if (location.type === 'file') {
+    return location.path
+  }
+
+  if (path.isAbsolute(location.hint)) {
+    return location.hint
+  }
+
+  switch (path.extname(location.hint)) {
+    case K6_GENERATOR_FILE_EXTENSION:
+      return path.join(GENERATORS_PATH, `${location.hint}`)
+
+    case K6_BROWSER_TEST_FILE_EXTENSION:
+      return path.join(BROWSER_TESTS_PATH, `${location.hint}`)
+
+    case 'script':
+      return path.join(SCRIPTS_PATH, location.hint)
+  }
+}
 
 export function initialize() {
   ipcMain.handle(FsHandler.GetTempScriptPath, () => {
@@ -15,21 +45,30 @@ export function initialize() {
 
   ipcMain.handle(
     FsHandler.ShowSaveAsDialog,
-    async (event, fileName?: string) => {
+    async (event, location: FileLocation, filters: FileFilter[]) => {
       const browserWindow = browserWindowFromEvent(event)
 
-      const defaultPath = path.join(SCRIPTS_PATH, fileName ?? 'script.js')
-
       const result = await showSaveDialog(browserWindow, {
-        defaultPath,
-        filters: [{ name: 'k6 test script', extensions: ['js'] }],
+        defaultPath: getDefaultPath(location),
+        filters,
       })
 
       if (result.canceled || !result.filePath) {
         return
       }
 
-      return result.filePath
+      return { type: 'file' as const, path: result.filePath }
+    }
+  )
+
+  ipcMain.handle(
+    FsHandler.SaveFile,
+    async (_, location: FileLocation, content: FileContent) => {
+      const serializedContent = serializeContent(location.path, content)
+
+      await writeFile(location.path, serializedContent)
+
+      return location
     }
   )
 }

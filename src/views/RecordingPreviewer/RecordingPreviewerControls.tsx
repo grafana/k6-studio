@@ -14,10 +14,10 @@ import { RichDropdownMenuItem } from '@/components/RichDropdownMenuItem'
 import { useCreateBrowserTest } from '@/hooks/useCreateBrowserTest'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
-import { getRoutePath, getViewPath } from '@/routeMap'
+import { useExportScript } from '@/hooks/useExportScript'
+import { getRoutePath } from '@/routeMap'
 import { BrowserEvent } from '@/schemas/recording'
 import { useFeaturesStore } from '@/store/features'
-import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 
 interface RecordingPreviewControlsProps {
@@ -29,7 +29,6 @@ export function RecordingPreviewControls({
   file,
   browserEvents,
 }: RecordingPreviewControlsProps) {
-  const showToast = useToast()
   const navigate = useNavigate()
   const createTestGenerator = useCreateGenerator()
 
@@ -71,31 +70,20 @@ export function RecordingPreviewControls({
     navigate(getRoutePath('home'))
   }
 
-  const handleExportBrowserScript = async () => {
-    const test = convertEventsToTest({
-      browserEvents,
-    })
-
-    try {
-      const path = await window.studio.fs.showSaveAsDialog(
-        'my-browser-script.js'
-      )
-
-      if (path === undefined) {
-        return
-      }
-
-      const script = await emitScript(test)
-
-      await window.studio.script.saveScript(path, script)
-
-      navigate(getViewPath('script', path))
-    } catch (err) {
-      showToast({
-        title: 'Failed to export browser script.',
-        status: 'error',
+  const exportScript = useExportScript({
+    open: true,
+    fileName: 'my-browser-script.js',
+    content: async () => {
+      const test = convertEventsToTest({
+        browserEvents,
       })
-    }
+
+      return await emitScript(test)
+    },
+  })
+
+  const handleExportBrowserScript = () => {
+    void exportScript({})
   }
 
   const handleBrowserTest = isBrowserEditorEnabled

@@ -17,8 +17,7 @@ import { useState } from 'react'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
-import { useScriptExportedToast } from '@/hooks/useScriptExportedToast'
-import { useToast } from '@/store/ui/useToast'
+import { useExportScript } from '@/hooks/useExportScript'
 import { StudioFile } from '@/types'
 
 import { DebugSession } from '../Validator/types'
@@ -42,9 +41,6 @@ export function BrowserTestEditorControls({
   onStopDebugging,
   onSave,
 }: BrowserTestEditorControlsProps) {
-  const showToast = useToast()
-  const showExportedToast = useScriptExportedToast()
-
   const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
 
   const handleDelete = useDeleteFile({
@@ -52,25 +48,13 @@ export function BrowserTestEditorControls({
     navigateHomeOnDelete: true,
   })
 
-  const handleExportScript = async () => {
-    try {
-      const scriptPath = await window.studio.fs.showSaveAsDialog(
-        `${file.displayName}.js`
-      )
+  const exportScript = useExportScript({
+    fileName: file.displayName,
+    content: () => preview,
+  })
 
-      if (scriptPath === undefined) {
-        return
-      }
-
-      await window.studio.script.saveScript(scriptPath, preview)
-
-      showExportedToast(scriptPath)
-    } catch (error) {
-      showToast({
-        title: 'Failed to export the script.',
-        status: 'error',
-      })
-    }
+  const handleExportScript = () => {
+    void exportScript({})
   }
 
   return (

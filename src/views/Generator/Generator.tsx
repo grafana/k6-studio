@@ -2,23 +2,23 @@ import { Allotment } from 'allotment'
 import log from 'electron-log/renderer'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
-import useKeyboardJs from 'react-use/lib/useKeyboardJs'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
 import { useCurrentFile } from '@/hooks/useCurrentFile'
+import { useSaveFile } from '@/hooks/useSaveFile'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
-import { getRoutePath } from '@/routeMap'
+import { getRoutePath, getViewPath } from '@/routeMap'
 import { useGeneratorStore, selectGeneratorData } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
 import { ProxyData } from '@/types'
+import { queryClient } from '@/utils/query'
 
 import {
   useIsGeneratorDirty,
   useLoadGeneratorFile,
   useLoadHarFile,
-  useSaveGeneratorFile,
 } from './Generator.hooks'
 import { GeneratorControls } from './GeneratorControls'
 import { GeneratorTabs } from './GeneratorTabs'
@@ -47,7 +47,39 @@ export function Generator() {
     error: harError,
   } = useLoadHarFile(generatorFileData?.recordingPath)
 
-  const { mutateAsync: saveGenerator } = useSaveGeneratorFile(file.path)
+  const saveFile = useSaveFile({
+    menuItems: ['save', 'save-as'],
+    location: { type: 'file', path: file.path },
+    content: () => ({
+      type: 'generator' as const,
+      data: selectGeneratorData(useGeneratorStore.getState()),
+    }),
+    filters: [{ name: 'Generator', extensions: ['k6g'] }],
+    onSuccess: async (location) => {
+      if (!location) {
+        return
+      }
+
+      await queryClient.invalidateQueries({
+        queryKey: ['generator', location.path],
+      })
+
+      if (location.path !== file.path) {
+        navigate(getViewPath('generator', location.path), { replace: true })
+      }
+
+      showToast({ title: 'Generator saved', status: 'success' })
+    },
+    onError: (error) => {
+      showToast({
+        title: 'Failed to save generator',
+        status: 'error',
+        description: error.message,
+      })
+
+      log.error(error)
+    },
+  })
 
   const isLoading = isLoadingGenerator || isLoadingRecording
 
@@ -55,8 +87,6 @@ export function Generator() {
   const isDirtyRef = useRef(isDirty)
 
   const [isAppClosing, setIsAppClosing] = useState(false)
-
-  const [, onSaveKeyPress] = useKeyboardJs(['command + s', 'ctrl + s'])
 
   const blocker = useBlocker(({ historyAction }) => {
     // Don't block navigation when redirecting home from invalid generator
@@ -107,17 +137,8 @@ export function Generator() {
   }, [isDirty])
 
   const handleSaveGenerator = useCallback(() => {
-    const generator = selectGeneratorData(useGeneratorStore.getState())
-    return saveGenerator(generator)
-  }, [saveGenerator])
-
-  useEffect(() => {
-    ;(async () => {
-      if (onSaveKeyPress && isDirtyRef.current === true) {
-        await handleSaveGenerator()
-      }
-    })()
-  }, [handleSaveGenerator, onSaveKeyPress])
+    return saveFile({ saveAs: false })
+  }, [saveFile])
 
   const handleSaveGeneratorDialog = async () => {
     await handleSaveGenerator()

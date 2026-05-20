@@ -20,4 +20,8 @@ export enum UIHandler {
   AddFile = 'ui:add-file',
   RemoveFile = 'ui:remove-file',
   Toast = 'ui:toast',
+  SetMenuItemsEnabled = 'ui:set-menu-items-enabled',
+  RequestSave = 'fs:request-save',
 }
+
+export type MenuItem = 'save' | 'save-as' | 'export-script'
