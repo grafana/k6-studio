@@ -1,13 +1,9 @@
 import { ipcMain } from 'electron'
 
-import {
-  type AnyBrowserAction,
-  BrowserTestFile,
-  BrowserTestFileDataSchema,
-} from '@/schemas/browserTest'
+import { type AnyBrowserAction, BrowserTestFile } from '@/schemas/browserTest'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
-import { readFile, writeFile } from '@/utils/fs'
+import { writeFile } from '@/utils/fs'
 
 import { createBrowserTest } from './create'
 import { BrowserTestHandler } from './types'
@@ -21,17 +17,6 @@ export function initialize() {
       return createBrowserTest(actions)
     }
   )
-
-  ipcMain.handle(BrowserTestHandler.Open, async (_, filePath: string) => {
-    console.info(`${BrowserTestHandler.Open} event received`)
-
-    const data = await readFile(filePath, {
-      encoding: 'utf-8',
-      flag: 'r',
-    })
-
-    return BrowserTestFileDataSchema.parse(JSON.parse(data))
-  })
 
   ipcMain.handle(
     BrowserTestHandler.Save,

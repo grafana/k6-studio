@@ -3,10 +3,10 @@ import { ipcMain } from 'electron'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { GeneratorFileData } from '@/types/generator'
-import { readFile, writeFile } from '@/utils/fs'
+import { writeFile } from '@/utils/fs'
 
 import { createGenerator } from './create'
-import { deserializeGenerator, serializeGenerator } from './serialization'
+import { serializeGenerator } from './serialization'
 import { GeneratorHandler } from './types'
 
 export function initialize() {
@@ -27,20 +27,6 @@ export function initialize() {
       )
 
       trackGeneratorUpdated(generator)
-    }
-  )
-
-  ipcMain.handle(
-    GeneratorHandler.Open,
-    async (_, filePath: string): Promise<GeneratorFileData> => {
-      console.log(`${GeneratorHandler.Open} event received`)
-
-      const data = await readFile(filePath, {
-        encoding: 'utf-8',
-        flag: 'r',
-      })
-
-      return deserializeGenerator(filePath, data)
     }
   )
 }

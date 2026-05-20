@@ -24,3 +24,10 @@ export function saveFile(location: FileLocation, content: FileContent) {
     content
   ) as Promise<FileLocation>
 }
+
+export function openFile(filePath: string) {
+  return ipcRenderer.invoke(
+    FsHandler.OpenFile,
+    filePath
+  ) as Promise<FileContent>
+}

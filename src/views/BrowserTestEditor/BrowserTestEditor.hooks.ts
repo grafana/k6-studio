@@ -26,8 +26,14 @@ import { useDebugSession } from '../Validator/Validator.hooks'
 export function useBrowserTest(filePath: string) {
   return useQuery<BrowserTestFile>({
     queryKey: ['browserTest', filePath],
-    queryFn: () => {
-      return window.studio.browserTest.open(filePath)
+    queryFn: async () => {
+      const content = await window.studio.fs.openFile(filePath)
+
+      if (content.type !== 'browser-test') {
+        throw new Error(`Expected browser-test content, got ${content.type}`)
+      }
+
+      return content.data
     },
   })
 }

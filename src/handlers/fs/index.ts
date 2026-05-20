@@ -9,12 +9,13 @@ import {
   GENERATORS_PATH,
   SCRIPTS_PATH,
 } from '@/constants/workspace'
+import { getStudioFileFromPath } from '@/main/file'
 import { getTempScriptName } from '@/main/script'
 import { browserWindowFromEvent } from '@/utils/electron'
-import { showSaveDialog, writeFile } from '@/utils/fs'
+import { readFile, showSaveDialog, writeFile } from '@/utils/fs'
 import * as path from '@/utils/path'
 
-import { serializeContent } from './serialization'
+import { deserializeContent, serializeContent } from './serialization'
 import { FileContent, FileLocation, FsHandler, StorageLocation } from './types'
 
 function getDefaultPath(location: StorageLocation) {
@@ -69,6 +70,21 @@ export function initialize() {
       await writeFile(location.path, serializedContent)
 
       return location
+    }
+  )
+
+  ipcMain.handle(
+    FsHandler.OpenFile,
+    async (_, filePath: string): Promise<FileContent> => {
+      const file = getStudioFileFromPath(filePath)
+
+      if (!file) {
+        return { type: 'unsupported' }
+      }
+
+      const raw = await readFile(filePath, { encoding: 'utf-8', flag: 'r' })
+
+      return deserializeContent(filePath, raw, file.type)
     }
   )
 }

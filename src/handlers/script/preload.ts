@@ -5,17 +5,10 @@ import { Check, LogEntry } from '@/schemas/k6'
 
 import { createListener } from '../utils'
 
-import { OpenScriptResult, ScriptHandler } from './types'
+import { ScriptHandler } from './types'
 
 export function showScriptSelectDialog() {
   return ipcRenderer.invoke(ScriptHandler.Select) as Promise<string | void>
-}
-
-export function openScript(scriptPath: string) {
-  return ipcRenderer.invoke(
-    ScriptHandler.Open,
-    scriptPath
-  ) as Promise<OpenScriptResult>
 }
 
 export function runScriptFromGenerator(

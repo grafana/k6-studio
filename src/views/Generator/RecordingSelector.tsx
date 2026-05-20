@@ -28,9 +28,13 @@ export function RecordingSelector({
 
   const handleOpen = async (filePath: string) => {
     try {
-      const har = await window.studio.har.openFile(filePath)
+      const content = await window.studio.fs.openFile(filePath)
 
-      const proxyData = harToProxyData(har)
+      if (content.type !== 'recording') {
+        throw new Error(`Expected recording content, got ${content.type}`)
+      }
+
+      const proxyData = harToProxyData(content.data)
       setRecording(proxyData, filePath)
       onChangeRecording?.()
     } catch (error) {

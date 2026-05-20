@@ -72,7 +72,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
     location: { type: 'file', path: file.path },
     content: () => ({
       type: 'browser-test' as const,
-      content: {
+      data: {
         ...data,
         actions: test.actions,
         options: test.options,

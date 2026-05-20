@@ -11,13 +11,6 @@ export function create(actions?: AnyBrowserAction[]) {
   ) as Promise<string>
 }
 
-export function open(filePath: string) {
-  return ipcRenderer.invoke(
-    BrowserTestHandler.Open,
-    filePath
-  ) as Promise<BrowserTestFile>
-}
-
 export function save(filePath: string, data: BrowserTestFile) {
   return ipcRenderer.invoke(
     BrowserTestHandler.Save,

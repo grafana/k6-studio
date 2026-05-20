@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import invariant from 'tiny-invariant'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
@@ -26,13 +25,15 @@ export function RecordingPreviewer() {
     ;(async () => {
       setIsLoading(true)
       setProxyData([])
-      const har = await window.studio.har.openFile(file.path)
+      const content = await window.studio.fs.openFile(file.path)
       setIsLoading(false)
 
-      invariant(har, 'Failed to open file')
+      if (content.type !== 'recording') {
+        throw new Error(`Expected recording content, got ${content.type}`)
+      }
 
-      setProxyData(harToProxyData(har))
-      setBrowserEvents(har.log._browserEvents?.events ?? [])
+      setProxyData(harToProxyData(content.data))
+      setBrowserEvents(content.data.log._browserEvents?.events ?? [])
     })()
 
     return () => {

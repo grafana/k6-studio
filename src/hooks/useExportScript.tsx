@@ -33,7 +33,9 @@ export function useExportScript({
     },
     content: async (location) => ({
       type: 'script',
-      content: await content(location.path),
+      data: await content(location.path),
+      isExternal: false,
+      options: {},
     }),
     filters: [{ name: 'k6 test scripts', extensions: ['js'] }],
     onSuccess(location) {

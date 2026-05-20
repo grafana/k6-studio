@@ -37,11 +37,21 @@ export async function generateScriptFromGenerator(scriptPath: string) {
 }
 
 export const loadGeneratorFile = async (filePath: string) => {
-  const generator = await window.studio.generator.loadGenerator(filePath)
-  return generator
+  const content = await window.studio.fs.openFile(filePath)
+
+  if (content.type !== 'generator') {
+    throw new Error(`Expected generator content, got ${content.type}`)
+  }
+
+  return content.data
 }
 
 export const loadHarFile = async (fileName: string) => {
-  const har = await window.studio.har.openFile(fileName)
-  return harToProxyData(har)
+  const content = await window.studio.fs.openFile(fileName)
+
+  if (content.type !== 'recording') {
+    throw new Error(`Expected recording content, got ${content.type}`)
+  }
+
+  return harToProxyData(content.data)
 }
