@@ -1,17 +1,15 @@
 import { ipcMain } from 'electron'
 
-import { K6_BROWSER_TEST_FILE_EXTENSION } from '@/constants/files'
-import { BROWSER_TESTS_PATH } from '@/constants/workspace'
 import {
   type AnyBrowserAction,
   BrowserTestFile,
   BrowserTestFileDataSchema,
-  defaultBrowserTestOptions,
 } from '@/schemas/browserTest'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
-import { createFileWithUniqueName, readFile, writeFile } from '@/utils/fs'
+import { readFile, writeFile } from '@/utils/fs'
 
+import { createBrowserTest } from './create'
 import { BrowserTestHandler } from './types'
 
 export function initialize() {
@@ -20,24 +18,7 @@ export function initialize() {
     async (_, actions?: AnyBrowserAction[]) => {
       console.info(`${BrowserTestHandler.Create} event received`)
 
-      const browserTest: BrowserTestFile = {
-        version: '1.0',
-        actions: actions ?? [],
-        options: defaultBrowserTestOptions,
-      }
-
-      const filePath = await createFileWithUniqueName({
-        data: JSON.stringify(browserTest, null, 2),
-        directory: BROWSER_TESTS_PATH,
-        ext: K6_BROWSER_TEST_FILE_EXTENSION,
-        prefix: 'Browser',
-      })
-
-      trackEvent({
-        event: UsageEventName.BrowserTestCreated,
-      })
-
-      return filePath
+      return createBrowserTest(actions)
     }
   )
 

@@ -2,9 +2,11 @@ import { BrowserWindow, Menu, shell } from 'electron'
 
 import { PROJECT_PATH } from '@/constants/workspace'
 import { AppHandler } from '@/handlers/app/types'
+import { createBrowserTest } from '@/handlers/browserTest/create'
+import { createGenerator } from '@/handlers/generator/create'
 import { UIHandler } from '@/handlers/ui/types'
 import { getStudioFileFromPath } from '@/main/file'
-import { getViewPath } from '@/routeMap'
+import { getViewPath, routeMap } from '@/routeMap'
 import { showOpenDialog } from '@/utils/fs'
 
 import { reportNewIssue } from '../utils/bugReport'
@@ -23,7 +25,53 @@ const template: Electron.MenuItemConstructorOptions[] = [
     label: 'File',
     submenu: [
       {
-        label: 'Open',
+        label: 'New',
+        submenu: [
+          {
+            label: 'Recording',
+            click: (_, window) => {
+              if (window instanceof BrowserWindow === false) {
+                return
+              }
+
+              window.webContents.send(AppHandler.Navigate, routeMap.recorder)
+            },
+          },
+          {
+            label: 'HTTP test',
+            click: async (_, window) => {
+              if (window instanceof BrowserWindow === false) {
+                return
+              }
+
+              const filePath = await createGenerator()
+
+              window.webContents.send(
+                AppHandler.Navigate,
+                getViewPath('generator', filePath)
+              )
+            },
+          },
+          {
+            label: 'Browser test',
+            click: async (_, window) => {
+              if (window instanceof BrowserWindow === false) {
+                return
+              }
+
+              const filePath = await createBrowserTest()
+
+              window.webContents.send(
+                AppHandler.Navigate,
+                getViewPath('browser-test', filePath)
+              )
+            },
+          },
+        ],
+      },
+      { type: 'separator' },
+      {
+        label: 'Open...',
         accelerator: 'CmdOrCtrl+O',
         click: async (_, window) => {
           if (window instanceof BrowserWindow === false) {
