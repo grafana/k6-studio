@@ -83,12 +83,12 @@ function DataFileRow({ file, onRemove }: DataFileRowProps) {
       (rule) =>
         rule.type === 'parameterization' &&
         rule.value.type === 'dataFileValue' &&
-        rule.value.fileName === file.name
+        path.equal(rule.value.fileName, file.name)
     )
   )
 
   const isFileMissing = useStudioUIStore(
-    (store) => !store.dataFiles.has(file.name)
+    (store) => !store.dataFiles.has(path.key(file.name))
   )
 
   return (
