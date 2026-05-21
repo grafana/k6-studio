@@ -10,40 +10,25 @@ import {
 } from '@radix-ui/themes'
 import { DiscIcon, GlobeIcon } from 'lucide-react'
 import { useRef } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
-import { useLocalStorage } from 'react-use'
+import { NavLink } from 'react-router-dom'
 
 import { useOverflowCheck } from '@/hooks/useOverflowCheck'
 import { useRecentURLs } from '@/hooks/useRecentURLs'
-import { LaunchBrowserOptions } from '@/recorder/types'
+import {
+  StartRecordingNavigationState,
+  useStartRecording,
+} from '@/hooks/useStartRecording'
 import { getRoutePath } from '@/routeMap'
 import { useStudioUIStore } from '@/store/ui'
 
 import { SidebarEmptyState } from './SidebarEmptyState'
 
-export interface StartRecordingNavigationState {
-  autoStart?: LaunchBrowserOptions
-  prefilledURL?: string
-}
+export type { StartRecordingNavigationState }
 
 export function RecentURLsPanel() {
   const { recentURLs, removeURL } = useRecentURLs()
-  const navigate = useNavigate()
-  const [captureBrowser = true] = useLocalStorage(
-    'start-recording.capture.browser',
-    true
-  )
+  const startRecording = useStartRecording()
   const proxyStatus = useStudioUIStore((state) => state.proxyStatus)
-
-  const handleStartRecording = (url: string) => {
-    const state: StartRecordingNavigationState = {
-      autoStart: {
-        url,
-        capture: { browser: captureBrowser },
-      },
-    }
-    navigate(getRoutePath('recorder'), { state })
-  }
 
   return (
     <Flex direction="column" height="100%" overflow="hidden">
@@ -65,7 +50,7 @@ export function RecentURLsPanel() {
                     key={url}
                     url={url}
                     disabled={proxyStatus !== 'online'}
-                    onStartRecording={handleStartRecording}
+                    onStartRecording={startRecording}
                     onRemove={removeURL}
                   />
                 ))}

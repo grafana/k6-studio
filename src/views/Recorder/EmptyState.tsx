@@ -21,18 +21,20 @@ import {
 import { ReactNode, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useLocalStorage } from 'react-use'
 import { z } from 'zod'
 
 import { FieldGroup } from '@/components/Form'
-import { StartRecordingNavigationState } from '@/components/Layout/Sidebar/RecentURLsPanel'
 import { ProxyHealthWarning } from '@/components/ProxyHealthWarning'
 import { TextButton } from '@/components/TextButton'
 import { useProxyHealthCheck } from '@/hooks/useProxyHealthCheck'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useRecentURLs } from '@/hooks/useRecentURLs'
 import { useBrowserCheck, useSettings } from '@/hooks/useSettings'
-import { LaunchBrowserOptions } from '@/recorder/types'
+import {
+  StartRecordingNavigationState,
+  useStartRecording,
+} from '@/hooks/useStartRecording'
+import { useSyncedLocalStorage } from '@/hooks/useSyncedLocalStorage'
 import { useStudioUIStore } from '@/store/ui'
 import { ProxyStatus } from '@/types'
 
@@ -40,14 +42,13 @@ import { RecentURLs } from './RecentURLs'
 
 interface EmptyStateProps {
   isLoading: boolean
-  onStart: (options: LaunchBrowserOptions) => void
 }
 
 const RecorderEmptyStateSchema = z.object({ url: z.string() })
 
 type RecorderEmptyStateFields = z.infer<typeof RecorderEmptyStateSchema>
 
-export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
+export function EmptyState({ isLoading }: EmptyStateProps) {
   const { data: settings } = useSettings()
 
   const proxyStatus = useProxyStatus()
@@ -58,8 +59,9 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
   const navigationState = location.state as StartRecordingNavigationState | null
   const prefilledURL = navigationState?.prefilledURL ?? ''
 
-  const [captureBrowser = true, setCaptureBrowser] = useLocalStorage(
+  const [captureBrowser = true, setCaptureBrowser] = useSyncedLocalStorage(
     'start-recording.capture.browser',
+    z.boolean(),
     true
   )
 
@@ -83,7 +85,8 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
     navigate(location.pathname, { replace: true, state: null })
   }, [navigationState?.prefilledURL, navigate, location.pathname, setValue])
 
-  const { recentURLs, addURL, removeURL } = useRecentURLs({ limit: 3 })
+  const { recentURLs, removeURL } = useRecentURLs({ limit: 3 })
+  const startRecording = useStartRecording()
 
   const canRecord = proxyStatus === 'online' && isBrowserInstalled === true
 
@@ -92,12 +95,7 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
       return
     }
 
-    addURL(url)
-
-    onStart({
-      url,
-      capture: { browser: captureBrowser },
-    })
+    startRecording(url)
   }
 
   const handleCaptureBrowserChange = (value: boolean | 'indeterminate') => {

@@ -4,12 +4,12 @@ import { StopCircle } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useBlocker, useLocation, useNavigate } from 'react-router-dom'
 
-import { StartRecordingNavigationState } from '@/components/Layout/Sidebar/RecentURLsPanel'
 import { View } from '@/components/Layout/View'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { DEFAULT_GROUP_NAME } from '@/constants'
 import { useListenBrowserEvent } from '@/hooks/useListenBrowserEvent'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
+import { StartRecordingNavigationState } from '@/hooks/useStartRecording'
 import { LaunchBrowserOptions } from '@/recorder/types'
 import { getViewPath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
@@ -234,9 +234,7 @@ export function Recorder() {
           )
         }
       >
-        {recorderState === 'idle' && (
-          <EmptyState isLoading={isLoading} onStart={handleStartRecording} />
-        )}
+        {recorderState === 'idle' && <EmptyState isLoading={isLoading} />}
 
         {recorderState !== 'idle' && (
           <RecordingInspector
