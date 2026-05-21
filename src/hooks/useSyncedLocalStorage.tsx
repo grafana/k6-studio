@@ -1,14 +1,13 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useUpdateEffect } from 'react-use'
 import { ZodType } from 'zod'
 
 class LocalStorageSyncEvent<T> extends CustomEvent<{
   key: string
-  senderId: string
   value: T
 }> {
-  constructor(key: string, senderId: string, value: T) {
-    super('local-storage-sync', { detail: { key, senderId, value } })
+  constructor(key: string, value: T) {
+    super('local-storage-sync', { detail: { key, value } })
   }
 }
 
@@ -17,7 +16,6 @@ export function useSyncedLocalStorage<T>(
   schema: ZodType<T>,
   defaultValue: T
 ): [T, (value: T | ((prev: T) => T)) => void] {
-  const senderId = useId()
   const defaultValueRef = useRef(defaultValue)
   const schemaRef = useRef(schema)
   schemaRef.current = schema
@@ -121,17 +119,17 @@ export function useSyncedLocalStorage<T>(
           ? (value as (prev: T) => T)(latestValueRef.current)
           : value
 
-      latestValueRef.current = nextValue
-
       try {
         localStorage.setItem(key, JSON.stringify(nextValue))
       } catch {
         return
       }
 
-      window.dispatchEvent(new LocalStorageSyncEvent(key, senderId, nextValue))
+      latestValueRef.current = nextValue
+
+      window.dispatchEvent(new LocalStorageSyncEvent(key, nextValue))
     },
-    [key, senderId]
+    [key]
   )
 
   return [storedValue, setValue]
