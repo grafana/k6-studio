@@ -134,7 +134,7 @@ export function ExportScriptDialog({
         selectedGeneratorPath
       )
 
-      return handleExport(generator)
+      return await handleExport(generator)
     } catch {
       showToast({ title: 'Failed to load generator.', status: 'error' })
     } finally {
