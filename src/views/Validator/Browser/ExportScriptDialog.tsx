@@ -144,7 +144,7 @@ export function ExportScriptDialog({
 
   const isDisabled =
     isExporting ||
-    allowlist.length === 0 ||
+    (mode === 'allowlist' && allowlist.length === 0) ||
     (mode === 'generator' && !selectedGeneratorPath)
 
   return (
