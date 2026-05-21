@@ -48,21 +48,19 @@ export function useRecentURLs({ limit }: UseRecentURLsOptions = {}) {
       return
     }
 
-    const newUrls = storedURLs.filter(
-      (existingUrl) => !areSameURL(existingUrl, trimmedURL)
-    )
+    setRecentURLs((prev) => {
+      const newUrls = prev.filter(
+        (existingUrl) => !areSameURL(existingUrl, trimmedURL)
+      )
 
-    const updatedURLs = [trimmedURL, ...newUrls].slice(0, MAX_RECENT_URLS)
-
-    setRecentURLs(updatedURLs)
+      return [trimmedURL, ...newUrls].slice(0, MAX_RECENT_URLS)
+    })
   }
 
   const removeURL = (url: string) => {
-    const filteredURLs = storedURLs.filter(
-      (existingUrl) => !areSameURL(existingUrl, url)
+    setRecentURLs((prev) =>
+      prev.filter((existingUrl) => !areSameURL(existingUrl, url))
     )
-
-    setRecentURLs(filteredURLs)
   }
 
   return { recentURLs, addURL, removeURL }

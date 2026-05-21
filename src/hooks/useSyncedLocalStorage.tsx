@@ -16,7 +16,7 @@ export function useSyncedLocalStorage<T>(
   key: string,
   schema: ZodType<T>,
   defaultValue: T
-): [T, (value: T) => void] {
+): [T, (value: T | ((prev: T) => T)) => void] {
   const senderId = useId()
   const defaultValueRef = useRef(defaultValue)
   const schemaRef = useRef(schema)
@@ -111,16 +111,23 @@ export function useSyncedLocalStorage<T>(
   }, [key, senderId])
 
   const setValue = useCallback(
-    (value: T) => {
-      setStoredValue(value)
+    (value: T | ((prev: T) => T)) => {
+      setStoredValue((prev) => {
+        const nextValue =
+          typeof value === 'function' ? (value as (prev: T) => T)(prev) : value
 
-      try {
-        localStorage.setItem(key, JSON.stringify(value))
-      } catch {
-        return
-      }
+        try {
+          localStorage.setItem(key, JSON.stringify(nextValue))
+        } catch {
+          return prev
+        }
 
-      window.dispatchEvent(new LocalStorageSyncEvent(key, senderId, value))
+        window.dispatchEvent(
+          new LocalStorageSyncEvent(key, senderId, nextValue)
+        )
+
+        return nextValue
+      })
     },
     [key, senderId]
   )
