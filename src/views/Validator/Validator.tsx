@@ -32,7 +32,7 @@ function Content({ file }: ValidatorProps) {
 
   const isRunning = session?.state === 'running'
 
-  const scenarios = data?.options.scenarios
+  const scenarios = data?.options?.scenarios
     ? Object.keys(data.options.scenarios)
     : ['default']
 

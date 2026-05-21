@@ -15,7 +15,7 @@ export function DebuggerEmptyState({
   return (
     <EmptyMessage
       message={children}
-      action={<Button onClick={onDebugScript}>Debug script</Button>}
+      action={<Button onClick={() => onDebugScript()}>Debug script</Button>}
       justify="center"
       maxHeight="800px"
       illustration={undefined}

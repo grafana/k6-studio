@@ -1,16 +1,17 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 import { app } from 'electron'
 import log from 'electron-log/main'
-import { createWriteStream } from 'fs'
-import path from 'path'
 import readline from 'readline/promises'
 import { PassThrough, Readable } from 'stream'
 import { pipeline } from 'stream/promises'
 
 import { LogEntry, LogEntrySchema } from '@/schemas/k6'
 import { getArch, getPlatform } from '@/utils/electron'
+import { createWriteStream } from '@/utils/fs'
 
 import { parseJsonAsSchema } from '../json'
+import * as path from '../path'
+import { toNativePath } from '../path'
 
 import { K6TestOptions, TestOptionsSchema } from './schema'
 import { TestRun } from './testRun'
@@ -90,8 +91,12 @@ export class K6Client {
     cwd,
   }: Omit<ArchiveArgs, 'outputPath'>): Readable {
     const k6Process = this.#spawn('archive', {
-      args: [['--archive-out', '-'], ['--log-format', 'json'], scriptPath],
-      cwd,
+      args: [
+        ['--archive-out', '-'],
+        ['--log-format', 'json'],
+        toNativePath(scriptPath),
+      ],
+      cwd: cwd ? toNativePath(cwd) : undefined,
     })
 
     const stderr: string[] = []
@@ -128,7 +133,7 @@ export class K6Client {
 
   async inspect({ scriptPath }: InspectArgs): Promise<K6TestOptions | null> {
     const process = this.#spawn('inspect', {
-      args: [scriptPath],
+      args: [toNativePath(scriptPath)],
     })
 
     const { code, stdout, stderr } = await this.#wait(process)
@@ -164,7 +169,7 @@ export class K6Client {
       quiet && '--quiet',
       insecureSkipTLSVerify && '--insecure-skip-tls-verify',
       noUsageReport && '--no-usage-report',
-      path,
+      toNativePath(path),
     ]
 
     const process = this.#spawn('run', {
@@ -218,12 +223,16 @@ export class K6Client {
       .filter((arg) => arg !== null && arg !== undefined && arg !== false)
       .flat()
 
-    return spawn(this.#executablePath, [command, ...flattenedArgs], {
-      cwd,
-      env: {
-        ...process.env,
-        ...env,
-      },
-    })
+    return spawn(
+      toNativePath(this.#executablePath),
+      [command, ...flattenedArgs],
+      {
+        cwd,
+        env: {
+          ...process.env,
+          ...env,
+        },
+      }
+    )
   }
 }

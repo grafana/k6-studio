@@ -1,10 +1,8 @@
-import { dialog, BrowserWindow } from 'electron'
+import { BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import type { Options } from 'k6/options'
 import { ChildProcessWithoutNullStreams } from 'node:child_process'
-import { createWriteStream } from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import path from 'path'
 import * as tar from 'tar-stream'
 import { z } from 'zod'
 
@@ -12,8 +10,10 @@ import { TEMP_K6_ARCHIVE_PATH, TEMP_SCRIPT_SUFFIX } from '@/constants/workspace'
 import { ScriptHandler } from '@/handlers/script/types'
 import { getProxyArguments } from '@/main/proxy'
 import { ProxySettings } from '@/types/settings'
+import { createWriteStream, showOpenDialog } from '@/utils/fs'
 import { K6Client } from '@/utils/k6/client'
 import { createTrackingServer } from '@/utils/k6/tracking'
+import * as path from '@/utils/path'
 import { readResource } from '@/utils/resources'
 
 import {
@@ -63,7 +63,7 @@ const ArchiveManifestSchema = z.looseObject({
 })
 
 export const showScriptSelectDialog = async (browserWindow: BrowserWindow) => {
-  const result = await dialog.showOpenDialog(browserWindow, {
+  const result = await showOpenDialog(browserWindow, {
     properties: ['openFile'],
     filters: [{ name: 'k6 test script', extensions: ['js'] }],
   })
@@ -93,7 +93,7 @@ export const runScript = async ({
   browserWindow,
   scenarioName,
 }: RunScriptOptions) => {
-  const modifiedPath = await createArchive(scriptPath)
+  const modifiedPath = await createArchive(scriptPath, scenarioName)
 
   const proxyArgs = await getProxyArguments(proxySettings, {
     prefix: '',
@@ -319,8 +319,8 @@ function createArchive(
       // `open` and `fs.open` read files relative to the entry script, so we need to make sure that
       // our entry script is placed in the same directory as the original one so that paths are resolved correctly.
       const scriptPath = fileURLToPath(metadata.filename, { windows: false })
-      const entrypointPath = path.posix.join(
-        path.posix.dirname(scriptPath),
+      const entrypointPath = path.join(
+        path.dirname(scriptPath),
         getTempScriptName()
       )
 
@@ -331,7 +331,7 @@ function createArchive(
       const modifiedMetadata = {
         ...metadata,
         // Change the entrypoint to point to our instrumented script instead of the original one.
-        filename: pathToFileURL(entrypointPath).toString(),
+        filename: pathToFileURL(entrypointPath, { windows: false }).toString(),
         options: {
           ...options,
         },
@@ -343,7 +343,7 @@ function createArchive(
       )
 
       const entrypointScript = await instrumentScriptFromPath(
-        './' + path.posix.basename(scriptPath)
+        './' + path.basename(scriptPath)
       )
 
       // Write our entrypoint and setup a hard link.
@@ -351,14 +351,14 @@ function createArchive(
       pack.entry(
         {
           type: 'link',
-          name: path.posix.join('file', entrypointPath),
+          name: path.join('file', entrypointPath),
           linkname: 'data',
         },
         ''
       )
 
       // Write the original script content at the original entry path
-      pack.entry({ name: path.posix.join('file', scriptPath) }, scriptContent)
+      pack.entry({ name: path.join('file', scriptPath) }, scriptContent)
 
       if (testingLibs.length > 0) {
         const shim = await readResource('k6-testing-shim')

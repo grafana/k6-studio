@@ -1,13 +1,19 @@
-import { ipcMain, dialog } from 'electron'
-import { readFile, copyFile, writeFile } from 'fs/promises'
-import path from 'path'
+import { ipcMain } from 'electron'
 
 import { RECORDINGS_PATH } from '@/constants/workspace'
 import { Recording, RecordingSchema } from '@/schemas/recording'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent } from '@/utils/electron'
-import { createFileWithUniqueName } from '@/utils/fileSystem'
+import {
+  copyFile,
+  createFileWithUniqueName,
+  readFile,
+  writeFile,
+  showOpenDialog,
+  showSaveDialog,
+} from '@/utils/fs'
+import * as path from '@/utils/path'
 
 import { HarHandler } from './types'
 
@@ -57,7 +63,7 @@ export function initialize() {
 
       const browserWindow = browserWindowFromEvent(event)
 
-      const result = await dialog.showSaveDialog(browserWindow, {
+      const result = await showSaveDialog(browserWindow, {
         defaultPath: path.join(RECORDINGS_PATH, hint),
         filters: [{ name: 'HAR', extensions: ['har'] }],
       })
@@ -77,7 +83,7 @@ export function initialize() {
 
     const browserWindow = browserWindowFromEvent(event)
 
-    const dialogResult = await dialog.showOpenDialog(browserWindow, {
+    const dialogResult = await showOpenDialog(browserWindow, {
       message: 'Import HAR file',
       properties: ['openFile'],
       defaultPath: RECORDINGS_PATH,

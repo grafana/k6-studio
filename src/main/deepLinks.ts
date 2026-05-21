@@ -1,8 +1,8 @@
 import { app, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
-import path from 'path'
 
 import { AppHandler } from '@/handlers/app/types'
+import * as path from '@/utils/path'
 
 import { CUSTOM_APP_PROTOCOL } from './deepLinks.constants'
 
@@ -19,7 +19,7 @@ function registerCustomProtocol() {
   if (process.defaultApp) {
     if (process.argv.length >= 2) {
       app.setAsDefaultProtocolClient(CUSTOM_APP_PROTOCOL, process.execPath, [
-        path.resolve(process.argv[1] ?? ''),
+        path.toNativePath(path.resolve(process.argv[1] ?? '')),
       ])
     }
   } else {

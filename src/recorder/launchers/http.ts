@@ -1,6 +1,7 @@
 import { ChildProcess, spawn } from 'child_process'
 
 import { EventEmitter } from '@/utils/events'
+import { toNativePath } from '@/utils/path'
 
 import {
   BrowserLaunchError,
@@ -46,7 +47,7 @@ export async function launchBrowserWithHttpOnly(
 
   let spawned = false
 
-  const process = spawn(path, args, {
+  const process = spawn(toNativePath(path), args, {
     stdio: ['ignore', 'ignore', 'ignore', 'pipe', 'pipe'],
   })
 

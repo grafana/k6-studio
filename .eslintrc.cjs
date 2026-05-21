@@ -76,6 +76,50 @@ module.exports = {
       },
     ],
     'import/no-unresolved': ['error', { ignore: ['^k6'] }],
+    'no-restricted-imports': [
+      'error',
+      {
+        paths: [
+          {
+            name: 'fs',
+            message: "Import from '@/utils/fs' instead.",
+          },
+          {
+            name: 'fs/promises',
+            message: "Import from '@/utils/fs' instead.",
+          },
+          {
+            name: 'node:fs',
+            message: "Import from '@/utils/fs' instead.",
+          },
+          {
+            name: 'node:fs/promises',
+            message: "Import from '@/utils/fs' instead.",
+          },
+          {
+            name: 'chokidar',
+            message: "Import from '@/utils/fs' instead.",
+          },
+          {
+            name: 'electron',
+            importNames: ['dialog'],
+            message: "Import the dialog wrappers from '@/utils/fs' instead.",
+          },
+          {
+            name: 'path',
+            message: "Import from '@/utils/path' instead.",
+          },
+          {
+            name: 'node:path',
+            message: "Import from '@/utils/path' instead.",
+          },
+          {
+            name: 'pathe',
+            message: "Import from '@/utils/path' instead.",
+          },
+        ],
+      },
+    ],
   },
 
   parserOptions: {
@@ -83,4 +127,19 @@ module.exports = {
     tsconfigRootDir: __dirname,
     project: ['./tsconfig.json'],
   },
+
+  overrides: [
+    {
+      files: [
+        '**/*.test.ts',
+        'scripts/**',
+        'vite.*.config.ts',
+        'forge.config.ts',
+        'windowsSign.ts',
+      ],
+      rules: {
+        'no-restricted-imports': 'off',
+      },
+    },
+  ],
 }

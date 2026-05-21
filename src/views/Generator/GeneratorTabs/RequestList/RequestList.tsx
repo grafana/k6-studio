@@ -9,6 +9,7 @@ import { useApplyRules } from '@/store/generator/hooks/useApplyRules'
 import { useHighlightRequestChanges } from '@/store/generator/hooks/useHighlightRequestChanges'
 import { useStudioUIStore } from '@/store/ui'
 import { ProxyData } from '@/types'
+import * as path from '@/utils/path'
 
 import { Header } from './Header'
 import { validateRecording } from './RequestList.utils'
@@ -52,7 +53,7 @@ export function RequestList({
     (store) => store.setShowAllowlistDialog
   )
 
-  const recording = recordings.get(recordingPath)
+  const recording = recordings.get(path.key(recordingPath))
 
   const recordingError = validateRecording({
     allowlist,

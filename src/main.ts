@@ -2,8 +2,9 @@ import * as Sentry from '@sentry/electron/main'
 import { app, autoUpdater, BrowserWindow, nativeTheme } from 'electron'
 import log from 'electron-log/main'
 import isSquirrelStartup from 'electron-squirrel-startup'
-import path from 'path'
 import { updateElectronApp } from 'update-electron-app'
+
+import * as path from '@/utils/path'
 
 import * as handlers from './handlers'
 import { ProxyHandler } from './handlers/proxy/types'

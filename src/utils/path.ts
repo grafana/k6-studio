@@ -1,193 +1,66 @@
-const isWindows =
-  (globalThis.window && globalThis.window.studio?.platform === 'win32') ||
-  (globalThis.process && globalThis.process.platform === 'win32')
+/* eslint-disable no-restricted-imports */
+import { parse } from 'pathe'
+
+const platform =
+  globalThis.window?.studio?.platform ?? globalThis.process?.platform
+
+const isWindows = platform === 'win32'
+const isMac = platform === 'darwin'
+
+// Windows (NTFS) and macOS (APFS/HFS+) default to case-insensitive file
+// systems. Linux is case-sensitive. We can't detect the user's exact
+// filesystem cheaply, so we assume the platform default.
+const isCaseInsensitive = isWindows || isMac
 
 export const sep = isWindows ? '\\' : '/'
 
-function getRoot(path: string): string {
-  if (isWindows) {
-    const driveMatch = path.match(/^[a-zA-Z]:[/\\]/)
-
-    if (driveMatch) {
-      return driveMatch[0].replace('/', '\\')
-    }
-
-    const uncMatch = path.match(/^[/\\]{2}[^/\\]+[/\\]/)
-
-    if (uncMatch) {
-      return uncMatch[0].replace(/\//g, '\\')
-    }
-
-    return ''
-  }
-
-  return path.startsWith('/') ? '/' : ''
+export function toNativePath(p: string): string {
+  return p.split('/').join(sep)
 }
 
-function splitParts(path: string, root: string): string[] {
-  return path.slice(root.length).split(/[/\\]/).filter(Boolean)
+export function toPosixPath(p: string): string {
+  return p.split(sep).join('/')
 }
 
-export function normalize(path: string): string {
-  const root = getRoot(path)
-  const parts = splitParts(path, root)
-  const resolved: string[] = []
-
-  for (const part of parts) {
-    if (part === '..') {
-      if (resolved.length > 0) {
-        resolved.pop()
-      } else if (!root) {
-        resolved.push('..')
-      }
-    } else if (part !== '.') {
-      resolved.push(part)
-    }
-  }
-
-  return root + resolved.join(sep) || '.'
+/**
+ * Convenience function to extract the filename with extension from a path. Corresponds
+ * to `path.parse(path).name`.
+ */
+export function name(path: string): string {
+  return parse(path).name
 }
 
-export function join(...parts: string[]): string {
-  return normalize(parts.join(sep))
+/**
+ * Normalize a path for comparison or use as a map key. Lower-cases on
+ * platforms whose file systems are usually case-insensitive (Windows, macOS).
+ */
+export function key(p: string): string {
+  return isCaseInsensitive ? p.toLowerCase() : p
 }
 
-export function basename(path: string, extension?: string): string {
-  const root = getRoot(path)
-  const parts = splitParts(path, root)
-
-  const base = parts[parts.length - 1] ?? ''
-
-  if (extension && base.endsWith(extension)) {
-    return base.slice(0, base.length - extension.length)
-  }
-
-  return base
+/**
+ * Checks two paths for equality, accounting for case-insensitivity on different
+ * platforms.
+ */
+export function equal(a: string, b: string): boolean {
+  return key(a) === key(b)
 }
 
-export function dirname(path: string): string {
-  const root = getRoot(path)
-  const parts = splitParts(path, root)
-
-  if (parts.length <= 1) {
-    return root || '.'
-  }
-
-  return root + parts.slice(0, -1).join(sep)
-}
-
-export function extname(path: string): string {
-  const base = basename(path)
-  const dotIndex = base.lastIndexOf('.')
-
-  if (dotIndex <= 0) {
-    return ''
-  }
-
-  return base.slice(dotIndex)
-}
-
-export function name(path: string) {
-  const base = basename(path)
-  const ext = extname(path)
-
-  return base.slice(0, base.length - ext.length)
-}
-
-export function isAbsolute(path: string): boolean {
-  return getRoot(path) !== ''
-}
-
-function isSegmentEqual(a: string, b: string) {
-  if (isWindows) {
-    return a.toLowerCase() === b.toLowerCase()
-  }
-
-  return a === b
-}
-
-export function relative(from: string, to: string): string {
-  const fromRoot = getRoot(from)
-  const toRoot = getRoot(to)
-
-  if (!isSegmentEqual(fromRoot, toRoot)) {
-    return to
-  }
-
-  const fromParts = resolveParts(splitParts(from, fromRoot))
-  const toParts = resolveParts(splitParts(to, toRoot))
-
-  let common = 0
-
-  while (common < fromParts.length && common < toParts.length) {
-    const from = fromParts[common]
-    const to = toParts[common]
-
-    if (from === undefined || to === undefined) {
-      throw new Error('Unexpected undefined segment')
-    }
-
-    if (!isSegmentEqual(from, to)) {
-      break
-    }
-
-    common++
-  }
-
-  const upLevels = fromParts.length - common
-  const segments = [
-    ...new Array<string>(upLevels).fill('..'),
-    ...toParts.slice(common),
-  ]
-
-  return segments.join(sep)
-}
-
-function resolveParts(parts: string[]): string[] {
-  const resolved: string[] = []
-
-  for (const part of parts) {
-    if (part === '..') {
-      if (resolved.length > 0 && resolved[resolved.length - 1] !== '..') {
-        resolved.pop()
-      } else {
-        resolved.push('..')
-      }
-    } else if (part !== '.') {
-      resolved.push(part)
-    }
-  }
-
-  return resolved
-}
-
-export interface ParsedPath {
-  root: string
-  dir: string
-  base: string
-  ext: string
-  name: string
-}
-
-export function toPosix(path: string): string {
-  return path.replace(/\\/g, '/')
-}
-
-export function toNative(path: string): string {
-  if (isWindows) {
-    return path.replace(/\//g, '\\')
-  }
-
-  return toPosix(path)
-}
-
-export function parse(path: string): ParsedPath {
-  const root = getRoot(path)
-  const base = basename(path)
-  const ext = extname(path)
-  const dir = dirname(path)
-
-  const name = base.slice(0, base.length - ext.length)
-
-  return { root, dir, base, ext, name }
-}
+export {
+  basename,
+  delimiter,
+  dirname,
+  extname,
+  format,
+  isAbsolute,
+  join,
+  matchesGlob,
+  normalize,
+  normalizeString,
+  parse,
+  posix,
+  relative,
+  resolve,
+  toNamespacedPath,
+  win32,
+} from 'pathe'
