@@ -188,8 +188,8 @@ export function ExportScriptDialog({
           {mode === 'generator' && (
             <Flex direction="column" gap="2">
               <Text size="2" color="gray">
-                Select a generator to apply its rules and settings to the
-                captured network traffic.
+                Select an HTTP test generator to apply its rules and settings to
+                the captured network traffic.
               </Text>
               {generators.length === 0 ? (
                 <Text size="2" color="amber">

@@ -45,7 +45,7 @@ export function ExportNetworkTrafficButton({
     }
   }
 
-  const handleExportGenerator = async () => {
+  const handleExportHttpTest = async () => {
     try {
       const har = proxyDataToHar(session.requests, [])
       const recordingPath = await window.studio.har.exportFile(
@@ -92,9 +92,9 @@ export function ExportNetworkTrafficButton({
           />
           <RichDropdownMenuItem
             icon={<ServerCogIcon size={16} />}
-            label="Generator"
-            description="Save as a recording and use it in a new generator"
-            onClick={handleExportGenerator}
+            label="HTTP test"
+            description="Save as a recording and use it in a new HTTP test"
+            onClick={handleExportHttpTest}
           />
           <RichDropdownMenuItem
             icon={<CodeIcon size={16} />}
