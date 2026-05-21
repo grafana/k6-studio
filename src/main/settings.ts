@@ -1,14 +1,13 @@
-import { app, BrowserWindow, dialog, nativeTheme } from 'electron'
+import { app, BrowserWindow, nativeTheme } from 'electron'
 import log from 'electron-log/main'
-import { existsSync, readFileSync } from 'fs'
-import { writeFile, open } from 'fs/promises'
-import path from 'path'
 
 import { configureSystemProxy } from '@/services/http'
+import * as path from '@/utils/path'
 
 import { AppSettingsSchema } from '../schemas/settings'
 import { AppSettings } from '../types/settings'
 import { getPlatform } from '../utils/electron'
+import { exists, readFile, showOpenDialog, writeFile } from '../utils/fs'
 import { safeJsonParse } from '../utils/json'
 import { getExecutableNameFromPlist } from '../utils/plist'
 
@@ -40,11 +39,11 @@ const filePath = path.join(app.getPath('userData'), fileName)
  * don't sit on the user's machine after they upgrade.
  */
 export async function initSettings() {
-  if (!existsSync(filePath)) {
+  if (!(await exists(filePath))) {
     return writeFile(filePath, JSON.stringify(defaultSettings))
   }
 
-  const raw = readFileSync(filePath, 'utf-8')
+  const raw = await readFile(filePath, 'utf-8')
   const rawParsed = safeJsonParse<{ version?: unknown }>(raw)
 
   if (!rawParsed) {
@@ -74,9 +73,8 @@ export async function initSettings() {
  * @returns The current settings as JSON
  */
 export async function getSettings() {
-  const fileHandle = await open(filePath, 'r')
   try {
-    const settings = await fileHandle?.readFile({ encoding: 'utf-8' })
+    const settings = await readFile(filePath, 'utf-8')
     // TODO: https://github.com/grafana/k6-studio/issues/277
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const currentSettings = JSON.parse(settings)
@@ -89,8 +87,6 @@ export async function getSettings() {
     // if the file is invalid during runtime,
     // return a valid settings object so the app can keep running
     return defaultSettings
-  } finally {
-    await fileHandle?.close()
   }
 }
 
@@ -132,34 +128,39 @@ function getSettingsDiff(
   return diff
 }
 
-export async function selectBrowserExecutable() {
+export async function selectBrowserExecutable(browserWindow: BrowserWindow) {
   const extensions = { mac: ['app'], win: ['exe'], linux: ['*'] }
 
-  const { canceled, filePaths, bookmarks } = await dialog.showOpenDialog({
-    title: 'Select browser executable',
-    properties: ['openFile'],
-    filters: [{ name: 'Executables', extensions: extensions[getPlatform()] }],
-  })
+  const { canceled, filePaths, bookmarks } = await showOpenDialog(
+    browserWindow,
+    {
+      title: 'Select browser executable',
+      properties: ['openFile'],
+      filters: [{ name: 'Executables', extensions: extensions[getPlatform()] }],
+    }
+  )
 
-  function getFilePaths() {
+  async function getFilePaths() {
     if (getPlatform() === 'mac') {
-      return filePaths.map((filePath) => {
-        const plistPath = path.join(filePath, 'Contents', 'Info.plist')
-        const executableName = getExecutableNameFromPlist(plistPath)
-        if (executableName) {
-          return path.join(filePath, 'Contents', 'MacOS', executableName)
-        }
-        return filePath
-      })
+      return Promise.all(
+        filePaths.map(async (filePath) => {
+          const plistPath = path.join(filePath, 'Contents', 'Info.plist')
+          const executableName = await getExecutableNameFromPlist(plistPath)
+          if (executableName) {
+            return path.join(filePath, 'Contents', 'MacOS', executableName)
+          }
+          return filePath
+        })
+      )
     }
     return filePaths
   }
 
-  return { canceled, bookmarks, filePaths: getFilePaths() }
+  return { canceled, bookmarks, filePaths: await getFilePaths() }
 }
 
-export async function selectUpstreamCertificate() {
-  return dialog.showOpenDialog({
+export async function selectUpstreamCertificate(browserWindow: BrowserWindow) {
+  return showOpenDialog(browserWindow, {
     title: 'Select certificate',
     properties: ['openFile'],
     filters: [{ name: 'Proxy certificate', extensions: ['pem', 'cer', 'p12'] }],

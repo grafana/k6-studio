@@ -1,10 +1,10 @@
 import { app } from 'electron'
 import log from 'electron-log/main'
-import { writeFile, readFile } from 'fs/promises'
 
 import { TRACKING_URL, INSTALLATION_ID_FILE } from '@/constants/usage'
 import { getProfileData } from '@/handlers/auth/fs'
 import { getArch, getPlatform } from '@/utils/electron'
+import { writeFile, readFile } from '@/utils/fs'
 import { uuid } from '@/utils/uuid'
 
 import {

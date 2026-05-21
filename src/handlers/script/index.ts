@@ -1,7 +1,5 @@
 import { ipcMain } from 'electron'
 import log from 'electron-log/main'
-import { readFile, writeFile, unlink } from 'fs/promises'
-import path from 'path'
 
 import { SCRIPTS_PATH } from '@/constants/workspace'
 import { waitForProxy } from '@/main/proxy'
@@ -9,8 +7,10 @@ import { showScriptSelectDialog, runScript } from '@/main/script'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent } from '@/utils/electron'
+import { readFile, unlink, writeFile } from '@/utils/fs'
 import { ArchiveError, K6Client } from '@/utils/k6/client'
 import { TestRun } from '@/utils/k6/testRun'
+import * as path from '@/utils/path'
 import { isExternalScript } from '@/utils/workspace'
 
 import { ScriptHandler } from './types'

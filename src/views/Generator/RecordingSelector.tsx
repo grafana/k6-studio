@@ -22,7 +22,7 @@ export function RecordingSelector({
   const setRecording = useGeneratorStore((store) => store.setRecording)
   const showToast = useToast()
 
-  const selectedRecording = recordings.get(recordingPath)
+  const selectedRecording = recordings.get(path.key(recordingPath))
   const isRecordingMissing =
     selectedRecording === undefined && recordingPath !== ''
 

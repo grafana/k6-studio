@@ -8,15 +8,18 @@ import log from 'electron-log/main'
 import { promisify } from 'util'
 
 import { RecorderSettings } from '@/types/settings'
+import * as path from '@/utils/path'
 
 import { getPlatform } from './electron'
 
 function getChromePath() {
   try {
-    return computeSystemExecutablePath({
-      browser: Browser.CHROME,
-      channel: ChromeReleaseChannel.STABLE,
-    })
+    return path.normalize(
+      computeSystemExecutablePath({
+        browser: Browser.CHROME,
+        channel: ChromeReleaseChannel.STABLE,
+      })
+    )
   } catch (e) {
     log.error(e)
     return undefined
@@ -36,7 +39,7 @@ async function getChromiumPath() {
       return undefined
     }
 
-    return stdout.trim()
+    return path.normalize(stdout.trim())
   } catch (error) {
     log.error(error)
     return undefined

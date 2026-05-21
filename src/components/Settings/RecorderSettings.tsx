@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
 import { AppSettings } from '@/types/settings'
+import { toNativePath } from '@/utils/path'
 
 import { FileUploadInput } from '../Form'
 
@@ -31,8 +32,11 @@ export const RecorderSettings = () => {
   const handleSelectFile = async () => {
     const result = await window.studio.settings.selectBrowserExecutable()
     const { canceled, filePaths } = result
-    if (canceled || !filePaths.length) return
-    setValue('recorder.browserPath', filePaths[0], { shouldDirty: true })
+    const filePath = filePaths[0]
+    if (canceled || !filePath) return
+    setValue('recorder.browserPath', toNativePath(filePath), {
+      shouldDirty: true,
+    })
     clearErrors('recorder.browserPath')
   }
 

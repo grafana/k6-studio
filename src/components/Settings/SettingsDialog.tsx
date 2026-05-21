@@ -14,6 +14,10 @@ import { AppSettings } from '@/types/settings'
 
 import { ButtonWithTooltip } from '../ButtonWithTooltip'
 
+import {
+  formValuesToSettings,
+  settingsToFormValues,
+} from './SettingsDialog.utils'
 import { SettingsTabValue } from './types'
 import { useEnabledTabs } from './useEnabledTabs'
 
@@ -41,7 +45,7 @@ export const SettingsDialog = () => {
   >({
     resolver: zodResolver(AppSettingsSchema),
     shouldFocusError: true,
-    values: settings,
+    values: settingsToFormValues(settings),
   })
 
   const {
@@ -59,7 +63,7 @@ export const SettingsDialog = () => {
   }
 
   const handleOpenChange = () => {
-    reset(settings)
+    reset(settingsToFormValues(settings))
     if (isOpen) {
       closeSettingsDialog()
     }
@@ -132,7 +136,7 @@ export const SettingsDialog = () => {
                   disabled={!isDirty}
                   tooltip={!isDirty ? 'Changes saved' : ''}
                   onClick={handleSubmit(
-                    (data) => saveSettings(data),
+                    (data) => saveSettings(formValuesToSettings(data)),
                     onInvalid
                   )}
                 >

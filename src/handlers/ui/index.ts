@@ -1,7 +1,5 @@
 import { ipcMain, nativeTheme, shell, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
-import { readdir, access, rename } from 'fs/promises'
-import path from 'path'
 import invariant from 'tiny-invariant'
 
 import { INVALID_FILENAME_CHARS } from '@/constants/files'
@@ -13,12 +11,13 @@ import {
   DATA_FILES_PATH,
   BROWSER_TESTS_PATH,
 } from '@/constants/workspace'
-import { getFilePath, getStudioFileFromPath } from '@/main/file'
+import { getStudioFileFromPath } from '@/main/file'
 import { StudioFile } from '@/types'
 import { getBrowserPath } from '@/utils/browser'
 import { reportNewIssue } from '@/utils/bugReport'
 import { sendToast } from '@/utils/electron'
-import { isNodeJsErrnoException } from '@/utils/typescript'
+import { exists, readdir, rename } from '@/utils/fs'
+import * as path from '@/utils/path'
 
 import { UIHandler } from './types'
 
@@ -44,47 +43,45 @@ export function initialize() {
 
   ipcMain.handle(UIHandler.TrashFile, async (_, file: StudioFile) => {
     console.info(`${UIHandler.TrashFile} event received`)
-    const filePath = getFilePath(file)
-    return shell.trashItem(filePath)
+
+    return shell.trashItem(path.toNativePath(file.path))
   })
 
   ipcMain.on(UIHandler.OpenFolder, (_, file: StudioFile) => {
     console.info(`${UIHandler.OpenFolder} event received`)
-    const filePath = getFilePath(file)
-    return shell.showItemInFolder(filePath)
+
+    return shell.showItemInFolder(path.toNativePath(file.path))
   })
 
   ipcMain.handle(UIHandler.OpenFileInDefaultApp, (_, file: StudioFile) => {
     console.info(`${UIHandler.OpenFileInDefaultApp} event received`)
-    const filePath = getFilePath(file)
-    return shell.openPath(filePath)
+
+    return shell.openPath(path.toNativePath(file.path))
   })
 
   ipcMain.handle(UIHandler.GetFiles, async () => {
     console.info(`${UIHandler.GetFiles} event received`)
-    const recordings = (await readdir(RECORDINGS_PATH, { withFileTypes: true }))
+    const recordings = (await readdir(RECORDINGS_PATH))
       .filter((f) => f.isFile())
       .map((f) => getStudioFileFromPath(path.join(RECORDINGS_PATH, f.name)))
       .filter((f) => typeof f !== 'undefined')
 
-    const generators = (await readdir(GENERATORS_PATH, { withFileTypes: true }))
+    const generators = (await readdir(GENERATORS_PATH))
       .filter((f) => f.isFile())
       .map((f) => getStudioFileFromPath(path.join(GENERATORS_PATH, f.name)))
       .filter((f) => typeof f !== 'undefined')
 
-    const browserTests = (
-      await readdir(BROWSER_TESTS_PATH, { withFileTypes: true })
-    )
+    const browserTests = (await readdir(BROWSER_TESTS_PATH))
       .filter((f) => f.isFile())
       .map((f) => getStudioFileFromPath(path.join(BROWSER_TESTS_PATH, f.name)))
       .filter((f) => typeof f !== 'undefined')
 
-    const scripts = (await readdir(SCRIPTS_PATH, { withFileTypes: true }))
+    const scripts = (await readdir(SCRIPTS_PATH))
       .filter((f) => f.isFile() && !f.name.endsWith(TEMP_SCRIPT_SUFFIX))
       .map((f) => getStudioFileFromPath(path.join(SCRIPTS_PATH, f.name)))
       .filter((f) => typeof f !== 'undefined')
 
-    const dataFiles = (await readdir(DATA_FILES_PATH, { withFileTypes: true }))
+    const dataFiles = (await readdir(DATA_FILES_PATH))
       .filter((f) => f.isFile())
       .map((f) => getStudioFileFromPath(path.join(DATA_FILES_PATH, f.name)))
       .filter((f) => typeof f !== 'undefined')
@@ -105,12 +102,7 @@ export function initialize() {
 
   ipcMain.handle(
     UIHandler.RenameFile,
-    async (
-      e,
-      oldFileName: string,
-      newFileName: string,
-      type: StudioFile['type']
-    ) => {
+    async (e, file: StudioFile, newFileName: string) => {
       console.info(`${UIHandler.RenameFile} event received`)
       const browserWindow = BrowserWindow.fromWebContents(e.sender)
 
@@ -120,27 +112,13 @@ export function initialize() {
           'Invalid file name'
         )
 
-        const oldPath = getFilePath({
-          type,
-          fileName: oldFileName,
-        })
-        const newPath = getFilePath({
-          type,
-          fileName: newFileName,
-        })
+        const newPath = path.join(path.dirname(file.path), newFileName)
 
-        try {
-          await access(newPath)
+        if (await exists(newPath)) {
           throw new Error(`File with name ${newFileName} already exists`)
-        } catch (error) {
-          // Only rename if the error code is ENOENT (file does not exist)
-          if (isNodeJsErrnoException(error) && error.code === 'ENOENT') {
-            await rename(oldPath, newPath)
-            return
-          }
-
-          throw error
         }
+
+        await rename(file.path, newPath)
       } catch (e) {
         log.error(e)
         browserWindow &&

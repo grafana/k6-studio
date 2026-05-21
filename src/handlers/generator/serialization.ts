@@ -1,18 +1,14 @@
-import path from 'path'
-
 import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { GeneratorFileData } from '@/types/generator'
-import { toNative, toPosix } from '@/utils/path'
+import * as path from '@/utils/path'
 
-// Paths are stored as posix-style relative paths so generator files are
-// portable across platforms, and resolved to native absolute paths on read.
 // Empty strings represent missing paths and are preserved.
 function toAbsolute(basePath: string, relativePath: string) {
-  return relativePath ? toNative(path.resolve(basePath, relativePath)) : ''
+  return relativePath ? path.resolve(basePath, relativePath) : ''
 }
 
 function toRelative(basePath: string, absolutePath: string) {
-  return absolutePath ? toPosix(path.relative(basePath, absolutePath)) : ''
+  return absolutePath ? path.relative(basePath, absolutePath) : ''
 }
 
 export function deserializeGenerator(

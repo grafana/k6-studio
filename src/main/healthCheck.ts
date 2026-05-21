@@ -20,9 +20,9 @@ export const checkProxyHealth = async () => {
   }
 }
 
-const isUrlReachable = (url: string) => {
+const isUrlReachable = async (url: string) => {
+  const certContent = await getProxyCertificateContent()
   return new Promise((resolve) => {
-    const certContent = getProxyCertificateContent()
     const agent = new HttpsProxyAgent(getProxyURL())
     const options: https.RequestOptions = {
       agent,
