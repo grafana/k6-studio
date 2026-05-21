@@ -1,9 +1,12 @@
 import { css } from '@emotion/react'
-import { Dialog, Flex, IconButton, Tooltip } from '@radix-ui/themes'
-import { UserRoundIcon, XIcon } from 'lucide-react'
+import { Dialog, Flex, IconButton } from '@radix-ui/themes'
+import { XIcon } from 'lucide-react'
 
 import { Profile as ProfileContent } from '@/components/Profile'
+import { useAuthStatus } from '@/hooks/useAuthStatus'
 import { useStudioUIStore } from '@/store/ui'
+
+import { ProfileButton } from './ProfileButton'
 
 function ProfileDialog({
   open,
@@ -36,6 +39,7 @@ function ProfileDialog({
 }
 
 export function Profile() {
+  const status = useAuthStatus()
   const isOpen = useStudioUIStore((state) => state.isProfileDialogOpen)
   const openProfileDialog = useStudioUIStore((state) => state.openProfileDialog)
   const closeProfileDialog = useStudioUIStore(
@@ -44,19 +48,7 @@ export function Profile() {
 
   return (
     <>
-      <Tooltip content="Profile" side="right">
-        <IconButton
-          area-label="Profile"
-          color="gray"
-          variant="ghost"
-          onClick={openProfileDialog}
-          css={css`
-            font-size: 24px;
-          `}
-        >
-          <UserRoundIcon />
-        </IconButton>
-      </Tooltip>
+      <ProfileButton status={status} onClick={openProfileDialog} />
       <ProfileDialog
         open={isOpen}
         onOpenChange={(open) => {

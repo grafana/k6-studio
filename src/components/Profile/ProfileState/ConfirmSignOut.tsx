@@ -1,5 +1,7 @@
 import { Button, Flex, Heading } from '@radix-ui/themes'
 
+import { invalidateProfiles } from '@/hooks/useProfiles'
+
 import { ConfirmSignOutState, SignedInState, SignedOutState } from './types'
 
 interface ConfirmSignOutProps {
@@ -13,6 +15,8 @@ export function ConfirmSignOut({ state, onStateChange }: ConfirmSignOutProps) {
       const { current, profiles } = await window.studio.auth.signOut(
         state.stack
       )
+
+      await invalidateProfiles()
 
       if (current === null) {
         onStateChange({

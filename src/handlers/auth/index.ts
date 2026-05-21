@@ -31,7 +31,7 @@ export function initialize() {
       pending = new SignInStateMachine()
 
       pending.on('state-change', (state) => {
-        browserWindow.webContents.send('auth:state-change', state)
+        browserWindow.webContents.send(AuthHandler.StateChange, state)
       })
 
       return await pending.start()

@@ -11,6 +11,10 @@ export enum AuthHandler {
   ChangeStack = 'auth:change-stack',
 }
 
+export type AuthStatus =
+  | { type: 'signed-out' }
+  | { type: 'signed-in'; stack: StackInfo }
+
 export interface SignOutResponse {
   current: StackInfo | null
   profiles: UserProfiles

@@ -5,9 +5,7 @@ import { ProfileState } from './ProfileState'
 import { SignInState } from './ProfileState/types'
 
 export function Profile() {
-  const [state, setState] = useState<SignInState>({
-    type: 'loading',
-  })
+  const [state, setState] = useState<SignInState>({ type: 'loading' })
 
   return (
     <Flex justify="center" align="center" height="100%">

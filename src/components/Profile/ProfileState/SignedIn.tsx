@@ -8,6 +8,8 @@ import {
   Text,
 } from '@radix-ui/themes'
 
+import { invalidateProfiles } from '@/hooks/useProfiles'
+
 import { Avatar } from '../Avatar'
 
 import { SignedInState, SignInState } from './types'
@@ -44,7 +46,8 @@ export function SignedIn({ state, onStateChange }: SignedInStateProps) {
 
     window.studio.auth
       .changeStack(stack.id)
-      .then(({ current, profiles }) => {
+      .then(async ({ current, profiles }) => {
+        await invalidateProfiles()
         onStateChange({
           type: 'signed-in',
           current,
@@ -58,7 +61,7 @@ export function SignedIn({ state, onStateChange }: SignedInStateProps) {
 
   return (
     <Flex direction="column" align="center" gap="5">
-      <Avatar />
+      <Avatar user={state.current.user} />
       <Flex direction="column" align="center" gap="2">
         <Flex direction="column">
           <Text align="center" mb="0">
