@@ -63,8 +63,7 @@ export function useSyncedLocalStorage<T>(
     const handleSyncEvent = (event: Event) => {
       if (
         event instanceof LocalStorageSyncEvent === false ||
-        event.detail.key !== key ||
-        event.detail.senderId === senderId
+        event.detail.key !== key
       ) {
         return
       }
@@ -108,28 +107,24 @@ export function useSyncedLocalStorage<T>(
       window.removeEventListener('local-storage-sync', handleSyncEvent)
       window.removeEventListener('storage', handleStorageEvent)
     }
-  }, [key, senderId])
+  }, [key])
 
   const setValue = useCallback(
     (value: T | ((prev: T) => T)) => {
-      setStoredValue((prev) => {
-        const nextValue =
-          typeof value === 'function' ? (value as (prev: T) => T)(prev) : value
+      const nextValue =
+        typeof value === 'function'
+          ? (value as (prev: T) => T)(storedValue)
+          : value
 
-        try {
-          localStorage.setItem(key, JSON.stringify(nextValue))
-        } catch {
-          return prev
-        }
+      try {
+        localStorage.setItem(key, JSON.stringify(nextValue))
+      } catch {
+        return
+      }
 
-        window.dispatchEvent(
-          new LocalStorageSyncEvent(key, senderId, nextValue)
-        )
-
-        return nextValue
-      })
+      window.dispatchEvent(new LocalStorageSyncEvent(key, senderId, nextValue))
     },
-    [key, senderId]
+    [key, senderId, storedValue]
   )
 
   return [storedValue, setValue]
