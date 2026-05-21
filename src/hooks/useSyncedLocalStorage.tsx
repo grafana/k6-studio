@@ -54,6 +54,11 @@ export function useSyncedLocalStorage<T>(
   }, [key])
 
   const [storedValue, setStoredValue] = useState<T>(readFromStorage)
+  const latestValueRef = useRef(storedValue)
+
+  useEffect(() => {
+    latestValueRef.current = storedValue
+  }, [storedValue])
 
   useUpdateEffect(() => {
     setStoredValue(readFromStorage())
@@ -113,8 +118,10 @@ export function useSyncedLocalStorage<T>(
     (value: T | ((prev: T) => T)) => {
       const nextValue =
         typeof value === 'function'
-          ? (value as (prev: T) => T)(storedValue)
+          ? (value as (prev: T) => T)(latestValueRef.current)
           : value
+
+      latestValueRef.current = nextValue
 
       try {
         localStorage.setItem(key, JSON.stringify(nextValue))
@@ -124,7 +131,7 @@ export function useSyncedLocalStorage<T>(
 
       window.dispatchEvent(new LocalStorageSyncEvent(key, senderId, nextValue))
     },
-    [key, senderId, storedValue]
+    [key, senderId]
   )
 
   return [storedValue, setValue]
