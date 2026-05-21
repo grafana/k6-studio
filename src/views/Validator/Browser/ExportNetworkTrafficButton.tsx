@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { DropdownMenu, IconButton } from '@radix-ui/themes'
+import { DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes'
 import { VideoIcon, ServerCogIcon, CodeIcon, Download } from 'lucide-react'
 import { useState } from 'react'
 
@@ -69,18 +69,20 @@ export function ExportNetworkTrafficButton({
   return (
     <>
       <DropdownMenu.Root>
-        <DropdownMenu.Trigger disabled={session.state !== 'stopped'}>
-          <IconButton
-            css={css`
-              margin: 0;
-            `}
-            size="1"
-            color="gray"
-            variant="ghost"
-          >
-            <Download size={16} />
-          </IconButton>
-        </DropdownMenu.Trigger>
+        <Tooltip content="Export network traffic">
+          <DropdownMenu.Trigger disabled={session.state !== 'stopped'}>
+            <IconButton
+              css={css`
+                margin: 0;
+              `}
+              size="1"
+              color="gray"
+              variant="ghost"
+            >
+              <Download size={16} />
+            </IconButton>
+          </DropdownMenu.Trigger>
+        </Tooltip>
         <DropdownMenu.Content>
           <RichDropdownMenuItem
             icon={<VideoIcon size={16} />}

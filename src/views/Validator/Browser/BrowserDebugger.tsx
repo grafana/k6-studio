@@ -22,6 +22,7 @@ import { DebugSession } from '../types'
 
 import { BrowserActionsPanel } from './BrowserActionsPanel'
 import { BrowserOverviewPanel } from './BrowserOverviewPanel'
+import { ExportNetworkTrafficButton } from './ExportNetworkTrafficButton'
 import { NetworkInspector } from './NetworkInspector'
 
 interface BrowserDebuggerProps {
@@ -131,7 +132,12 @@ export function BrowserDebuggerContent({
                 `}
                 value="network"
               >
-                <NetworkInspector file={file} session={session} />
+                <NetworkInspector
+                  session={session}
+                  actions={
+                    <ExportNetworkTrafficButton file={file} session={session} />
+                  }
+                />
               </Tabs.Content>
             </Flex>
           </Panel>

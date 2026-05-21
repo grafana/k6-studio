@@ -180,7 +180,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                     `}
                     value="network"
                   >
-                    <NetworkInspector file={file} session={session} />
+                    <NetworkInspector session={session} />
                   </Tabs.Content>
                 </Flex>
               </Panel>
