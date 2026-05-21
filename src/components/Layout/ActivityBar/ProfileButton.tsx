@@ -18,8 +18,8 @@ export function ProfileButton({ status, onClick }: ProfileButtonProps) {
         <ButtonShell label="Sign in to Grafana Cloud" onClick={onClick}>
           <span
             css={{
-              width: 27,
-              height: 27,
+              width: 30,
+              height: 30,
               borderRadius: '50%',
               border: '1.5px dashed var(--gray-8)',
               background: 'var(--gray-2)',
@@ -62,7 +62,10 @@ function ButtonShell({
         variant="ghost"
         color="gray"
         onClick={onClick}
-        css={{ fontSize: 24 }}
+        css={{
+          fontSize: 24,
+          '*': { boxSizing: 'border-box' },
+        }}
       >
         {children}
       </IconButton>
