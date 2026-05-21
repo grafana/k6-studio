@@ -17,6 +17,7 @@ import { useOverflowCheck } from '@/hooks/useOverflowCheck'
 import { useRecentURLs } from '@/hooks/useRecentURLs'
 import { LaunchBrowserOptions } from '@/recorder/types'
 import { getRoutePath } from '@/routeMap'
+import { useStudioUIStore } from '@/store/ui'
 
 import { SidebarEmptyState } from './SidebarEmptyState'
 
@@ -32,6 +33,7 @@ export function RecentURLsPanel() {
     'start-recording.capture.browser',
     true
   )
+  const proxyStatus = useStudioUIStore((state) => state.proxyStatus)
 
   const handleStartRecording = (url: string) => {
     const state: StartRecordingNavigationState = {
@@ -62,6 +64,7 @@ export function RecentURLsPanel() {
                   <RecentURLItem
                     key={url}
                     url={url}
+                    disabled={proxyStatus !== 'online'}
                     onStartRecording={handleStartRecording}
                     onRemove={removeURL}
                   />
@@ -77,12 +80,14 @@ export function RecentURLsPanel() {
 
 interface RecentURLItemProps {
   url: string
+  disabled?: boolean
   onStartRecording: (url: string) => void
   onRemove: (url: string) => void
 }
 
 function RecentURLItem({
   url,
+  disabled,
   onStartRecording,
   onRemove,
 }: RecentURLItemProps) {
@@ -175,6 +180,7 @@ function RecentURLItem({
                 color="gray"
                 size="1"
                 aria-label={`Start recording ${url}`}
+                disabled={disabled}
                 css={css`
                   position: relative;
                   z-index: 1;
@@ -188,7 +194,10 @@ function RecentURLItem({
         </Grid>
       </ContextMenu.Trigger>
       <ContextMenu.Content size="1">
-        <ContextMenu.Item onClick={() => onStartRecording(url)}>
+        <ContextMenu.Item
+          disabled={disabled}
+          onClick={() => onStartRecording(url)}
+        >
           Start recording
         </ContextMenu.Item>
         <ContextMenu.Item color="red" onClick={() => onRemove(url)}>
