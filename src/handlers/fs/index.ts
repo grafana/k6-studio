@@ -29,12 +29,12 @@ function getDefaultPath(location: StorageLocation) {
 
   switch (path.extname(location.hint)) {
     case K6_GENERATOR_FILE_EXTENSION:
-      return path.join(GENERATORS_PATH, `${location.hint}`)
+      return path.join(GENERATORS_PATH, location.hint)
 
     case K6_BROWSER_TEST_FILE_EXTENSION:
-      return path.join(BROWSER_TESTS_PATH, `${location.hint}`)
+      return path.join(BROWSER_TESTS_PATH, location.hint)
 
-    case 'script':
+    case '.js':
       return path.join(SCRIPTS_PATH, location.hint)
   }
 }

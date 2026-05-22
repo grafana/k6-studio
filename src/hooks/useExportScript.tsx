@@ -27,6 +27,7 @@ export function useExportScript({
   const navigate = useNavigate()
 
   const exportScript = useSaveFile({
+    menuItems: ['export-script'],
     location: {
       type: 'untitled',
       hint: path.extname(fileName) === '' ? `${fileName}.js` : fileName,

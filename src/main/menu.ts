@@ -187,6 +187,27 @@ function buildTemplate(): Electron.MenuItemConstructorOptions[] {
             })
           },
         },
+        { type: 'separator' },
+        {
+          label: 'Export...',
+          submenu: [
+            {
+              id: 'export-script',
+              label: 'Script',
+              enabled: false,
+              click: (menuItem, window) => {
+                if (window instanceof BrowserWindow === false) {
+                  return
+                }
+
+                window.webContents.send(UIHandler.RequestSave, {
+                  menuItem: menuItem.id,
+                  saveAs: false,
+                })
+              },
+            },
+          ],
+        },
         ...getCloseWindowMenu(),
       ],
     },
