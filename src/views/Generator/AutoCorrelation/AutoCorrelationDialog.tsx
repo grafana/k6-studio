@@ -19,7 +19,6 @@ export function AutoCorrelationDialog({
 }: AutoCorrelationDialogProps) {
   const [correlationStatus, setCorrelationStatus] =
     useState<CorrelationStatus>('not-started')
-
   useEffect(() => {
     if (open) {
       window.studio.app.trackEvent({
@@ -27,6 +26,7 @@ export function AutoCorrelationDialog({
       })
     }
   }, [open])
+
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Content
@@ -36,7 +36,6 @@ export function AutoCorrelationDialog({
         asChild
         width="calc(100vw - 100px)"
         height="calc(100vh - 100px)"
-        // Prevent closing the dialog when clicking outside
         onInteractOutside={(e) => e.preventDefault()}
       >
         <Flex direction="column" height="100%">

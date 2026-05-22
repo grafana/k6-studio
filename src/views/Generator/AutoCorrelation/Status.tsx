@@ -11,21 +11,14 @@ import { exhaustive } from '@/utils/typescript'
 
 import { CorrelationStatus } from './types'
 
-const LOADING_MESSAGES: Partial<Record<CorrelationStatus, string>> = {
-  validating: 'Validating...',
-  analyzing: 'Analyzing requests...',
-  'creating-rules': 'Creating rules...',
-  finalizing: 'Finalizing...',
+interface StatusProps {
+  correlationStatus: CorrelationStatus
 }
 
-export function Status({
-  correlationStatus,
-}: {
-  correlationStatus: CorrelationStatus
-}) {
+export function Status({ correlationStatus }: StatusProps) {
   switch (correlationStatus) {
     case 'not-started':
-      return <StatusContent text="" icon={null} color="gray" />
+      return null
 
     case 'correlation-not-needed':
       return (
@@ -35,21 +28,23 @@ export function Status({
           color="grass"
         />
       )
+
     case 'validating':
     case 'analyzing':
     case 'creating-rules':
     case 'finalizing':
       return (
         <StatusContent
-          text={LOADING_MESSAGES[correlationStatus] || 'Loading...'}
+          text="Analyzing requests"
           icon={<Spinner />}
           color="gray"
         />
       )
+
     case 'success':
       return (
         <StatusContent
-          text="Autocorrelation completed"
+          text="Completed"
           icon={<CircleCheckIcon />}
           color="grass"
         />
@@ -65,30 +60,16 @@ export function Status({
       )
 
     case 'failure':
-      return (
-        <StatusContent
-          text="Autocorrelation failed"
-          icon={<CircleX />}
-          color="red"
-        />
-      )
+      return <StatusContent text="Failed" icon={<CircleX />} color="red" />
 
     case 'error':
       return (
-        <StatusContent
-          text="An error occurred during autocorrelation"
-          icon={<AlertCircleIcon />}
-          color="red"
-        />
+        <StatusContent text="Error" icon={<AlertCircleIcon />} color="red" />
       )
+
     case 'aborted':
-      return (
-        <StatusContent
-          text="Autocorrelation stopped"
-          icon={<CircleX />}
-          color="gray"
-        />
-      )
+      return <StatusContent text="Stopped" icon={<CircleX />} color="gray" />
+
     default:
       return exhaustive(correlationStatus)
   }
