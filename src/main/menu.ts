@@ -1,4 +1,9 @@
-import { BrowserWindow, Menu, shell } from 'electron'
+import {
+  BrowserWindow,
+  Menu,
+  MenuItemConstructorOptions,
+  shell,
+} from 'electron'
 
 import { PROJECT_PATH } from '@/constants/workspace'
 import { AppHandler } from '@/handlers/app/types'
@@ -22,6 +27,29 @@ import { openLogFolder } from './logger'
 
 const isDevEnv = process.env.NODE_ENV === 'development'
 const isMac = getPlatform() === 'mac'
+
+/**
+ * Recursively walk through the menu template and make sure that the
+ * state of each menu item is kept between rebuilds.
+ */
+function defineMenu(
+  menu: MenuItemConstructorOptions[]
+): MenuItemConstructorOptions[] {
+  const currentMenu = Menu.getApplicationMenu()
+
+  for (const item of menu) {
+    if (item.id !== undefined) {
+      item.enabled =
+        currentMenu?.getMenuItemById(item.id)?.enabled ?? item.enabled
+    }
+
+    if (Array.isArray(item.submenu)) {
+      item.submenu = defineMenu(item.submenu)
+    }
+  }
+
+  return menu
+}
 
 function buildRecentFilesSubmenu(): Electron.MenuItemConstructorOptions[] {
   const recentFiles = getRecentFiles()
@@ -69,7 +97,7 @@ function buildRecentFilesSubmenu(): Electron.MenuItemConstructorOptions[] {
 // Custom application menu
 // https://www.electronjs.org/docs/latest/api/menu
 function buildTemplate(): Electron.MenuItemConstructorOptions[] {
-  return [
+  return defineMenu([
     ...getAppMenu(),
     {
       label: 'File',
@@ -248,7 +276,7 @@ function buildTemplate(): Electron.MenuItemConstructorOptions[] {
         },
       ],
     },
-  ]
+  ])
 }
 
 function getAppMenu(): Electron.MenuItemConstructorOptions[] {
