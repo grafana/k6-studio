@@ -3,9 +3,9 @@ import { app, BrowserWindow } from 'electron'
 import { AppHandler } from '@/handlers/app/types'
 import { getStudioFileFromPath } from '@/main/file'
 import { getViewPath } from '@/routeMap'
+import { addRecentFile } from '@/utils/fs'
 
 import { configureApplicationMenu } from './menu'
-import { addRecentFile } from './recentFiles'
 
 let pendingFilePath: string | null = null
 

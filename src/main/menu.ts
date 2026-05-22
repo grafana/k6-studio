@@ -7,14 +7,18 @@ import { createGenerator } from '@/handlers/generator/create'
 import { UIHandler } from '@/handlers/ui/types'
 import { getStudioFileFromPath } from '@/main/file'
 import { getViewPath, routeMap } from '@/routeMap'
-import { showOpenDialog } from '@/utils/fs'
+import {
+  addRecentFile,
+  clearRecentFiles,
+  getRecentFiles,
+  showOpenDialog,
+} from '@/utils/fs'
 import * as path from '@/utils/path'
 
 import { reportNewIssue } from '../utils/bugReport'
 import { getPlatform } from '../utils/electron'
 
 import { openLogFolder } from './logger'
-import { addRecentFile, clearRecentFiles, getRecentFiles } from './recentFiles'
 
 const isDevEnv = process.env.NODE_ENV === 'development'
 const isMac = getPlatform() === 'mac'
