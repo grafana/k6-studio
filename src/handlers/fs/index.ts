@@ -11,9 +11,12 @@ import {
 } from '@/constants/workspace'
 import { getStudioFileFromPath } from '@/main/file'
 import { getTempScriptName } from '@/main/script'
+import { trackEvent } from '@/services/usageTracking'
+import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent } from '@/utils/electron'
 import { readFile, showSaveDialog, writeFile } from '@/utils/fs'
 import * as path from '@/utils/path'
+import { isExternalScript } from '@/utils/workspace'
 
 import { deserializeContent, serializeContent } from './serialization'
 import { FileContent, FileLocation, FsHandler, StorageLocation } from './types'
@@ -68,6 +71,47 @@ export function initialize() {
       const serializedContent = serializeContent(location.path, content)
 
       await writeFile(location.path, serializedContent)
+
+      switch (content.type) {
+        case 'generator':
+          trackEvent({
+            event: UsageEventName.GeneratorUpdated,
+            payload: {
+              rules: {
+                correlation: content.data.rules.filter(
+                  (rule) => rule.type === 'correlation'
+                ).length,
+                parameterization: content.data.rules.filter(
+                  (rule) => rule.type === 'parameterization'
+                ).length,
+                verification: content.data.rules.filter(
+                  (rule) => rule.type === 'verification'
+                ).length,
+                customCode: content.data.rules.filter(
+                  (rule) => rule.type === 'customCode'
+                ).length,
+                disabled: content.data.rules.filter((rule) => !rule.enabled)
+                  .length,
+              },
+            },
+          })
+          break
+
+        case 'browser-test':
+          trackEvent({
+            event: UsageEventName.BrowserTestUpdated,
+          })
+          break
+
+        case 'script':
+          trackEvent({
+            event: UsageEventName.ScriptExported,
+            payload: {
+              isExternal: isExternalScript(location.path),
+            },
+          })
+          break
+      }
 
       return location
     }
