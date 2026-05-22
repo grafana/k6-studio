@@ -20,19 +20,22 @@ import { useStudioUIStore } from '@/store/ui'
 import { useToast } from '@/store/ui/useToast'
 import { ProxyData } from '@/types'
 import { GeneratorFileData } from '@/types/generator'
+import { safeAtob } from '@/utils/format'
 import { createNewGeneratorFile } from '@/utils/generator'
 import { prettify } from '@/utils/prettify'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 import { Allowlist } from '@/views/Generator/Allowlist/Allowlist'
 
-type ExportMode = 'allowlist' | 'generator'
-
-interface ExportScriptDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  requests: ProxyData[]
+function parseContent<T extends { content: string | null } | undefined>(
+  entry: T
+): T {
+  return (
+    entry && {
+      ...entry,
+      content: entry.content ? safeAtob(entry.content) : entry.content,
+    }
+  )
 }
-
 function filterRequests(
   requests: ProxyData[],
   allowlist: string[],
@@ -44,6 +47,14 @@ function filterRequests(
   return includeStaticAssets
     ? allowedRequests
     : allowedRequests.filter(isNonStaticAssetResponse)
+}
+
+type ExportMode = 'allowlist' | 'generator'
+
+interface ExportScriptDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  requests: ProxyData[]
 }
 
 export function ExportScriptDialog({
@@ -79,20 +90,28 @@ export function ExportScriptDialog({
     try {
       setIsExporting(true)
 
-      const filteredRequests = filterRequests(
-        requests,
-        generator.allowlist,
-        generator.includeStaticAssets
-      )
-
       const scriptPath = await window.studio.fs.showSaveAsDialog('my-script.js')
 
       if (!scriptPath) {
         return
       }
 
+      const filteredRequests = filterRequests(
+        requests,
+        generator.allowlist,
+        generator.includeStaticAssets
+      )
+
       const rawScript = generateScript({
-        recording: filteredRequests,
+        recording: filteredRequests.map((request) => {
+          return {
+            ...request,
+            // Make sure that any base64 encoded content is decoded before the export,
+            // otherwise rules won't be applied properly to the bodies
+            request: parseContent(request.request),
+            response: parseContent(request.response),
+          }
+        }),
         generator,
         scriptPath,
       })
