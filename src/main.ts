@@ -1,8 +1,11 @@
 import * as Sentry from '@sentry/electron/main'
 import { app, autoUpdater, BrowserWindow, nativeTheme } from 'electron'
 import log from 'electron-log/main'
-import isSquirrelStartup from 'electron-squirrel-startup'
 import { updateElectronApp } from 'update-electron-app'
+
+const isSquirrelStartup =
+  process.platform === 'win32' &&
+  process.argv.some((arg) => arg.startsWith('--squirrel'))
 
 import * as path from '@/utils/path'
 

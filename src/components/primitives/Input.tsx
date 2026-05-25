@@ -1,6 +1,7 @@
 import { css } from '@emotion/react'
-import { clsx } from 'clsx'
 import { ComponentProps, forwardRef } from 'react'
+
+import { clsx } from '@/utils/clsx'
 
 const styles = css`
   --studio-input-font-size: var(--studio-font-size-2);

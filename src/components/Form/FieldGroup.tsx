@@ -1,4 +1,3 @@
-import { ErrorMessage } from '@hookform/error-message'
 import * as Label from '@radix-ui/react-label'
 import { Box, BoxProps, Flex, Text } from '@radix-ui/themes'
 import { InfoIcon } from 'lucide-react'
@@ -6,7 +5,7 @@ import { FieldErrors } from 'react-hook-form'
 
 import { PopoverTooltip } from '../PopoverTooltip'
 
-import { FieldError } from './FieldError'
+import { ErrorMessage } from './ErrorMessage'
 
 type FieldGroupProps = BoxProps & {
   children: React.ReactNode
@@ -52,7 +51,7 @@ export function FieldGroup({
         </>
       )}
       <Box>{children}</Box>
-      {errors && <ErrorMessage errors={errors} name={name} as={FieldError} />}
+      <ErrorMessage errors={errors} name={name} />
     </Box>
   )
 }

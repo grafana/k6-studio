@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom'
-import invariant from 'tiny-invariant'
 
 import { StudioFile, StudioFileType } from '@/types'
+import { invariant } from '@/utils/invariant'
 import * as path from '@/utils/path'
 
 export function useActiveFilePath() {

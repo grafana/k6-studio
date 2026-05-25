@@ -2,12 +2,12 @@ import { Allotment } from 'allotment'
 import log from 'electron-log/renderer'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
-import useKeyboardJs from 'react-use/lib/useKeyboardJs'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
 import { useCurrentFile } from '@/hooks/useCurrentFile'
+import { useHotkey } from '@/hooks/useHotkey'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { getRoutePath } from '@/routeMap'
 import { useGeneratorStore, selectGeneratorData } from '@/store/generator'
@@ -56,7 +56,22 @@ export function Generator() {
 
   const [isAppClosing, setIsAppClosing] = useState(false)
 
-  const [, onSaveKeyPress] = useKeyboardJs(['command + s', 'ctrl + s'])
+  const handleSaveGenerator = useCallback(() => {
+    const generator = selectGeneratorData(useGeneratorStore.getState())
+    return saveGenerator(generator)
+  }, [saveGenerator])
+
+  useHotkey(
+    [
+      { key: 's', metaKey: true },
+      { key: 's', ctrlKey: true },
+    ],
+    () => {
+      if (isDirtyRef.current) {
+        void handleSaveGenerator()
+      }
+    }
+  )
 
   const blocker = useBlocker(({ historyAction }) => {
     // Don't block navigation when redirecting home from invalid generator
@@ -105,19 +120,6 @@ export function Generator() {
   useEffect(() => {
     isDirtyRef.current = isDirty
   }, [isDirty])
-
-  const handleSaveGenerator = useCallback(() => {
-    const generator = selectGeneratorData(useGeneratorStore.getState())
-    return saveGenerator(generator)
-  }, [saveGenerator])
-
-  useEffect(() => {
-    ;(async () => {
-      if (onSaveKeyPress && isDirtyRef.current === true) {
-        await handleSaveGenerator()
-      }
-    })()
-  }, [handleSaveGenerator, onSaveKeyPress])
 
   const handleSaveGeneratorDialog = async () => {
     await handleSaveGenerator()

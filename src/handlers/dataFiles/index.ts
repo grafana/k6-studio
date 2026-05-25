@@ -1,6 +1,5 @@
 import { COPYFILE_EXCL } from 'constants'
 import { ipcMain } from 'electron'
-import invariant from 'tiny-invariant'
 
 import { MAX_DATA_FILE_SIZE } from '@/constants/files'
 import { DATA_FILES_PATH } from '@/constants/workspace'
@@ -8,6 +7,7 @@ import { DataFilePreview } from '@/types/testData'
 import { parseDataFile } from '@/utils/dataFile'
 import { browserWindowFromEvent } from '@/utils/electron'
 import { copyFile, readFile, showOpenDialog, stat } from '@/utils/fs'
+import { invariant } from '@/utils/invariant'
 import * as path from '@/utils/path'
 
 import { DataFileHandler } from './types'

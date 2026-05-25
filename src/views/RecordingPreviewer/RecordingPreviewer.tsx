@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import invariant from 'tiny-invariant'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
@@ -9,6 +8,7 @@ import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { BrowserEvent } from '@/schemas/recording'
 import { ProxyData } from '@/types'
 import { harToProxyData } from '@/utils/harToProxyData'
+import { invariant } from '@/utils/invariant'
 
 import { RecordingInspector } from '../Recorder/RecordingInspector'
 

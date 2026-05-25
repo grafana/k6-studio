@@ -7,7 +7,7 @@ import {
   IconMathEqualLower,
   IconMathGreater,
   IconMathLower,
-} from '@tabler/icons-react'
+} from '@/components/icons/OperatorIcons'
 
 import { exhaustive } from './typescript'
 

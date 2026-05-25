@@ -1,17 +1,15 @@
 import { Button, Dialog, Flex, Switch, Text } from '@radix-ui/themes'
 import { useState } from 'react'
-import useKonami from 'use-konami'
 
+import { useKonami } from '@/hooks/useKonami'
 import { useFeaturesStore } from '@/store/features'
 import { Feature } from '@/types/features'
 
 export function DevModeDialog() {
   const [isOpen, setIsOpen] = useState(false)
 
-  useKonami({
-    onUnlock: () => {
-      setIsOpen(true)
-    },
+  useKonami(() => {
+    setIsOpen(true)
   })
 
   const features = useFeaturesStore((store) => store.features)

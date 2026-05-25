@@ -1,8 +1,9 @@
 import { IconButton, TextField, Tooltip } from '@radix-ui/themes'
 import { CodeXmlIcon } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { useKeyPressEvent } from 'react-use'
-import useKeyboardJs from 'react-use/lib/useKeyboardJs'
+
+import { useHotkey } from '@/hooks/useHotkey'
 
 import { SearchField, SearchFieldHandle } from '../SearchField'
 
@@ -24,14 +25,15 @@ export function Filter({
     inputRef.current?.clear()
   })
 
-  // Focus input on cmd+f/ctrl+f
-  const [, keyPressEvent] = useKeyboardJs(['command + f', 'ctrl + f'])
-
-  useEffect(() => {
-    if (keyPressEvent) {
+  useHotkey(
+    [
+      { key: 'f', metaKey: true },
+      { key: 'f', ctrlKey: true },
+    ],
+    () => {
       inputRef.current?.focus()
     }
-  }, [keyPressEvent])
+  )
 
   return (
     <SearchField

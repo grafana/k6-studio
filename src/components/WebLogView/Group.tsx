@@ -1,6 +1,5 @@
 import { css } from '@emotion/react'
 import styled from '@emotion/styled'
-import { ErrorMessage } from '@hookform/error-message'
 import { Box, IconButton, TextField } from '@radix-ui/themes'
 import { CheckIcon, CircleXIcon, PencilIcon, XIcon } from 'lucide-react'
 import { KeyboardEvent, MouseEvent, useRef } from 'react'
@@ -11,7 +10,7 @@ import { Group as GroupType } from '@/types'
 import { mergeRefs } from '@/utils/react'
 
 import { Collapsible } from '../Collapsible'
-import { FieldError } from '../Form'
+import { ErrorMessage } from '../Form'
 
 interface GroupProps {
   group: GroupType
@@ -128,7 +127,7 @@ export function Group({
                   {...nameProps}
                 >
                   <TextField.Slot side="right">
-                    <ErrorMessage errors={errors} name="name" as={FieldError} />
+                    <ErrorMessage errors={errors} name="name" />
                   </TextField.Slot>
                   <TextField.Slot side="right">
                     {errors?.name !== undefined && (

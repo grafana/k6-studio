@@ -1,6 +1,7 @@
 import { css } from '@emotion/react'
-import { clsx } from 'clsx'
 import { ComponentProps } from 'react'
+
+import { clsx } from '@/utils/clsx'
 
 type TextAreaProps = Omit<ComponentProps<'textarea'>, 'size'> & {
   size?: '1' | '2'
