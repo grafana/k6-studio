@@ -85,7 +85,7 @@ export function ExportScriptDialog({
   function getGenerator() {
     switch (mode) {
       case 'allowlist':
-        if (allowlist.length > 0) {
+        if (allowlist.length === 0) {
           return null
         }
 
