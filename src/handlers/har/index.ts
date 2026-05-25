@@ -5,7 +5,13 @@ import { Recording } from '@/schemas/recording'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent } from '@/utils/electron'
-import { copyFile, createFileWithUniqueName, showOpenDialog } from '@/utils/fs'
+import {
+  copyFile,
+  createFileWithUniqueName,
+  writeFile,
+  showOpenDialog,
+  showSaveDialog,
+} from '@/utils/fs'
 import * as path from '@/utils/path'
 
 import { HarHandler } from './types'
@@ -28,6 +34,28 @@ export function initialize() {
       })
 
       return filePath
+    }
+  )
+
+  ipcMain.handle(
+    HarHandler.ExportFile,
+    async (event, data: Recording, hint: string) => {
+      console.info(`${HarHandler.ExportFile} event received`)
+
+      const browserWindow = browserWindowFromEvent(event)
+
+      const result = await showSaveDialog(browserWindow, {
+        defaultPath: path.join(RECORDINGS_PATH, hint),
+        filters: [{ name: 'HAR', extensions: ['har'] }],
+      })
+
+      if (result.canceled || !result.filePath) {
+        return undefined
+      }
+
+      await writeFile(result.filePath, JSON.stringify(data, null, 2))
+
+      return result.filePath
     }
   )
 

@@ -1,4 +1,5 @@
 import { Button } from '@radix-ui/themes'
+import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { FileLocation } from '@/handlers/fs/types'
@@ -75,5 +76,7 @@ export function useExportScript({
     },
   })
 
-  return exportScript
+  return useCallback(() => {
+    return exportScript({ saveAs: false })
+  }, [exportScript])
 }

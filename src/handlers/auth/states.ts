@@ -14,6 +14,7 @@ import {
   Stack,
 } from '@/types/auth'
 import { exhaustive } from '@/utils/typescript'
+import { validateExternalUrl } from '@/utils/url'
 
 import { waitFor } from '../utils'
 
@@ -135,7 +136,7 @@ export class SignInStateMachine extends EventEmitter<StateEventMap> {
     const result = await authenticate({
       signal: this.#signal,
       onUserCode: async (verificationUrl, code) => {
-        await shell.openExternal(verificationUrl)
+        await shell.openExternal(validateExternalUrl(verificationUrl))
 
         this.emit('state-change', {
           type: 'awaiting-authorization',

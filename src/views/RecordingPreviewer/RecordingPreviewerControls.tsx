@@ -83,7 +83,7 @@ export function RecordingPreviewControls({
   })
 
   const handleExportBrowserScript = () => {
-    void exportScript({})
+    void exportScript()
   }
 
   const handleBrowserTest = isBrowserEditorEnabled

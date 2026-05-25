@@ -54,7 +54,7 @@ export function BrowserTestEditorControls({
   })
 
   const handleExportScript = () => {
-    void exportScript({})
+    void exportScript()
   }
 
   return (

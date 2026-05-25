@@ -5,6 +5,7 @@ import { launchBrowser } from '@/recorder/launch'
 import { BrowserLaunchError } from '@/recorder/launchers/types'
 import { LaunchBrowserOptions } from '@/recorder/types'
 import { browserWindowFromEvent } from '@/utils/electron'
+import { validateExternalUrl } from '@/utils/url'
 
 import { BrowserHandler } from './types'
 
@@ -77,6 +78,6 @@ export function initialize() {
   // TODO: Move to app or ui. The other handlers in this file are related to recording.
   ipcMain.handle(BrowserHandler.OpenExternalLink, (_, url: string) => {
     console.info(`${BrowserHandler.OpenExternalLink} event received`)
-    return shell.openExternal(url)
+    return shell.openExternal(validateExternalUrl(url))
   })
 }

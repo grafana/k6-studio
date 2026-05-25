@@ -1,11 +1,6 @@
 # Reqired by Electron Forge
 nodeLinker: hoisted
 
-# Electron Forge uses an old version of @electron/rebuild which has a github dependency on
-# the now deprecated @electron/node-gyp. Until Electron Forge updates the dependency (which
-# will probably not happen until 8.0.0) we need to have this disabled.
-blockExoticSubdeps: false
-
 allowBuilds:
   '@sentry/cli': true
   electron: true
@@ -21,6 +16,11 @@ overrides:
   'basic-ftp': '^5.2.0'
   'tar': '^7.5.13'
   'dompurify': '^3.4.0'
+
+  # Electron Forge uses an old version of @electron/rebuild which has a github dependency on
+  # the now deprecated @electron/node-gyp. Until Electron Forge updates the dependency (which
+  # will probably not happen until 8.0.0) we need to have override this.
+  '@electron/node-gyp': 'npm:node-gyp@12.3.0'
 
 patchedDependencies:
   rrweb: patches/rrweb.patch

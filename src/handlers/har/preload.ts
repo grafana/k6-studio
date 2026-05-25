@@ -17,3 +17,9 @@ export function importFile() {
     string | undefined
   >
 }
+
+export function exportFile(data: Recording, hint: string) {
+  return ipcRenderer.invoke(HarHandler.ExportFile, data, hint) as Promise<
+    string | undefined
+  >
+}

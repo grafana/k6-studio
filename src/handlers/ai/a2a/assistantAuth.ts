@@ -11,6 +11,7 @@ import {
   startCallbackServer,
 } from '@/services/grafana/assistantAuth'
 import { browserWindowFromEvent } from '@/utils/electron'
+import { validateExternalUrl } from '@/utils/url'
 
 import { abortAllActiveAssistantSessions } from '../grafanaAssistantProvider'
 import { AssistantAuthHandler } from '../types'
@@ -91,7 +92,7 @@ async function performSignIn(
       'on port',
       port
     )
-    void shell.openExternal(authUrl)
+    void shell.openExternal(validateExternalUrl(authUrl))
 
     const code = verificationCode(codeChallenge)
     browserWindow.webContents.send(AssistantAuthHandler.VerificationCode, code)

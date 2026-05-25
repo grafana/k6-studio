@@ -1,6 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
-import { useCallback } from 'react'
 
 import { useExportScript } from '@/hooks/useExportScript'
 import { selectGeneratorData, useGeneratorStore } from '@/store/generator'
@@ -66,7 +65,7 @@ export function useScriptExport(generatorFilePath: string) {
   const { mutateAsync: updateGeneratorFile } =
     useUpdateValueInGeneratorFile(generatorFilePath)
 
-  const exportScript = useExportScript({
+  return useExportScript({
     fileName: scriptName,
     content: (filePath) => {
       return generateScriptFromGenerator(filePath)
@@ -88,8 +87,4 @@ export function useScriptExport(generatorFilePath: string) {
       }
     },
   })
-
-  return useCallback(async () => {
-    return exportScript({})
-  }, [exportScript])
 }
