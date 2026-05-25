@@ -54,7 +54,7 @@ export function ensureWithinDirectory(
   const normalizedBase = resolve(baseDir)
   if (
     key(resolved) !== key(normalizedBase) &&
-    !key(resolved).startsWith(key(normalizedBase + sep))
+    !key(resolved).startsWith(key(normalizedBase + '/'))
   ) {
     throw new Error('Path is outside allowed directory')
   }
