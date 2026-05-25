@@ -10,6 +10,8 @@ import { Profile, ProfileSchema } from '@/schemas/profile'
 import { readFile, writeFile } from '@/utils/fs'
 import * as path from '@/utils/path'
 
+const ENCRYPTED_PREFIX = 'enc:'
+
 const fileName =
   process.env.NODE_ENV === 'development'
     ? 'k6-studio-profile-dev.json'
@@ -30,7 +32,7 @@ function encryptProfileTokens(profile: Profile): Profile {
     tokens: Object.fromEntries(
       Object.entries(profile.tokens).map(([stackId, token]) => [
         stackId,
-        encryptString(token),
+        ENCRYPTED_PREFIX + encryptString(token),
       ])
     ),
   }
@@ -40,12 +42,19 @@ function decryptProfileTokens(profile: Profile): Profile {
   return {
     ...profile,
     tokens: Object.fromEntries(
-      Object.entries(profile.tokens).map(([stackId, token]) => {
-        try {
-          return [stackId, decryptString(token)]
-        } catch {
+      Object.entries(profile.tokens).flatMap(([stackId, token]) => {
+        if (!token.startsWith(ENCRYPTED_PREFIX)) {
           // Plaintext token from before encryption was added
-          return [stackId, token]
+          return [[stackId, token]]
+        }
+        try {
+          return [
+            [stackId, decryptString(token.slice(ENCRYPTED_PREFIX.length))],
+          ]
+        } catch {
+          // Encrypted with different key (e.g. profile copied between machines)
+          log.warn('Failed to decrypt token for stack', stackId, '- discarding')
+          return []
         }
       })
     ),

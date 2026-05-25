@@ -86,8 +86,8 @@ describe('saveProfileData', () => {
 
     const writtenJson = mockWriteFile.mock.calls[0]?.[1] as string
     const writtenData = JSON.parse(writtenJson) as Profile
-    expect(writtenData.tokens['stack-1']).toBe('encrypted:token-abc')
-    expect(writtenData.tokens['stack-2']).toBe('encrypted:token-def')
+    expect(writtenData.tokens['stack-1']).toBe('enc:encrypted:token-abc')
+    expect(writtenData.tokens['stack-2']).toBe('enc:encrypted:token-def')
   })
 
   it('writes file with mode 0o600', async () => {
@@ -107,8 +107,8 @@ describe('saveProfileData', () => {
       JSON.stringify({
         ...testProfile,
         tokens: {
-          'stack-1': 'encrypted:token-abc',
-          'stack-2': 'encrypted:token-def',
+          'stack-1': 'enc:encrypted:token-abc',
+          'stack-2': 'enc:encrypted:token-def',
         },
       })
     )
@@ -166,8 +166,8 @@ describe('getProfileData', () => {
       JSON.stringify({
         ...testProfile,
         tokens: {
-          'stack-1': 'encrypted:token-abc',
-          'stack-2': 'encrypted:token-def',
+          'stack-1': 'enc:encrypted:token-abc',
+          'stack-2': 'enc:encrypted:token-def',
         },
       })
     )
@@ -182,7 +182,7 @@ describe('getProfileData', () => {
     expect(result.tokens['stack-2']).toBe('token-def')
   })
 
-  it('falls back to raw value when decryptString throws (plaintext migration)', async () => {
+  it('passes through plaintext tokens without prefix (migration)', async () => {
     mockReadFile.mockResolvedValue(JSON.stringify(testProfile))
 
     const { getProfileData } = await import('./fs')
@@ -191,6 +191,22 @@ describe('getProfileData', () => {
 
     expect(result.tokens['stack-1']).toBe('token-abc')
     expect(result.tokens['stack-2']).toBe('token-def')
+  })
+
+  it('discards tokens that have the encrypted prefix but fail to decrypt', async () => {
+    mockReadFile.mockResolvedValue(
+      JSON.stringify({
+        ...testProfile,
+        tokens: {
+          'stack-1': 'enc:corrupted-data',
+        },
+      })
+    )
+
+    const { getProfileData } = await import('./fs')
+    const result = await getProfileData()
+
+    expect(result.tokens).toEqual({})
   })
 
   it('returns default profile when file does not exist', async () => {
@@ -215,7 +231,7 @@ describe('getProfileData', () => {
       JSON.stringify({
         ...testProfile,
         tokens: {
-          'stack-1': 'encrypted:token-abc',
+          'stack-1': 'enc:encrypted:token-abc',
         },
       })
     )
