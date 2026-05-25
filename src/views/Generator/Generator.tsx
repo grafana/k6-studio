@@ -67,8 +67,6 @@ export function Generator() {
       if (location.path !== file.path) {
         navigate(getViewPath('generator', location.path), { replace: true })
       }
-
-      showToast({ title: 'Generator saved', status: 'success' })
     },
     onError: (error) => {
       showToast({
