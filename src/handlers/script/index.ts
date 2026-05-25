@@ -65,10 +65,9 @@ export function initialize() {
       try {
         await waitForProxy()
 
-        const resolvedScriptPath = path.ensureWithinDirectory(
-          SCRIPTS_PATH,
-          scriptPath
-        )
+        const resolvedScriptPath = path.isAbsolute(scriptPath)
+          ? scriptPath
+          : path.join(SCRIPTS_PATH, scriptPath)
 
         currentTestRun = await runScript({
           browserWindow,
@@ -115,17 +114,13 @@ export function initialize() {
       console.info(`${ScriptHandler.RunFromGenerator} event received`)
 
       const browserWindow = browserWindowFromEvent(event)
-      const resolvedScriptPath = path.ensureWithinDirectory(
-        SCRIPTS_PATH,
-        scriptPath
-      )
 
       try {
-        await writeFile(resolvedScriptPath, script)
+        await writeFile(scriptPath, script)
 
         currentTestRun = await runScript({
           browserWindow,
-          scriptPath: resolvedScriptPath,
+          scriptPath,
           proxySettings: k6StudioState.appSettings.proxy,
           usageReport: k6StudioState.appSettings.telemetry.usageReport,
         })
@@ -149,7 +144,7 @@ export function initialize() {
 
         throw error
       } finally {
-        await unlink(resolvedScriptPath).catch(() => {
+        await unlink(scriptPath).catch(() => {
           // Best case effort cleanup.
         })
       }
