@@ -43,9 +43,7 @@ export function initialize() {
   ipcMain.handle(
     DataFileHandler.LoadPreview,
     async (_, filePath: string): Promise<DataFilePreview> => {
-      const resolvedPath = path.isAbsolute(filePath)
-        ? filePath
-        : path.join(DATA_FILES_PATH, filePath)
+      const resolvedPath = path.ensureWithinDirectory(DATA_FILES_PATH, filePath)
 
       const fileType = path.extname(resolvedPath).slice(1)
 

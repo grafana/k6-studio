@@ -98,3 +98,45 @@ describe('equal', () => {
     expect(path.equal('/foo', '/foo')).toBe(true)
   })
 })
+
+describe('ensureWithinDirectory', () => {
+  it('resolves a relative filename within directory', () => {
+    expect(path.ensureWithinDirectory('/base', 'file.txt')).toBe(
+      '/base/file.txt'
+    )
+  })
+
+  it('passes a valid absolute path within directory', () => {
+    expect(path.ensureWithinDirectory('/base', '/base/sub/file.txt')).toBe(
+      '/base/sub/file.txt'
+    )
+  })
+
+  it('throws on ../ traversal', () => {
+    expect(() =>
+      path.ensureWithinDirectory('/base/sub', '../../../etc/passwd')
+    ).toThrow('Path is outside allowed directory')
+  })
+
+  it('throws on absolute path outside directory', () => {
+    expect(() => path.ensureWithinDirectory('/base', '/etc/passwd')).toThrow(
+      'Path is outside allowed directory'
+    )
+  })
+
+  it('throws on sibling-prefix attack', () => {
+    expect(() =>
+      path.ensureWithinDirectory('/foo/bar', '/foo/barbaz/file.txt')
+    ).toThrow('Path is outside allowed directory')
+  })
+
+  it('passes when path matches the base directory exactly', () => {
+    expect(path.ensureWithinDirectory('/base', '/base')).toBe('/base')
+  })
+
+  it('passes for a deeply nested valid path', () => {
+    expect(path.ensureWithinDirectory('/base', 'a/b/c/d/e/file.txt')).toBe(
+      '/base/a/b/c/d/e/file.txt'
+    )
+  })
+})

@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-imports */
-import { parse } from 'pathe'
+import { parse, resolve } from 'pathe'
 
 const platform =
   globalThis.window?.studio?.platform ?? globalThis.process?.platform
@@ -44,6 +44,21 @@ export function key(p: string): string {
  */
 export function equal(a: string, b: string): boolean {
   return key(a) === key(b)
+}
+
+export function ensureWithinDirectory(
+  baseDir: string,
+  filePath: string
+): string {
+  const resolved = resolve(baseDir, filePath)
+  const normalizedBase = resolve(baseDir)
+  if (
+    key(resolved) !== key(normalizedBase) &&
+    !key(resolved).startsWith(key(normalizedBase + sep))
+  ) {
+    throw new Error('Path is outside allowed directory')
+  }
+  return resolved
 }
 
 export {

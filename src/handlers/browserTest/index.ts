@@ -11,6 +11,7 @@ import {
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { createFileWithUniqueName, readFile, writeFile } from '@/utils/fs'
+import * as path from '@/utils/path'
 
 import { BrowserTestHandler } from './types'
 
@@ -44,7 +45,12 @@ export function initialize() {
   ipcMain.handle(BrowserTestHandler.Open, async (_, filePath: string) => {
     console.info(`${BrowserTestHandler.Open} event received`)
 
-    const data = await readFile(filePath, {
+    const resolvedPath = path.ensureWithinDirectory(
+      BROWSER_TESTS_PATH,
+      filePath
+    )
+
+    const data = await readFile(resolvedPath, {
       encoding: 'utf-8',
       flag: 'r',
     })
@@ -57,7 +63,12 @@ export function initialize() {
     async (_, filePath: string, data: BrowserTestFile) => {
       console.info(`${BrowserTestHandler.Save} event received`)
 
-      await writeFile(filePath, JSON.stringify(data, null, 2))
+      const resolvedPath = path.ensureWithinDirectory(
+        BROWSER_TESTS_PATH,
+        filePath
+      )
+
+      await writeFile(resolvedPath, JSON.stringify(data, null, 2))
 
       trackEvent({
         event: UsageEventName.BrowserTestUpdated,

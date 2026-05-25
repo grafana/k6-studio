@@ -7,7 +7,7 @@ import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent } from '@/utils/electron'
 import { logError } from '@/utils/errors'
 import { unlink, writeFile } from '@/utils/fs'
-import { basename, extname, isAbsolute, join } from '@/utils/path'
+import { basename, ensureWithinDirectory, extname, join } from '@/utils/path'
 
 import { RunInCloudStateMachine } from './states'
 import { CloudHandlers, RawScript, Script } from './types'
@@ -50,9 +50,7 @@ export function initialize() {
     const browserWindow = browserWindowFromEvent(event)
     const file = await toScriptFile(script)
 
-    const absolutePath = !isAbsolute(file.path)
-      ? join(SCRIPTS_PATH, file.path)
-      : file.path
+    const absolutePath = ensureWithinDirectory(SCRIPTS_PATH, file.path)
 
     try {
       if (stateMachine !== null) {

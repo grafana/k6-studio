@@ -41,9 +41,7 @@ export function initialize() {
     async (_, filePath: string): Promise<Recording> => {
       console.info(`${HarHandler.OpenFile} event received`)
 
-      const resolvedPath = path.isAbsolute(filePath)
-        ? filePath
-        : path.join(RECORDINGS_PATH, filePath)
+      const resolvedPath = path.ensureWithinDirectory(RECORDINGS_PATH, filePath)
 
       const data = await readFile(resolvedPath, {
         encoding: 'utf-8',

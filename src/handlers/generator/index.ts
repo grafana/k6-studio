@@ -40,9 +40,11 @@ export function initialize() {
     async (_, generator: GeneratorFileData, filePath: string) => {
       console.log(`${GeneratorHandler.Save} event received`)
 
+      const resolvedPath = path.ensureWithinDirectory(GENERATORS_PATH, filePath)
+
       await writeFile(
-        filePath,
-        JSON.stringify(serializeGenerator(filePath, generator), null, 2)
+        resolvedPath,
+        JSON.stringify(serializeGenerator(resolvedPath, generator), null, 2)
       )
 
       trackGeneratorUpdated(generator)
@@ -54,12 +56,14 @@ export function initialize() {
     async (_, filePath: string): Promise<GeneratorFileData> => {
       console.log(`${GeneratorHandler.Open} event received`)
 
-      const data = await readFile(filePath, {
+      const resolvedPath = path.ensureWithinDirectory(GENERATORS_PATH, filePath)
+
+      const data = await readFile(resolvedPath, {
         encoding: 'utf-8',
         flag: 'r',
       })
 
-      return deserializeGenerator(filePath, data)
+      return deserializeGenerator(resolvedPath, data)
     }
   )
 }
