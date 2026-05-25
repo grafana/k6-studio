@@ -356,13 +356,20 @@ export function isBinaryContent(content: string): boolean {
   return false
 }
 
+const SAFE_INTERPOLATION =
+  /\$\{(?:correlation_vars\['[^']*'\]|VARS\['[^']*'\]|getUniqueItem\(FILES\['[^']*'\]\)\['[^']*'\]|getParameterizationValue\d+\(\))\}/g
+
 export function escapeTemplateLiteral(content: string): string {
-  return content
-    .replace(/`/g, '\\`')
-    .replace(
-      /\$\{(?!correlation_vars\[|VARS\[|getUniqueItem\(FILES\[|getParameterizationValue)/g,
-      '\\${'
-    )
+  const sentinels: string[] = []
+  const withSentinels = content.replace(SAFE_INTERPOLATION, (match) => {
+    sentinels.push(match)
+    return `__SAFE_INTERPOLATION_${sentinels.length - 1}__`
+  })
+  const escaped = withSentinels.replace(/`/g, '\\`').replace(/\$\{/g, '\\${')
+  return escaped.replace(
+    /__SAFE_INTERPOLATION_(\d+)__/g,
+    (_, index) => sentinels[Number(index)] ?? ''
+  )
 }
 
 export function escapeSingleQuotedString(content: string): string {
