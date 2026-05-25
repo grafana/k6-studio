@@ -3,9 +3,17 @@ import { app, autoUpdater, BrowserWindow, nativeTheme } from 'electron'
 import log from 'electron-log/main'
 import { updateElectronApp } from 'update-electron-app'
 
+/** Squirrel maintenance hooks only; --squirrel-firstrun is a normal first launch. */
+const SQUIRREL_WINDOWS_INSTALLER_EVENTS = new Set([
+  '--squirrel-install',
+  '--squirrel-updated',
+  '--squirrel-uninstall',
+  '--squirrel-obsolete',
+])
+
 const isSquirrelStartup =
   process.platform === 'win32' &&
-  process.argv.some((arg) => arg.startsWith('--squirrel'))
+  process.argv.some((arg) => SQUIRREL_WINDOWS_INSTALLER_EVENTS.has(arg))
 
 import * as path from '@/utils/path'
 
