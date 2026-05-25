@@ -246,8 +246,7 @@ export function generateSingleRequestSnippet(
   } = requestSnippetSchema
 
   const method = `'${request.method}'`
-  // use backticks to allow insert correlation variables later
-  const url = `\`${request.url}\``
+  const url = `\`${escapeTemplateLiteral(request.url)}\``
   let content = 'null'
 
   try {
@@ -256,7 +255,7 @@ export function generateSingleRequestSnippet(
         const base64Content = safeBtoa(request.content)
         content = `encoding.b64decode('${base64Content}')`
       } else {
-        const escapedContent = escapeBackticks(request.content)
+        const escapedContent = escapeTemplateLiteral(request.content)
         content = `\`${escapedContent}\``
 
         // if we have postData parameters we need to pass an object to the k6 post function because if it receives
@@ -305,12 +304,15 @@ export function generateRequestParams(
 ): string {
   const headers = request.headers
     .filter(([name]) => shouldIncludeHeaderInScript(name))
-    .map(([name, value]) => `'${name}': \`${value}\``)
+    .map(([name, value]) => `'${name}': \`${escapeTemplateLiteral(value)}\``)
     .join(',')
 
   const cookies = request.cookies
     .filter(([, value]) => value.includes('${correlation_vars['))
-    .map(([name, value]) => `'${name}': {value: \`${value}\`, replace: true}`)
+    .map(
+      ([name, value]) =>
+        `'${name}': {value: \`${escapeTemplateLiteral(value)}\`, replace: true}`
+    )
     .join(',\n')
 
   const params = [
@@ -354,8 +356,27 @@ export function isBinaryContent(content: string): boolean {
   return false
 }
 
-function escapeBackticks(content: string): string {
-  return content.replace(/`/g, '\\`')
+const SAFE_INTERPOLATION =
+  /\$\{(?:correlation_vars\['[^']*'\]|VARS\['[^']*'\]|getUniqueItem\(FILES\['[^']*'\]\)\['[^']*'\]|getParameterizationValue\d+\(\))\}/g
+
+export function escapeTemplateLiteral(content: string): string {
+  const sentinels: string[] = []
+  const withSentinels = content.replace(SAFE_INTERPOLATION, (match) => {
+    sentinels.push(match)
+    return `__SAFE_INTERPOLATION_${sentinels.length - 1}__`
+  })
+  const escaped = withSentinels
+    .replace(/\\/g, '\\\\')
+    .replace(/`/g, '\\`')
+    .replace(/\$\{/g, '\\${')
+  return escaped.replace(
+    /__SAFE_INTERPOLATION_(\d+)__/g,
+    (_, index) => sentinels[Number(index)] ?? ''
+  )
+}
+
+export function escapeSingleQuotedString(content: string): string {
+  return content.replace(/\\/g, '\\\\').replace(/'/g, "\\'")
 }
 
 function generateChecks(checks: RequestSnippetSchema['checks']) {
@@ -364,7 +385,10 @@ function generateChecks(checks: RequestSnippetSchema['checks']) {
   }
 
   const checksString = checks
-    .map(({ description, expression }) => `'${description}': ${expression}`)
+    .map(
+      ({ description, expression }) =>
+        `'${escapeSingleQuotedString(description)}': ${expression}`
+    )
     .join(',')
 
   return `check(resp, { ${checksString} })`
