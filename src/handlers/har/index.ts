@@ -9,7 +9,9 @@ import {
   copyFile,
   createFileWithUniqueName,
   readFile,
+  writeFile,
   showOpenDialog,
+  showSaveDialog,
 } from '@/utils/fs'
 import * as path from '@/utils/path'
 
@@ -51,6 +53,28 @@ export function initialize() {
       })
 
       return RecordingSchema.parse(JSON.parse(data))
+    }
+  )
+
+  ipcMain.handle(
+    HarHandler.ExportFile,
+    async (event, data: Recording, hint: string) => {
+      console.info(`${HarHandler.ExportFile} event received`)
+
+      const browserWindow = browserWindowFromEvent(event)
+
+      const result = await showSaveDialog(browserWindow, {
+        defaultPath: path.join(RECORDINGS_PATH, hint),
+        filters: [{ name: 'HAR', extensions: ['har'] }],
+      })
+
+      if (result.canceled || !result.filePath) {
+        return undefined
+      }
+
+      await writeFile(result.filePath, JSON.stringify(data, null, 2))
+
+      return result.filePath
     }
   )
 

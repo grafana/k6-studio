@@ -19,6 +19,7 @@ interface RequestsSectionProps {
   selectedRequestId?: string
   autoScroll?: boolean
   noDataElement?: ReactNode
+  actions?: ReactNode
   onSelectRequest: (data: ProxyData | null) => void
   onUpdateGroup?: (group: Group) => void
   resetProxyData?: () => void
@@ -30,6 +31,7 @@ export function RequestsSection({
   noDataElement,
   autoScroll = false,
   groups,
+  actions,
   onSelectRequest,
   onUpdateGroup,
   resetProxyData,
@@ -97,6 +99,7 @@ export function RequestsSection({
               setFilterAllData={setFilterAllData}
             />
           </Box>
+          {actions}
         </Flex>
       </Flex>
       <ScrollArea scrollbars="both">
