@@ -365,7 +365,10 @@ export function escapeTemplateLiteral(content: string): string {
     sentinels.push(match)
     return `__SAFE_INTERPOLATION_${sentinels.length - 1}__`
   })
-  const escaped = withSentinels.replace(/`/g, '\\`').replace(/\$\{/g, '\\${')
+  const escaped = withSentinels
+    .replace(/\\/g, '\\\\')
+    .replace(/`/g, '\\`')
+    .replace(/\$\{/g, '\\${')
   return escaped.replace(
     /__SAFE_INTERPOLATION_(\d+)__/g,
     (_, index) => sentinels[Number(index)] ?? ''

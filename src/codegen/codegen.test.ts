@@ -899,7 +899,13 @@ describe('Code generation', () => {
     })
 
     it('should handle backslash before backtick', () => {
-      expect(escapeTemplateLiteral('hello\\`world')).toBe('hello\\\\`world')
+      expect(escapeTemplateLiteral('hello\\`world')).toBe('hello\\\\\\`world')
+    })
+
+    it('should escape backslash before ${} to prevent bypass', () => {
+      const payload = '\\${evil()}'
+      const escaped = escapeTemplateLiteral(payload)
+      expect(escaped).toBe('\\\\\\${evil()}')
     })
 
     it('should escape VARS prefix followed by injected code', () => {
