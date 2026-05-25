@@ -8,6 +8,7 @@ import { browserWindowFromEvent } from '@/utils/electron'
 import { logError } from '@/utils/errors'
 import { unlink, writeFile } from '@/utils/fs'
 import { basename, extname, isAbsolute, join } from '@/utils/path'
+import { validateExternalUrl } from '@/utils/url'
 
 import { RunInCloudStateMachine } from './states'
 import { CloudHandlers, RawScript, Script } from './types'
@@ -71,7 +72,7 @@ export function initialize() {
         trackEvent({
           event: UsageEventName.ScriptRunInCloud,
         })
-        await shell.openExternal(result.testRunUrl)
+        await shell.openExternal(validateExternalUrl(result.testRunUrl))
       }
 
       return result
