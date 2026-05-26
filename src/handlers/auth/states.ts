@@ -14,6 +14,7 @@ import {
   Stack,
 } from '@/types/auth'
 import { exhaustive } from '@/utils/typescript'
+import { validateExternalUrl } from '@/utils/url'
 
 import { waitFor } from '../utils'
 
@@ -35,6 +36,7 @@ interface ExchangingState {
   grant: GrantedResult
   stack: Stack
   previousState: SelectingState
+  profile: { name: string; username: string }
 }
 
 interface CompletedState {
@@ -134,7 +136,7 @@ export class SignInStateMachine extends EventEmitter<StateEventMap> {
     const result = await authenticate({
       signal: this.#signal,
       onUserCode: async (verificationUrl, code) => {
-        await shell.openExternal(verificationUrl)
+        await shell.openExternal(validateExternalUrl(verificationUrl))
 
         this.emit('state-change', {
           type: 'awaiting-authorization',
@@ -167,7 +169,10 @@ export class SignInStateMachine extends EventEmitter<StateEventMap> {
       type: 'fetching-stacks',
     })
 
-    const stacks = await fetchStacks(state.grant.token, this.#signal)
+    const { stacks, profile } = await fetchStacks(
+      state.grant.token,
+      this.#signal
+    )
 
     // Skip having to select a stack if there's only one available.
     // We do show the step if the stack is archived though, so that
@@ -178,6 +183,7 @@ export class SignInStateMachine extends EventEmitter<StateEventMap> {
         grant: state.grant,
         stack: stacks[0],
         previousState: state,
+        profile,
       }
     }
 
@@ -204,14 +210,13 @@ export class SignInStateMachine extends EventEmitter<StateEventMap> {
       grant: state.grant,
       stack: stackSelection.selected,
       previousState: state,
+      profile,
     }
   }
 
-  async #exchangeToken({
-    stack,
-    grant,
-    previousState,
-  }: ExchangingState): Promise<State> {
+  async #exchangeToken(state: ExchangingState): Promise<State> {
+    const { stack, grant, previousState } = state
+
     this.emit('state-change', {
       type: 'fetching-token',
       stack,
@@ -243,6 +248,7 @@ export class SignInStateMachine extends EventEmitter<StateEventMap> {
         grant,
         stack,
         previousState,
+        profile: state.profile,
       }
     }
 
@@ -253,8 +259,9 @@ export class SignInStateMachine extends EventEmitter<StateEventMap> {
       name: stack.name,
       url: stack.url,
       user: {
-        name: null,
+        name: state.profile.name,
         email: grant.email,
+        username: state.profile.username,
       },
     }
 

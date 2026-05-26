@@ -1,13 +1,12 @@
 import { app, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import find from 'find-process'
-import { readFile } from 'fs/promises'
 import forge from 'node-forge'
 import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
-import path from 'path'
 import readline from 'readline/promises'
 import kill from 'tree-kill'
+
+import * as path from '@/utils/path'
 
 import { ProxyHandler } from '../handlers/proxy/types'
 import { ProxyData } from '../types'
@@ -18,7 +17,9 @@ import {
   findOpenPort,
   sendToast,
 } from '../utils/electron'
+import { exists, readFile } from '../utils/fs'
 import { safeJsonParse } from '../utils/json'
+import { toNativePath } from '../utils/path'
 
 import { expandHomeDir } from './file'
 export type ProxyProcess = ChildProcessWithoutNullStreams
@@ -59,9 +60,9 @@ export const launchProxy = (
   const proxyArgs = [
     '-q',
     '-s',
-    proxyScript,
+    toNativePath(proxyScript),
     '--set',
-    `confdir=${certificatesPath}`,
+    `confdir=${toNativePath(certificatesPath)}`,
     '--listen-port',
     `${proxySettings.port}`,
     '--mode',
@@ -82,11 +83,11 @@ export const launchProxy = (
   if (proxySettings.mode === 'upstream' && proxySettings.certificatePath) {
     proxyArgs.push(
       '--set',
-      `ssl_verify_upstream_trusted_ca=${proxySettings.certificatePath}`
+      `ssl_verify_upstream_trusted_ca=${toNativePath(proxySettings.certificatePath)}`
     )
   }
 
-  const proxy = spawn(proxyPath, proxyArgs)
+  const proxy = spawn(toNativePath(proxyPath), proxyArgs)
 
   // we use a reader to read entire lines from stdout instead of buffered data
   const stdoutReader = readline.createInterface(proxy.stdout)
@@ -279,11 +280,17 @@ const getProxyCertificatePath = () => {
   return path.join(getCertificatesPath(), 'mitmproxy-ca-cert.pem')
 }
 
-export const getProxyCertificateContent = () => {
+export const getProxyCertificateContent = async () => {
   const certPath = expandHomeDir(getProxyCertificatePath())
-  if (certPath && existsSync(certPath)) {
-    return readFileSync(certPath)
+
+  if (!certPath) {
+    return
   }
+
+  if (await exists(certPath)) {
+    return readFile(certPath)
+  }
+
   return undefined
 }
 

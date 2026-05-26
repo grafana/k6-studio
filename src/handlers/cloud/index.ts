@@ -1,6 +1,4 @@
 import { ipcMain, shell } from 'electron'
-import { rm, writeFile } from 'fs/promises'
-import { basename, extname, isAbsolute, join } from 'path'
 
 import { SCRIPTS_PATH } from '@/constants/workspace'
 import { getTempScriptName } from '@/main/script'
@@ -8,6 +6,9 @@ import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent } from '@/utils/electron'
 import { logError } from '@/utils/errors'
+import { unlink, writeFile } from '@/utils/fs'
+import { basename, extname, isAbsolute, join } from '@/utils/path'
+import { validateExternalUrl } from '@/utils/url'
 
 import { RunInCloudStateMachine } from './states'
 import { CloudHandlers, RawScript, Script } from './types'
@@ -23,7 +24,7 @@ async function createTempFile(script: RawScript) {
     path: tempFilePath,
     dispose() {
       try {
-        return rm(tempFilePath)
+        return unlink(tempFilePath)
       } catch {
         return
       }
@@ -71,7 +72,7 @@ export function initialize() {
         trackEvent({
           event: UsageEventName.ScriptRunInCloud,
         })
-        await shell.openExternal(result.testRunUrl)
+        await shell.openExternal(validateExternalUrl(result.testRunUrl))
       }
 
       return result

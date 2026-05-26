@@ -26,24 +26,19 @@ export function openFileInDefaultApp(file: StudioFile) {
   ) as Promise<string>
 }
 
-export function deleteFile(file: StudioFile) {
-  return ipcRenderer.invoke(UIHandler.DeleteFile, file) as Promise<void>
+export function trashFile(file: StudioFile) {
+  return ipcRenderer.invoke(UIHandler.TrashFile, file) as Promise<void>
 }
 
 export function getFiles() {
   return ipcRenderer.invoke(UIHandler.GetFiles) as Promise<GetFilesResponse>
 }
 
-export function renameFile(
-  oldFileName: string,
-  newFileName: string,
-  type: StudioFile['type']
-) {
+export function renameFile(file: StudioFile, newFileName: string) {
   return ipcRenderer.invoke(
     UIHandler.RenameFile,
-    oldFileName,
-    newFileName,
-    type
+    file,
+    newFileName
   ) as Promise<void>
 }
 

@@ -442,7 +442,7 @@ function buildBrowserNodeGraphFromActions(
           nodeId: crypto.randomUUID(),
           operation: {
             type: 'is-checked',
-            inputType: 'native',
+            inputType: action.inputType,
             expected: action.checked ? 'checked' : 'unchecked',
           },
           inputs: {

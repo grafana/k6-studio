@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { buildClickAction } from '@/test/factories/browserActions'
+import {
+  buildClickAction,
+  buildToBeCheckedAction,
+} from '@/test/factories/browserActions'
 
 import { convertActionsToTest, convertEventsToTest } from './test'
 
@@ -274,5 +277,48 @@ describe('convertActionsToTest', () => {
         },
       },
     ])
+  })
+
+  it('threads inputType:aria through toBeChecked to is-checked IR operation', () => {
+    const test = convertActionsToTest({
+      browserActions: [
+        buildToBeCheckedAction({
+          inputType: 'aria',
+          checked: true,
+          locator: {
+            current: 'css',
+            values: { css: { type: 'css', selector: '[role="checkbox"]' } },
+          },
+        }),
+      ],
+    })
+
+    const assertNode = test.defaultScenario?.nodes.find(
+      (node) => node.type === 'assert'
+    )
+
+    expect(assertNode?.operation).toMatchObject({
+      type: 'is-checked',
+      inputType: 'aria',
+      expected: 'checked',
+    })
+  })
+
+  it('threads inputType:native through toBeChecked to is-checked IR operation', () => {
+    const test = convertActionsToTest({
+      browserActions: [
+        buildToBeCheckedAction({ inputType: 'native', checked: false }),
+      ],
+    })
+
+    const assertNode = test.defaultScenario?.nodes.find(
+      (node) => node.type === 'assert'
+    )
+
+    expect(assertNode?.operation).toMatchObject({
+      type: 'is-checked',
+      inputType: 'native',
+      expected: 'unchecked',
+    })
   })
 })

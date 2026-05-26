@@ -8,16 +8,13 @@ import {
 import { useState } from 'react'
 
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
-import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { RunInCloudButton } from '@/components/RunInCloudDialog/RunInCloudButton'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { useCurrentFile } from '@/hooks/useCurrentFile'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { ScriptPreview } from '@/hooks/useScriptPreview'
-import { useGeneratorStore } from '@/store/generator'
 
-import { ExportScriptDialog } from '../ExportScriptDialog'
 import { useScriptExport } from '../Generator.hooks'
 import { ValidatorDialog } from '../ValidatorDialog'
 
@@ -32,11 +29,7 @@ export function GeneratorControls({
   isDirty,
   script,
 }: GeneratorControlsProps) {
-  const scriptName = useGeneratorStore((store) => store.scriptName)
-
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
-  const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
-    useState(false)
   const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
   const file = useCurrentFile('generator')
   const proxyStatus = useProxyStatus()
@@ -64,7 +57,7 @@ export function GeneratorControls({
         </Tooltip>
         <Tooltip content="Export script">
           <IconButton
-            onClick={() => setIsExportScriptDialogOpen(true)}
+            onClick={handleExportScript}
             disabled={!isScriptExportable}
             variant="ghost"
             color="gray"
@@ -103,18 +96,9 @@ export function GeneratorControls({
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DeleteFileDialog
-            file={file}
-            onConfirm={handleDelete}
-            trigger={
-              <DropdownMenu.Item
-                color="red"
-                onClick={(e) => e.preventDefault()}
-              >
-                Delete generator
-              </DropdownMenu.Item>
-            }
-          />
+          <DropdownMenu.Item color="red" onClick={handleDelete}>
+            Move to Trash
+          </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
       {isScriptExportable && (
@@ -132,12 +116,6 @@ export function GeneratorControls({
             script={script.preview}
             open={isValidatorDialogOpen}
             onOpenChange={setIsValidatorDialogOpen}
-          />
-          <ExportScriptDialog
-            open={isExportScriptDialogOpen}
-            scriptName={scriptName}
-            onExport={handleExportScript}
-            onOpenChange={setIsExportScriptDialogOpen}
           />
         </>
       )}

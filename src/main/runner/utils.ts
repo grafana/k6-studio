@@ -1,6 +1,10 @@
 import { Options, Scenario } from 'k6/options'
 
-export function getDebugTarget(options: Options) {
+export function getDebugTarget(options: Options, scenarioName?: string) {
+  if (scenarioName) {
+    return options.scenarios?.[scenarioName]
+  }
+
   const scenarios = Object.values(options.scenarios ?? {})
 
   // Always prefer the 'default' export if configured, otherwise fallback to the

@@ -1,8 +1,16 @@
 import { app } from 'electron'
-import { readFile, writeFile } from 'fs/promises'
-import path from 'path'
+import log from 'electron-log/main'
 
+import {
+  decryptString,
+  encryptString,
+  isEncryptionAvailable,
+} from '@/main/encryption'
 import { Profile, ProfileSchema } from '@/schemas/profile'
+import { readFile, writeFile } from '@/utils/fs'
+import * as path from '@/utils/path'
+
+const ENCRYPTED_PREFIX = 'enc:'
 
 const fileName =
   process.env.NODE_ENV === 'development'
@@ -13,6 +21,46 @@ const filePath = path.join(app.getPath('userData'), fileName)
 
 let profileDataCache: Profile | null = null
 
+function encryptProfileTokens(profile: Profile): Profile {
+  if (!isEncryptionAvailable()) {
+    log.warn('Encryption unavailable, storing tokens in plaintext')
+    return profile
+  }
+
+  return {
+    ...profile,
+    tokens: Object.fromEntries(
+      Object.entries(profile.tokens).map(([stackId, token]) => [
+        stackId,
+        ENCRYPTED_PREFIX + encryptString(token),
+      ])
+    ),
+  }
+}
+
+function decryptProfileTokens(profile: Profile): Profile {
+  return {
+    ...profile,
+    tokens: Object.fromEntries(
+      Object.entries(profile.tokens).flatMap(([stackId, token]) => {
+        if (!token.startsWith(ENCRYPTED_PREFIX)) {
+          // Plaintext token from before encryption was added
+          return [[stackId, token]]
+        }
+        try {
+          return [
+            [stackId, decryptString(token.slice(ENCRYPTED_PREFIX.length))],
+          ]
+        } catch {
+          // Encrypted with different key (e.g. profile copied between machines)
+          log.warn('Failed to decrypt token for stack', stackId, '- discarding')
+          return []
+        }
+      })
+    ),
+  }
+}
+
 export async function getProfileData(): Promise<Profile> {
   if (profileDataCache) {
     return profileDataCache
@@ -20,7 +68,8 @@ export async function getProfileData(): Promise<Profile> {
 
   try {
     const file = await readFile(filePath, 'utf-8')
-    profileDataCache = ProfileSchema.parse(JSON.parse(file))
+    const parsed = ProfileSchema.parse(JSON.parse(file))
+    profileDataCache = decryptProfileTokens(parsed)
 
     return profileDataCache
   } catch {
@@ -37,7 +86,8 @@ export async function getProfileData(): Promise<Profile> {
 
 export async function saveProfileData(profile: Profile) {
   try {
-    await writeFile(filePath, JSON.stringify(profile, null, 2))
+    const toSave = encryptProfileTokens(profile)
+    await writeFile(filePath, JSON.stringify(toSave, null, 2), { mode: 0o600 })
   } finally {
     profileDataCache = null
   }

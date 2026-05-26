@@ -1,6 +1,7 @@
 import { Button, Flex } from '@radix-ui/themes'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { invalidateProfiles } from '@/hooks/useProfiles'
 import { UserProfiles } from '@/schemas/profile'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { SignInProcessState, SignInResult, Stack } from '@/types/auth'
@@ -89,6 +90,7 @@ export function GrafanaCloudSignIn({
   const handleSignIn = useCallback((result: SignInResult) => {
     switch (result.type) {
       case 'authenticated':
+        void invalidateProfiles()
         onSignInRef.current(result.profiles)
         window.studio.app.trackEvent({
           event: UsageEventName.UserLoggedIn,

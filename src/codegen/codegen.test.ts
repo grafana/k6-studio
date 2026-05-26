@@ -17,6 +17,8 @@ import { ThinkTime } from '@/types/testOptions'
 import { prettify } from '@/utils/prettify'
 
 import {
+  escapeTemplateLiteral,
+  escapeSingleQuotedString,
   generateScript,
   generateVariableDeclarations,
   generateGroupSnippet,
@@ -28,6 +30,10 @@ import {
   generateRequestSnippetsFromSchemas,
   isBinaryContent,
 } from './codegen'
+
+vi.mock('./options', () => ({
+  generateOptions: () => '{}',
+}))
 
 const fakeDate = new Date('2000-01-01T00:00:00Z')
 
@@ -41,10 +47,6 @@ const thinkTime: ThinkTime = {
 
 describe('Code generation', () => {
   beforeAll(() => {
-    vi.mock('./options', () => ({
-      generateOptions: () => '{}',
-    }))
-
     vi.stubGlobal('__APP_VERSION__', '0.0.0')
     vi.setSystemTime(fakeDate)
   })
@@ -80,7 +82,7 @@ describe('Code generation', () => {
           recording: [],
           scriptPath: '/project/Scripts/my-script.js',
           generator: {
-            version: '2.0',
+            version: '3.0',
             recordingPath: 'test',
             options: {
               loadProfile: {
@@ -119,7 +121,7 @@ describe('Code generation', () => {
 
   describe('generateImports', () => {
     const generator: GeneratorFileData = {
-      version: '2.0',
+      version: '3.0',
       recordingPath: 'test',
       options: {
         loadProfile: {
@@ -852,6 +854,142 @@ describe('Code generation', () => {
       expect(snippet).toContain(
         `encoding.b64decode('${expectedBase64Content}')`
       )
+    })
+  })
+
+  describe('escapeTemplateLiteral', () => {
+    it('should escape bare backticks', () => {
+      expect(escapeTemplateLiteral('hello`world')).toBe('hello\\`world')
+    })
+
+    it('should escape unsafe ${evil}', () => {
+      expect(escapeTemplateLiteral('Bearer ${evil}')).toBe('Bearer \\${evil}')
+    })
+
+    it("should preserve ${correlation_vars['correlation_0']}", () => {
+      expect(
+        escapeTemplateLiteral("${correlation_vars['correlation_0']}")
+      ).toBe("${correlation_vars['correlation_0']}")
+    })
+
+    it("should preserve ${VARS['myVar']}", () => {
+      expect(escapeTemplateLiteral("${VARS['myVar']}")).toBe("${VARS['myVar']}")
+    })
+
+    it('should preserve ${getParameterizationValue0()}', () => {
+      expect(escapeTemplateLiteral('${getParameterizationValue0()}')).toBe(
+        '${getParameterizationValue0()}'
+      )
+    })
+
+    it("should preserve ${getUniqueItem(FILES['users'])['id']}", () => {
+      expect(
+        escapeTemplateLiteral("${getUniqueItem(FILES['users'])['id']}")
+      ).toBe("${getUniqueItem(FILES['users'])['id']}")
+    })
+
+    it('should escape unsafe interpolations while preserving safe ones', () => {
+      expect(
+        escapeTemplateLiteral("${evil} then ${correlation_vars['x']}")
+      ).toBe("\\${evil} then ${correlation_vars['x']}")
+    })
+
+    it('should pass through strings with no special characters', () => {
+      expect(escapeTemplateLiteral('hello world')).toBe('hello world')
+    })
+
+    it('should handle backslash before backtick', () => {
+      expect(escapeTemplateLiteral('hello\\`world')).toBe('hello\\\\\\`world')
+    })
+
+    it('should escape backslash before ${} to prevent bypass', () => {
+      const payload = '\\${evil()}'
+      const escaped = escapeTemplateLiteral(payload)
+      expect(escaped).toBe('\\\\\\${evil()}')
+    })
+
+    it('should escape VARS prefix followed by injected code', () => {
+      const payload = "${VARS['x']+(()=>{ http.get('http://attacker') })()}"
+      const escaped = escapeTemplateLiteral(payload)
+      expect(escaped).toContain('\\${')
+      expect(escaped).not.toMatch(/${VARS/)
+    })
+
+    it('should escape correlation_vars prefix followed by injected code', () => {
+      const payload = "${correlation_vars['x'] + malicious()}"
+      const escaped = escapeTemplateLiteral(payload)
+      expect(escaped).toContain('\\${')
+    })
+  })
+
+  describe('escapeSingleQuotedString', () => {
+    it('should escape single quotes', () => {
+      expect(escapeSingleQuotedString("it's")).toBe("it\\'s")
+    })
+
+    it('should escape backslashes', () => {
+      expect(escapeSingleQuotedString('path\\to')).toBe('path\\\\to')
+    })
+
+    it('should pass through strings with no special characters', () => {
+      expect(escapeSingleQuotedString('hello world')).toBe('hello world')
+    })
+  })
+
+  describe('generateRequestParams escaping', () => {
+    const generateRequest = (
+      headers: Header[],
+      cookies: Cookie[] = []
+    ): Request => ({
+      method: 'GET',
+      url: 'http://example.com',
+      headers,
+      cookies,
+      query: [],
+      scheme: 'http',
+      host: 'example.com',
+      content: '',
+      path: '/',
+      timestampStart: 0,
+      timestampEnd: 0,
+      contentLength: 0,
+      httpVersion: '1.1',
+    })
+
+    it('should escape backticks in header values', async () => {
+      const request = generateRequest([['x-token', 'abc`def']])
+      const result = await prettify(generateRequestParams(request))
+
+      expect(result).toContain('abc\\`def')
+    })
+
+    it('should escape unsafe interpolations in header values', async () => {
+      const request = generateRequest([['x-token', 'Bearer ${evil}']])
+      const result = await prettify(generateRequestParams(request))
+
+      expect(result).toContain('Bearer \\${evil}')
+    })
+  })
+
+  describe('generateChecks escaping', () => {
+    it('should escape single quotes in check descriptions', () => {
+      const rules: TestRule[] = [
+        {
+          type: 'verification',
+          id: '1',
+          enabled: true,
+          filter: { path: '' },
+          operator: 'equals',
+          target: 'status',
+          value: {
+            type: 'recordedValue',
+          },
+        },
+      ]
+
+      const result = generateVUCode(checksRecording, rules, thinkTime)
+
+      expect(result).toContain("'status equals 200'")
     })
   })
 })

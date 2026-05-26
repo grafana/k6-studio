@@ -6,9 +6,9 @@ interface RichDropdownMenuItemProps extends Omit<
   ComponentProps<typeof DropdownMenu.Item>,
   'children'
 > {
-  label: string
+  label: ReactNode
   icon?: ReactNode
-  description?: string
+  description?: ReactNode
 }
 
 export function RichDropdownMenuItem({
@@ -30,7 +30,7 @@ export function RichDropdownMenuItem({
     >
       <Flex py="1" maxWidth="340px" gap="3" align="center">
         {icon}
-        <Flex direction="column" align="start">
+        <Flex direction="column" gap="1" align="start">
           <Text weight="bold">{label}</Text>
           {description && <Text size="1">{description}</Text>}
         </Flex>

@@ -5,13 +5,11 @@ import {
   MonitorIcon,
   ServerCogIcon,
 } from 'lucide-react'
-import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { emitScript } from '@/codegen/browser'
 import { convertEventsToActions } from '@/codegen/browser/convertEventsToActions'
 import { convertEventsToTest } from '@/codegen/browser/test'
-import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { RichDropdownMenuItem } from '@/components/RichDropdownMenuItem'
 import { useCreateBrowserTest } from '@/hooks/useCreateBrowserTest'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
@@ -22,8 +20,6 @@ import { useFeaturesStore } from '@/store/features'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 
-import { ExportScriptDialog } from '../Generator/ExportScriptDialog'
-
 interface RecordingPreviewControlsProps {
   file: StudioFile
   browserEvents: BrowserEvent[]
@@ -33,7 +29,6 @@ export function RecordingPreviewControls({
   file,
   browserEvents,
 }: RecordingPreviewControlsProps) {
-  const [showExportDialog, setShowExportDialog] = useState(false)
   const showToast = useToast()
   const navigate = useNavigate()
   const createTestGenerator = useCreateGenerator()
@@ -61,32 +56,30 @@ export function RecordingPreviewControls({
     ? 'Create a browser test from recorded interactions'
     : 'Export a k6 script simulating browser interactions'
 
-  const handleBrowserTest = isBrowserEditorEnabled
-    ? handleCreateBrowserTest
-    : () => setShowExportDialog(true)
-
   const handleDelete = useDeleteFile({
     file,
     navigateHomeOnDelete: false,
   })
 
-  const handleDiscardConfirm = async () => {
-    await handleDelete()
+  const handleDiscardConfirm = () => {
+    handleDelete()
     navigate(getRoutePath('recorder'))
   }
 
-  const handleDeleteRecordingConfirm = async () => {
-    await handleDelete()
+  const handleDeleteRecordingConfirm = () => {
+    handleDelete()
     navigate(getRoutePath('home'))
   }
 
-  const handleExportBrowserScript = async (fileName: string) => {
+  const handleExportBrowserScript = async () => {
     const test = convertEventsToTest({
       browserEvents,
     })
 
     try {
-      const path = await window.studio.fs.showSaveAsDialog(fileName)
+      const path = await window.studio.fs.showSaveAsDialog(
+        'my-browser-script.js'
+      )
 
       if (path === undefined) {
         return
@@ -105,20 +98,16 @@ export function RecordingPreviewControls({
     }
   }
 
+  const handleBrowserTest = isBrowserEditorEnabled
+    ? handleCreateBrowserTest
+    : handleExportBrowserScript
+
   return (
     <>
       {isDiscardable ? (
-        <DeleteFileDialog
-          file={file}
-          actionLabel="Discard"
-          description="Discard this recording? This cannot be undone."
-          onConfirm={handleDiscardConfirm}
-          trigger={
-            <Button variant="outline" color="red">
-              Discard
-            </Button>
-          }
-        />
+        <Button variant="outline" color="red" onClick={handleDiscardConfirm}>
+          Discard
+        </Button>
       ) : (
         <Button variant="outline" asChild>
           <Link to={getRoutePath('recorder')}>New recording</Link>
@@ -153,26 +142,11 @@ export function RecordingPreviewControls({
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DeleteFileDialog
-            file={file}
-            onConfirm={handleDeleteRecordingConfirm}
-            trigger={
-              <DropdownMenu.Item
-                color="red"
-                onClick={(e) => e.preventDefault()}
-              >
-                Delete
-              </DropdownMenu.Item>
-            }
-          />
+          <DropdownMenu.Item color="red" onClick={handleDeleteRecordingConfirm}>
+            Move to Trash
+          </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
-      <ExportScriptDialog
-        open={showExportDialog}
-        scriptName="my-browser-script.js"
-        onOpenChange={setShowExportDialog}
-        onExport={handleExportBrowserScript}
-      />
     </>
   )
 }

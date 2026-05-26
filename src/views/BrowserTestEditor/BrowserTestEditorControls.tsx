@@ -14,14 +14,13 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 
-import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
+import { useScriptExportedToast } from '@/hooks/useScriptExportedToast'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 
-import { ExportScriptDialog } from '../Generator/ExportScriptDialog'
 import { DebugSession } from '../Validator/types'
 
 interface BrowserTestEditorControlsProps {
@@ -44,8 +43,8 @@ export function BrowserTestEditorControls({
   onSave,
 }: BrowserTestEditorControlsProps) {
   const showToast = useToast()
+  const showExportedToast = useScriptExportedToast()
 
-  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
   const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
 
   const handleDelete = useDeleteFile({
@@ -53,15 +52,19 @@ export function BrowserTestEditorControls({
     navigateHomeOnDelete: true,
   })
 
-  const handleExportScript = async (scriptName: string) => {
+  const handleExportScript = async () => {
     try {
-      const scriptPath = await window.studio.fs.showSaveAsDialog(scriptName)
+      const scriptPath = await window.studio.fs.showSaveAsDialog(
+        `${file.displayName}.js`
+      )
 
       if (scriptPath === undefined) {
         return
       }
 
       await window.studio.script.saveScript(scriptPath, preview)
+
+      showExportedToast(scriptPath)
     } catch (error) {
       showToast({
         title: 'Failed to export the script.',
@@ -84,11 +87,7 @@ export function BrowserTestEditorControls({
           </IconButton>
         </Tooltip>
         <Tooltip content="Export script">
-          <IconButton
-            onClick={() => setIsExportDialogOpen(true)}
-            variant="ghost"
-            color="gray"
-          >
+          <IconButton onClick={handleExportScript} variant="ghost" color="gray">
             <DownloadIcon />
           </IconButton>
         </Tooltip>
@@ -116,26 +115,11 @@ export function BrowserTestEditorControls({
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DeleteFileDialog
-            file={file}
-            onConfirm={handleDelete}
-            trigger={
-              <DropdownMenu.Item
-                color="red"
-                onClick={(e) => e.preventDefault()}
-              >
-                Delete browser test
-              </DropdownMenu.Item>
-            }
-          />
+          <DropdownMenu.Item color="red" onClick={handleDelete}>
+            Move to Trash
+          </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
-      <ExportScriptDialog
-        scriptName={`${file.displayName}.js`}
-        onExport={handleExportScript}
-        open={isExportDialogOpen}
-        onOpenChange={setIsExportDialogOpen}
-      />
       <RunInCloudDialog
         open={isRunInCloudDialogOpen}
         script={{

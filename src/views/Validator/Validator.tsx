@@ -32,8 +32,12 @@ function Content({ file }: ValidatorProps) {
 
   const isRunning = session?.state === 'running'
 
-  async function handleDebugScript() {
-    await startDebugging()
+  const scenarios = data?.options?.scenarios
+    ? Object.keys(data.options.scenarios)
+    : ['default']
+
+  async function handleDebugScript(scenarioName?: string) {
+    await startDebugging(scenarioName)
   }
 
   function handleRunInCloud() {
@@ -77,6 +81,7 @@ function Content({ file }: ValidatorProps) {
           file={file}
           isRunning={isRunning}
           canDelete={data !== undefined && !data.isExternal}
+          scenarios={scenarios}
           onRunScript={handleDebugScript}
           onRunInCloud={handleRunInCloud}
           onSelectScript={handleSelectExternalScript}
@@ -87,6 +92,7 @@ function Content({ file }: ValidatorProps) {
     >
       <Flex flexGrow="1" direction="column" align="stretch">
         <Debugger
+          file={file}
           script={data?.script ?? ''}
           options={data?.options ?? {}}
           session={session}

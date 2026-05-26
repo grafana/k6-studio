@@ -2,13 +2,14 @@ import { Button } from '@radix-ui/themes'
 import log from 'electron-log/renderer'
 import { StopCircle } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useBlocker, useNavigate } from 'react-router-dom'
+import { useBlocker, useLocation, useNavigate } from 'react-router-dom'
 
 import { View } from '@/components/Layout/View'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { DEFAULT_GROUP_NAME } from '@/constants'
 import { useListenBrowserEvent } from '@/hooks/useListenBrowserEvent'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
+import { StartRecordingNavigationState } from '@/hooks/useStartRecording'
 import { LaunchBrowserOptions } from '@/recorder/types'
 import { getViewPath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
@@ -51,6 +52,7 @@ export function Recorder() {
   const debouncedProxyData = useDebouncedProxyData(proxyData)
 
   const navigate = useNavigate()
+  const location = useLocation()
   const blocker = useBlocker(
     recorderState === 'starting' || recorderState === 'recording'
   )
@@ -76,6 +78,20 @@ export function Recorder() {
     },
     [resetProxyData, showToast]
   )
+
+  useEffect(() => {
+    if (recorderState !== 'idle') {
+      return
+    }
+
+    const state = location.state as StartRecordingNavigationState | null
+    if (!state?.autoStart) {
+      return
+    }
+
+    navigate(location.pathname, { replace: true })
+    void handleStartRecording(state.autoStart)
+  }, [location, navigate, recorderState, handleStartRecording])
 
   // Set the state to 'recording' when the first data arrives.
   // This allows us to show loading indicator while browser loads.
@@ -218,9 +234,7 @@ export function Recorder() {
           )
         }
       >
-        {recorderState === 'idle' && (
-          <EmptyState isLoading={isLoading} onStart={handleStartRecording} />
-        )}
+        {recorderState === 'idle' && <EmptyState isLoading={isLoading} />}
 
         {recorderState !== 'idle' && (
           <RecordingInspector

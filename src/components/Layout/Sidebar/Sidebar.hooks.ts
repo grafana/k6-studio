@@ -3,18 +3,22 @@ import { orderBy } from 'lodash-es'
 import { useEffect, useMemo } from 'react'
 
 import { useStudioUIStore } from '@/store/ui'
+import { usePendingDeletesStore } from '@/store/ui/usePendingDeletes'
 import { StudioFile } from '@/types'
 import { withMatches } from '@/utils/fuse'
+import * as path from '@/utils/path'
 
 function orderByFileName(files: Map<string, StudioFile>) {
   return orderBy([...files.values()], (s) => s.displayName)
 }
 
 function toFileMap(files: StudioFile[]) {
-  return new Map(files.map((file) => [file.path, file]))
+  return new Map(files.map((file) => [path.key(file.path), file]))
 }
 
 function useFolderContent() {
+  const pendingPaths = usePendingDeletesStore((state) => state.paths)
+
   const recordings = useStudioUIStore((s) => orderByFileName(s.recordings))
   const generators = useStudioUIStore((s) => orderByFileName(s.generators))
   const browserTests = useStudioUIStore((s) => orderByFileName(s.browserTests))
@@ -47,20 +51,26 @@ function useFolderContent() {
     [addFile]
   )
 
-  useEffect(() => {
-    window.studio.ui.onRemoveFile((file) => {
-      removeFile(file)
-    })
-  }, [removeFile])
+  useEffect(
+    () =>
+      window.studio.ui.onRemoveFile((file) => {
+        removeFile(file)
+        usePendingDeletesStore.getState().remove(file.path)
+      }),
+    [removeFile]
+  )
 
-  return {
-    recordings,
-    tests: [...generators, ...browserTests].sort((a, b) =>
-      a.displayName.localeCompare(b.displayName)
-    ),
-    scripts,
-    dataFiles,
-  }
+  return useMemo(() => {
+    const notPending = (file: StudioFile) => !pendingPaths.has(file.path)
+    return {
+      recordings: recordings.filter(notPending),
+      tests: [...generators, ...browserTests]
+        .filter(notPending)
+        .sort((a, b) => a.displayName.localeCompare(b.displayName)),
+      scripts: scripts.filter(notPending),
+      dataFiles: dataFiles.filter(notPending),
+    }
+  }, [recordings, generators, browserTests, scripts, dataFiles, pendingPaths])
 }
 
 export function useFiles(searchTerm: string) {

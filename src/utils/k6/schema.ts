@@ -1,8 +1,8 @@
 import { z } from 'zod'
 
 const CloudOptionsSchema = z.object({
-  name: z.string().optional(),
-  projectID: z.number().optional(),
+  name: z.string().nullish(),
+  projectID: z.number().nullish(),
 })
 
 const BrowserOptionsSchema = z.object({
@@ -10,18 +10,19 @@ const BrowserOptionsSchema = z.object({
 })
 
 const ScenarioOptionsSchema = z.object({
-  browser: BrowserOptionsSchema.optional(),
+  browser: BrowserOptionsSchema.nullish(),
 })
 
 const ScenarioBaseSchema = z.object({
   executor: z.string(),
-  options: ScenarioOptionsSchema.optional(),
+  exec: z.string().nullish(),
+  options: ScenarioOptionsSchema.nullish(),
 })
 
 export const TestOptionsSchema = z
   .object({
-    cloud: CloudOptionsSchema.optional(),
-    scenarios: z.record(z.string(), ScenarioBaseSchema).optional(),
+    cloud: CloudOptionsSchema.nullish(),
+    scenarios: z.record(z.string(), ScenarioBaseSchema).nullish(),
   })
   .passthrough()
 

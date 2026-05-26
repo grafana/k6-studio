@@ -1,16 +1,16 @@
 import { ipcMain } from 'electron'
 import log from 'electron-log/main'
-import { readFile, writeFile, unlink } from 'fs/promises'
-import path from 'path'
 
 import { SCRIPTS_PATH } from '@/constants/workspace'
 import { waitForProxy } from '@/main/proxy'
 import { showScriptSelectDialog, runScript } from '@/main/script'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
-import { browserWindowFromEvent, sendToast } from '@/utils/electron'
+import { browserWindowFromEvent } from '@/utils/electron'
+import { readFile, unlink, writeFile } from '@/utils/fs'
 import { ArchiveError, K6Client } from '@/utils/k6/client'
 import { TestRun } from '@/utils/k6/testRun'
+import * as path from '@/utils/path'
 import { isExternalScript } from '@/utils/workspace'
 
 import { ScriptHandler } from './types'
@@ -42,7 +42,11 @@ export function initialize() {
 
     const options = await new K6Client()
       .inspect({ scriptPath })
-      .catch(() => ({}))
+      .catch((err) => {
+        log.error('Failed to inspect the script', err)
+
+        return null
+      })
 
     return {
       script,
@@ -51,44 +55,48 @@ export function initialize() {
     }
   })
 
-  ipcMain.handle(ScriptHandler.Run, async (event, scriptPath: string) => {
-    console.info(`${ScriptHandler.Run} event received`)
+  ipcMain.handle(
+    ScriptHandler.Run,
+    async (event, scriptPath: string, scenarioName?: string) => {
+      console.info(`${ScriptHandler.Run} event received`)
 
-    const browserWindow = browserWindowFromEvent(event)
+      const browserWindow = browserWindowFromEvent(event)
 
-    try {
-      await waitForProxy()
+      try {
+        await waitForProxy()
 
-      const absolute = path.isAbsolute(scriptPath)
-      const resolvedScriptPath = absolute
-        ? scriptPath
-        : path.join(SCRIPTS_PATH, scriptPath)
+        const absolute = path.isAbsolute(scriptPath)
+        const resolvedScriptPath = absolute
+          ? scriptPath
+          : path.join(SCRIPTS_PATH, scriptPath)
 
-      currentTestRun = await runScript({
-        browserWindow,
-        scriptPath: resolvedScriptPath,
-        proxySettings: k6StudioState.appSettings.proxy,
-        usageReport: k6StudioState.appSettings.telemetry.usageReport,
-      })
+        currentTestRun = await runScript({
+          browserWindow,
+          scriptPath: resolvedScriptPath,
+          proxySettings: k6StudioState.appSettings.proxy,
+          usageReport: k6StudioState.appSettings.telemetry.usageReport,
+          scenarioName,
+        })
 
-      trackEvent({
-        event: UsageEventName.ScriptValidated,
-        payload: {
-          isExternal: isExternalScript(resolvedScriptPath),
-        },
-      })
-    } catch (error) {
-      browserWindow.webContents.send(ScriptHandler.Failed)
+        trackEvent({
+          event: UsageEventName.ScriptValidated,
+          payload: {
+            isExternal: isExternalScript(resolvedScriptPath),
+          },
+        })
+      } catch (error) {
+        browserWindow.webContents.send(ScriptHandler.Failed)
 
-      if (error instanceof ArchiveError) {
-        for (const logEntry of error.stderr) {
-          browserWindow.webContents.send(ScriptHandler.Log, logEntry)
+        if (error instanceof ArchiveError) {
+          for (const logEntry of error.stderr) {
+            browserWindow.webContents.send(ScriptHandler.Log, logEntry)
+          }
         }
-      }
 
-      throw error
+        throw error
+      }
     }
-  })
+  )
 
   ipcMain.on(ScriptHandler.Stop, () => {
     console.info(`${ScriptHandler.Stop} event received`)
@@ -146,19 +154,16 @@ export function initialize() {
 
   ipcMain.handle(
     ScriptHandler.Save,
-    async (event, scriptPath: string, script: string) => {
+    async (_, scriptPath: string, script: string) => {
       console.info(`${ScriptHandler.Save} event received`)
-      const browserWindow = browserWindowFromEvent(event)
       try {
         await writeFile(scriptPath, script)
 
         trackEvent({
           event: UsageEventName.ScriptExported,
-        })
-
-        sendToast(browserWindow.webContents, {
-          title: 'Script exported successfully',
-          status: 'success',
+          payload: {
+            isExternal: isExternalScript(scriptPath),
+          },
         })
 
         return scriptPath

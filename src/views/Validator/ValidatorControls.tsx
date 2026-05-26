@@ -1,7 +1,14 @@
-import { Button, DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes'
-import { EllipsisVerticalIcon } from 'lucide-react'
+import { css } from '@emotion/react'
+import {
+  Button,
+  DropdownMenu,
+  Flex,
+  IconButton,
+  Tooltip,
+} from '@radix-ui/themes'
+import { BugIcon, EllipsisVerticalIcon } from 'lucide-react'
 
-import { DeleteFileDialog } from '@/components/DeleteFileDialog'
+import { RichDropdownMenuItem } from '@/components/RichDropdownMenuItem'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
@@ -12,7 +19,8 @@ interface ValidatorControlsProps {
   file: StudioFile
   isRunning: boolean
   canDelete: boolean
-  onRunScript: () => void
+  scenarios: string[]
+  onRunScript: (scenarioName?: string) => void
   onRunInCloud: () => void
   onSelectScript: () => void
   onStopScript: () => void
@@ -22,6 +30,7 @@ export function ValidatorControls({
   file,
   isRunning,
   canDelete,
+  scenarios,
   onRunScript,
   onRunInCloud,
   onSelectScript,
@@ -45,23 +54,53 @@ export function ValidatorControls({
         </>
       )}
       {!isRunning && (
-        <>
+        <Flex gap="4" align="center">
           <Tooltip
             content={`Proxy is ${proxyStatus}`}
             hidden={proxyStatus === 'online'}
           >
-            <Button
-              variant="surface"
-              disabled={proxyStatus !== 'online'}
-              onClick={onRunScript}
-            >
-              Debug script
-            </Button>
+            {scenarios.length > 1 ? (
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger disabled={proxyStatus !== 'online'}>
+                  <Button variant="ghost">
+                    <BugIcon /> Debug script
+                  </Button>
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Content align="end">
+                  {scenarios.map((name) => (
+                    <RichDropdownMenuItem
+                      key={name}
+                      label={
+                        <code
+                          css={css`
+                            font-size: var(--font-size-1);
+                          `}
+                        >
+                          {name}
+                        </code>
+                      }
+                      description={`Debug the "${name}" scenario`}
+                      onClick={() => onRunScript(name)}
+                    />
+                  ))}
+                </DropdownMenu.Content>
+              </DropdownMenu.Root>
+            ) : (
+              scenarios.length === 1 && (
+                <Button
+                  variant="ghost"
+                  disabled={proxyStatus !== 'online'}
+                  onClick={() => onRunScript()}
+                >
+                  <BugIcon /> Debug script
+                </Button>
+              )
+            )}
           </Tooltip>
           <Button onClick={onRunInCloud}>
             <GrafanaIcon /> Run in Grafana Cloud
           </Button>
-        </>
+        </Flex>
       )}
       <DropdownMenu.Root>
         <DropdownMenu.Trigger disabled={isRunning}>
@@ -79,18 +118,9 @@ export function ValidatorControls({
             </DropdownMenu.Item>
           </Tooltip>
           {canDelete && (
-            <DeleteFileDialog
-              file={file}
-              onConfirm={handleDelete}
-              trigger={
-                <DropdownMenu.Item
-                  color="red"
-                  onClick={(e) => e.preventDefault()}
-                >
-                  Delete
-                </DropdownMenu.Item>
-              }
-            />
+            <DropdownMenu.Item color="red" onClick={handleDelete}>
+              Move to Trash
+            </DropdownMenu.Item>
           )}
         </DropdownMenu.Content>
       </DropdownMenu.Root>
