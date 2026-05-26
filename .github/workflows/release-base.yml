@@ -76,6 +76,10 @@ jobs:
           security import certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$CERTIFICATE_PASSWORD" build.keychain
 
+      - name: force failure to test cleanup
+        if: startsWith(matrix.platform, 'macos-')
+        run: exit 1
+
       - name: publish macOS arm64
         if: startsWith(matrix.platform, 'macos-latest')
         env:
