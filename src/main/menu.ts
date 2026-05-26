@@ -240,7 +240,8 @@ function buildTemplate(): Electron.MenuItemConstructorOptions[] {
             },
           ],
         },
-        ...getCloseWindowMenu(),
+        { type: 'separator' },
+        getCloseMenuItem(),
       ],
     },
     { role: 'editMenu' },
@@ -283,8 +284,8 @@ function getAppMenu(): Electron.MenuItemConstructorOptions[] {
   return isMac ? [{ role: 'appMenu' }] : []
 }
 
-function getCloseWindowMenu(): Electron.MenuItemConstructorOptions[] {
-  return isMac ? [{ type: 'separator' }, { role: 'close' }] : []
+function getCloseMenuItem(): Electron.MenuItemConstructorOptions {
+  return isMac ? { role: 'close' } : { role: 'quit' }
 }
 
 function getDevToolsMenu(): Electron.MenuItemConstructorOptions[] {
