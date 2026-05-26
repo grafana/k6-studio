@@ -12,7 +12,7 @@ import { createGenerator } from '@/handlers/generator/create'
 import { UIHandler } from '@/handlers/ui/types'
 import { getStudioFileFromPath } from '@/main/file'
 import { getViewPath, routeMap } from '@/routeMap'
-import { showOpenDialog } from '@/utils/fs'
+import { showOpenDialog } from '@/utils/dialog'
 import * as path from '@/utils/path'
 import {
   addRecentFile,

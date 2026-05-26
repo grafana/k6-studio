@@ -4,14 +4,9 @@ import { RECORDINGS_PATH } from '@/constants/workspace'
 import { Recording } from '@/schemas/recording'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
+import { showOpenDialog, showSaveDialog } from '@/utils/dialog'
 import { browserWindowFromEvent } from '@/utils/electron'
-import {
-  copyFile,
-  createFileWithUniqueName,
-  writeFile,
-  showOpenDialog,
-  showSaveDialog,
-} from '@/utils/fs'
+import { copyFile, createFileWithUniqueName, writeFile } from '@/utils/fs'
 import * as path from '@/utils/path'
 
 import { HarHandler } from './types'

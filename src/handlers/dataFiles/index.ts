@@ -4,8 +4,9 @@ import invariant from 'tiny-invariant'
 
 import { MAX_DATA_FILE_SIZE } from '@/constants/files'
 import { DATA_FILES_PATH } from '@/constants/workspace'
+import { showOpenDialog } from '@/utils/dialog'
 import { browserWindowFromEvent } from '@/utils/electron'
-import { copyFile, showOpenDialog, stat } from '@/utils/fs'
+import { copyFile, stat } from '@/utils/fs'
 import * as path from '@/utils/path'
 
 import { DataFileHandler } from './types'

@@ -103,7 +103,7 @@ module.exports = {
           {
             name: 'electron',
             importNames: ['dialog'],
-            message: "Import the dialog wrappers from '@/utils/fs' instead.",
+            message: "Import the dialog wrappers from '@/utils/dialog' instead.",
           },
           {
             name: 'path',
