@@ -1,5 +1,4 @@
 import { arrayMove } from '@dnd-kit/sortable'
-import { useQuery } from '@tanstack/react-query'
 import { debounce, isEqual } from 'lodash-es'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -22,21 +21,6 @@ import { getInitialStages } from '@/utils/generator'
 import { stripUndefined } from '@/utils/object'
 
 import { useDebugSession } from '../Validator/Validator.hooks'
-
-export function useBrowserTest(filePath: string) {
-  return useQuery({
-    queryKey: ['browserTest', filePath],
-    queryFn: async () => {
-      const content = await window.studio.fs.openFile(filePath)
-
-      if (content.type !== 'browser-test') {
-        throw new Error(`Expected browser-test content, got ${content.type}`)
-      }
-
-      return content
-    },
-  })
-}
 
 export function useBrowserTestEditorLayout() {
   const [drawer, setDrawer] = usePanelCallbackRef()
@@ -156,32 +140,21 @@ function withSeededStages(
   return seeded
 }
 
-export function useBrowserTestState(
-  browserTestFile: BrowserTestFile | undefined
-) {
-  const { actions = [], options = defaultBrowserTestOptions } =
-    browserTestFile ?? {}
+export function useBrowserTestState(browserTestFile: BrowserTestFile) {
+  const { actions = [], options = defaultBrowserTestOptions } = browserTestFile
 
-  const [actionState, setActionState] = useState(actions)
-
-  const [optionsState, setOptionsState] = useState<BrowserTestOptions>(() => ({
+  const initialOptions: BrowserTestOptions = {
     ...options,
     loadProfile: withSeededStages(options.loadProfile),
-  }))
+  }
 
-  useEffect(() => {
-    const { options: fileOptions } = browserTestFile ?? {}
-    const resolvedOptions = fileOptions ?? defaultBrowserTestOptions
-    const nextOptions: BrowserTestOptions = {
-      ...resolvedOptions,
-      loadProfile: withSeededStages(resolvedOptions.loadProfile),
-    }
-    setOptionsState((prev) =>
-      isEqual(stripUndefined(prev), stripUndefined(nextOptions))
-        ? prev
-        : nextOptions
-    )
-  }, [browserTestFile])
+  const [actionState, setActionState] = useState(actions)
+  const [optionsState, setOptionsState] =
+    useState<BrowserTestOptions>(initialOptions)
+
+  const [savedActions, setSavedActions] = useState(actions)
+  const [savedOptions, setSavedOptions] =
+    useState<BrowserTestOptions>(initialOptions)
 
   const addAction = (action: AnyBrowserAction) => {
     setActionState([...actionState, action])
@@ -237,20 +210,17 @@ export function useBrowserTestState(
     []
   )
 
+  const markAsSaved = useCallback(() => {
+    setSavedActions(actionState)
+    setSavedOptions(optionsState)
+  }, [actionState, optionsState])
+
   const isDirty = useMemo(() => {
-    // Baseline widens stages to match the in-memory state so seeded defaults
-    // aren't seen as edits. Compare strips undefined keys (RHF emits cleared
-    // inputs as `key: undefined`, while Zod parse drops them entirely) and
-    // ignores key order (Zod can reorder after a save+reload roundtrip).
-    const baseline = {
-      ...options,
-      loadProfile: withSeededStages(options.loadProfile),
-    }
     return (
-      !isEqual(stripUndefined(actionState), stripUndefined(actions)) ||
-      !isEqual(stripUndefined(optionsState), stripUndefined(baseline))
+      !isEqual(stripUndefined(actionState), stripUndefined(savedActions)) ||
+      !isEqual(stripUndefined(optionsState), stripUndefined(savedOptions))
     )
-  }, [actions, actionState, optionsState, options])
+  }, [actionState, savedActions, optionsState, savedOptions])
 
   return {
     actions: actionState,
@@ -263,5 +233,6 @@ export function useBrowserTestState(
     setThresholds,
     setLoadZones,
     isDirty,
+    markAsSaved,
   }
 }

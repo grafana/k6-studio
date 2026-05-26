@@ -17,7 +17,7 @@ export function useScriptExportedToast() {
         action: (
           <Button
             variant="ghost"
-            onClick={() => navigate(getViewPath('script', scriptPath))}
+            onClick={() => navigate(getViewPath(scriptPath))}
           >
             Open
           </Button>

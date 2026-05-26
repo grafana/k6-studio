@@ -10,28 +10,29 @@ import { useState } from 'react'
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { RunInCloudButton } from '@/components/RunInCloudDialog/RunInCloudButton'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
-import { useCurrentFile } from '@/hooks/useCurrentFile'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { ScriptPreview } from '@/hooks/useScriptPreview'
+import { StudioFile } from '@/types'
 
 import { useScriptExport } from '../Generator.hooks'
 import { ValidatorDialog } from '../ValidatorDialog'
 
 interface GeneratorControlsProps {
+  file: StudioFile
   onSave: () => void
   isDirty: boolean
   script: ScriptPreview
 }
 
 export function GeneratorControls({
+  file,
   onSave,
   isDirty,
   script,
 }: GeneratorControlsProps) {
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
   const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
-  const file = useCurrentFile('generator')
   const proxyStatus = useProxyStatus()
   const isScriptExportable = script.valid && !!script.preview
 
