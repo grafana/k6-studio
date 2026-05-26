@@ -12,13 +12,13 @@ import { createGenerator } from '@/handlers/generator/create'
 import { UIHandler } from '@/handlers/ui/types'
 import { getStudioFileFromPath } from '@/main/file'
 import { getViewPath, routeMap } from '@/routeMap'
+import { showOpenDialog } from '@/utils/fs'
+import * as path from '@/utils/path'
 import {
   addRecentFile,
   clearRecentFiles,
   getRecentFiles,
-  showOpenDialog,
-} from '@/utils/fs'
-import * as path from '@/utils/path'
+} from '@/utils/recentFiles'
 
 import { reportNewIssue } from '../utils/bugReport'
 import { getPlatform } from '../utils/electron'

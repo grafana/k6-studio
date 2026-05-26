@@ -3,7 +3,7 @@ import { app, BrowserWindow } from 'electron'
 import { AppHandler } from '@/handlers/app/types'
 import { getStudioFileFromPath } from '@/main/file'
 import { getViewPath } from '@/routeMap'
-import { addRecentFile } from '@/utils/fs'
+import { addRecentFile } from '@/utils/recentFiles'
 
 import { configureApplicationMenu } from './menu'
 

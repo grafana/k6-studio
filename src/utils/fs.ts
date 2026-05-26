@@ -5,7 +5,6 @@ import {
   watch as chokidarWatch,
 } from 'chokidar'
 import {
-  app,
   BrowserWindow,
   dialog,
   OpenDialogOptions,
@@ -22,7 +21,7 @@ import * as path from './path'
 import { normalize, toNativePath } from './path'
 import { isNodeJsErrnoException } from './typescript'
 
-export { createWriteStream } from 'fs'
+export { createWriteStream, readFileSync } from 'fs'
 export {
   copyFile,
   readFile,
@@ -197,16 +196,4 @@ export async function showSaveDialog(
     ...result,
     filePath: result.filePath ? normalize(result.filePath) : result.filePath,
   }
-}
-
-export function getRecentFiles(): string[] {
-  return app.getRecentDocuments().map(normalize)
-}
-
-export function addRecentFile(filePath: string) {
-  app.addRecentDocument(toNativePath(filePath))
-}
-
-export function clearRecentFiles() {
-  app.clearRecentDocuments()
 }
