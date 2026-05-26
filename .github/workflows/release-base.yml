@@ -69,7 +69,7 @@ jobs:
         if: startsWith(matrix.platform, 'macos-')
         run: |
           echo "$APPLE_API_KEY" > ./apple_api_key.p8
-          echo $APPLE_CERTIFICATE_P12 | base64 --decode > certificate.p12
+          printf '%s' "$APPLE_CERTIFICATE_P12" | base64 --decode > certificate.p12
           security create-keychain -p "$CERTIFICATE_PASSWORD" build.keychain
           security default-keychain -s build.keychain
           security unlock-keychain -p "$CERTIFICATE_PASSWORD" build.keychain
