@@ -13,6 +13,7 @@ const isLinux = process.platform === 'linux'
 const RecentFilesSchema = z.array(z.string())
 
 let linuxRecentFilesCache: string[] | null = null
+let linuxWritePromise: Promise<void> = Promise.resolve()
 
 function getLinuxRecentFilesPath(): string {
   return path.join(normalize(app.getPath('userData')), 'recent-documents.json')
@@ -37,9 +38,11 @@ function loadLinuxRecentFiles(): string[] {
 function saveLinuxRecentFiles(files: string[]) {
   linuxRecentFilesCache = files
 
-  writeFile(getLinuxRecentFilesPath(), JSON.stringify(files)).catch(() => {
-    logger.warn('Failed to save recent files list.')
-  })
+  linuxWritePromise = linuxWritePromise
+    .then(() => writeFile(getLinuxRecentFilesPath(), JSON.stringify(files)))
+    .catch(() => {
+      logger.warn('Failed to save recent files list.')
+    })
 }
 
 export function getRecentFiles(): string[] {
