@@ -9,74 +9,78 @@ import { normalize, toNativePath } from './path'
 
 const MAX_RECENT_FILES = 10
 
-const isLinux = process.platform === 'linux'
+const isMacOS = process.platform === 'darwin'
 const RecentFilesSchema = z.array(z.string())
 
-let linuxRecentFilesCache: string[] | null = null
-let linuxWritePromise: Promise<void> = Promise.resolve()
+let recentFilesCache: string[] | null = null
+let writeQueue: Promise<void> = Promise.resolve()
 
-function getLinuxRecentFilesPath(): string {
+function getRecentFilesPath(): string {
   return path.join(normalize(app.getPath('userData')), 'recent-documents.json')
 }
 
-function loadLinuxRecentFiles(): string[] {
-  if (linuxRecentFilesCache !== null) {
-    return linuxRecentFilesCache
+function loadRecentFile(): string[] {
+  if (recentFilesCache !== null) {
+    return recentFilesCache
   }
 
   try {
-    const raw = readFileSync(getLinuxRecentFilesPath(), 'utf-8')
+    const raw = readFileSync(getRecentFilesPath(), 'utf-8')
 
-    linuxRecentFilesCache = RecentFilesSchema.parse(JSON.parse(raw))
+    recentFilesCache = RecentFilesSchema.parse(JSON.parse(raw))
   } catch {
-    linuxRecentFilesCache = []
+    recentFilesCache = []
   }
 
-  return linuxRecentFilesCache
+  return recentFilesCache
 }
 
-function saveLinuxRecentFiles(files: string[]) {
-  linuxRecentFilesCache = files
+function saveRecentFiles(files: string[]) {
+  recentFilesCache = files
 
-  linuxWritePromise = linuxWritePromise
-    .then(() => writeFile(getLinuxRecentFilesPath(), JSON.stringify(files)))
+  writeQueue = writeQueue
+    .then(() => writeFile(getRecentFilesPath(), JSON.stringify(files)))
     .catch(() => {
       logger.warn('Failed to save recent files list.')
     })
 }
 
 export function getRecentFiles(): string[] {
-  if (isLinux) {
-    return loadLinuxRecentFiles()
+  // We only use the native recent documents feature on macOS, because:
+  // - On Windows, the recent documents are shared across all application. To get per-app recent document,
+  //   we would need to use the `app.setJumpList` API but it is a bit more complicated
+  // - On Linux, there is no standard way to manage recent documents so `app.getRecentDocuments` is not supported.`
+  if (isMacOS) {
+    return app.getRecentDocuments().map(normalize)
   }
 
-  return app.getRecentDocuments().map(normalize)
+  return loadRecentFile()
 }
 
 export function addRecentFile(filePath: string) {
-  if (isLinux) {
-    const files = loadLinuxRecentFiles()
-    const normalized = normalize(filePath)
-
-    saveLinuxRecentFiles(
-      [normalized, ...files.filter((f) => f !== normalized)].slice(
-        0,
-        MAX_RECENT_FILES
-      )
-    )
-
-    return
+  if (isMacOS) {
+    app.addRecentDocument(toNativePath(filePath))
   }
 
-  app.addRecentDocument(toNativePath(filePath))
+  const files = loadRecentFile()
+  const normalized = normalize(filePath)
+
+  saveRecentFiles(
+    [normalized, ...files.filter((f) => f !== normalized)].slice(
+      0,
+      MAX_RECENT_FILES
+    )
+  )
+
+  return
 }
 
 export function clearRecentFiles() {
-  if (isLinux) {
-    saveLinuxRecentFiles([])
+  if (isMacOS) {
+    app.clearRecentDocuments()
 
     return
   }
 
-  app.clearRecentDocuments()
+  saveRecentFiles([])
 }
