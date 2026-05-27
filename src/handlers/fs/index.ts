@@ -50,7 +50,7 @@ export function initialize() {
 
   ipcMain.handle(
     FsHandler.ShowSaveAsDialog,
-    async (event, location: FileLocation, filters: FileFilter[]) => {
+    async (event, location: StorageLocation, filters: FileFilter[]) => {
       const browserWindow = browserWindowFromEvent(event)
 
       const result = await showSaveDialog(browserWindow, {

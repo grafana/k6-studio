@@ -71,7 +71,7 @@ export function RecordingPreviewControls({
   }
 
   const exportScript = useExportScript({
-    open: true,
+    openOnSave: true,
     fileName: 'my-browser-script.js',
     content: async () => {
       const test = convertEventsToTest({

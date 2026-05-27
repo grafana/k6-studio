@@ -60,6 +60,8 @@ export function getRecentFiles(): string[] {
 export function addRecentFile(filePath: string) {
   if (isMacOS) {
     app.addRecentDocument(toNativePath(filePath))
+
+    return
   }
 
   const files = loadRecentFile()

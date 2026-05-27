@@ -10,7 +10,8 @@ import * as path from '@/utils/path'
 import { useSaveFile } from './useSaveFile'
 
 interface UseExportScriptOptions {
-  open?: boolean
+  openOnSave?: boolean
+  enableMenuItem?: boolean
   fileName: string
   content: (filePath: string) => Promise<string> | string
   onSuccess?: (location: FileLocation) => void
@@ -19,7 +20,8 @@ interface UseExportScriptOptions {
 
 export function useExportScript({
   fileName,
-  open = false,
+  openOnSave = false,
+  enableMenuItem = true,
   content,
   onSuccess,
   onError,
@@ -28,7 +30,7 @@ export function useExportScript({
   const navigate = useNavigate()
 
   const exportScript = useSaveFile({
-    menuItems: ['export-script'],
+    menuItems: enableMenuItem ? ['export-script'] : [],
     location: {
       type: 'untitled',
       hint: path.extname(fileName) === '' ? `${fileName}.js` : fileName,
@@ -47,7 +49,7 @@ export function useExportScript({
 
       const viewPath = getViewPath('script', location.path)
 
-      if (open) {
+      if (openOnSave) {
         navigate(viewPath)
 
         return

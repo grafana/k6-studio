@@ -161,6 +161,17 @@ function buildTemplate(): Electron.MenuItemConstructorOptions[] {
             } = await showOpenDialog(window, {
               defaultPath: PROJECT_PATH,
               properties: ['openFile'],
+              filters: [
+                {
+                  name: 'All Supported Files',
+                  extensions: ['js', 'ts', 'k6b', 'k6g', 'har', 'json', 'csv'],
+                },
+                { name: 'Scripts', extensions: ['js', 'ts'] },
+                { name: 'Browser tests', extensions: ['k6g'] },
+                { name: 'Generators', extensions: ['k6b'] },
+                { name: 'Recordings', extensions: ['har'] },
+                { name: 'Data files', extensions: ['json', 'csv'] },
+              ],
             })
 
             if (!filePath) {

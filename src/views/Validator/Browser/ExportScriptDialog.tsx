@@ -105,7 +105,8 @@ export function ExportScriptDialog({
   }
 
   const exportScript = useExportScript({
-    open: true,
+    enableMenuItem: false,
+    openOnSave: true,
     fileName: 'my-script.js',
     content: async (scriptPath) => {
       setIsExporting(true)
