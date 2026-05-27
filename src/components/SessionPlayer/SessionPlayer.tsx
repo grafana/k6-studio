@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-unresolved
 import 'node_modules/rrweb/dist/style.min.css'
 
 import { css } from '@emotion/react'
