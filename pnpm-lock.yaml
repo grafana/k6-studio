@@ -375,10 +375,10 @@ importers:
         specifier: 15.5.2
         version: 15.5.2
       oxlint:
-        specifier: ^1.67.0
+        specifier: 1.67.0
         version: 1.67.0(oxlint-tsgolint@0.23.0)
       oxlint-tsgolint:
-        specifier: ^0.23.0
+        specifier: 0.23.0
         version: 0.23.0
       ts-node:
         specifier: 10.9.2
