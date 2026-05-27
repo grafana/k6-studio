@@ -85,6 +85,7 @@ export function useSaveFile({
   useEffect(() => {
     const menuItems = menuItemsRef.current
 
+    // Validate all items before setting any state to prevent partial leaks
     for (const menuItem of menuItems) {
       if (menuItemStates[menuItem]) {
         // There can only be one handler active for each menu item, otherwise multiple save actions would
@@ -99,7 +100,10 @@ export function useSaveFile({
 
         return
       }
+    }
 
+    // Set all states only after validation passes
+    for (const menuItem of menuItems) {
       menuItemStates[menuItem] = true
     }
 
