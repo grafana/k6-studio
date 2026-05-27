@@ -1,9 +1,19 @@
 import { useMutation } from '@tanstack/react-query'
 import { FileFilter } from 'electron'
-import { useEffect, useRef } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 
 import { FileContent, FileLocation, StorageLocation } from '@/handlers/fs/types'
 import { MenuItem } from '@/handlers/ui/types'
+
+function useCrash(): (error: Error) => void {
+  const [error, setError] = useState<Error | null>(null)
+
+  if (error) {
+    throw error
+  }
+
+  return setError
+}
 
 const menuItemStates: { [P in MenuItem]: boolean } = {
   save: false,
@@ -50,6 +60,9 @@ export function useSaveFile({
   onSuccess,
   onError,
 }: UseSaveFileOptions) {
+  const hookId = useId()
+  const crash = useCrash()
+
   // We don't allow changing the menu items after initialization
   const menuItemsRef = useRef(menuItems)
 
@@ -74,9 +87,17 @@ export function useSaveFile({
 
     for (const menuItem of menuItems) {
       if (menuItemStates[menuItem]) {
-        console.error(
-          `Menu item ${menuItem} is already enabled by another useSaveFile. Only one useSaveFile should be enabled at a time.`
+        // There can only be one handler active for each menu item, otherwise multiple save actions would
+        // trigger when the user clicks the menu item.
+        crash(
+          new Error(
+            `A menu item handler for ${menuItem} has already been registered by another instance of ` +
+              `useSaveFile. Only one instance can handle a menu item at a time. You can still use ` +
+              `multiple instances of useSaveFile by omitting ${menuItem} from the menuItems option.`
+          )
         )
+
+        return
       }
 
       menuItemStates[menuItem] = true
@@ -93,7 +114,7 @@ export function useSaveFile({
 
       window.studio.ui.setMenuItemsEnabled(menuItems, false)
     }
-  }, [])
+  }, [hookId, crash])
 
   useEffect(() => {
     return window.studio.ui.onRequestSave(({ menuItem, saveAs }) => {

@@ -21,7 +21,7 @@ export enum UIHandler {
   RemoveFile = 'ui:remove-file',
   Toast = 'ui:toast',
   SetMenuItemsEnabled = 'ui:set-menu-items-enabled',
-  RequestSave = 'fs:request-save',
+  RequestSave = 'ui:request-save',
 }
 
 export type MenuItem = 'save' | 'save-as' | 'export-script'
