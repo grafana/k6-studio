@@ -1,0 +1,146 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript"],
+  "jsPlugins": [
+    { "name": "import-js", "specifier": "eslint-plugin-import" },
+    "@tanstack/eslint-plugin-query"
+  ],
+  "categories": {
+    "correctness": "off"
+  },
+  "options": {
+    "typeAware": true
+  },
+  "env": {
+    "builtin": true,
+    "browser": true,
+    "node": true
+  },
+  "ignorePatterns": [
+    "resources/*.js",
+    "install-k6.js",
+    "**/__snapshots__/",
+    "src/browser/injectedScript.js",
+    "src/types/aria-query.d.ts"
+  ],
+  "settings": {
+    "react": {
+      "version": "19.2.5"
+    }
+  },
+  "rules": {
+    "react/no-unknown-property": [
+      "error",
+      {
+        "ignore": ["css"]
+      }
+    ],
+    "no-param-reassign": "error",
+    "no-unused-vars": [
+      "error",
+      {
+        "varsIgnorePattern": "^_",
+        "argsIgnorePattern": "^_",
+        "caughtErrors": "none"
+      }
+    ],
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "fs",
+            "message": "Import from '@/utils/fs' instead."
+          },
+          {
+            "name": "fs/promises",
+            "message": "Import from '@/utils/fs' instead."
+          },
+          {
+            "name": "node:fs",
+            "message": "Import from '@/utils/fs' instead."
+          },
+          {
+            "name": "node:fs/promises",
+            "message": "Import from '@/utils/fs' instead."
+          },
+          {
+            "name": "chokidar",
+            "message": "Import from '@/utils/fs' instead."
+          },
+          {
+            "name": "electron",
+            "importNames": ["dialog"],
+            "message": "Import the dialog wrappers from '@/utils/fs' instead."
+          },
+          {
+            "name": "path",
+            "message": "Import from '@/utils/path' instead."
+          },
+          {
+            "name": "node:path",
+            "message": "Import from '@/utils/path' instead."
+          },
+          {
+            "name": "pathe",
+            "message": "Import from '@/utils/path' instead."
+          }
+        ]
+      }
+    ],
+    "typescript/no-floating-promises": [
+      "error",
+      {
+        "ignoreIIFE": true
+      }
+    ],
+    "typescript/no-misused-promises": [
+      "error",
+      {
+        "checksVoidReturn": false
+      }
+    ],
+    "import-js/order": [
+      "warn",
+      {
+        "groups": [
+          ["builtin", "external"],
+          "internal",
+          "parent",
+          "sibling",
+          "index"
+        ],
+        "pathGroups": [
+          {
+            "pattern": "@/**",
+            "group": "internal"
+          }
+        ],
+        "pathGroupsExcludedImportTypes": ["builtin"],
+        "newlines-between": "always",
+        "alphabetize": { "order": "asc" }
+      }
+    ],
+    "@tanstack/query/exhaustive-deps": "error",
+    "@tanstack/query/no-rest-destructuring": "warn",
+    "@tanstack/query/stable-query-client": "error",
+    "@tanstack/query/no-unstable-deps": "error",
+    "@tanstack/query/infinite-query-property-order": "error",
+    "@tanstack/query/no-void-query-fn": "error",
+    "@tanstack/query/mutation-property-order": "error"
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/*.test.ts",
+        "scripts/**",
+        "vite.*.config.ts",
+        "forge.config.ts",
+        "windowsSign.ts"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ]
+}
