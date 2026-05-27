@@ -39,6 +39,7 @@ function getDefaultPath(location: StorageLocation) {
       return path.join(BROWSER_TESTS_PATH, location.hint)
 
     case '.js':
+    case '.ts':
       return path.join(SCRIPTS_PATH, location.hint)
   }
 }

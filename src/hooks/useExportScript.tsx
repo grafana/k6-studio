@@ -50,6 +50,7 @@ export function useExportScript({
       const viewPath = getViewPath('script', location.path)
 
       if (openOnSave) {
+        onSuccess?.(location)
         navigate(viewPath)
 
         return
