@@ -79,11 +79,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
       },
     }),
     filters: [{ name: 'Browser Test', extensions: ['k6b'] }],
-    onSuccess: async (location) => {
-      if (!location) {
-        return
-      }
-
+    onSave: async (location) => {
       await queryClient.invalidateQueries({
         queryKey: ['browserTest', location.path],
       })

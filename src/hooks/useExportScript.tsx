@@ -42,11 +42,7 @@ export function useExportScript({
       options: {},
     }),
     filters: [{ name: 'k6 test scripts', extensions: ['js'] }],
-    onSuccess(location) {
-      if (location === undefined) {
-        return
-      }
-
+    onSave(location) {
       const viewPath = getViewPath('script', location.path)
 
       if (openOnSave) {

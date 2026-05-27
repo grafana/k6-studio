@@ -48,7 +48,8 @@ interface UseSaveFileOptions {
   location: StorageLocation
   content: (location: FileLocation) => Promise<FileContent> | FileContent
   filters: FileFilter[]
-  onSuccess?: (location: FileLocation | undefined) => void
+  onSave?: (location: FileLocation) => void
+  onCancel?: () => void
   onError?: (error: Error) => void
 }
 
@@ -57,7 +58,8 @@ export function useSaveFile({
   location,
   content,
   filters,
-  onSuccess,
+  onSave,
+  onCancel,
   onError,
 }: UseSaveFileOptions) {
   const hookId = useId()
@@ -78,7 +80,15 @@ export function useSaveFile({
 
       return window.studio.fs.saveFile(resolvedLocation, fileContent)
     },
-    onSuccess,
+    onSuccess(location) {
+      if (location === undefined) {
+        onCancel?.()
+
+        return
+      }
+
+      onSave?.(location)
+    },
     onError,
   })
 
@@ -89,16 +99,12 @@ export function useSaveFile({
     for (const menuItem of menuItems) {
       if (menuItemStates[menuItem]) {
         // There can only be one handler active for each menu item, otherwise multiple save actions would
-        // trigger when the user clicks the menu item.
-        crash(
-          new Error(
-            `A menu item handler for ${menuItem} has already been registered by another instance of ` +
-              `useSaveFile. Only one instance can handle a menu item at a time. You can still use ` +
-              `multiple instances of useSaveFile by omitting ${menuItem} from the menuItems option.`
-          )
+        // trigger when the user clicks the menu item. If we detect a stuck state (previous cleanup didn't run)
+        // or duplicate registration, log a warning and forcefully take over
+        console.warn(
+          `Menu item ${menuItem} was already registered. This may indicate a previous instance failed ` +
+            `to clean up or that two instances are trying to register the same menu item at the same time.`
         )
-
-        return
       }
     }
 

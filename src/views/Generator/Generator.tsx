@@ -55,11 +55,7 @@ export function Generator() {
       data: selectGeneratorData(useGeneratorStore.getState()),
     }),
     filters: [{ name: 'Generator', extensions: ['k6g'] }],
-    onSuccess: async (location) => {
-      if (!location) {
-        return
-      }
-
+    onSave: async (location) => {
       await queryClient.invalidateQueries({
         queryKey: ['generator', location.path],
       })
@@ -139,10 +135,18 @@ export function Generator() {
   }, [saveFile])
 
   const handleSaveGeneratorDialog = async () => {
-    await handleSaveGenerator()
+    const location = await handleSaveGenerator()
+
+    if (location === undefined) {
+      setIsAppClosing(false)
+
+      return
+    }
+
     if (isAppClosing) {
       return window.studio.app.closeApplication()
     }
+
     blocker.proceed?.()
   }
 
@@ -150,6 +154,7 @@ export function Generator() {
     if (isAppClosing) {
       return window.studio.app.closeApplication()
     }
+
     blocker.proceed?.()
   }
 
@@ -157,6 +162,7 @@ export function Generator() {
     if (isAppClosing) {
       return window.studio.app.closeApplication()
     }
+
     blocker.reset?.()
   }
 
