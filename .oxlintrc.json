@@ -1,12 +1,9 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript"],
-  "jsPlugins": [
-    { "name": "import-js", "specifier": "eslint-plugin-import" },
-    "@tanstack/eslint-plugin-query"
-  ],
+  "plugins": ["eslint", "import", "react", "typescript"],
+  "jsPlugins": ["@tanstack/eslint-plugin-query"],
   "categories": {
-    "correctness": "off"
+    "correctness": "error"
   },
   "options": {
     "typeAware": true
@@ -29,12 +26,14 @@
     }
   },
   "rules": {
+    "react/react-in-jsx-scope": "off",
     "react/no-unknown-property": [
       "error",
       {
         "ignore": ["css"]
       }
     ],
+    "no-shadow": "off",
     "no-param-reassign": "error",
     "no-unused-vars": [
       "error",
@@ -100,27 +99,7 @@
         "checksVoidReturn": false
       }
     ],
-    "import-js/order": [
-      "warn",
-      {
-        "groups": [
-          ["builtin", "external"],
-          "internal",
-          "parent",
-          "sibling",
-          "index"
-        ],
-        "pathGroups": [
-          {
-            "pattern": "@/**",
-            "group": "internal"
-          }
-        ],
-        "pathGroupsExcludedImportTypes": ["builtin"],
-        "newlines-between": "always",
-        "alphabetize": { "order": "asc" }
-      }
-    ],
+
     "@tanstack/query/exhaustive-deps": "error",
     "@tanstack/query/no-rest-destructuring": "warn",
     "@tanstack/query/stable-query-client": "error",

@@ -286,7 +286,10 @@ export function initializeView(
     ) => Event
 
     const newEvent = new EventConstructor(event.type, {
-      ...event,
+      // The linter complains about the prototype being lost but we don't care
+      // about it. We only care about copying the properties.
+      // oxlint-disable-next-line typescript/no-misused-spread
+      ...Object.entries(event),
       composed: false,
       cancelable: event.cancelable,
       bubbles: event.bubbles,

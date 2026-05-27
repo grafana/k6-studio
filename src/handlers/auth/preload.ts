@@ -9,11 +9,7 @@ import {
 
 import { createListener } from '../utils'
 
-import {
-  AuthHandler as AuthHandler,
-  ChangeStackResponse,
-  SignOutResponse,
-} from './types'
+import { AuthHandler, ChangeStackResponse, SignOutResponse } from './types'
 
 export function getProfiles() {
   return ipcRenderer.invoke(AuthHandler.GetProfiles) as Promise<UserProfiles>
@@ -48,7 +44,7 @@ export function changeStack(stackId: string) {
   return ipcRenderer.invoke(
     AuthHandler.ChangeStack,
     stackId
-  ) as Promise<ChangeStackResponse>
+  ) as unknown as Promise<ChangeStackResponse>
 }
 
 export function onStateChange(

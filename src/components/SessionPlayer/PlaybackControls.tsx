@@ -31,7 +31,7 @@ export function PlaybackControls({
   disabled,
   streaming,
   time,
-  actions = [],
+  actions,
   controls,
   onPlay,
   onPause,

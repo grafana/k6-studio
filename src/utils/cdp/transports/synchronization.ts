@@ -24,7 +24,16 @@ export class RequestSynchronizer {
 
     this.#pending.set(command.id, (value: ChromeCallResult) => {
       if ('error' in value) {
-        reject(new Error(String(value.error)))
+        const message =
+          'message' in value.error && typeof value.error.message === 'string'
+            ? value.error.message
+            : 'Unknown error'
+
+        reject(
+          Object.assign(new Error(message), {
+            cause: value.error,
+          })
+        )
 
         return
       }

@@ -44,7 +44,7 @@ export function AutoCorrelation({
   // Abort streaming on unmount
   useEffect(() => {
     return () => {
-      void stop()
+      stop()
     }
   }, [stop])
 
