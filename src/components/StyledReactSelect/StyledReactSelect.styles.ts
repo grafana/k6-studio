@@ -1,4 +1,4 @@
-import { StylesConfig, Theme } from 'react-select'
+import { GroupBase, StylesConfig, Theme } from 'react-select'
 
 export function getThemeConfig(theme: Theme) {
   return {
@@ -24,7 +24,11 @@ export function getThemeConfig(theme: Theme) {
   }
 }
 
-export function getStylesConfig<Option>(): StylesConfig<Option> {
+export function getStylesConfig<
+  Option = unknown,
+  IsMulti extends boolean = false,
+  Group extends GroupBase<Option> = GroupBase<Option>,
+>(): StylesConfig<Option, IsMulti, Group> {
   return {
     control: (provided, state) => ({
       ...provided,
