@@ -66,7 +66,7 @@ const ArchiveManifestSchema = z.looseObject({
 export const showScriptSelectDialog = async (browserWindow: BrowserWindow) => {
   const result = await showOpenDialog(browserWindow, {
     properties: ['openFile'],
-    filters: [{ name: 'k6 test script', extensions: ['js'] }],
+    filters: [{ name: 'k6 test script', extensions: ['js', 'ts'] }],
   })
 
   if (result.canceled) return

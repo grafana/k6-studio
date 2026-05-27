@@ -91,8 +91,6 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
       if (location.path !== file.path) {
         navigate(getViewPath('browser-test', location.path), { replace: true })
       }
-
-      showToast({ title: 'Browser test saved', status: 'success' })
     },
     onError: (error) => {
       showToast({
