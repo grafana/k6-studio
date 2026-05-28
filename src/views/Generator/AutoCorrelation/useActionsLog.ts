@@ -118,7 +118,16 @@ export function useActionsLog() {
   ) {
     setEntries((prev) => {
       const lastReasoning = prev.findLast((entry) => entry.type === 'reasoning')
-      if (!lastReasoning) return prev
+      if (!lastReasoning) {
+        return [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            timestamp: Date.now() - startTimeRef.current,
+            type,
+          },
+        ]
+      }
       return prev.map((entry) =>
         entry.id === lastReasoning.id ? { ...entry, type } : entry
       )

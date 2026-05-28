@@ -152,11 +152,14 @@ export const useGenerateRules = ({
 
       case 'getRequestsMetadata': {
         const { startIndex, endIndex } = toolCall.input
+        const start = startIndex ?? 0
+        const rangeLabel =
+          endIndex !== undefined ? `${start}-${endIndex}` : `${start}+`
         actionsLog.addEntry({
           type: 'info',
-          text: 'Reading request metadata',
+          text: `Reading request metadata (${rangeLabel})`,
         })
-        return getRequestsMetadata(recording, startIndex ?? 0, endIndex)
+        return getRequestsMetadata(recording, start, endIndex)
       }
 
       case 'getRequestDetails': {

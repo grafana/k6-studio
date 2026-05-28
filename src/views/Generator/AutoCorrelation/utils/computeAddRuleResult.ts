@@ -48,10 +48,7 @@ export function computeAddRuleResult(
     return { ok: false, reason: NO_MATCH_REASON }
   }
 
-  const variableName =
-    aiRule.extractor.variableName ??
-    validRule.extractor.variableName ??
-    'rule'
+  const variableName = aiRule.extractor.variableName ?? 'rule'
 
   return {
     ok: true,

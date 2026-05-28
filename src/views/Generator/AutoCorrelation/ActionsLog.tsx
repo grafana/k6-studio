@@ -16,7 +16,7 @@ export function ActionsLog({ entries }: ActionsLogProps) {
   return (
     <AutoScrollArea
       tail={autoScroll}
-      items={entries.at(-1)?.text}
+      items={`${entries.length}:${entries.at(-1)?.text}`}
       onScrollBack={() => setAutoScroll(false)}
       css={{ height: '100%' }}
     >
