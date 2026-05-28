@@ -6,13 +6,14 @@ import { useStudioUIStore } from '@/store/ui'
 import { usePendingDeletesStore } from '@/store/ui/usePendingDeletes'
 import { StudioFile } from '@/types'
 import { withMatches } from '@/utils/fuse'
+import * as path from '@/utils/path'
 
 function orderByFileName(files: Map<string, StudioFile>) {
   return orderBy([...files.values()], (s) => s.displayName)
 }
 
 function toFileMap(files: StudioFile[]) {
-  return new Map(files.map((file) => [file.path, file]))
+  return new Map(files.map((file) => [path.key(file.path), file]))
 }
 
 function useFolderContent() {

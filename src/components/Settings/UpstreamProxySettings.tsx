@@ -3,6 +3,7 @@ import { Controller, useFormContext } from 'react-hook-form'
 
 import { FieldGroup, FileUploadInput } from '@/components/Form'
 import { AppSettings } from '@/types/settings'
+import { toNativePath } from '@/utils/path'
 
 export function UpstreamProxySettings() {
   const {
@@ -19,8 +20,11 @@ export function UpstreamProxySettings() {
   const handleSelectFile = async () => {
     const result = await window.studio.settings.selectUpstreamCertificate()
     const { canceled, filePaths } = result
-    if (canceled || !filePaths.length) return
-    setValue('proxy.certificatePath', filePaths[0], { shouldDirty: true })
+    const filePath = filePaths[0]
+    if (canceled || !filePath) return
+    setValue('proxy.certificatePath', toNativePath(filePath), {
+      shouldDirty: true,
+    })
     clearErrors('proxy.certificatePath')
   }
 

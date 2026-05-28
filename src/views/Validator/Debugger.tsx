@@ -1,3 +1,4 @@
+import { StudioFile } from '@/types'
 import { K6TestOptions } from '@/utils/k6/schema'
 
 import { BrowserDebugger } from './Browser/BrowserDebugger'
@@ -11,6 +12,7 @@ function isBrowserTest(option: K6TestOptions): boolean {
 }
 
 interface DebuggerProps {
+  file: StudioFile
   script: string
   options: K6TestOptions
   session: DebugSession
@@ -18,6 +20,7 @@ interface DebuggerProps {
 }
 
 export function Debugger({
+  file,
   script,
   options,
   session,
@@ -26,6 +29,7 @@ export function Debugger({
   if (isBrowserTest(options)) {
     return (
       <BrowserDebugger
+        file={file}
         script={script}
         session={session}
         onDebugScript={onDebugScript}

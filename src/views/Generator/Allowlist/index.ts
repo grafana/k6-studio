@@ -1,1 +1,1 @@
-export * from './Allowlist'
+export * from './AllowlistDialog'

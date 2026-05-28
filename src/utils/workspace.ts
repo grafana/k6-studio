@@ -1,7 +1,3 @@
-import { existsSync } from 'fs'
-import { mkdir } from 'fs/promises'
-import path from 'path'
-
 import {
   DATA_FILES_PATH,
   PROJECT_PATH,
@@ -11,6 +7,9 @@ import {
   TEMP_PATH,
   BROWSER_TESTS_PATH,
 } from '../constants/workspace'
+
+import { mkdir } from './fs'
+import * as path from './path'
 
 const REQUIRED_FOLDERS = [
   PROJECT_PATH,
@@ -24,12 +23,10 @@ const REQUIRED_FOLDERS = [
 
 export const setupProjectStructure = async () => {
   for (const folder of REQUIRED_FOLDERS) {
-    if (!existsSync(folder)) {
-      await mkdir(folder)
-    }
+    await mkdir(folder, { recursive: true })
   }
 }
 
 export function isExternalScript(scriptPath: string) {
-  return path.dirname(scriptPath) !== path.normalize(SCRIPTS_PATH)
+  return !path.equal(path.dirname(scriptPath), SCRIPTS_PATH)
 }

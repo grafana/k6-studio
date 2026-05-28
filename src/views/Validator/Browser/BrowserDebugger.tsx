@@ -12,6 +12,7 @@ import {
   useDefaultLayout,
   usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
+import { StudioFile } from '@/types'
 
 import {
   HighlightLocatorProvider,
@@ -21,15 +22,18 @@ import { DebugSession } from '../types'
 
 import { BrowserActionsPanel } from './BrowserActionsPanel'
 import { BrowserOverviewPanel } from './BrowserOverviewPanel'
+import { ExportNetworkTrafficButton } from './ExportNetworkTrafficButton'
 import { NetworkInspector } from './NetworkInspector'
 
 interface BrowserDebuggerProps {
+  file: StudioFile
   script: string
   session: DebugSession
   onDebugScript: () => void
 }
 
 export function BrowserDebuggerContent({
+  file,
   script,
   session,
   onDebugScript,
@@ -128,7 +132,12 @@ export function BrowserDebuggerContent({
                 `}
                 value="network"
               >
-                <NetworkInspector session={session} />
+                <NetworkInspector
+                  session={session}
+                  actions={
+                    <ExportNetworkTrafficButton file={file} session={session} />
+                  }
+                />
               </Tabs.Content>
             </Flex>
           </Panel>

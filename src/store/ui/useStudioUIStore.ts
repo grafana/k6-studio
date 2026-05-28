@@ -3,6 +3,7 @@ import { immer } from 'zustand/middleware/immer'
 
 import { SettingsTabValue } from '@/components/Settings/types'
 import { FolderContent, ProxyStatus, StudioFile } from '@/types'
+import * as path from '@/utils/path'
 import { exhaustive } from '@/utils/typescript'
 
 interface State extends FolderContent {
@@ -39,21 +40,22 @@ export const useStudioUIStore = create<StudioUIStore>()(
 
     addFile: (file) =>
       set((state) => {
+        const fileKey = path.key(file.path)
         switch (file.type) {
           case 'recording':
-            state.recordings.set(file.path, file)
+            state.recordings.set(fileKey, file)
             break
           case 'generator':
-            state.generators.set(file.path, file)
+            state.generators.set(fileKey, file)
             break
           case 'browser-test':
-            state.browserTests.set(file.path, file)
+            state.browserTests.set(fileKey, file)
             break
           case 'script':
-            state.scripts.set(file.path, file)
+            state.scripts.set(fileKey, file)
             break
           case 'data-file':
-            state.dataFiles.set(file.path, file)
+            state.dataFiles.set(fileKey, file)
             break
           default:
             exhaustive(file.type)
@@ -61,21 +63,22 @@ export const useStudioUIStore = create<StudioUIStore>()(
       }),
     removeFile: (file) =>
       set((state) => {
+        const fileKey = path.key(file.path)
         switch (file.type) {
           case 'recording':
-            state.recordings.delete(file.path)
+            state.recordings.delete(fileKey)
             break
           case 'generator':
-            state.generators.delete(file.path)
+            state.generators.delete(fileKey)
             break
           case 'browser-test':
-            state.browserTests.delete(file.path)
+            state.browserTests.delete(fileKey)
             break
           case 'script':
-            state.scripts.delete(file.path)
+            state.scripts.delete(fileKey)
             break
           case 'data-file':
-            state.dataFiles.delete(file.path)
+            state.dataFiles.delete(fileKey)
             break
           default:
             exhaustive(file.type)

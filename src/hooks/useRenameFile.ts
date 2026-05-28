@@ -16,8 +16,7 @@ export function useRenameFile(file: StudioFile) {
   const removeFile = useStudioUIStore((state) => state.removeFile)
 
   return useMutation({
-    mutationFn: (newName: string) =>
-      window.studio.ui.renameFile(file.fileName, newName, file.type),
+    mutationFn: (newName: string) => window.studio.ui.renameFile(file, newName),
     onSuccess: (_, newName) => {
       // There's a slight delay between the add and remove callbacks being triggered,
       // causing the UI to flicker because it thinks the renamed file is actually
@@ -33,7 +32,10 @@ export function useRenameFile(file: StudioFile) {
       removeFile(file)
       addFile(updatedFile)
 
-      if (activeFilePath !== file.path) {
+      if (
+        activeFilePath === undefined ||
+        !path.equal(activeFilePath, file.path)
+      ) {
         return
       }
 

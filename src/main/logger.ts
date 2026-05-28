@@ -1,11 +1,11 @@
-import { FSWatcher, watch } from 'chokidar'
 import { BrowserWindow } from 'electron'
 import log from 'electron-log/main'
-import fs from 'fs/promises'
 import { spawn } from 'node:child_process'
-import path from 'path'
 
 import { getPlatform } from '../utils/electron'
+import { FSWatcher, readFile, watch } from '../utils/fs'
+import * as path from '../utils/path'
+import { toNativePath } from '../utils/path'
 
 let watcher: FSWatcher
 
@@ -74,12 +74,12 @@ export function openLogFolder() {
   const executable = ['mac', 'linux'].includes(getPlatform())
     ? 'open'
     : 'explorer'
-  spawn(executable, [logPath])
+  spawn(executable, [toNativePath(logPath)])
 }
 
 export async function getLogContent() {
   const path = log.transports.file.getFile().path
-  return await fs.readFile(path, 'utf8')
+  return await readFile(path, 'utf8')
 }
 
 async function onLogChange() {

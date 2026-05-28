@@ -1,5 +1,4 @@
 import { ipcMain } from 'electron'
-import { readFile, writeFile } from 'fs/promises'
 
 import { K6_BROWSER_TEST_FILE_EXTENSION } from '@/constants/files'
 import { BROWSER_TESTS_PATH } from '@/constants/workspace'
@@ -11,7 +10,7 @@ import {
 } from '@/schemas/browserTest'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
-import { createFileWithUniqueName } from '@/utils/fileSystem'
+import { createFileWithUniqueName, readFile, writeFile } from '@/utils/fs'
 
 import { BrowserTestHandler } from './types'
 
