@@ -3,6 +3,7 @@ import { app, BrowserWindow } from 'electron'
 import { AppHandler } from '@/handlers/app/types'
 import { getStudioFileFromPath } from '@/main/file'
 import { getViewPath } from '@/routeMap'
+import { normalize } from '@/utils/path'
 import { addRecentFile } from '@/utils/recentFiles'
 
 import { configureApplicationMenu } from './menu'
@@ -62,20 +63,21 @@ function findFilePathInArgs(argv: string[]): string | null {
 
 function handleOpenFile(filePath: string) {
   try {
+    const normalizedPath = normalize(filePath)
     const mainWindow = BrowserWindow.getAllWindows()[0]
 
     if (!mainWindow) {
-      pendingFilePath = filePath
+      pendingFilePath = normalizedPath
       return
     }
 
-    const file = getStudioFileFromPath(filePath)
+    const file = getStudioFileFromPath(normalizedPath)
 
     if (!file) {
       return
     }
 
-    addRecentFile(filePath)
+    addRecentFile(normalizedPath)
     configureApplicationMenu()
 
     mainWindow.webContents.send(
