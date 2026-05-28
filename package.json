@@ -13,6 +13,7 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "postinstall": "node install-k6.js",
+    "update-k6": "node update-k6-version.js",
     "start": "electron-forge start -- --remote-debugging-port=9223",
     "package": "electron-forge package",
     "make": "electron-forge make",

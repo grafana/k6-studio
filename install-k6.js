@@ -2,29 +2,25 @@ const { execSync } = require('child_process')
 const { createHash } = require('crypto')
 const { existsSync, readFileSync } = require('fs')
 
-const K6_VERSION = 'v1.2.1'
+const K6_VERSION = 'v2.0.0'
 const K6_PATH_MAC_AMD = `k6-${K6_VERSION}-macos-amd64`
 const K6_PATH_MAC_ARM = `k6-${K6_VERSION}-macos-arm64`
 const K6_PATH_WIN_AMD = `k6-${K6_VERSION}-windows-amd64`
 const K6_PATH_LINUX_AMD = `k6-${K6_VERSION}-linux-amd64`
 const K6_PATH_LINUX_ARM = `k6-${K6_VERSION}-linux-arm64`
 
-// To update checksums for a new k6 version:
-// 1. Update K6_VERSION above
-// 2. Download the checksums file:
-//    curl -L https://github.com/grafana/k6/releases/download/<version>/k6-<version>-checksums.txt
-// 3. Replace the hashes below with the values from that file
+// To update to a new k6 version, run: node update-k6-version.js <version>
 const CHECKSUMS = {
   [`k6-${K6_VERSION}-macos-amd64.zip`]:
-    '9d5018eed8a142e2d64374faf9a79a45b7bddb33e19a00ec14b45d619dc84ceb',
+    '287f3b0ab9f936f20c37c649f220842385a7961ead84d695d7b5192268c61b3f',
   [`k6-${K6_VERSION}-macos-arm64.zip`]:
-    'c5b55d160476f75e5b39f0a14871e217dd3a0cdb5419819be12a09038445f562',
+    '9a725f3faf8fc9de70f0bd86fb9783e6fb02f822492862846375ec0d8f2b35f7',
   [`k6-${K6_VERSION}-windows-amd64.zip`]:
-    '7464f71615c839069de54cbbb3e0aa67c5fbdf426802360bd3dd837a089a0c3a',
+    '58bb8530af85c57abeb5cc2bae7581d6aa976d43ca538d4be79a1dcc93388b05',
   [`k6-${K6_VERSION}-linux-amd64.tar.gz`]:
-    'b082f79deef18bdbb4c7b8ab997d048553d8905bc35e9903ab9f2d7e3563993d',
+    '2ae87d976f6cdba17185bdd980d8819a3a98e9092c6f0638cd58272ecefc8b90',
   [`k6-${K6_VERSION}-linux-arm64.tar.gz`]:
-    '4db0f1a277f2fdc48dff6ca8136f213da19d1134dae0e0eb850e61695be24645',
+    '397d338c0c50821994aa51a630e511c599c2e903d00f7fa6c55a82258e7a84e6',
 }
 
 function verifyChecksum(filePath, archiveName) {

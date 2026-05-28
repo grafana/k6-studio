@@ -22,6 +22,7 @@ module.exports = {
   ignorePatterns: [
     'resources/*.js',
     'install-k6.js',
+    'update-k6-version.js',
     '.eslintrc.cjs',
     '**/__snapshots__/',
     'src/browser/injectedScript.js',
