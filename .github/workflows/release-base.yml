@@ -26,7 +26,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - id: get-secrets
-        uses: grafana/shared-workflows/actions/get-vault-secrets@5d7e361bc7e0a183cde8afe9899fb7b596d2659b # v1.2.0
+        uses: grafana/shared-workflows/actions/get-vault-secrets@a53fc80bc30b0a16a262520465db899fa3af08b7 # get-vault-secrets/v1.3.2
         with:
           repo_secrets: |
             APPLE_CERTIFICATE_P12=apple-certificates:APPLE_CERTIFICATE_P12
@@ -106,7 +106,7 @@ jobs:
 
       - name: Get azure secrets
         id: get-azure-secrets
-        uses: grafana/shared-workflows/actions/get-vault-secrets@5d7e361bc7e0a183cde8afe9899fb7b596d2659b # v1.2.0
+        uses: grafana/shared-workflows/actions/get-vault-secrets@a53fc80bc30b0a16a262520465db899fa3af08b7 # get-vault-secrets/v1.3.2
         if: startsWith(matrix.platform, 'windows-')
         with:
           export_env: false
