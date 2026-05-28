@@ -183,11 +183,13 @@ export const useGenerateRules = ({
         window.studio.app.trackEvent({
           event: outcomeEvents[toolCall.input.outcome],
         })
-        actionsLog.markLastReasoningAsOutcome(
+        const outcomeType =
           toolCall.input.outcome === 'failure'
             ? 'outcome-failure'
-            : 'outcome-success'
-        )
+            : toolCall.input.outcome === 'partial-success'
+              ? 'outcome-partial'
+              : 'outcome-success'
+        actionsLog.markLastReasoningAsOutcome(outcomeType)
         return toolCall.input.outcome
       }
 

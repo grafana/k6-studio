@@ -29,6 +29,7 @@ export interface ActionLogEntry {
     | 'validation'
     | 'info'
     | 'outcome-success'
+    | 'outcome-partial'
     | 'outcome-failure'
   text?: string
   ruleId?: string

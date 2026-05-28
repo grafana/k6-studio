@@ -19,6 +19,7 @@ const outcomeStyles: Partial<
   Record<ActionLogEntry['type'], React.CSSProperties>
 > = {
   'outcome-success': outcomeStyle('green'),
+  'outcome-partial': outcomeStyle('amber'),
   'outcome-failure': outcomeStyle('red'),
 }
 

@@ -11,6 +11,7 @@ import {
 import { memo, ReactNode, useCallback, useState } from 'react'
 
 import { MethodBadge } from '@/components/MethodBadge'
+import { TextWithTooltip } from '@/components/TextWithTooltip'
 import { Method } from '@/types'
 import { ExtractorSelector } from '@/types/rules'
 import { fadeIn } from '@/utils/animations'
@@ -130,24 +131,18 @@ function RuleCardDetails({
           <Text size="1" color="gray" css={sectionLabel}>
             Value
           </Text>
-          <Tooltip content={extractedValue}>
-            <Text
-              size="1"
-              as="p"
-              mt="1"
-              color="gray"
-              css={{
-                fontFamily: 'var(--code-font-family)',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                maxWidth: '100%',
-                cursor: 'default',
-              }}
-            >
-              {extractedValue}
-            </Text>
-          </Tooltip>
+          <TextWithTooltip
+            size="1"
+            as="p"
+            mt="1"
+            color="gray"
+            css={{
+              fontFamily: 'var(--code-font-family)',
+              cursor: 'default',
+            }}
+          >
+            {extractedValue}
+          </TextWithTooltip>
         </Box>
       )}
 

@@ -21,7 +21,10 @@ export function useActionsLog() {
     return entry
   }
 
-  const syncFromMessages = useCallback(function syncFromMessages(messages: Message[], isLoading: boolean) {
+  const syncFromMessages = useCallback(function syncFromMessages(
+    messages: Message[],
+    isLoading: boolean
+  ) {
     if (!isLoading) return
 
     const { added, updated } = deriveLogUpdates(
@@ -67,7 +70,7 @@ export function useActionsLog() {
   const updateValidationProgress = useCallback(
     (completed: number, total: number) => {
       const entryId = lastValidationEntryIdRef.current
-      if (!entryId) return
+      if (!entryId || total === 0) return
 
       const percent = Math.min(Math.round((completed / total) * 100), 100)
 
@@ -111,7 +114,7 @@ export function useActionsLog() {
   }
 
   function markLastReasoningAsOutcome(
-    type: 'outcome-success' | 'outcome-failure'
+    type: 'outcome-success' | 'outcome-partial' | 'outcome-failure'
   ) {
     setEntries((prev) => {
       const lastReasoning = prev.findLast((entry) => entry.type === 'reasoning')
