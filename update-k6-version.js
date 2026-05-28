@@ -9,11 +9,7 @@ const EXPECTED_SUFFIXES = [
   'linux-arm64.tar.gz',
 ]
 
-const INSTALL_K6_PATH = join(__dirname, 'install-k6.js')
-
-function escapeRegex(str) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
+const K6_VERSIONS_PATH = join(__dirname, 'k6-versions.json')
 
 ;(async () => {
   let version = process.argv[2]
@@ -35,19 +31,16 @@ function escapeRegex(str) {
     process.exit(1)
   }
 
-  let content
+  let k6Versions
   try {
-    content = readFileSync(INSTALL_K6_PATH, 'utf-8')
+    k6Versions = JSON.parse(readFileSync(K6_VERSIONS_PATH, 'utf-8'))
   } catch {
-    console.error(`Could not read install-k6.js at ${INSTALL_K6_PATH}`)
+    console.error(`Could not read k6-versions.json at ${K6_VERSIONS_PATH}`)
     process.exit(1)
   }
 
-  const currentMatch = content.match(/const K6_VERSION = '([^']+)'/)
-  const currentVersion = currentMatch?.[1]
-
-  if (currentVersion === version) {
-    console.log(`install-k6.js is already at ${version}`)
+  if (k6Versions.version === version) {
+    console.log(`k6-versions.json is already at ${version}`)
     process.exit(0)
   }
 
@@ -93,7 +86,8 @@ function escapeRegex(str) {
     if (!hash) {
       missing.push(filename)
     } else {
-      newChecksums[suffix] = hash
+      const platform = suffix.replace(/\.(zip|tar\.gz)$/, '')
+      newChecksums[platform] = hash
     }
   }
 
@@ -103,34 +97,27 @@ function escapeRegex(str) {
     process.exit(1)
   }
 
-  content = content.replace(
-    /const K6_VERSION = '[^']+'/,
-    `const K6_VERSION = '${version}'`
+  const currentVersion = k6Versions.version
+
+  k6Versions.version = version
+  k6Versions.checksums = newChecksums
+
+  writeFileSync(
+    K6_VERSIONS_PATH,
+    JSON.stringify(k6Versions, null, 2) + '\n',
+    'utf-8'
   )
 
-  for (const suffix of EXPECTED_SUFFIXES) {
-    const pattern = new RegExp(
-      `(\\[\`k6-\\$\\{K6_VERSION\\}-${escapeRegex(suffix)}\`\\]:\\s*\\n\\s*')([a-f0-9]{64})(')`
-    )
-    const match = content.match(pattern)
-    if (!match) {
-      console.error(`Could not find checksum slot for ${suffix} in install-k6.js`)
-      process.exit(1)
-    }
-    content = content.replace(pattern, `$1${newChecksums[suffix]}$3`)
-  }
-
-  writeFileSync(INSTALL_K6_PATH, content, 'utf-8')
-
-  console.log(`\nUpdated install-k6.js to k6 ${version}\n`)
+  console.log(`\nUpdated k6-versions.json to k6 ${version}\n`)
   if (currentVersion) {
-    console.log(`  K6_VERSION: ${currentVersion} → ${version}\n`)
+    console.log(`  version: ${currentVersion} → ${version}\n`)
   }
   console.log('  Checksums:')
   for (const suffix of EXPECTED_SUFFIXES) {
-    const hash = newChecksums[suffix]
+    const platform = suffix.replace(/\.(zip|tar\.gz)$/, '')
+    const hash = newChecksums[platform]
     const short = `${hash.slice(0, 8)}…${hash.slice(-8)}`
-    console.log(`    ${suffix.padEnd(22)} ${short}`)
+    console.log(`    ${platform.padEnd(16)} ${short}`)
   }
   console.log('')
 })()

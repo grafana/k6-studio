@@ -1,27 +1,35 @@
 const { execSync } = require('child_process')
 const { createHash } = require('crypto')
 const { existsSync, readFileSync } = require('fs')
+const { join } = require('path')
 
-const K6_VERSION = 'v2.0.0'
+// To update to a new k6 version, run: node update-k6-version.js <version>
+const k6Versions = JSON.parse(
+  readFileSync(join(__dirname, 'k6-versions.json'), 'utf-8')
+)
+
+const K6_VERSION = k6Versions.version
+
+const ARCHIVE_EXTENSIONS = {
+  'macos-amd64': '.zip',
+  'macos-arm64': '.zip',
+  'windows-amd64': '.zip',
+  'linux-amd64': '.tar.gz',
+  'linux-arm64': '.tar.gz',
+}
+
+const CHECKSUMS = Object.fromEntries(
+  Object.entries(k6Versions.checksums).map(([platform, hash]) => [
+    `k6-${K6_VERSION}-${platform}${ARCHIVE_EXTENSIONS[platform]}`,
+    hash,
+  ])
+)
+
 const K6_PATH_MAC_AMD = `k6-${K6_VERSION}-macos-amd64`
 const K6_PATH_MAC_ARM = `k6-${K6_VERSION}-macos-arm64`
 const K6_PATH_WIN_AMD = `k6-${K6_VERSION}-windows-amd64`
 const K6_PATH_LINUX_AMD = `k6-${K6_VERSION}-linux-amd64`
 const K6_PATH_LINUX_ARM = `k6-${K6_VERSION}-linux-arm64`
-
-// To update to a new k6 version, run: node update-k6-version.js <version>
-const CHECKSUMS = {
-  [`k6-${K6_VERSION}-macos-amd64.zip`]:
-    '287f3b0ab9f936f20c37c649f220842385a7961ead84d695d7b5192268c61b3f',
-  [`k6-${K6_VERSION}-macos-arm64.zip`]:
-    '9a725f3faf8fc9de70f0bd86fb9783e6fb02f822492862846375ec0d8f2b35f7',
-  [`k6-${K6_VERSION}-windows-amd64.zip`]:
-    '58bb8530af85c57abeb5cc2bae7581d6aa976d43ca538d4be79a1dcc93388b05',
-  [`k6-${K6_VERSION}-linux-amd64.tar.gz`]:
-    '2ae87d976f6cdba17185bdd980d8819a3a98e9092c6f0638cd58272ecefc8b90',
-  [`k6-${K6_VERSION}-linux-arm64.tar.gz`]:
-    '397d338c0c50821994aa51a630e511c599c2e903d00f7fa6c55a82258e7a84e6',
-}
 
 function verifyChecksum(filePath, archiveName) {
   const expected = CHECKSUMS[archiveName]
