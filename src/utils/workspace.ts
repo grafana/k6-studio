@@ -30,3 +30,7 @@ export const setupProjectStructure = async () => {
 export function isExternalScript(scriptPath: string) {
   return !path.equal(path.dirname(scriptPath), SCRIPTS_PATH)
 }
+
+export function isExternalRecording(recordingPath: string) {
+  return !path.equal(path.dirname(recordingPath), RECORDINGS_PATH)
+}

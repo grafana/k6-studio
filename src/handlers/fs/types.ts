@@ -36,6 +36,9 @@ export interface BrowserTestContent {
 export interface RecordingContent {
   type: 'recording'
   data: Recording
+
+  // Temporary until we support referencing external recordings in HTTP tests.
+  isExternal: boolean
 }
 
 export interface ScriptContent {

@@ -14,6 +14,7 @@ import { RecordingInspector } from '../Recorder/RecordingInspector'
 import { RecordingPreviewControls } from './RecordingPreviewerControls'
 
 export function RecordingPreviewer() {
+  const [isExternal, setIsExternal] = useState(false)
   const [proxyData, setProxyData] = useState<ProxyData[]>([])
   const [browserEvents, setBrowserEvents] = useState<BrowserEvent[]>([])
 
@@ -32,11 +33,13 @@ export function RecordingPreviewer() {
         throw new Error(`Expected recording content, got ${content.type}`)
       }
 
+      setIsExternal(content.isExternal)
       setProxyData(harToProxyData(content.data))
       setBrowserEvents(content.data.log._browserEvents?.events ?? [])
     })()
 
     return () => {
+      setIsExternal(false)
       setProxyData([])
       setBrowserEvents([])
     }
@@ -50,7 +53,11 @@ export function RecordingPreviewer() {
       subTitle={<FileNameHeader file={file} />}
       loading={isLoading}
       actions={
-        <RecordingPreviewControls file={file} browserEvents={browserEvents} />
+        <RecordingPreviewControls
+          file={file}
+          isExternal={isExternal}
+          browserEvents={browserEvents}
+        />
       }
     >
       {!isLoading && (

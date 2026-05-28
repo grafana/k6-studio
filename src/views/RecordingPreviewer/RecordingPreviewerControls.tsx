@@ -22,11 +22,13 @@ import { StudioFile } from '@/types'
 
 interface RecordingPreviewControlsProps {
   file: StudioFile
+  isExternal: boolean
   browserEvents: BrowserEvent[]
 }
 
 export function RecordingPreviewControls({
   file,
+  isExternal,
   browserEvents,
 }: RecordingPreviewControlsProps) {
   const navigate = useNavigate()
@@ -112,13 +114,14 @@ export function RecordingPreviewControls({
             icon={<ServerCogIcon />}
             label="HTTP test"
             description="Generate a k6 script from HTTP requests using rules"
+            disabled={isExternal}
             onClick={handleCreateGenerator}
           />
           <RichDropdownMenuItem
             icon={<MonitorIcon />}
             label="Browser test"
             description={browserTestDescription}
-            disabled={browserEvents.length === 0}
+            disabled={isExternal || browserEvents.length === 0}
             onClick={handleBrowserTest}
           />
         </DropdownMenu.Content>

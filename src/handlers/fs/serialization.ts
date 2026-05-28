@@ -12,7 +12,7 @@ import { DataFilePreview } from '@/types/testData'
 import { parseDataFile } from '@/utils/dataFile'
 import { K6Client } from '@/utils/k6/client'
 import * as path from '@/utils/path'
-import { isExternalScript } from '@/utils/workspace'
+import { isExternalRecording, isExternalScript } from '@/utils/workspace'
 
 import { FileContent } from './types'
 
@@ -53,7 +53,11 @@ export async function deserializeContent(
       }
 
     case 'recording':
-      return { type: 'recording', data: RecordingSchema.parse(JSON.parse(raw)) }
+      return {
+        type: 'recording',
+        data: RecordingSchema.parse(JSON.parse(raw)),
+        isExternal: isExternalRecording(filePath),
+      }
 
     case 'script': {
       const options = await new K6Client()
