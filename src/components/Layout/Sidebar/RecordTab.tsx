@@ -1,5 +1,6 @@
 import { Button, Flex, IconButton, Tooltip } from '@radix-ui/themes'
-import { HistoryIcon, PlusIcon, VideoIcon } from 'lucide-react'
+import log from 'electron-log/renderer'
+import { HistoryIcon, PlusIcon, UploadIcon, VideoIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -10,6 +11,7 @@ import {
   useDefaultLayout,
 } from '@/components/primitives/ResizablePanel'
 import { getRoutePath } from '@/routeMap'
+import { useToast } from '@/store/ui/useToast'
 
 import { RecentURLsPanel } from './RecentURLsPanel'
 import { useFiles } from './Sidebar.hooks'
@@ -23,6 +25,19 @@ interface RecordTabProps {
 export function RecordTab({ onCollapseSidebar }: RecordTabProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const { recordings, isEmpty } = useFiles(searchTerm)
+  const showToast = useToast()
+
+  const handleImportRecording = async () => {
+    try {
+      await window.studio.har.importFile()
+    } catch (error) {
+      showToast({
+        title: 'Failed to import recording',
+        status: 'error',
+      })
+      log.error(error)
+    }
+  }
 
   const layout = useDefaultLayout({
     groupId: 'sidebar-record-tab',
@@ -37,19 +52,32 @@ export function RecordTab({ onCollapseSidebar }: RecordTabProps) {
             icon={<VideoIcon />}
             title="Recordings"
             actions={
-              <Tooltip content="New recording" side="right">
-                <IconButton
-                  asChild
-                  aria-label="New recording"
-                  variant="ghost"
-                  size="1"
-                  color="gray"
-                >
-                  <Link to={getRoutePath('recorder')}>
-                    <PlusIcon />
-                  </Link>
-                </IconButton>
-              </Tooltip>
+              <>
+                <Tooltip content="Import recording" side="right">
+                  <IconButton
+                    aria-label="Import recording"
+                    variant="ghost"
+                    size="1"
+                    color="gray"
+                    onClick={handleImportRecording}
+                  >
+                    <UploadIcon />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip content="New recording" side="right">
+                  <IconButton
+                    asChild
+                    aria-label="New recording"
+                    variant="ghost"
+                    size="1"
+                    color="gray"
+                  >
+                    <Link to={getRoutePath('recorder')}>
+                      <PlusIcon />
+                    </Link>
+                  </IconButton>
+                </Tooltip>
+              </>
             }
             onCollapseSidebar={onCollapseSidebar}
           />

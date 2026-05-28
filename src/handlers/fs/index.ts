@@ -14,7 +14,7 @@ import { getStudioFileFromPath } from '@/main/file'
 import { getTempScriptName } from '@/main/script'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
-import { showSaveDialog } from '@/utils/dialog'
+import { showOpenDialog, showSaveDialog } from '@/utils/dialog'
 import { browserWindowFromEvent } from '@/utils/electron'
 import { readFile, writeFile } from '@/utils/fs'
 import * as path from '@/utils/path'
@@ -55,6 +55,24 @@ export function initialize() {
   ipcMain.handle(FsHandler.GetTempScriptPath, () => {
     return path.join(app.getPath('temp'), getTempScriptName())
   })
+
+  ipcMain.handle(
+    FsHandler.ShowOpenDialog,
+    async (event, filters: FileFilter[]) => {
+      const browserWindow = browserWindowFromEvent(event)
+
+      const result = await showOpenDialog(browserWindow, {
+        properties: ['openFile'],
+        filters,
+      })
+
+      if (result.canceled || !result.filePaths[0]) {
+        return undefined
+      }
+
+      return result.filePaths[0]
+    }
+  )
 
   ipcMain.handle(
     FsHandler.ShowSaveAsDialog,

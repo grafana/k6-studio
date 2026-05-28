@@ -30,6 +30,14 @@ export function Generator() {
   const setGeneratorFile = useGeneratorStore((store) => store.setGeneratorFile)
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
 
+  const recordingPath = useGeneratorStore((store) => store.recordingPath)
+  const setRecordingPath = useGeneratorStore((store) => store.setRecordingPath)
+
+  const setRecording = useGeneratorStore((store) => store.setRecording)
+  const setRecordingError = useGeneratorStore(
+    (store) => store.setRecordingError
+  )
+
   const showToast = useToast()
   const navigate = useNavigate()
 
@@ -48,7 +56,7 @@ export function Generator() {
     data: recording,
     isLoading: isLoadingRecording,
     error: harError,
-  } = useLoadHarFile(generatorFileData?.data.recordingPath)
+  } = useLoadHarFile(recordingPath)
 
   const isLoading = isLoadingGenerator || isLoadingRecording
 
@@ -97,9 +105,21 @@ export function Generator() {
   })
 
   useEffect(() => {
-    if (!generatorFileData) return
-    setGeneratorFile(generatorFileData.data, recording)
-  }, [setGeneratorFile, generatorFileData, recording])
+    if (!generatorFileData) {
+      return
+    }
+
+    setGeneratorFile(generatorFileData.data)
+  }, [generatorFileData, setGeneratorFile])
+
+  useEffect(() => {
+    if (recording === undefined) {
+      return
+    }
+
+    setRecording(recording)
+    setRecordingError(harError)
+  }, [harError, recording, setRecording, setRecordingError])
 
   useEffect(() => {
     if (generatorError) {
@@ -140,6 +160,11 @@ export function Generator() {
   const handleSaveGenerator = useCallback(() => {
     return saveFile({ saveAs: false })
   }, [saveFile])
+
+  const handleChangeRecording = (newPath: string) => {
+    setSelectedRequest(null)
+    setRecordingPath(newPath)
+  }
 
   const handleSaveGeneratorDialog = async () => {
     const location = await handleSaveGenerator()
@@ -200,6 +225,7 @@ export function Generator() {
                 script={scriptPreview}
                 selectedRequest={selectedRequest}
                 onSelectRequest={setSelectedRequest}
+                onChangeRecording={handleChangeRecording}
               />
             </Panel>
             <Separator />

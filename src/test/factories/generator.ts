@@ -67,6 +67,9 @@ export function createGeneratorState(
     setScriptName: vi.fn(),
 
     recordingPath: '',
+    recordingError: null,
+    setRecordingPath: vi.fn(),
+    setRecordingError: vi.fn(),
     setGeneratorFile: vi.fn(),
     resetRecording: vi.fn(),
     setRecording: vi.fn(),

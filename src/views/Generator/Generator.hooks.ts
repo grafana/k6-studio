@@ -33,11 +33,13 @@ export function useGeneratorLayout() {
   }
 }
 
-export function useLoadHarFile(fileName?: string) {
+export function useLoadHarFile(filePath?: string) {
   return useQuery({
-    queryKey: ['har', fileName],
-    enabled: !!fileName,
-    queryFn: () => loadHarFile(fileName!),
+    queryKey: ['har', filePath],
+    enabled: !!filePath,
+    queryFn: () => loadHarFile(filePath!),
+    gcTime: 0,
+    staleTime: 0,
   })
 }
 
