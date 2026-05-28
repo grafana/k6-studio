@@ -62,12 +62,27 @@ const getMacOSK6Binary = () => {
   verifyChecksum(amdArchive, amdArchive)
   verifyChecksum(armArchive, armArchive)
 
+  execSync(`unzip ${amdArchive} && unzip ${armArchive}`)
+
+  // Smoke-test each binary separately — the cross-arch binary can't execute
+  // (e.g. ARM binary on Intel Mac CI), so only the native arch is required.
+  const nativeArch = process.arch === 'arm64' ? 'arm' : 'amd'
+  const smokeTests = [
+    { path: `${K6_PATH_MAC_AMD}/k6`, arch: 'amd' },
+    { path: `${K6_PATH_MAC_ARM}/k6`, arch: 'arm' },
+  ]
+  for (const { path, arch } of smokeTests) {
+    try {
+      execSync(`${path} version`)
+    } catch {
+      if (arch === nativeArch)
+        throw new Error(`Native binary failed smoke test: ${path}`)
+      console.log(`skipping smoke test for non-native binary: ${path}`)
+    }
+  }
+
   execSync(
-    `unzip ${amdArchive} && ` +
-      `unzip ${armArchive} && ` +
-      `${K6_PATH_MAC_AMD}/k6 version && ` +
-      `${K6_PATH_MAC_ARM}/k6 version && ` +
-      `mv ${K6_PATH_MAC_AMD}/k6 resources/mac/x86_64 && ` +
+    `mv ${K6_PATH_MAC_AMD}/k6 resources/mac/x86_64 && ` +
       `mv ${K6_PATH_MAC_ARM}/k6 resources/mac/arm64 && ` +
       `rm ${amdArchive} ${armArchive} && ` +
       `rmdir ${K6_PATH_MAC_AMD} ${K6_PATH_MAC_ARM}`
