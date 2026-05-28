@@ -73,6 +73,7 @@ export function RecordingPreviewControls({
   }
 
   const exportScript = useExportScript({
+    enableMenuItem: browserEvents.length > 0,
     openOnSave: true,
     fileName: 'my-browser-script.js',
     content: async () => {

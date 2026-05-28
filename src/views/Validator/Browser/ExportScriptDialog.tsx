@@ -82,7 +82,7 @@ export function ExportScriptDialog({
     generators[0]?.path ?? ''
   )
 
-  function getGenerator() {
+  async function getGenerator() {
     switch (mode) {
       case 'allowlist':
         if (allowlist.length === 0) {
