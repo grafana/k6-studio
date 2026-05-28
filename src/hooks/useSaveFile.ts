@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { FileFilter } from 'electron'
-import { useEffect, useId, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 
 import { FileContent, FileLocation, StorageLocation } from '@/handlers/fs/types'
 import { MenuItem } from '@/handlers/ui/types'
@@ -68,6 +68,8 @@ export function useSaveFile({
   // We don't allow changing the menu items after initialization
   const menuItemsRef = useRef(menuItems)
 
+  const onSavePromiseRef = useRef<Promise<void> | null>(null)
+
   const { mutateAsync: saveFile } = useMutation({
     async mutationFn({ saveAs = false }: SaveFileOptions = {}) {
       const resolvedLocation = await resolveLocation(location, filters, saveAs)
@@ -87,7 +89,7 @@ export function useSaveFile({
         return
       }
 
-      onSave?.(location)
+      onSavePromiseRef.current = Promise.resolve(onSave?.(location))
     },
     onError,
   })
@@ -136,5 +138,12 @@ export function useSaveFile({
     })
   }, [saveFile])
 
-  return saveFile
+  return useCallback(
+    async (options?: SaveFileOptions) => {
+      const result = await saveFile(options ?? {})
+      await onSavePromiseRef.current
+      return result
+    },
+    [saveFile]
+  )
 }

@@ -141,6 +141,9 @@ export function ExportScriptDialog({
         setIsExporting(false)
       }
     },
+    onSuccess: () => {
+      onOpenChange(false)
+    },
   })
 
   const isDisabled =
