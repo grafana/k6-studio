@@ -163,9 +163,9 @@ function RuleCardDetails({
             Reused in
           </Text>
           <Flex wrap="wrap" gap="1" mt="1">
-            {visible.map((request) => (
+            {visible.map((request, index) => (
               <PathChip
-                key={`${request.method} ${request.path}`}
+                key={`${request.method} ${request.path}-${index}`}
                 request={request}
               />
             ))}
@@ -173,8 +173,8 @@ function RuleCardDetails({
               <Tooltip
                 content={
                   <Flex direction="column" gap="1">
-                    {reusedIn.slice(MAX_REUSED_IN).map((r) => (
-                      <Text key={`${r.method} ${r.path}`} size="1">
+                    {reusedIn.slice(MAX_REUSED_IN).map((r, index) => (
+                      <Text key={`${r.method} ${r.path}-${index}`} size="1">
                         {r.method} {r.path}
                       </Text>
                     ))}
