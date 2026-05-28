@@ -25,17 +25,6 @@ jobs:
 
     runs-on: ${{ matrix.platform }}
     steps:
-      - id: get-secrets
-        uses: grafana/shared-workflows/actions/get-vault-secrets@a53fc80bc30b0a16a262520465db899fa3af08b7 # get-vault-secrets/v1.3.2
-        with:
-          repo_secrets: |
-            APPLE_CERTIFICATE_P12=apple-certificates:APPLE_CERTIFICATE_P12
-            CERTIFICATE_PASSWORD=apple-certificates:APPLE_CERTIFICATE_P12_PASSWORD
-            APPLE_API_KEY_ID=apple-certificates:APPLE_API_KEY_ID
-            APPLE_API_ISSUER=apple-certificates:APPLE_API_ISSUER
-            APPLE_API_KEY=apple-certificates:APPLE_API_KEY
-            SENTRY_DSN=sentry:SENTRY_DSN
-            SENTRY_AUTH_TOKEN=sentry:SENTRY_AUTH_TOKEN
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           persist-credentials: false
@@ -62,8 +51,22 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install python-setuptools
 
+      # Install before signing secrets are materialized so dependency
+      # install scripts cannot read them from the environment.
       - name: install dependencies
         run: pnpm install --frozen-lockfile
+
+      - id: get-secrets
+        uses: grafana/shared-workflows/actions/get-vault-secrets@a53fc80bc30b0a16a262520465db899fa3af08b7 # get-vault-secrets/v1.3.2
+        with:
+          repo_secrets: |
+            APPLE_CERTIFICATE_P12=apple-certificates:APPLE_CERTIFICATE_P12
+            CERTIFICATE_PASSWORD=apple-certificates:APPLE_CERTIFICATE_P12_PASSWORD
+            APPLE_API_KEY_ID=apple-certificates:APPLE_API_KEY_ID
+            APPLE_API_ISSUER=apple-certificates:APPLE_API_ISSUER
+            APPLE_API_KEY=apple-certificates:APPLE_API_KEY
+            SENTRY_DSN=sentry:SENTRY_DSN
+            SENTRY_AUTH_TOKEN=sentry:SENTRY_AUTH_TOKEN
 
       - name: setup macos keychain
         if: startsWith(matrix.platform, 'macos-')
