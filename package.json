@@ -12,7 +12,8 @@
   "packageManager": "pnpm@11.0.6",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "postinstall": "node install-k6.js",
+    "postinstall": "node scripts/install-k6.js",
+    "update-k6": "node scripts/update-k6-version.js",
     "start": "electron-forge start -- --remote-debugging-port=9223",
     "package": "electron-forge package",
     "make": "electron-forge make",
