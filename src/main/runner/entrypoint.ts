@@ -1,7 +1,6 @@
 // Import shims first to mutate k6 modules globally
 import './shims/http'
 import './shims/browser'
-
 // @ts-expect-error - Path will be replaced at runtime
 // eslint-disable-next-line import/no-unresolved
 import * as untypedScript from '__USER_SCRIPT_PATH__'

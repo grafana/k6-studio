@@ -1,8 +1,8 @@
 // @ts-expect-error - This module will be replaced at build time with the actual k6-testing library, which exports the expect function.
 // eslint-disable-next-line import/no-unresolved
 import { expect } from '__K6_TESTING_EXPECT_PATH__'
-import '../symbols'
 
+import '../symbols'
 import type { AssertionBeginEvent, AssertionEndEvent } from '../../schema'
 
 import { beginAssertion, endAssertion } from './utils'

@@ -8,5 +8,14 @@
   "semi": false,
   "printWidth": 80,
   "sortPackageJson": false,
+  "sortImports": {
+    "groups": [
+      ["builtin", "external"],
+      "internal",
+      "parent",
+      "sibling",
+      "index"
+    ]
+  },
   "ignorePatterns": ["**/__snapshots__/**/*.ts", "**/__snapshots__/**/*.js"]
 }

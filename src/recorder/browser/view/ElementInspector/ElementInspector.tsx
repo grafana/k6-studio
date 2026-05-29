@@ -9,15 +9,15 @@ import { ElementRole } from '@/utils/dom/aria'
 
 import { getTabId } from '../../utils'
 import { Anchor } from '../Anchor'
-import { useStudioClient } from '../StudioClientProvider'
 import { useEscape } from '../hooks/useEscape'
+import { useStudioClient } from '../StudioClientProvider'
 
+import { AssertionEditor } from './assertions/AssertionEditor'
+import { AssertionData } from './assertions/types'
 import { useInspectedElement } from './ElementInspector.hooks'
 import { toAssertion } from './ElementInspector.utils'
 import { ElementMenu } from './ElementMenu'
 import { ElementPopover } from './ElementPopover'
-import { AssertionEditor } from './assertions/AssertionEditor'
-import { AssertionData } from './assertions/types'
 import { useElementHighlight } from './hooks'
 import { WaitForData } from './waitConditions/types'
 

@@ -7,9 +7,9 @@ import { useGeneratorStore } from '@/store/generator'
 import { ErrorMessage } from './ErrorMessage'
 import { IntroductionMessage } from './IntroductionMessage'
 import { SuggestedRules } from './SuggestedRules'
-import { ValidationResults } from './ValidationResults'
 import { CorrelationStatus } from './types'
 import { useGenerateRules } from './useGenerateRules'
+import { ValidationResults } from './ValidationResults'
 
 interface AutoCorrelationDialogProps {
   close: () => void

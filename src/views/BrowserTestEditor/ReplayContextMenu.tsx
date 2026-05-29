@@ -5,13 +5,6 @@ import { LocatorOptions } from '@/schemas/locator'
 import { AriaDetails } from '@/schemas/recording'
 
 import {
-  getTextInputValue,
-  isCheckbox,
-  isRadio,
-  isSelect,
-  isTextInput,
-} from './ReplayContextMenu.utils'
-import {
   createCheckAction,
   createClearAction,
   createClickAction,
@@ -24,6 +17,13 @@ import {
   createUncheckAction,
   createWaitForAction,
 } from './actionFactories'
+import {
+  getTextInputValue,
+  isCheckbox,
+  isRadio,
+  isSelect,
+  isTextInput,
+} from './ReplayContextMenu.utils'
 
 interface ReplayContextMenuProps {
   target: Element

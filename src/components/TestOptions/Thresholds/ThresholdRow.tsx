@@ -10,11 +10,11 @@ import {
 
 import { FieldGroup, ControlledSelect } from '@/components/Form'
 
+import { MetricsConfig } from './createMetricsConfig'
 import {
   THRESHOLD_CONDITIONS_OPTIONS,
   ThresholdLikeRow,
 } from './Thresholds.utils'
-import { MetricsConfig } from './createMetricsConfig'
 
 interface ThresholdFormShape {
   thresholds: ThresholdLikeRow[]

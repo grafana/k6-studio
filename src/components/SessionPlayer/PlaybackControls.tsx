@@ -4,8 +4,8 @@ import { ReactNode } from 'react'
 
 import { BrowserDebuggerEvent } from '@/main/runner/schema'
 
-import { PlayButton } from './PlayButton'
 import { formatTime } from './PlaybackControls.utils'
+import { PlayButton } from './PlayButton'
 import { TimelineSlider } from './Timeline/TimelineSlider'
 import { PlaybackState, Time } from './types'
 
