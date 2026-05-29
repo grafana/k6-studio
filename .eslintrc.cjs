@@ -21,7 +21,8 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   ignorePatterns: [
     'resources/*.js',
-    'install-k6.js',
+    'scripts/install-k6.js',
+    'scripts/update-k6-version.js',
     '.eslintrc.cjs',
     '**/__snapshots__/',
     'src/browser/injectedScript.js',
