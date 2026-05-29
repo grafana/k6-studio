@@ -122,11 +122,25 @@ const getLinuxK6Binary = () => {
   verifyChecksum(amdArchive, amdArchive)
   verifyChecksum(armArchive, armArchive)
 
+  execSync(`tar -zxf ${amdArchive} && tar -zxf ${armArchive}`)
+
+  const nativeArch = process.arch === 'arm64' ? 'arm' : 'amd'
+  const smokeTests = [
+    { path: `${K6_PATH_LINUX_AMD}/k6`, arch: 'amd' },
+    { path: `${K6_PATH_LINUX_ARM}/k6`, arch: 'arm' },
+  ]
+  for (const { path, arch } of smokeTests) {
+    try {
+      execSync(`${path} version`)
+    } catch {
+      if (arch === nativeArch)
+        throw new Error(`Native binary failed smoke test: ${path}`)
+      console.log(`skipping smoke test for non-native binary: ${path}`)
+    }
+  }
+
   execSync(
-    `tar -zxf ${amdArchive} && ` +
-      `tar -zxf ${armArchive} && ` +
-      `${K6_PATH_LINUX_AMD}/k6 version && ` +
-      `mv ${K6_PATH_LINUX_AMD}/k6 resources/linux/x86_64 && ` +
+    `mv ${K6_PATH_LINUX_AMD}/k6 resources/linux/x86_64 && ` +
       `mv ${K6_PATH_LINUX_ARM}/k6 resources/linux/arm64 && ` +
       `rm ${amdArchive} ${armArchive} && ` +
       `rmdir ${K6_PATH_LINUX_AMD} ${K6_PATH_LINUX_ARM}`
