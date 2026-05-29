@@ -12,7 +12,8 @@
   "packageManager": "pnpm@11.0.6",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "postinstall": "node install-k6.js",
+    "postinstall": "node scripts/install-k6.js",
+    "update-k6": "node scripts/update-k6-version.js",
     "start": "electron-forge start -- --remote-debugging-port=9223",
     "package": "electron-forge package",
     "make": "electron-forge make",
@@ -155,7 +156,7 @@
     "undici": "7.25.0",
     "update-electron-app": "3.2.0",
     "use-konami": "1.0.1",
-    "ws": "8.20.0",
+    "ws": "8.20.1",
     "zod": "4.4.3",
     "zustand": "4.5.7"
   },
