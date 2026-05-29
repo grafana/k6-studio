@@ -1,14 +1,14 @@
-name: "Manual Release Test Version"
+name: 'Manual Release Test Version'
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Specify a version suffix for the test release (limit to 20
-          characters or windows build will fail)"
+        description: 'Specify a version suffix for the test release (limit to 20
+          characters or windows build will fail)'
         required: true
         type: string
-        default: "test-version"
+        default: 'test-version'
 
 permissions: {}
 
@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ macos-latest, macos-15-intel, windows-latest, ubuntu-latest ]
+        platform: [macos-latest, macos-15-intel, windows-latest, ubuntu-latest]
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -54,7 +54,7 @@ jobs:
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: 24.11
-          cache: "pnpm"
+          cache: 'pnpm'
 
       # appdmg (used for DMG builds) depends on native modules compiled via node-gyp,
       # which requires Python setuptools. macOS runners ship with Python 3.12+ where
@@ -80,7 +80,7 @@ jobs:
       - name: publish macOS arm64
         if: startsWith(matrix.platform, 'macos-latest')
         env:
-          NODE_OPTIONS: "--max_old_space_size=8192"
+          NODE_OPTIONS: '--max_old_space_size=8192'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # apple notarization
           APPLE_API_KEY: ./apple_api_key.p8
@@ -94,7 +94,7 @@ jobs:
       - name: publish macOS x86_64
         if: startsWith(matrix.platform, 'macos-15-intel')
         env:
-          NODE_OPTIONS: "--max_old_space_size=8192"
+          NODE_OPTIONS: '--max_old_space_size=8192'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # apple notarization
           APPLE_API_KEY: ./apple_api_key.p8
@@ -130,7 +130,7 @@ jobs:
         if: startsWith(matrix.platform, 'windows-')
         with:
           # renovate: datasource=dotnet-version depName=dotnet-sdk
-          dotnet-version: "8.0.414"
+          dotnet-version: '8.0.414'
 
       - name: Install Sign CLI tool
         id: install-sign-tool
@@ -138,7 +138,7 @@ jobs:
         shell: pwsh
         env:
           # renovate: datasource=nuget depName=sign
-          DOTNET_SIGN_VERSION: "0.9.1-beta.25379.1"
+          DOTNET_SIGN_VERSION: '0.9.1-beta.25379.1'
         run: |
           $toolPath = Join-Path -Path ${env:RUNNER_TEMP} -ChildPath (New-Guid).ToString()
           New-Item -ItemType Directory -Path $toolPath | Out-Null
@@ -155,7 +155,7 @@ jobs:
       - name: publish Windows
         if: startsWith(matrix.platform, 'windows-')
         env:
-          NODE_OPTIONS: "--max_old_space_size=8192"
+          NODE_OPTIONS: '--max_old_space_size=8192'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # windows cert
           TRUSTED_SIGNING_ACCOUNT: grafana-premium-eastus
@@ -171,7 +171,7 @@ jobs:
       - name: publish Linux
         if: startsWith(matrix.platform, 'ubuntu-')
         env:
-          NODE_OPTIONS: "--max_old_space_size=8192"
+          NODE_OPTIONS: '--max_old_space_size=8192'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # sentry integration
           # sentry vite plugin integration during build
