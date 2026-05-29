@@ -15,6 +15,7 @@ import { useToast } from '@/store/ui/useToast'
 import { ProxyData } from '@/types'
 
 import {
+  useGeneratorLayout,
   useIsGeneratorDirty,
   useLoadGeneratorFile,
   useLoadHarFile,
@@ -34,6 +35,8 @@ export function Generator() {
 
   const file = useCurrentFile('generator')
   const scriptPreview = useScriptPreview(file.path)
+
+  const { mainLayout, sidebarLayout, detailsLayout } = useGeneratorLayout()
 
   const {
     data: generatorFileData,
@@ -154,9 +157,9 @@ export function Generator() {
       }
       loading={isLoading}
     >
-      <Group>
+      <Group {...sidebarLayout}>
         <Panel id="main" minSize={580}>
-          <Group orientation="vertical">
+          <Group orientation="vertical" {...mainLayout}>
             <Panel id="preview" minSize={200}>
               <GeneratorTabs
                 script={scriptPreview}
@@ -174,6 +177,7 @@ export function Generator() {
         {selectedRequest && (
           <Panel id="request-details" minSize={300}>
             <HttpRequestDetails
+              layout={detailsLayout}
               selectedRequest={selectedRequest}
               onSelectRequest={setSelectedRequest}
             />
