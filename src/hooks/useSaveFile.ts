@@ -72,7 +72,7 @@ export function useSaveFile({
     setMenuItemState(menuItems)
   }
 
-  const { mutateAsync: saveFile } = useMutation({
+  const { mutateAsync: saveFile, isPending } = useMutation({
     async mutationFn({ saveAs = false }: SaveFileOptions = {}) {
       const resolvedLocation = await resolveLocation(location, filters, saveAs)
 
@@ -132,13 +132,13 @@ export function useSaveFile({
 
   useEffect(() => {
     return window.studio.ui.onRequestSave(({ menuItem, saveAs }) => {
-      if (!menuItemState[menuItem]) {
+      if (!menuItemState[menuItem] || isPending) {
         return
       }
 
       void saveFile({ saveAs })
     })
-  }, [menuItemState, saveFile])
+  }, [isPending, menuItemState, saveFile])
 
   return useCallback(
     (options: SaveFileOptions = {}) => {
