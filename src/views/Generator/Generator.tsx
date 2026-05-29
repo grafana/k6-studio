@@ -48,7 +48,10 @@ export function Generator() {
   } = useLoadHarFile(generatorFileData?.recordingPath)
 
   const saveFile = useSaveFile({
-    menuItems: ['save', 'save-as'],
+    menuItems: {
+      save: true,
+      saveAs: true,
+    },
     location: { type: 'file', path: file.path },
     content: () => ({
       type: 'generator' as const,

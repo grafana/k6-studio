@@ -20,8 +20,10 @@ export enum UIHandler {
   AddFile = 'ui:add-file',
   RemoveFile = 'ui:remove-file',
   Toast = 'ui:toast',
-  SetMenuItemsEnabled = 'ui:set-menu-items-enabled',
+  SetMenuState = 'ui:set-menu-state',
   RequestSave = 'ui:request-save',
 }
 
-export type MenuItem = 'save' | 'save-as' | 'export-script'
+export type MenuItemTuple = ['save', 'saveAs', 'exportScript']
+export type MenuItem = MenuItemTuple[number]
+export type MenuState = { [P in MenuItem]: boolean }

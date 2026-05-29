@@ -9,7 +9,7 @@ import { PROJECT_PATH } from '@/constants/workspace'
 import { AppHandler } from '@/handlers/app/types'
 import { createBrowserTest } from '@/handlers/browserTest/create'
 import { createGenerator } from '@/handlers/generator/create'
-import { UIHandler } from '@/handlers/ui/types'
+import { MenuItem, UIHandler } from '@/handlers/ui/types'
 import { getStudioFileFromPath } from '@/main/file'
 import { getViewPath, routeMap } from '@/routeMap'
 import { showOpenDialog } from '@/utils/dialog'
@@ -28,13 +28,15 @@ import { openLogFolder } from './logger'
 const isDevEnv = process.env.NODE_ENV === 'development'
 const isMac = getPlatform() === 'mac'
 
+type MenuItemWithId = Omit<MenuItemConstructorOptions, 'id' | 'submenu'> & {
+  id?: MenuItem
+  submenu?: MenuItemWithId[]
+}
 /**
  * Recursively walk through the menu template and make sure that the
  * state of each menu item is kept between rebuilds.
  */
-function defineMenu(
-  menu: MenuItemConstructorOptions[]
-): MenuItemConstructorOptions[] {
+function defineMenu(menu: MenuItemWithId[]): MenuItemWithId[] {
   const currentMenu = Menu.getApplicationMenu()
 
   for (const item of menu) {
@@ -51,7 +53,7 @@ function defineMenu(
   return menu
 }
 
-function buildRecentFilesSubmenu(): Electron.MenuItemConstructorOptions[] {
+function buildRecentFilesSubmenu(): MenuItemWithId[] {
   const recentFiles = getRecentFiles()
 
   if (recentFiles.length === 0) {
@@ -60,7 +62,7 @@ function buildRecentFilesSubmenu(): Electron.MenuItemConstructorOptions[] {
 
   return [
     ...recentFiles.map(
-      (filePath): Electron.MenuItemConstructorOptions => ({
+      (filePath): MenuItemWithId => ({
         label: path.basename(filePath),
         click: (_, window) => {
           if (window instanceof BrowserWindow === false) {
@@ -215,7 +217,7 @@ function buildTemplate(): Electron.MenuItemConstructorOptions[] {
           },
         },
         {
-          id: 'save-as',
+          id: 'saveAs',
           label: 'Save As...',
           accelerator: 'CmdOrCtrl+Shift+S',
           enabled: false,
@@ -235,7 +237,7 @@ function buildTemplate(): Electron.MenuItemConstructorOptions[] {
           label: 'Export...',
           submenu: [
             {
-              id: 'export-script',
+              id: 'exportScript',
               label: 'Script',
               enabled: false,
               click: (menuItem, window) => {
@@ -291,15 +293,15 @@ function buildTemplate(): Electron.MenuItemConstructorOptions[] {
   ])
 }
 
-function getAppMenu(): Electron.MenuItemConstructorOptions[] {
+function getAppMenu(): MenuItemWithId[] {
   return isMac ? [{ role: 'appMenu' }] : []
 }
 
-function getCloseMenuItem(): Electron.MenuItemConstructorOptions {
+function getCloseMenuItem(): MenuItemWithId {
   return isMac ? { role: 'close' } : { role: 'quit' }
 }
 
-function getDevToolsMenu(): Electron.MenuItemConstructorOptions[] {
+function getDevToolsMenu(): MenuItemWithId[] {
   return isDevEnv
     ? [{ role: 'reload' }, { role: 'forceReload' }, { role: 'toggleDevTools' }]
     : []

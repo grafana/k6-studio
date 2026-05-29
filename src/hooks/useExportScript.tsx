@@ -30,7 +30,9 @@ export function useExportScript({
   const navigate = useNavigate()
 
   const exportScript = useSaveFile({
-    menuItems: enableMenuItem ? ['export-script'] : [],
+    menuItems: {
+      exportScript: enableMenuItem,
+    },
     location: {
       type: 'untitled',
       hint: path.extname(fileName) === '' ? `${fileName}.js` : fileName,

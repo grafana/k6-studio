@@ -19,7 +19,7 @@ import { sendToast } from '@/utils/electron'
 import { exists, readdir, rename } from '@/utils/fs'
 import * as path from '@/utils/path'
 
-import { MenuItem, UIHandler } from './types'
+import { MenuState, UIHandler } from './types'
 
 export function initialize() {
   ipcMain.on(UIHandler.ToggleTheme, () => {
@@ -133,28 +133,25 @@ export function initialize() {
     }
   )
 
-  ipcMain.on(
-    UIHandler.SetMenuItemsEnabled,
-    (_, menuItems: MenuItem[], enabled: boolean) => {
-      console.info(`${UIHandler.SetMenuItemsEnabled} event received`)
+  ipcMain.on(UIHandler.SetMenuState, (_, state: MenuState) => {
+    console.info(`${UIHandler.SetMenuState} event received`)
 
-      const menu = Menu.getApplicationMenu()
+    const menu = Menu.getApplicationMenu()
 
-      if (!menu) {
-        return
-      }
-
-      for (const item of menuItems) {
-        const menuItem = menu.getMenuItemById(item)
-
-        if (!menuItem) {
-          console.error(`Menu item with id ${item} not found`)
-
-          continue
-        }
-
-        menuItem.enabled = enabled
-      }
+    if (!menu) {
+      return
     }
-  )
+
+    for (const [item, enabled] of Object.entries(state)) {
+      const menuItem = menu.getMenuItemById(item)
+
+      if (!menuItem) {
+        console.error(`Menu item with id ${item} not found`)
+
+        continue
+      }
+
+      menuItem.enabled = enabled
+    }
+  })
 }

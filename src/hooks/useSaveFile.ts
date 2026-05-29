@@ -1,24 +1,22 @@
 import { useMutation } from '@tanstack/react-query'
 import { FileFilter } from 'electron'
-import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { FileContent, FileLocation, StorageLocation } from '@/handlers/fs/types'
-import { MenuItem } from '@/handlers/ui/types'
+import { MenuItem, MenuState } from '@/handlers/ui/types'
 
-function useCrash(): (error: Error) => void {
-  const [error, setError] = useState<Error | null>(null)
-
-  if (error) {
-    throw error
-  }
-
-  return setError
+const refCounts: { [P in MenuItem]: number } = {
+  save: 0,
+  saveAs: 0,
+  exportScript: 0,
 }
 
-const menuItemStates: { [P in MenuItem]: boolean } = {
-  save: false,
-  'save-as': false,
-  'export-script': false,
+function syncMenuState() {
+  return window.studio.ui.setMenuState({
+    save: refCounts.save > 0,
+    saveAs: refCounts.saveAs > 0,
+    exportScript: refCounts.exportScript > 0,
+  })
 }
 
 function resolveLocation(
@@ -44,7 +42,7 @@ interface SaveFileOptions {
 }
 
 interface UseSaveFileOptions {
-  menuItems?: MenuItem[]
+  menuItems?: Partial<MenuState>
   location: StorageLocation
   content: (location: FileLocation) => Promise<FileContent> | FileContent
   filters: FileFilter[]
@@ -54,7 +52,7 @@ interface UseSaveFileOptions {
 }
 
 export function useSaveFile({
-  menuItems = [],
+  menuItems = {},
   location,
   content,
   filters,
@@ -62,13 +60,17 @@ export function useSaveFile({
   onCancel,
   onError,
 }: UseSaveFileOptions) {
-  const hookId = useId()
-  const crash = useCrash()
+  const [menuItemState, setMenuItemState] = useState(menuItems)
 
-  // We don't allow changing the menu items after initialization
-  const menuItemsRef = useRef(menuItems)
-
-  const onSavePromiseRef = useRef<Promise<void> | null>(null)
+  if (
+    menuItems.save !== menuItemState.save ||
+    menuItems.saveAs !== menuItemState.saveAs ||
+    menuItems.exportScript !== menuItemState.exportScript
+  ) {
+    // Weird as it may seem, this is actually the recommended over useEffect.
+    // https://react.dev/reference/react/useState#storing-information-from-previous-renders
+    setMenuItemState(menuItems)
+  }
 
   const { mutateAsync: saveFile } = useMutation({
     async mutationFn({ saveAs = false }: SaveFileOptions = {}) {
@@ -89,60 +91,58 @@ export function useSaveFile({
         return
       }
 
-      onSavePromiseRef.current = Promise.resolve(onSave?.(location))
+      return onSave?.(location)
     },
     onError,
   })
 
   useEffect(() => {
-    const menuItems = menuItemsRef.current
+    const entries = Object.entries(menuItemState) as [MenuItem, boolean][]
 
-    // Validate all items before setting any state to prevent partial leaks
-    for (const menuItem of menuItems) {
-      if (menuItemStates[menuItem]) {
-        // There can only be one handler active for each menu item, otherwise multiple save actions would
-        // trigger when the user clicks the menu item. If we detect a stuck state (previous cleanup didn't run)
-        // or duplicate registration, log a warning and forcefully take over
+    for (const [item, enabled] of entries) {
+      if (enabled) {
+        refCounts[item] += 1
+      }
+    }
+
+    // We do a sanity check here because having multiple listeners for the same menu item would create weird
+    // situations where the RequestSave event is triggered twice, causing the save dialog to open twice. Hopefully
+    // logging a warning here will help us identify and fix the underlying issue if it ever happens.
+    for (const [item, count] of Object.entries(refCounts)) {
+      if (count > 1) {
         console.warn(
-          `Menu item ${menuItem} was already registered. This may indicate a previous instance failed ` +
+          `Menu item ${item} was already registered. This may indicate a previous instance failed ` +
             `to clean up or that two instances are trying to register the same menu item at the same time.`
         )
       }
     }
 
-    // Set all states only after validation passes
-    for (const menuItem of menuItems) {
-      menuItemStates[menuItem] = true
-    }
-
-    // There's a slight change that the menu item state could get out of sync if the call
-    // to setMenuItemsEnabled fails, but the chance of that should be zero.
-    window.studio.ui.setMenuItemsEnabled(menuItems, true)
+    syncMenuState()
 
     return () => {
-      for (const menuItem of menuItems) {
-        menuItemStates[menuItem] = false
+      for (const [item, enabled] of entries) {
+        if (enabled) {
+          refCounts[item] = Math.max(0, refCounts[item] - 1)
+        }
       }
 
-      window.studio.ui.setMenuItemsEnabled(menuItems, false)
+      syncMenuState()
     }
-  }, [hookId, crash])
+  }, [menuItemState])
 
   useEffect(() => {
     return window.studio.ui.onRequestSave(({ menuItem, saveAs }) => {
-      if (!menuItemsRef.current.includes(menuItem)) {
+      if (!menuItemState[menuItem]) {
         return
       }
 
       void saveFile({ saveAs })
     })
-  }, [saveFile])
+  }, [menuItemState, saveFile])
 
   return useCallback(
-    async (options?: SaveFileOptions) => {
-      const result = await saveFile(options ?? {})
-      await onSavePromiseRef.current
-      return result
+    (options: SaveFileOptions = {}) => {
+      return saveFile(options)
     },
     [saveFile]
   )

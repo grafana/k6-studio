@@ -68,7 +68,10 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
   })
 
   const saveFile = useSaveFile({
-    menuItems: ['save', 'save-as'],
+    menuItems: {
+      save: true,
+      saveAs: true,
+    },
     location: { type: 'file', path: file.path },
     content: () => ({
       type: 'browser-test' as const,
@@ -99,10 +102,6 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
   })
 
   const handleSave = () => {
-    if (!test.isDirty) {
-      return
-    }
-
     void saveFile({ saveAs: false })
   }
 
