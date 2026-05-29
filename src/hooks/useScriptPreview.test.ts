@@ -1,5 +1,4 @@
 import { renderHook, waitFor } from '@testing-library/react'
-import { Dictionary } from 'lodash'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
@@ -54,7 +53,7 @@ describe('useScriptPreview', () => {
     const mockState = createGeneratorState()
     const mockGeneratorData = createGeneratorData()
     const mockRequests: ProxyData[] = []
-    const mockGroupedRequests: Dictionary<ProxyData[]> = {}
+    const mockGroupedRequests: Record<string, ProxyData[]> = {}
     const mockScript = 'mock script'
 
     vi.mocked(useGeneratorStore.getState).mockReturnValue(mockState)
@@ -76,7 +75,7 @@ describe('useScriptPreview', () => {
     const mockState = createGeneratorState()
     const mockGeneratorData = createGeneratorData()
     const mockRequests: ProxyData[] = []
-    const mockGroupedRequests: Dictionary<ProxyData[]> = {}
+    const mockGroupedRequests: Record<string, ProxyData[]> = {}
     const mockError = new Error('mock error')
 
     vi.spyOn(console, 'error').mockImplementation(() => undefined)

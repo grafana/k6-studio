@@ -11,7 +11,7 @@ import {
   Inset,
   Separator,
 } from '@radix-ui/themes'
-import { every, includes } from 'lodash'
+import { every, includes } from 'lodash-es'
 import { InfoIcon, SearchIcon, XIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
