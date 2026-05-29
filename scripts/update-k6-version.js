@@ -9,7 +9,7 @@ const EXPECTED_SUFFIXES = [
   'linux-arm64.tar.gz',
 ]
 
-const K6_VERSIONS_PATH = join(__dirname, 'k6-versions.json')
+const K6_VERSIONS_PATH = join(__dirname, '..', 'k6-versions.json')
 
 ;(async () => {
   let version = process.argv[2]

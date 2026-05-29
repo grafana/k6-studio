@@ -3,9 +3,9 @@ const { createHash } = require('crypto')
 const { existsSync, readFileSync } = require('fs')
 const { join } = require('path')
 
-// To update to a new k6 version, run: node update-k6-version.js <version>
+// To update to a new k6 version, run: node scripts/update-k6-version.js <version>
 const k6Versions = JSON.parse(
-  readFileSync(join(__dirname, 'k6-versions.json'), 'utf-8')
+  readFileSync(join(__dirname, '..', 'k6-versions.json'), 'utf-8')
 )
 
 const K6_VERSION = k6Versions.version
