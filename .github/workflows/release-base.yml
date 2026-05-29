@@ -8,6 +8,11 @@ on:
         type: string
         required: false
         default: ""
+      ref:
+        description: "Git ref to checkout (defaults to the caller's github.ref)"
+        type: string
+        required: false
+        default: ""
 
 permissions: {}
 
@@ -27,6 +32,7 @@ jobs:
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
+          ref: ${{ inputs.ref || github.ref }}
           persist-credentials: false
 
       - name: Set version for test release
