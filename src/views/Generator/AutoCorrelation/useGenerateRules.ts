@@ -216,7 +216,8 @@ export const useGenerateRules = ({
       }
 
       setCorrelationStatus('analyzing')
-      return sendMessage({
+
+      return await sendMessage({
         text: `${systemPrompt} \n\n Validation result: ${JSON.stringify(validationResult)}`,
       })
     } catch (error) {

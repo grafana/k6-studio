@@ -29,11 +29,11 @@ export class RequestSynchronizer {
             ? value.error.message
             : 'Unknown error'
 
-        reject(
-          Object.assign(new Error(message), {
-            cause: value.error,
-          })
-        )
+        const error = new Error(message)
+
+        error.cause = value.error
+
+        reject(error)
 
         return
       }

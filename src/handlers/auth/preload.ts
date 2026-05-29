@@ -44,7 +44,7 @@ export function changeStack(stackId: string) {
   return ipcRenderer.invoke(
     AuthHandler.ChangeStack,
     stackId
-  ) as unknown as Promise<ChangeStackResponse>
+  ) as Promise<ChangeStackResponse>
 }
 
 export function onStateChange(

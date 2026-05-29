@@ -33,6 +33,7 @@
         "ignore": ["css"]
       }
     ],
+    "react/rules-of-hooks": "error",
     "no-shadow": "off",
     "no-param-reassign": "error",
     "no-unused-vars": [
@@ -87,6 +88,36 @@
         ]
       }
     ],
+
+    "no-array-constructor": "error",
+    "no-case-declarations": "error",
+    "no-empty": "error",
+    "no-fallthrough": "error",
+    "no-inner-declarations": "error",
+    "no-prototype-builtins": "error",
+    "no-regex-spaces": "error",
+    "no-var": "error",
+    "prefer-const": "error",
+    "prefer-rest-params": "error",
+    "prefer-spread": "error",
+    "import/export": "error",
+    "no-duplicate-imports": "error",
+    "import/no-named-as-default": "warn",
+    "import/no-named-as-default-member": "warn",
+    "typescript/ban-types": "error",
+    "typescript/no-explicit-any": "error",
+    "typescript/no-namespace": "error",
+    "typescript/no-unnecessary-type-assertion": "error",
+    "typescript/no-unnecessary-type-constraint": "error",
+    "typescript/no-unsafe-argument": "error",
+    "typescript/no-unsafe-assignment": "error",
+    "typescript/no-unsafe-call": "error",
+    "typescript/no-unsafe-enum-comparison": "error",
+    "typescript/no-unsafe-member-access": "error",
+    "typescript/no-unsafe-return": "error",
+    "typescript/no-var-requires": "error",
+    "typescript/restrict-plus-operands": "error",
+    "typescript/require-await": "error",
     "typescript/no-floating-promises": [
       "error",
       {
@@ -99,6 +130,22 @@
         "checksVoidReturn": false
       }
     ],
+    "typescript/ban-ts-comment": [
+      "error",
+      {
+        "ts-expect-error": "allow-with-description"
+      }
+    ],
+    "typescript/return-await": ["error", "error-handling-correctness-only"],
+    "typescript/prefer-find": "error",
+
+    "react/display-name": "error",
+    "react/jsx-no-comment-textnodes": "error",
+    "react/jsx-no-target-blank": "error",
+    "react/no-unescaped-entities": "error",
+    "react/require-render-return": "error",
+
+    "unicorn/prefer-optional-catch-binding": "error",
 
     "@tanstack/query/exhaustive-deps": "error",
     "@tanstack/query/no-rest-destructuring": "warn",
