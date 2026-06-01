@@ -105,7 +105,7 @@ const fetchAndPatch: CustomFetch = async (
           status: 400,
           statusText: 'Bad Request',
           headers: {
-            ...response.headers,
+            ...Object.fromEntries(response.headers),
             'Content-Type': 'application/json',
           },
         })
@@ -121,7 +121,7 @@ const fetchAndPatch: CustomFetch = async (
           status: 400,
           statusText: 'Bad Request',
           headers: {
-            ...response.headers,
+            ...Object.fromEntries(response.headers),
             'Content-Type': 'application/json',
           },
         })
@@ -144,7 +144,7 @@ const fetchAndPatch: CustomFetch = async (
         status: 400,
         statusText: 'Bad Request',
         headers: {
-          ...response.headers,
+          ...Object.fromEntries(response.headers),
           'Content-Type': 'application/json',
         },
       })

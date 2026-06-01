@@ -7,9 +7,9 @@ import { Table } from '@/components/Table'
 
 import { useControlledForm } from '../useControlledForm'
 
+import { MetricsConfig } from './createMetricsConfig'
 import { ThresholdRow } from './ThresholdRow'
 import type { ThresholdLikeRow } from './Thresholds.utils'
-import { MetricsConfig } from './createMetricsConfig'
 
 interface ThresholdsProps<M extends string> {
   value: Array<ThresholdLikeRow & { metric: M }>

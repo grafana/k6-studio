@@ -59,7 +59,7 @@ export function EmptyState({ isLoading }: EmptyStateProps) {
   const navigationState = location.state as StartRecordingNavigationState | null
   const prefilledURL = navigationState?.prefilledURL ?? ''
 
-  const [captureBrowser = true, setCaptureBrowser] = useSyncedLocalStorage(
+  const [captureBrowser, setCaptureBrowser] = useSyncedLocalStorage(
     'start-recording.capture.browser',
     z.boolean(),
     true

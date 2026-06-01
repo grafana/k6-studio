@@ -9,11 +9,7 @@ import {
 
 import { createListener } from '../utils'
 
-import {
-  AuthHandler as AuthHandler,
-  ChangeStackResponse,
-  SignOutResponse,
-} from './types'
+import { AuthHandler, ChangeStackResponse, SignOutResponse } from './types'
 
 export function getProfiles() {
   return ipcRenderer.invoke(AuthHandler.GetProfiles) as Promise<UserProfiles>

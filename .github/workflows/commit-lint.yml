@@ -23,4 +23,4 @@ jobs:
 
       - uses: grafana/shared-workflows/actions/lint-pr-title@0239db2665246f3b078d8d9166e4d8f09c071cae # lint-pr-title/v1.2.2
         with:
-          config-path: "${{ github.workspace }}/commitlint.config.js"
+          config-path: '${{ github.workspace }}/commitlint.config.js'

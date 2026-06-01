@@ -1,4 +1,4 @@
-import { ipcMain, nativeTheme, shell, BrowserWindow } from 'electron'
+import { ipcMain, nativeTheme, shell } from 'electron'
 import log from 'electron-log/main'
 import invariant from 'tiny-invariant'
 
@@ -15,7 +15,7 @@ import { getStudioFileFromPath } from '@/main/file'
 import { StudioFile } from '@/types'
 import { getBrowserPath } from '@/utils/browser'
 import { reportNewIssue } from '@/utils/bugReport'
-import { sendToast } from '@/utils/electron'
+import { browserWindowFromEvent, sendToast } from '@/utils/electron'
 import { exists, readdir, rename } from '@/utils/fs'
 import * as path from '@/utils/path'
 
@@ -104,7 +104,7 @@ export function initialize() {
     UIHandler.RenameFile,
     async (e, file: StudioFile, newFileName: string) => {
       console.info(`${UIHandler.RenameFile} event received`)
-      const browserWindow = BrowserWindow.fromWebContents(e.sender)
+      const browserWindow = browserWindowFromEvent(e)
 
       try {
         invariant(
@@ -121,12 +121,12 @@ export function initialize() {
         await rename(file.path, newPath)
       } catch (e) {
         log.error(e)
-        browserWindow &&
-          sendToast(browserWindow.webContents, {
-            title: 'Failed to rename file',
-            description: e instanceof Error ? e.message : undefined,
-            status: 'error',
-          })
+
+        sendToast(browserWindow.webContents, {
+          title: 'Failed to rename file',
+          description: e instanceof Error ? e.message : undefined,
+          status: 'error',
+        })
 
         throw e
       }

@@ -16,16 +16,16 @@
     "jsxImportSource": "@emotion/react",
     "paths": {
       "@/*": ["./src/*"],
-      "node_modules/*": ["./node_modules/*"],
+      "node_modules/*": ["./node_modules/*"]
     },
     "types": [
       "vite/client",
       "@emotion/react/types/css-prop",
       "vitest/importMeta",
-      "@types/k6",
-    ],
+      "@types/k6"
+    ]
   },
   "ts-node": {
-    "require": ["tsconfig-paths/register"],
-  },
+    "require": ["tsconfig-paths/register"]
+  }
 }

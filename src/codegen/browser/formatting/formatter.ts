@@ -9,6 +9,7 @@ const { hardline } = builders
 const estree = printers.estree
 
 declare module 'prettier/plugins/estree' {
+  // eslint-disable-next-line no-unused-vars
   const options: Record<string, SupportOption>
 }
 
