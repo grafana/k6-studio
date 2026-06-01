@@ -124,7 +124,7 @@ export function ExportScriptDialog({
           generator.includeStaticAssets
         )
 
-        return generateScriptPreview(
+        return await generateScriptPreview(
           scriptPath,
           generator,
           filteredRequests.map((request) => {
