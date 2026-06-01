@@ -183,7 +183,9 @@ export function createProxy<T extends object>({
   return new Proxy(target, {
     get(target, property) {
       const method = property as keyof T
-      const original = target[method]
+      const original = target[method] as (
+        ...args: ArgsOf<T[keyof T]>
+      ) => unknown
 
       if (typeof original !== 'function' || isTestingLibrary()) {
         return original
@@ -240,7 +242,7 @@ export function createProxy<T extends object>({
         }
 
         try {
-          const result: unknown = original(...args)
+          const result = original(...args)
 
           // We can't use await here because it would make the proxy function
           // async whereas the original function might not have been.

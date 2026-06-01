@@ -18,7 +18,7 @@ import * as path from '@/utils/path'
 import { readResource } from '@/utils/resources'
 
 import {
-  instrumentScriptFromPath as instrumentScriptFromPath,
+  instrumentScriptFromPath,
   replaceModules,
 } from './runner/instrumentation'
 import { configureOptions, getDebugTarget } from './runner/utils'

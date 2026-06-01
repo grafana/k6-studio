@@ -60,6 +60,7 @@ Electron desktop app for generating k6 test scripts. Three main components:
 ### IPC Pattern
 
 Handlers follow `domain:action` naming. Each handler has:
+
 - `index.ts` - ipcMain.handle/on registration
 - `preload.ts` - contextBridge exposure
 - `types.ts` - TypeScript interfaces
@@ -77,8 +78,8 @@ Handlers follow `domain:action` naming. Each handler has:
 ## Commit Messages
 
 Conventional Commits format. Sentence case, imperative verb.
+
 ```
 feat: Add type column to WebLogView
 fix: Application crashes when opening HAR file
 ```
-

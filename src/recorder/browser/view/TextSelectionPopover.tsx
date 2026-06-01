@@ -6,16 +6,16 @@ import { Overlay } from '@/components/Browser/Overlay'
 
 import { getTabId } from '../utils'
 
-import { ElementPopover } from './ElementInspector/ElementPopover'
 import { TextAssertionEditor } from './ElementInspector/assertions/TextAssertionEditor'
 import { TextAssertionData } from './ElementInspector/assertions/types'
+import { ElementPopover } from './ElementInspector/ElementPopover'
 import { useElementHighlight, usePinnedElement } from './ElementInspector/hooks'
 import { useGlobalClass } from './GlobalStyles'
+import { useEscape } from './hooks/useEscape'
+import { usePreventClick } from './hooks/usePreventClick'
 import { useStudioClient } from './StudioClientProvider'
 import { useTextSelection } from './TextSelectionPopover.hooks'
 import { TextSelection } from './TextSelectionPopover.types'
-import { useEscape } from './hooks/useEscape'
-import { usePreventClick } from './hooks/usePreventClick'
 
 interface TextSelectionPopoverContentProps {
   selection: TextSelection
