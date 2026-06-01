@@ -111,38 +111,38 @@ export function ExportScriptDialog({
     content: async (scriptPath) => {
       setIsExporting(true)
 
-      try {
-        const generator = await getGenerator()
+      const generator = await getGenerator()
 
-        if (generator === null) {
-          throw new Error('Failed to get generator.')
-        }
-
-        const filteredRequests = filterRequests(
-          requests,
-          generator.allowlist,
-          generator.includeStaticAssets
-        )
-
-        return generateScriptPreview(
-          scriptPath,
-          generator,
-          filteredRequests.map((request) => {
-            return {
-              ...request,
-              // Make sure that any base64 encoded content is decoded before the export,
-              // otherwise rules won't be applied properly to the bodies
-              request: parseContent(request.request),
-              response: parseContent(request.response),
-            }
-          })
-        )
-      } finally {
-        setIsExporting(false)
+      if (generator === null) {
+        throw new Error('Failed to get generator.')
       }
+
+      const filteredRequests = filterRequests(
+        requests,
+        generator.allowlist,
+        generator.includeStaticAssets
+      )
+
+      return generateScriptPreview(
+        scriptPath,
+        generator,
+        filteredRequests.map((request) => {
+          return {
+            ...request,
+            // Make sure that any base64 encoded content is decoded before the export,
+            // otherwise rules won't be applied properly to the bodies
+            request: parseContent(request.request),
+            response: parseContent(request.response),
+          }
+        })
+      )
     },
     onSuccess: () => {
+      setIsExporting(false)
       onOpenChange(false)
+    },
+    onError: () => {
+      setIsExporting(false)
     },
   })
 

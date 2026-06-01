@@ -47,10 +47,12 @@ export function Generator() {
     error: harError,
   } = useLoadHarFile(generatorFileData?.recordingPath)
 
+  const isLoading = isLoadingGenerator || isLoadingRecording
+
   const saveFile = useSaveFile({
     menuItems: {
-      save: true,
-      saveAs: true,
+      save: !isLoading,
+      saveAs: !isLoading,
     },
     location: { type: 'file', path: file.path },
     content: () => ({
@@ -77,8 +79,6 @@ export function Generator() {
       log.error(error)
     },
   })
-
-  const isLoading = isLoadingGenerator || isLoadingRecording
 
   const isDirty = useIsGeneratorDirty(file.path)
   const isDirtyRef = useRef(isDirty)
