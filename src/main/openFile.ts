@@ -47,10 +47,10 @@ export function replayPendingFileOpen() {
 }
 
 function findFilePathInArgs(argv: string[]): string | null {
-  // Skip the executable and the app entry point (first two args).
+  // Skip the executable and, in development mode, the app entry point.
   // Ignore flags and protocol URLs — only consider plain file paths.
   const candidate = argv
-    .slice(2)
+    .slice(process.defaultApp ? 2 : 1)
     .find((arg) => !arg.startsWith('-') && !arg.includes('://'))
 
   if (!candidate) {
