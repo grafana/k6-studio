@@ -39,6 +39,7 @@ const KNOWN_MATCHERS = new Set([
 ])
 
 export function beginAssertion(
+  traceId: string | undefined,
   name: string,
   negated: boolean,
   actual: unknown,
@@ -51,7 +52,7 @@ export function beginAssertion(
   return client.begin({
     type: 'assertion',
     state: 'begin',
-    eventId: client.nextId(),
+    eventId: traceId ?? client.nextId(),
     timestamp: { started: Date.now() },
     actual: serializeValue(actual),
     assertion: {

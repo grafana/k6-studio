@@ -125,6 +125,24 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
     return toNodeRef(previousLocator)
   }
 
+  function getExpect(
+    tab: string,
+    target: BrowserEventTarget,
+    eventId: string
+  ): NodeRef {
+    const locator = getLocator(tab, target)
+
+    const expectNode: TestNode = {
+      type: 'expect',
+      nodeId: `${eventId}-expect`,
+      inputs: { locator },
+    }
+
+    nodes.push(expectNode)
+
+    return toNodeRef(expectNode)
+  }
+
   function getWaitForNavigation(
     currentEvent: BrowserEvent,
     nextEvent?: BrowserEvent
@@ -255,7 +273,7 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
           operation: toAssertionOperation(event.assertion),
           inputs: {
             previous,
-            locator: getLocator(event.tab, event.target),
+            expect: getExpect(event.tab, event.target, event.eventId),
           },
         }
       }
@@ -376,6 +394,21 @@ function buildBrowserNodeGraphFromActions(
     return toNodeRef(previousLocatorNode)
   }
 
+  function getExpectNode(
+    locatorRef: NodeRef,
+    action: AnyBrowserAction
+  ): NodeRef {
+    const expectNode: TestNode = {
+      type: 'expect',
+      nodeId: crypto.randomUUID(),
+      inputs: { locator: locatorRef },
+    }
+
+    nodes.push(expectNode)
+
+    return withTrace(action, toNodeRef(expectNode))
+  }
+
   function toNode(action: AnyBrowserAction): TestNode {
     switch (action.method) {
       case 'page.goto':
@@ -446,7 +479,7 @@ function buildBrowserNodeGraphFromActions(
             expected: action.checked ? 'checked' : 'unchecked',
           },
           inputs: {
-            locator: withTrace(action, getLocator(action.locator)),
+            expect: getExpectNode(getLocator(action.locator), action),
           },
         }
       case 'locator.toBeVisible':
@@ -458,7 +491,7 @@ function buildBrowserNodeGraphFromActions(
             visible: action.visible,
           },
           inputs: {
-            locator: withTrace(action, getLocator(action.locator)),
+            expect: getExpectNode(getLocator(action.locator), action),
           },
         }
       case 'locator.toHaveValue': {
@@ -478,7 +511,7 @@ function buildBrowserNodeGraphFromActions(
                   expected: action.expected.values.single ?? '',
                 },
           inputs: {
-            locator: withTrace(action, getLocator(action.locator)),
+            expect: getExpectNode(getLocator(action.locator), action),
           },
         }
       }
@@ -491,7 +524,7 @@ function buildBrowserNodeGraphFromActions(
             value: action.expected,
           },
           inputs: {
-            locator: withTrace(action, getLocator(action.locator)),
+            expect: getExpectNode(getLocator(action.locator), action),
           },
         }
       case 'locator.fill':

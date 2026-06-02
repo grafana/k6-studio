@@ -404,15 +404,24 @@ function emitAssertion(
   }
 }
 
-function emitAssertNode(context: IntermediateContext, node: m.AssertNode) {
+function emitExpectNode(context: IntermediateContext, node: m.ExpectNode) {
   const locator = context.reference(node.inputs.locator)
+
+  context.inline(node, {
+    type: 'ExpectExpression',
+    actual: locator,
+  })
+}
+
+function emitAssertNode(context: IntermediateContext, node: m.AssertNode) {
+  const expect = context.reference(node.inputs.expect)
 
   context.emit({
     type: 'ExpressionStatement',
     expression: {
-      type: 'ExpectExpression',
-      actual: locator,
-      expected: emitAssertion(context, node.operation),
+      type: 'AssertExpression',
+      expect,
+      assertion: emitAssertion(context, node.operation),
     },
   })
 }
@@ -494,6 +503,9 @@ function emitNode(context: IntermediateContext, node: m.TestNode) {
 
     case 'select-options':
       return emitSelectOptionsNode(context, node)
+
+    case 'expect':
+      return emitExpectNode(context, node)
 
     case 'assert':
       return emitAssertNode(context, node)

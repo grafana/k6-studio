@@ -95,8 +95,12 @@ function buildScenarioGraph(scenario: model.Scenario) {
         connectPrevious(graph, node)
         break
 
-      case 'assert':
+      case 'expect':
         graph.connect(node.nodeId, node.inputs.locator.nodeId, 'reference')
+        break
+
+      case 'assert':
+        graph.connect(node.nodeId, node.inputs.expect.nodeId, 'reference')
         connectPrevious(graph, node)
         break
 

@@ -129,12 +129,19 @@ export type AssertionOperation =
   | HasValueAssertion
   | HasValuesAssertion
 
+export interface ExpectNode extends NodeBase {
+  type: 'expect'
+  inputs: {
+    locator: NodeRef
+  }
+}
+
 export interface AssertNode extends NodeBase {
   type: 'assert'
   operation: AssertionOperation
   inputs: {
     previous?: NodeRef
-    locator: NodeRef
+    expect: NodeRef
   }
 }
 
@@ -178,6 +185,7 @@ export type TestNode =
   | TypeTextNode
   | SelectOptionsNode
   | CheckNode
+  | ExpectNode
   | AssertNode
   | WaitForNode
   | WaitForTimeoutNode
