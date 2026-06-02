@@ -87,6 +87,11 @@ const ExtractorSelectorSchema = z.discriminatedUnion('type', [
 
 export const BaseExtractorSchema = z.object({
   filter: FilterSchema,
+  variableName: z
+    .string()
+    .describe(
+      'A short descriptive name for the correlated value, e.g. "csrf_token", "session_id", "pizza.id"'
+    ),
   extractionMode: z
     .enum(['single', 'multiple'])
     .default('single')

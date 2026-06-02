@@ -1,24 +1,29 @@
 import { useChat } from '@ai-sdk/react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { applyRules } from '@/rules/rules'
 import { UsageEventName } from '@/services/usageTracking/types'
 import {
   selectFilteredRequests,
   selectGeneratorData,
   useGeneratorStore,
 } from '@/store/generator'
-import { AiCorrelationRule } from '@/types/autoCorrelation'
-import { CorrelationRule } from '@/types/rules'
+import type { AiCorrelationRule } from '@/types/autoCorrelation'
+import { createTerminalToolGuard } from '@/utils/assistant/chat'
 import { exhaustive } from '@/utils/typescript'
 import { validateScript } from '@/utils/validateScript'
 
 import { generateScriptPreview } from '../Generator.utils'
 
 import { systemPrompt } from './constants'
-import { CorrelationStatus, Message, ToolCall } from './types'
+import type {
+  CorrelationStatus,
+  Message,
+  SuggestedRuleEntry,
+  ToolCall,
+} from './types'
+import { useActionsLog } from './useActionsLog'
+import { computeAddRuleResult } from './utils/computeAddRuleResult'
 import { IPCChatTransport } from './utils/IPCChatTransport'
-import { lastMessageIsToolCall } from './utils/lastMessageIsToolCall'
 import {
   getRequestDetails,
   getRequestsMetadata,
@@ -45,48 +50,59 @@ export const useGenerateRules = ({
 }: {
   clearValidation: () => void
 }) => {
-  const [suggestedRules, setSuggestedRules] = useState<CorrelationRule[]>([])
+  const [ruleEntries, setRuleEntries] = useState<SuggestedRuleEntry[]>([])
   const [correlationStatus, setCorrelationStatus] =
     useState<CorrelationStatus>('not-started')
-  const [outcomeReason, setOutcomeReason] = useState('')
-  const suggestedRulesRef = useRef(suggestedRules)
+
+  const ruleEntriesRef = useRef(ruleEntries)
   const correlationStatusRef = useRef(correlationStatus)
   const abortControllerRef = useRef<AbortController | null>(null)
+
   const recording = useGeneratorStore(selectFilteredRequests)
   const generator = useGeneratorStore(selectGeneratorData)
+  const transport = useMemo(() => new IPCChatTransport(), [])
+  const finishGuard = useMemo(() => createTerminalToolGuard('finish'), [])
+  const actionsLog = useActionsLog()
+
+  function setRuleEntriesAndRef(
+    updater:
+      | SuggestedRuleEntry[]
+      | ((prev: SuggestedRuleEntry[]) => SuggestedRuleEntry[])
+  ) {
+    setRuleEntries(updater)
+  }
 
   // Sync refs after commit (not during render) so aborted renders in
   // concurrent mode can't leave refs pointing at uncommitted state.
   useEffect(() => {
-    suggestedRulesRef.current = suggestedRules
+    ruleEntriesRef.current = ruleEntries
   })
 
-  useEffect(() => {
-    correlationStatusRef.current = correlationStatus
-  })
+  function setCorrelationStatusAndRef(status: CorrelationStatus) {
+    correlationStatusRef.current = status
+    setCorrelationStatus(status)
+  }
 
   const {
     sendMessage,
     error,
+    messages,
     addToolOutput,
     status,
     stop: stopGeneration,
     clearError,
     setMessages,
   } = useChat<Message>({
-    transport: new IPCChatTransport(),
-
-    // Keep calling tools without user input
-    sendAutomaticallyWhen: lastMessageIsToolCall,
+    transport,
+    sendAutomaticallyWhen: finishGuard.guard,
     onError: (error) => {
-      setCorrelationStatus('error')
+      setCorrelationStatusAndRef('error')
       window.studio.app.trackEvent({
         event: UsageEventName.AutocorrelationErrored,
       })
       console.error(error)
     },
     onToolCall: async ({ toolCall }) => {
-      // Narrow down to static tool calls only
       if (toolCall.dynamic) {
         return
       }
@@ -96,7 +112,7 @@ export const useGenerateRules = ({
         type: 'tool-call' as const,
       }
 
-      setCorrelationStatus(toolCallToStep(toolCallWithType))
+      setCorrelationStatusAndRef(toolCallToStep(toolCallWithType))
       const toolResult = await handleToolCall(toolCallWithType)
 
       void addToolOutput({
@@ -106,6 +122,15 @@ export const useGenerateRules = ({
       })
     },
   })
+
+  const syncMessagesToLog = actionsLog.syncFromMessages
+
+  useEffect(() => {
+    syncMessagesToLog(
+      messages,
+      LOADING_STATES.includes(correlationStatusRef.current)
+    )
+  }, [messages, syncMessagesToLog])
 
   async function handleToolCall(toolCall: ToolCall) {
     const { toolName } = toolCall
@@ -120,29 +145,55 @@ export const useGenerateRules = ({
 
       case 'searchRequests': {
         const { query, limit } = toolCall.input
+        actionsLog.addEntry({
+          type: 'info',
+          text: `Searching requests for "${query}"`,
+        })
         return searchRequests(recording, query, limit ?? 20)
       }
 
       case 'getRequestsMetadata': {
         const { startIndex, endIndex } = toolCall.input
+        actionsLog.addEntry({
+          type: 'info',
+          text: 'Reading request metadata',
+        })
         return getRequestsMetadata(recording, startIndex ?? 0, endIndex)
       }
 
       case 'getRequestDetails': {
         const { requestIds, fields } = toolCall.input
+        actionsLog.addEntry({
+          type: 'info',
+          text: `Inspecting ${requestIds.length} request${requestIds.length > 1 ? 's' : ''} (${fields?.join(', ') ?? 'all fields'})`,
+        })
         return getRequestDetails(recording, requestIds, fields)
       }
 
       case 'runValidation': {
-        return runValidation()
+        const entry = actionsLog.addEntry({
+          type: 'validation',
+        })
+
+        actionsLog.setValidationEntryId(entry.id)
+        const result = await runValidation()
+        actionsLog.completeValidationProgress()
+        return result
       }
 
-      case 'finish':
+      case 'finish': {
         window.studio.app.trackEvent({
           event: outcomeEvents[toolCall.input.outcome],
         })
-        setOutcomeReason(toolCall.input.reason)
+        const outcomeType =
+          toolCall.input.outcome === 'failure'
+            ? 'outcome-failure'
+            : toolCall.input.outcome === 'partial-success'
+              ? 'outcome-partial'
+              : 'outcome-success'
+        actionsLog.markLastReasoningAsOutcome(outcomeType)
         return toolCall.input.outcome
+      }
 
       default:
         return exhaustive(toolName)
@@ -150,32 +201,35 @@ export const useGenerateRules = ({
   }
 
   function addRule(rule: AiCorrelationRule) {
-    const validRule = toCorrelationRule(rule)
-    const applyResult = applyRules(recording, [
-      ...suggestedRulesRef.current,
-      validRule,
+    const currentRules = ruleEntriesRef.current.map((entry) => entry.rule)
+    const result = computeAddRuleResult(rule, currentRules, recording)
+
+    if (!result.ok) return result.reason
+
+    setRuleEntriesAndRef((prev) => [
+      ...prev,
+      { rule: result.rule, correlationState: result.correlationState },
     ])
 
-    const matchedRequestsIds =
-      applyResult.ruleInstances[0]?.state.matchedRequestIds
+    actionsLog.addEntry({
+      type: 'found',
+      text: `Adding rule to extract ${result.variableName}`,
+      ruleId: result.rule.id,
+    })
 
-    if (!matchedRequestsIds || matchedRequestsIds.length === 0) {
-      return 'The provided rule did not match any requests in the recording. Review the rule and try again.'
-    }
-
-    setSuggestedRules((prev) => [...prev, validRule])
-    return matchedRequestsIds
+    return result.matchedRequestIds
   }
 
   async function runValidation() {
     clearValidation()
+    const currentRules = ruleEntriesRef.current.map((entry) => entry.rule)
     const scriptPath = await window.studio.fs.getTempScriptPath()
 
     const script = await generateScriptPreview(
       scriptPath,
       {
         ...generator,
-        rules: [...generator.rules, ...suggestedRulesRef.current],
+        rules: [...generator.rules, ...currentRules],
       },
       recording
     )
@@ -187,13 +241,17 @@ export const useGenerateRules = ({
       false
     )
 
-    const result = validationMatchesRecording(
+    return validationMatchesRecording(
       prepareRequestsForAI(recording),
       prepareRequestsForAI(validationResult)
     )
-
-    return result
   }
+
+  const removeRule = useCallback((ruleId: string) => {
+    setRuleEntriesAndRef((prev) =>
+      prev.filter((entry) => entry.rule.id !== ruleId)
+    )
+  }, [])
 
   const isLoading = LOADING_STATES.includes(correlationStatus)
 
@@ -201,21 +259,34 @@ export const useGenerateRules = ({
     window.studio.app.trackEvent({
       event: UsageEventName.AutocorrelationStarted,
     })
-    setCorrelationStatus('validating')
+    actionsLog.startTimer()
+    setCorrelationStatusAndRef('validating')
     clearError()
+
+    const initialEntry = actionsLog.addEntry({
+      type: 'validation',
+      text: `Validating ${recording.length} requests`,
+    })
+    actionsLog.setValidationEntryId(initialEntry.id)
 
     try {
       const validationResult = await runValidation()
+      actionsLog.completeValidationProgress()
 
       if (validationResult.success) {
-        setCorrelationStatus('correlation-not-needed')
-        setOutcomeReason(
-          'The script validation passed successfully. The current generator configuration is sufficient to handle all requests in the recording, so no additional auto-generated correlation rules are required.'
-        )
+        setCorrelationStatusAndRef('correlation-not-needed')
+        actionsLog.addEntry({
+          type: 'info',
+          text: 'Validation passed. No additional correlation rules are needed.',
+        })
         return
       }
 
-      setCorrelationStatus('analyzing')
+      setCorrelationStatusAndRef('analyzing')
+      actionsLog.addEntry({
+        type: 'info',
+        text: 'Initial validation found mismatches, starting analysis',
+      })
 
       return await sendMessage({
         text: `${systemPrompt} \n\n Validation result: ${JSON.stringify(validationResult)}`,
@@ -225,7 +296,7 @@ export const useGenerateRules = ({
         return
       }
       console.error(error)
-      setCorrelationStatus('error')
+      setCorrelationStatusAndRef('error')
     }
   }
 
@@ -239,16 +310,17 @@ export const useGenerateRules = ({
       payload: { status: correlationStatusRef.current },
     })
     void stopGeneration()
-    setCorrelationStatus('aborted')
+    setCorrelationStatusAndRef('aborted')
     abortControllerRef.current?.abort()
   }
 
   function reset() {
-    setSuggestedRules([])
+    setRuleEntriesAndRef([])
     setMessages([])
     clearError()
-    setCorrelationStatus('not-started')
-    setOutcomeReason('')
+    setCorrelationStatusAndRef('not-started')
+    actionsLog.reset()
+    finishGuard.reset()
   }
 
   function restart() {
@@ -267,10 +339,12 @@ export const useGenerateRules = ({
     start,
     error,
     status,
-    suggestedRules,
+    ruleEntries,
+    actionsLog: actionsLog.entries,
     isLoading,
     correlationStatus,
-    outcomeReason,
+    removeRule,
+    updateValidationProgress: actionsLog.updateValidationProgress,
     restart,
     reset,
     stop: useCallback(stop, [stopGeneration]),
@@ -295,14 +369,5 @@ function toolCallToStep(toolCall: ToolCall): CorrelationStatus {
       return toolCall.input.outcome
     default:
       return exhaustive(toolName)
-  }
-}
-
-function toCorrelationRule(rule: AiCorrelationRule): CorrelationRule {
-  return {
-    ...rule,
-    id: `autocorrelation_rule_${crypto.randomUUID()}`,
-    type: 'correlation',
-    enabled: true,
   }
 }
