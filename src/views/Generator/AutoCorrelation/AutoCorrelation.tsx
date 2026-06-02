@@ -1,4 +1,4 @@
-import { Box, Button, Flex } from '@radix-ui/themes'
+import { Box, Flex } from '@radix-ui/themes'
 import { useEffect } from 'react'
 
 import { useListenProxyData } from '@/hooks/useListenProxyData'
@@ -6,20 +6,16 @@ import { selectFilteredRequests, useGeneratorStore } from '@/store/generator'
 
 import { ActionsLog } from './ActionsLog'
 import { ErrorMessage } from './ErrorMessage'
+import { FooterActions } from './FooterActions'
 import { IntroductionMessage } from './IntroductionMessage'
 import { RulesCreated } from './RulesCreated'
-import { CorrelationStatus } from './types'
 import { useGenerateRules } from './useGenerateRules'
 
 interface AutoCorrelationProps {
   close: () => void
-  onCorrelationStatusChange: (status: CorrelationStatus) => void
 }
 
-export function AutoCorrelation({
-  close,
-  onCorrelationStatusChange,
-}: AutoCorrelationProps) {
+export function AutoCorrelation({ close }: AutoCorrelationProps) {
   const rules = useGeneratorStore((state) => state.rules)
   const saveRules = useGeneratorStore((state) => state.setRules)
   const recording = useGeneratorStore(selectFilteredRequests)
@@ -57,10 +53,6 @@ export function AutoCorrelation({
     recording.length,
     updateValidationProgress,
   ])
-
-  useEffect(() => {
-    onCorrelationStatusChange(correlationStatus)
-  }, [correlationStatus, onCorrelationStatusChange])
 
   const handleAccept = () => {
     const acceptedRules = ruleEntries.map((entry) => entry.rule)
@@ -119,41 +111,6 @@ export function AutoCorrelation({
           onAccept={handleAccept}
         />
       </Flex>
-    </Flex>
-  )
-}
-
-interface FooterActionsProps {
-  isLoading: boolean
-  ruleCount: number
-  onStop: () => void
-  onDiscard: () => void
-  onAccept: () => void
-}
-
-function FooterActions({
-  isLoading,
-  ruleCount,
-  onStop,
-  onDiscard,
-  onAccept,
-}: FooterActionsProps) {
-  if (isLoading) {
-    return (
-      <Button variant="outline" onClick={onStop} size="2" color="red">
-        Stop
-      </Button>
-    )
-  }
-
-  return (
-    <Flex gap="3">
-      <Button variant="outline" onClick={onDiscard} size="2">
-        Discard
-      </Button>
-      <Button onClick={onAccept} disabled={ruleCount === 0} size="2">
-        Add {ruleCount} {ruleCount === 1 ? 'rule' : 'rules'}
-      </Button>
     </Flex>
   )
 }
