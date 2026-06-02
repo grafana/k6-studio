@@ -22,8 +22,8 @@ import type {
   ToolCall,
 } from './types'
 import { useActionsLog } from './useActionsLog'
-import { IPCChatTransport } from './utils/IPCChatTransport'
 import { computeAddRuleResult } from './utils/computeAddRuleResult'
+import { IPCChatTransport } from './utils/IPCChatTransport'
 import {
   getRequestDetails,
   getRequestsMetadata,
@@ -69,12 +69,14 @@ export const useGenerateRules = ({
       | SuggestedRuleEntry[]
       | ((prev: SuggestedRuleEntry[]) => SuggestedRuleEntry[])
   ) {
-    setRuleEntries((prev) => {
-      const next = typeof updater === 'function' ? updater(prev) : updater
-      ruleEntriesRef.current = next
-      return next
-    })
+    setRuleEntries(updater)
   }
+
+  // Sync refs after commit (not during render) so aborted renders in
+  // concurrent mode can't leave refs pointing at uncommitted state.
+  useEffect(() => {
+    ruleEntriesRef.current = ruleEntries
+  })
 
   function setCorrelationStatusAndRef(status: CorrelationStatus) {
     correlationStatusRef.current = status
