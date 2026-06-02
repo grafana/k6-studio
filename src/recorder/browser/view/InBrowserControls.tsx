@@ -2,12 +2,12 @@ import { useState } from 'react'
 
 import { ElementInspector } from './ElementInspector'
 import { EventDrawer } from './EventDrawer'
+import { useRecordedEvents } from './hooks/useRecordedEvents'
 import { RemoteHighlights } from './RemoteHighlights'
+import { useInBrowserUIStore } from './store'
 import { useStudioClient } from './StudioClientProvider'
 import { TextSelectionPopover } from './TextSelectionPopover'
 import { ToolBox } from './ToolBox'
-import { useRecordedEvents } from './hooks/useRecordedEvents'
-import { useInBrowserUIStore } from './store'
 import { Tool } from './types'
 
 export function InBrowserControls() {

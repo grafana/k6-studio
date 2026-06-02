@@ -1,6 +1,10 @@
 import { sentryVitePlugin } from '@sentry/vite-plugin'
-import type { ConfigEnv, UserConfig } from 'vite'
-import { defineConfig, mergeConfig } from 'vite'
+import {
+  defineConfig,
+  mergeConfig,
+  type ConfigEnv,
+  type UserConfig,
+} from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 import {

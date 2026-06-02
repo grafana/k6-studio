@@ -1,8 +1,10 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
-import { defaultBrowserTestOptions } from '@/schemas/browserTest'
-import type { BrowserTestFile } from '@/schemas/browserTest'
+import {
+  defaultBrowserTestOptions,
+  type BrowserTestFile,
+} from '@/schemas/browserTest'
 import { createBrowserTestFile } from '@/test/factories/browserTest'
 
 import { useBrowserTestState } from './BrowserTestEditor.hooks'

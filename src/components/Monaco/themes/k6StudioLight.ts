@@ -1,4 +1,5 @@
 import * as monaco from 'monaco-editor'
+
 import '../languages/log'
 
 export const k6StudioLightBackground = '#fafafa'

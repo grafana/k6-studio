@@ -286,7 +286,7 @@ export const useGenerateRules = ({
         text: 'Initial validation found mismatches, starting analysis',
       })
 
-      return sendMessage({
+      return await sendMessage({
         text: `${systemPrompt} \n\n Validation result: ${JSON.stringify(validationResult)}`,
       })
     } catch (error) {

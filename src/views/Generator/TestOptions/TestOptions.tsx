@@ -10,8 +10,8 @@ import {
   useGeneratorStore,
 } from '@/store/generator'
 
-import { ThinkTime } from './ThinkTime'
 import { HTTP_METRICS_CONFIG } from './httpThresholdMetrics'
+import { ThinkTime } from './ThinkTime'
 
 export function TestOptions() {
   const loadProfile = useGeneratorStore(

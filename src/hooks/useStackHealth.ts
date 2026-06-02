@@ -21,7 +21,6 @@ export function useStackHealth(enabled: boolean) {
   })
 
   return {
-    ...query,
     isStackReady: !enabled || query.data === 'ready',
   }
 }

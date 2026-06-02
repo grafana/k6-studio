@@ -12,6 +12,7 @@ import { ComponentProps, ReactNode } from 'react'
 import { Toolbar } from '@/components/primitives/Toolbar'
 import { ElementRole } from '@/utils/dom/aria'
 
+import { AssertionData, CheckAssertionData } from './assertions/types'
 import {
   findAssociatedControl,
   getCheckedState,
@@ -19,7 +20,6 @@ import {
   LabeledControl,
   getTextBoxValue,
 } from './ElementMenu.utils'
-import { AssertionData, CheckAssertionData } from './assertions/types'
 import { TrackedElement } from './utils'
 import { WaitForData } from './waitConditions/types'
 

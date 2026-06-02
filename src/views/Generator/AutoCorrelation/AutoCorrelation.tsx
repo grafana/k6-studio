@@ -43,7 +43,7 @@ export function AutoCorrelation({
 
   useEffect(() => {
     return () => {
-      void stop()
+      stop()
     }
   }, [stop])
 
