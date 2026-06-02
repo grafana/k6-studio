@@ -5,8 +5,8 @@ import useKeyboardJs from 'react-use/lib/useKeyboardJs'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
-import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
+import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
 import { useCurrentFile } from '@/hooks/useCurrentFile'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { getRoutePath } from '@/routeMap'
@@ -173,15 +173,17 @@ export function Generator() {
             </Panel>
           </Group>
         </Panel>
-        <Separator />
         {selectedRequest && (
-          <Panel id="request-details" minSize={300}>
-            <HttpRequestDetails
-              layout={detailsLayout}
-              selectedRequest={selectedRequest}
-              onSelectRequest={setSelectedRequest}
-            />
-          </Panel>
+          <>
+            <Separator />
+            <Panel id="request-details" minSize={300}>
+              <HttpRequestDetails
+                layout={detailsLayout}
+                selectedRequest={selectedRequest}
+                onSelectRequest={setSelectedRequest}
+              />
+            </Panel>
+          </>
         )}
       </Group>
       <UnsavedChangesDialog
