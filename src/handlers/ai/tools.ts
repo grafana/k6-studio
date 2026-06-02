@@ -131,7 +131,6 @@ export const tools = {
         .describe(
           'Use success when all requests are correlated and validation is passing. Use partial-success when some requests are still failing but significant progress has been made. Use failure when no progress has been made and validation is still failing.'
         ),
-      reason: z.string().describe('A short explanation of the outcome.'),
     }),
   }),
 } satisfies ToolSet

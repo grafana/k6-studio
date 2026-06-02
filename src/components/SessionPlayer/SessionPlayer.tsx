@@ -1,5 +1,4 @@
 import 'node_modules/rrweb/dist/style.min.css'
-
 import { css } from '@emotion/react'
 import { Flex, Box } from '@radix-ui/themes'
 import { ReactNode, useState } from 'react'
@@ -13,8 +12,8 @@ import { LocatorHighlights } from './LocatorHighlights'
 import { OnSeekEvent, PlaybackControls } from './PlaybackControls'
 import { PlayerMouseEvent, usePlayer } from './SessionPlayer.hooks'
 import { getPageState } from './SessionPlayer.utils'
-import { Viewport } from './Viewport'
 import { Page } from './types'
+import { Viewport } from './Viewport'
 
 const DEFAULT_PAGE: Page = {
   href: 'about:blank',
