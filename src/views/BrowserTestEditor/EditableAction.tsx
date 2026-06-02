@@ -1,4 +1,4 @@
-import { css } from '@emotion/react'
+import { css, keyframes } from '@emotion/react'
 import { Flex, IconButton, Tooltip } from '@radix-ui/themes'
 import { Trash2Icon } from 'lucide-react'
 import type { ReactNode } from 'react'
@@ -17,6 +17,11 @@ interface EditableActionProps {
   onChange: (action: AnyBrowserAction) => void
   dragHandle?: ReactNode
 }
+
+const runningPulse = keyframes`
+  from { transform: translateY(-100%); }
+  to { transform: translateY(100%); }
+`
 
 function getActionStatus(
   isValidating: boolean,
@@ -60,10 +65,29 @@ export function EditableAction({
       direction="column"
       gap="1"
       p="2"
+      pl="3"
       css={css`
         font-size: var(--font-size-1);
-        border-left: 4px solid ${color};
+        position: relative;
+        overflow: hidden;
         opacity: ${opacity};
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 4px;
+          height: 100%;
+
+          background: ${color};
+
+          ${
+            status === 'running' &&
+            css`
+              animation: ${runningPulse} 2s linear infinite;
+            `
+          }
       `}
     >
       <Flex align="center" gap="2">
