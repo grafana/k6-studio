@@ -7,9 +7,9 @@ import { BrowserDebuggerEvent } from '@/main/runner/schema'
 import { AnyBrowserAction } from '@/schemas/browserTest'
 import { ActionStatus, getStatusColor } from '@/utils/browserActionStatus'
 
+import { getActionEditorForAction } from './actionEditorRegistry'
 import { OptionsSummary } from './Actions/components/OptionsSummary'
 import { useBrowserActionState } from './ValidationProvider'
-import { getActionEditorForAction } from './actionEditorRegistry'
 
 interface EditableActionProps {
   action: AnyBrowserAction

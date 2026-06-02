@@ -5,9 +5,9 @@ import { useEffect, useState } from 'react'
 
 import { useTheme } from '@/hooks/useTheme'
 
+import { DEFAULT_OPTIONS } from './defaultOptions'
 import { EditorToolbar, ToolbarState } from './EditorToolbar'
 import { useHighlightSearch } from './ReactMonacoEditor.hooks'
-import { DEFAULT_OPTIONS } from './defaultOptions'
 import { useShouldEnableWordWrap } from './useShouldEnableWordWrap'
 
 loader.config({ monaco })

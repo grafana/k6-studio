@@ -6,8 +6,8 @@ import { ComponentProps, useState } from 'react'
 
 import { useTheme } from '@/hooks/useTheme'
 
-import { EditorToolbar, ToolbarState } from './EditorToolbar'
 import { DEFAULT_OPTIONS } from './defaultOptions'
+import { EditorToolbar, ToolbarState } from './EditorToolbar'
 import { useShouldEnableWordWrap } from './useShouldEnableWordWrap'
 
 const DEFAULT_DIFF_OPTIONS: editor.IDiffEditorOptions = {

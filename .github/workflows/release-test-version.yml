@@ -1,14 +1,14 @@
-name: "Manual Release Test Version"
+name: 'Manual Release Test Version'
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Specify a version suffix for the test release (limit to 20
-          characters or windows build will fail)"
+        description: 'Specify a version suffix for the test release (limit to 20
+          characters or windows build will fail)'
         required: true
         type: string
-        default: "test-version"
+        default: 'test-version'
 
 permissions: {}
 

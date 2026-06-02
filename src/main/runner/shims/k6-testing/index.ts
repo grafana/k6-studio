@@ -7,8 +7,8 @@ import {
   expect as nativeExpect,
   // eslint-disable-next-line import/no-unresolved
 } from '__K6_TESTING_EXPECT_PATH__'
-import '../symbols'
 
+import '../symbols'
 import type { AssertionBeginEvent, AssertionEndEvent } from '../../schema'
 
 import { beginAssertion, endAssertion } from './utils'

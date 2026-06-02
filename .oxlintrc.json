@@ -1,0 +1,173 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["eslint", "import", "react", "typescript"],
+  "jsPlugins": ["@tanstack/eslint-plugin-query"],
+  "categories": {
+    "correctness": "error"
+  },
+  "options": {
+    "typeAware": true
+  },
+  "env": {
+    "builtin": true,
+    "browser": true,
+    "node": true
+  },
+  "ignorePatterns": [
+    "resources/*.js",
+    "scripts/install-k6.js",
+    "scripts/update-k6-version.js",
+    "**/__snapshots__/",
+    "src/browser/injectedScript.js",
+    "src/types/aria-query.d.ts"
+  ],
+  "settings": {
+    "react": {
+      "version": "19.2.5"
+    }
+  },
+  "rules": {
+    "react/react-in-jsx-scope": "off",
+    "react/no-unknown-property": [
+      "error",
+      {
+        "ignore": ["css"]
+      }
+    ],
+    "react/rules-of-hooks": "error",
+    "no-shadow": "off",
+    "no-param-reassign": "error",
+    "no-unused-vars": [
+      "error",
+      {
+        "varsIgnorePattern": "^_",
+        "argsIgnorePattern": "^_",
+        "caughtErrors": "none"
+      }
+    ],
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "fs",
+            "message": "Import from '@/utils/fs' instead."
+          },
+          {
+            "name": "fs/promises",
+            "message": "Import from '@/utils/fs' instead."
+          },
+          {
+            "name": "node:fs",
+            "message": "Import from '@/utils/fs' instead."
+          },
+          {
+            "name": "node:fs/promises",
+            "message": "Import from '@/utils/fs' instead."
+          },
+          {
+            "name": "chokidar",
+            "message": "Import from '@/utils/fs' instead."
+          },
+          {
+            "name": "electron",
+            "importNames": ["dialog"],
+            "message": "Import the dialog wrappers from '@/utils/fs' instead."
+          },
+          {
+            "name": "path",
+            "message": "Import from '@/utils/path' instead."
+          },
+          {
+            "name": "node:path",
+            "message": "Import from '@/utils/path' instead."
+          },
+          {
+            "name": "pathe",
+            "message": "Import from '@/utils/path' instead."
+          }
+        ]
+      }
+    ],
+
+    "no-array-constructor": "error",
+    "no-case-declarations": "error",
+    "no-empty": "error",
+    "no-fallthrough": "error",
+    "no-inner-declarations": "error",
+    "no-prototype-builtins": "error",
+    "no-regex-spaces": "error",
+    "no-var": "error",
+    "prefer-const": "error",
+    "prefer-rest-params": "error",
+    "prefer-spread": "error",
+    "import/export": "error",
+    "no-duplicate-imports": "error",
+    "import/no-named-as-default": "warn",
+    "import/no-named-as-default-member": "warn",
+    "typescript/ban-types": "error",
+    "typescript/no-explicit-any": "error",
+    "typescript/no-namespace": "error",
+    "typescript/no-unnecessary-type-assertion": "error",
+    "typescript/no-unnecessary-type-constraint": "error",
+    "typescript/no-unsafe-argument": "error",
+    "typescript/no-unsafe-assignment": "error",
+    "typescript/no-unsafe-call": "error",
+    "typescript/no-unsafe-enum-comparison": "error",
+    "typescript/no-unsafe-member-access": "error",
+    "typescript/no-unsafe-return": "error",
+    "typescript/no-var-requires": "error",
+    "typescript/restrict-plus-operands": "error",
+    "typescript/require-await": "error",
+    "typescript/no-floating-promises": [
+      "error",
+      {
+        "ignoreIIFE": true
+      }
+    ],
+    "typescript/no-misused-promises": [
+      "error",
+      {
+        "checksVoidReturn": false
+      }
+    ],
+    "typescript/ban-ts-comment": [
+      "error",
+      {
+        "ts-expect-error": "allow-with-description"
+      }
+    ],
+    "typescript/return-await": ["error", "error-handling-correctness-only"],
+    "typescript/prefer-find": "error",
+
+    "react/display-name": "error",
+    "react/jsx-no-comment-textnodes": "error",
+    "react/jsx-no-target-blank": "error",
+    "react/no-unescaped-entities": "error",
+    "react/require-render-return": "error",
+
+    "unicorn/prefer-optional-catch-binding": "error",
+
+    "@tanstack/query/exhaustive-deps": "error",
+    "@tanstack/query/no-rest-destructuring": "warn",
+    "@tanstack/query/stable-query-client": "error",
+    "@tanstack/query/no-unstable-deps": "error",
+    "@tanstack/query/infinite-query-property-order": "error",
+    "@tanstack/query/no-void-query-fn": "error",
+    "@tanstack/query/mutation-property-order": "error"
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/*.test.ts",
+        "scripts/**",
+        "vite.*.config.ts",
+        "forge.config.ts",
+        "windowsSign.ts"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ]
+}

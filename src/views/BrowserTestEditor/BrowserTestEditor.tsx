@@ -6,11 +6,11 @@ import { useNavigate } from 'react-router-dom'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { HighlightLocatorProvider } from '@/components/HighlightLocatorProvider'
 import { View } from '@/components/Layout/View'
+import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import {
   LogsSection,
   useConsoleFilter,
 } from '@/components/Validator/LogsSection'
-import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import { useCurrentFile } from '@/hooks/useCurrentFile'
 import { routeMap } from '@/routeMap'
 import { BrowserTestFile } from '@/schemas/browserTest'
@@ -30,8 +30,8 @@ import { BrowserTestEditorControls } from './BrowserTestEditorControls'
 import { BrowserTestOptionsButton } from './BrowserTestOptionsButton'
 import { BrowserTestPreview } from './BrowserTestPreview'
 import { EditableBrowserActionList } from './EditableBrowserActionList'
-import { ValidationProvider } from './ValidationProvider'
 import { ContextMenuState } from './types'
+import { ValidationProvider } from './ValidationProvider'
 
 interface BrowserTestEditorViewProps {
   file: StudioFile

@@ -2,16 +2,16 @@ import { css } from '@emotion/react'
 import { Flex, Tabs } from '@radix-ui/themes'
 
 import {
-  LogsSection,
-  useConsoleFilter,
-} from '@/components/Validator/LogsSection'
-import {
   Group,
   Panel,
   Separator,
   useDefaultLayout,
   usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
+import {
+  LogsSection,
+  useConsoleFilter,
+} from '@/components/Validator/LogsSection'
 import { StudioFile } from '@/types'
 
 import {

@@ -17,7 +17,7 @@ export function useStartRecording() {
   const { addURL } = useRecentURLs()
   const navigate = useNavigate()
 
-  const [captureBrowser = true] = useSyncedLocalStorage(
+  const [captureBrowser] = useSyncedLocalStorage(
     'start-recording.capture.browser',
     z.boolean(),
     true

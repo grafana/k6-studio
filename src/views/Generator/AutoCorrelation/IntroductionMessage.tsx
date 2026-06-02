@@ -17,8 +17,8 @@ import {
 import { useState } from 'react'
 
 import grotIllustration from '@/assets/grot-magic.svg'
-import { GrafanaCloudSignIn } from '@/components/Profile/GrafanaCloudSignIn'
 import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
+import { GrafanaCloudSignIn } from '@/components/Profile/GrafanaCloudSignIn'
 import {
   useAssistantAuthStatus,
   useAssistantSignIn,

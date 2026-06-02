@@ -13,7 +13,6 @@ import { ReactNode } from 'react'
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { AnyBrowserAction } from '@/schemas/browserTest'
 
-import { SortableBrowserActionList } from './SortableBrowserActionList'
 import {
   createCheckAction,
   createClearAction,
@@ -30,6 +29,8 @@ import {
   createWaitForAction,
   createWaitForTimeoutAction,
 } from './actionFactories'
+import { SortableBrowserActionList } from './SortableBrowserActionList'
+
 interface EditableBrowserActionListProps {
   actions: AnyBrowserAction[]
   onAddAction: (action: AnyBrowserAction) => void
