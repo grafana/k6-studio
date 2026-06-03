@@ -208,9 +208,16 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
 
       case 'radio-change':
         return {
-          type: 'check',
+          type: 'click',
           nodeId: event.eventId,
-          checked: true,
+          button: 'left',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          waitForNavigation: getWaitForNavigation(event, nextEvent),
           inputs: {
             previous,
             locator: getLocator(event.tab, event.target),

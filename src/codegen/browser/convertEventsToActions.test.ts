@@ -151,6 +151,59 @@ describe('convertEventsToActions', () => {
     expect(actions[0]).toMatchObject({ method: 'locator.click' })
   })
 
+  it('sets waitForNavigation on radio-change followed by implicit navigation', () => {
+    const events: BrowserEvent[] = [
+      {
+        type: 'radio-change',
+        eventId: '1',
+        timestamp: 0,
+        tab: 'tab1',
+        target: makeTarget('input[type=radio]'),
+        name: 'step',
+        value: 'next',
+      },
+      {
+        type: 'navigate-to-page',
+        eventId: '2',
+        timestamp: 100,
+        tab: 'tab1',
+        url: 'https://example.com/next',
+        source: 'implicit',
+      },
+    ]
+    const actions = convertEventsToActions(events)
+    expect(actions).toHaveLength(1)
+    expect(actions[0]).toMatchObject({
+      method: 'locator.click',
+      options: { waitForNavigation: true },
+    })
+  })
+
+  it('does not set waitForNavigation on radio-change when next navigation is on different tab', () => {
+    const events: BrowserEvent[] = [
+      {
+        type: 'radio-change',
+        eventId: '1',
+        timestamp: 0,
+        tab: 'tab1',
+        target: makeTarget('input[type=radio]'),
+        name: 'step',
+        value: 'next',
+      },
+      {
+        type: 'navigate-to-page',
+        eventId: '2',
+        timestamp: 100,
+        tab: 'tab2',
+        url: 'https://example.com/next',
+        source: 'implicit',
+      },
+    ]
+    const actions = convertEventsToActions(events)
+    expect(actions).toHaveLength(1)
+    expect((actions[0] as { options?: unknown }).options).toBeUndefined()
+  })
+
   it('converts select-change to locator.selectOption', () => {
     const events: BrowserEvent[] = [
       {

@@ -85,6 +85,62 @@ describe('convertEventsToTest', () => {
       },
     })
   })
+
+  it('should convert radio-change to a click node', () => {
+    const test = convertEventsToTest({
+      browserEvents: [
+        {
+          type: 'radio-change',
+          eventId: 'radio',
+          timestamp: 1,
+          tab: 'tab-1',
+          target: { selectors: { css: 'input[type="radio"]' } },
+          name: 'color',
+          value: 'red',
+        },
+      ],
+    })
+
+    const radioNode = test.defaultScenario?.nodes.find(
+      (node) => node.nodeId === 'radio'
+    )
+
+    expect(radioNode).toBeDefined()
+    expect(radioNode?.type).toBe('click')
+  })
+
+  it('should wait for navigation when radio-change is followed by an implicit navigation', () => {
+    const test = convertEventsToTest({
+      browserEvents: [
+        {
+          type: 'radio-change',
+          eventId: 'radio',
+          timestamp: 1,
+          tab: 'tab-1',
+          target: { selectors: { css: 'input[type="radio"]' } },
+          name: 'step',
+          value: 'next',
+        },
+        {
+          type: 'navigate-to-page',
+          eventId: 'implicit-nav',
+          timestamp: 2,
+          tab: 'tab-1',
+          url: 'https://example.com/step2',
+          source: 'implicit',
+        },
+      ],
+    })
+
+    const nodes = test.defaultScenario?.nodes ?? []
+
+    const radioNode = nodes
+      .filter((node) => node.type === 'click')
+      .find((node) => node.nodeId === 'radio')
+
+    expect(radioNode).toBeDefined()
+    expect(radioNode?.waitForNavigation).toBeDefined()
+  })
 })
 
 describe('convertActionsToTest', () => {

@@ -62,12 +62,15 @@ function convertEvent(
         locator: toLocatorOptions(event.target.selectors),
       }
 
-    case 'radio-change':
+    case 'radio-change': {
+      const waitForNavigation = isFollowedByImplicitNavigation(event, nextEvent)
       return {
         id: crypto.randomUUID(),
         method: 'locator.click',
         locator: toLocatorOptions(event.target.selectors),
+        options: waitForNavigation ? { waitForNavigation: true } : undefined,
       }
+    }
 
     case 'select-change':
       return {

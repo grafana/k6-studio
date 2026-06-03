@@ -532,6 +532,51 @@ it('should emit waitForNavigation on a form submit', async ({ expect }) => {
   )
 })
 
+it('should emit waitForNavigation when radio button click triggers navigation', async ({
+  expect,
+}) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'radioLocator',
+          locator: { type: 'css', selector: 'input[type="radio"]' },
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'click',
+          button: 'left',
+          nodeId: 'radioClick',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          waitForNavigation: {
+            page: { nodeId: 'page' },
+          },
+          inputs: {
+            locator: { nodeId: 'radioLocator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/radio-click-with-navigation.ts'
+  )
+})
+
 it('should assert that element contains text', async ({ expect }) => {
   const script = await emitScript({
     defaultScenario: {
