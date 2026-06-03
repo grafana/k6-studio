@@ -1,21 +1,28 @@
 import { useMutation } from '@tanstack/react-query'
 import { FileFilter } from 'electron'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { FileContent, FileLocation, StorageLocation } from '@/handlers/fs/types'
 import { MenuItem, MenuState } from '@/handlers/ui/types'
 
-const refCounts: { [P in MenuItem]: number } = {
-  save: 0,
-  saveAs: 0,
-  exportScript: 0,
-}
+const handlers: { [P in MenuItem]: Array<(options: SaveFileOptions) => void> } =
+  {
+    save: [],
+    saveAs: [],
+    exportScript: [],
+  }
+
+window.studio.ui.onRequestSave(({ menuItem, saveAs }) => {
+  const lastHandler = handlers[menuItem].at(-1)
+
+  lastHandler?.({ saveAs })
+})
 
 function syncMenuState() {
   return window.studio.ui.setMenuState({
-    save: refCounts.save > 0,
-    saveAs: refCounts.saveAs > 0,
-    exportScript: refCounts.exportScript > 0,
+    save: handlers.save.length > 0,
+    saveAs: handlers.saveAs.length > 0,
+    exportScript: handlers.exportScript.length > 0,
   })
 }
 
@@ -96,23 +103,38 @@ export function useSaveFile({
     onError,
   })
 
+  const isPendingRef = useRef(isPending)
+
+  useEffect(() => {
+    isPendingRef.current = isPending
+  })
+
   useEffect(() => {
     const entries = Object.entries(menuItemState) as [MenuItem, boolean][]
 
+    function handleMenuSave(options: SaveFileOptions) {
+      if (isPendingRef.current) {
+        return
+      }
+
+      void saveFile(options)
+    }
+
     for (const [item, enabled] of entries) {
       if (enabled) {
-        refCounts[item] += 1
+        handlers[item].push(handleMenuSave)
       }
     }
 
     // We do a sanity check here because having multiple listeners for the same menu item would create weird
     // situations where the RequestSave event is triggered twice, causing the save dialog to open twice. Hopefully
     // logging a warning here will help us identify and fix the underlying issue if it ever happens.
-    for (const [item, count] of Object.entries(refCounts)) {
-      if (count > 1) {
+    for (const [item, fns] of Object.entries(handlers)) {
+      if (fns.length > 1) {
         console.warn(
-          `Menu item ${item} was already registered. This may indicate a previous instance failed ` +
-            `to clean up or that two instances are trying to register the same menu item at the same time.`
+          `Menu item ${item} was already registered. This may indicate a previous instance failed to clean ` +
+            `up or that two instances are trying to register the same menu item at the same time. Only the last ` +
+            `registered handler will be called.`
         )
       }
     }
@@ -120,25 +142,13 @@ export function useSaveFile({
     syncMenuState()
 
     return () => {
-      for (const [item, enabled] of entries) {
-        if (enabled) {
-          refCounts[item] = Math.max(0, refCounts[item] - 1)
-        }
+      for (const [item] of entries) {
+        handlers[item] = handlers[item].filter((fn) => fn !== handleMenuSave)
       }
 
       syncMenuState()
     }
-  }, [menuItemState])
-
-  useEffect(() => {
-    return window.studio.ui.onRequestSave(({ menuItem, saveAs }) => {
-      if (!menuItemState[menuItem] || isPending) {
-        return
-      }
-
-      void saveFile({ saveAs })
-    })
-  }, [isPending, menuItemState, saveFile])
+  }, [menuItemState, saveFile])
 
   return useCallback(
     (options: SaveFileOptions = {}) => {

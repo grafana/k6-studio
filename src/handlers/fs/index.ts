@@ -7,6 +7,7 @@ import {
 import {
   BROWSER_TESTS_PATH,
   GENERATORS_PATH,
+  PROJECT_PATH,
   SCRIPTS_PATH,
 } from '@/constants/workspace'
 import { getStudioFileFromPath } from '@/main/file'
@@ -32,6 +33,9 @@ function getDefaultPath(location: StorageLocation) {
   }
 
   switch (path.extname(location.hint)) {
+    case '.har':
+      return path.join(PROJECT_PATH, 'Recordings', location.hint)
+
     case K6_GENERATOR_FILE_EXTENSION:
       return path.join(GENERATORS_PATH, location.hint)
 
@@ -41,6 +45,9 @@ function getDefaultPath(location: StorageLocation) {
     case '.js':
     case '.ts':
       return path.join(SCRIPTS_PATH, location.hint)
+
+    default:
+      return PROJECT_PATH
   }
 }
 
