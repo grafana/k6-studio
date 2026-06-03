@@ -1,4 +1,3 @@
-import { Allotment } from 'allotment'
 import log from 'electron-log/renderer'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
@@ -6,6 +5,7 @@ import useKeyboardJs from 'react-use/lib/useKeyboardJs'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
+import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
 import { useCurrentFile } from '@/hooks/useCurrentFile'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
@@ -15,6 +15,7 @@ import { useToast } from '@/store/ui/useToast'
 import { ProxyData } from '@/types'
 
 import {
+  useGeneratorLayout,
   useIsGeneratorDirty,
   useLoadGeneratorFile,
   useLoadHarFile,
@@ -34,6 +35,8 @@ export function Generator() {
 
   const file = useCurrentFile('generator')
   const scriptPreview = useScriptPreview(file.path)
+
+  const { mainLayout, sidebarLayout, detailsLayout } = useGeneratorLayout()
 
   const {
     data: generatorFileData,
@@ -154,29 +157,35 @@ export function Generator() {
       }
       loading={isLoading}
     >
-      <Allotment defaultSizes={[1, 1]}>
-        <Allotment.Pane minSize={580}>
-          <Allotment vertical>
-            <Allotment.Pane minSize={200}>
+      <Group {...sidebarLayout}>
+        <Panel id="main" minSize={580}>
+          <Group orientation="vertical" {...mainLayout}>
+            <Panel id="preview" minSize={200}>
               <GeneratorTabs
                 script={scriptPreview}
                 selectedRequest={selectedRequest}
                 onSelectRequest={setSelectedRequest}
               />
-            </Allotment.Pane>
-            <Allotment.Pane minSize={200}>
+            </Panel>
+            <Separator />
+            <Panel id="rules" minSize={200}>
               <TestRuleContainer />
-            </Allotment.Pane>
-          </Allotment>
-        </Allotment.Pane>
-
-        <Allotment.Pane minSize={300} visible={selectedRequest !== null}>
-          <HttpRequestDetails
-            selectedRequest={selectedRequest}
-            onSelectRequest={setSelectedRequest}
-          />
-        </Allotment.Pane>
-      </Allotment>
+            </Panel>
+          </Group>
+        </Panel>
+        {selectedRequest && (
+          <>
+            <Separator />
+            <Panel id="request-details" minSize={300}>
+              <HttpRequestDetails
+                layout={detailsLayout}
+                selectedRequest={selectedRequest}
+                onSelectRequest={setSelectedRequest}
+              />
+            </Panel>
+          </>
+        )}
+      </Group>
       <UnsavedChangesDialog
         open={blocker.state === 'blocked' || (isAppClosing && isDirty)}
         onSave={handleSaveGeneratorDialog}
