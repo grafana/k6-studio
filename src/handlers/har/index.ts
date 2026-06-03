@@ -1,18 +1,12 @@
 import { ipcMain } from 'electron'
 
 import { RECORDINGS_PATH } from '@/constants/workspace'
-import { Recording, RecordingSchema } from '@/schemas/recording'
+import { Recording } from '@/schemas/recording'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
+import { showOpenDialog, showSaveDialog } from '@/utils/dialog'
 import { browserWindowFromEvent } from '@/utils/electron'
-import {
-  copyFile,
-  createFileWithUniqueName,
-  readFile,
-  writeFile,
-  showOpenDialog,
-  showSaveDialog,
-} from '@/utils/fs'
+import { copyFile, createFileWithUniqueName, writeFile } from '@/utils/fs'
 import * as path from '@/utils/path'
 
 import { HarHandler } from './types'
@@ -35,24 +29,6 @@ export function initialize() {
       })
 
       return filePath
-    }
-  )
-
-  ipcMain.handle(
-    HarHandler.OpenFile,
-    async (_, filePath: string): Promise<Recording> => {
-      console.info(`${HarHandler.OpenFile} event received`)
-
-      const resolvedPath = path.isAbsolute(filePath)
-        ? filePath
-        : path.join(RECORDINGS_PATH, filePath)
-
-      const data = await readFile(resolvedPath, {
-        encoding: 'utf-8',
-        flag: 'r',
-      })
-
-      return RecordingSchema.parse(JSON.parse(data))
     }
   )
 

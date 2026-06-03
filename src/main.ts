@@ -12,6 +12,7 @@ import { initializeDeepLinks, replayPendingDeepLink } from './main/deepLinks'
 import * as mainState from './main/k6StudioState'
 import { initializeLogger } from './main/logger'
 import { configureApplicationMenu } from './main/menu'
+import { initOpenFile, replayPendingFileOpen } from './main/openFile'
 import {
   cleanUpProxies,
   launchProxyAndAttachEmitter,
@@ -60,6 +61,7 @@ initializeLogger()
 handlers.initialize()
 mainState.initialize()
 initializeDeepLinks()
+initOpenFile()
 
 const createWindow = async () => {
   const icon = getAppIcon(process.env.NODE_ENV === 'development')
@@ -120,6 +122,7 @@ const createWindow = async () => {
   }
 
   replayPendingDeepLink()
+  replayPendingFileOpen()
 
   if (process.env.NODE_ENV === 'development') {
     mainWindow.webContents.openDevTools()

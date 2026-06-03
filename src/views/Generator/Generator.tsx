@@ -1,25 +1,25 @@
 import log from 'electron-log/renderer'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
-import useKeyboardJs from 'react-use/lib/useKeyboardJs'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
 import { useCurrentFile } from '@/hooks/useCurrentFile'
+import { useSaveFile } from '@/hooks/useSaveFile'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
-import { getRoutePath } from '@/routeMap'
+import { getRoutePath, getViewPath } from '@/routeMap'
 import { useGeneratorStore, selectGeneratorData } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
 import { ProxyData } from '@/types'
+import { queryClient } from '@/utils/query'
 
 import {
   useGeneratorLayout,
   useIsGeneratorDirty,
   useLoadGeneratorFile,
   useLoadHarFile,
-  useSaveGeneratorFile,
 } from './Generator.hooks'
 import { GeneratorControls } from './GeneratorControls'
 import { GeneratorTabs } from './GeneratorTabs'
@@ -48,18 +48,46 @@ export function Generator() {
     data: recording,
     isLoading: isLoadingRecording,
     error: harError,
-  } = useLoadHarFile(generatorFileData?.recordingPath)
-
-  const { mutateAsync: saveGenerator } = useSaveGeneratorFile(file.path)
+  } = useLoadHarFile(generatorFileData?.data.recordingPath)
 
   const isLoading = isLoadingGenerator || isLoadingRecording
+
+  const saveFile = useSaveFile({
+    menuItems: {
+      save: !isLoading,
+      saveAs: !isLoading,
+    },
+    location: { type: 'file', path: file.path },
+    content: () => ({
+      type: 'generator' as const,
+      data: selectGeneratorData(useGeneratorStore.getState()),
+      isExternal: generatorFileData?.isExternal ?? false,
+    }),
+    filters: [{ name: 'Generator', extensions: ['k6g'] }],
+    onSave: async (location) => {
+      await queryClient.invalidateQueries({
+        queryKey: ['generator', location.path],
+      })
+
+      if (location.path !== file.path) {
+        navigate(getViewPath('generator', location.path), { replace: true })
+      }
+    },
+    onError: (error) => {
+      showToast({
+        title: 'Failed to save generator',
+        status: 'error',
+        description: error.message,
+      })
+
+      log.error(error)
+    },
+  })
 
   const isDirty = useIsGeneratorDirty(file.path)
   const isDirtyRef = useRef(isDirty)
 
   const [isAppClosing, setIsAppClosing] = useState(false)
-
-  const [, onSaveKeyPress] = useKeyboardJs(['command + s', 'ctrl + s'])
 
   const blocker = useBlocker(({ historyAction }) => {
     // Don't block navigation when redirecting home from invalid generator
@@ -70,7 +98,7 @@ export function Generator() {
 
   useEffect(() => {
     if (!generatorFileData) return
-    setGeneratorFile(generatorFileData, recording)
+    setGeneratorFile(generatorFileData.data, recording)
   }, [setGeneratorFile, generatorFileData, recording])
 
   useEffect(() => {
@@ -110,23 +138,22 @@ export function Generator() {
   }, [isDirty])
 
   const handleSaveGenerator = useCallback(() => {
-    const generator = selectGeneratorData(useGeneratorStore.getState())
-    return saveGenerator(generator)
-  }, [saveGenerator])
-
-  useEffect(() => {
-    ;(async () => {
-      if (onSaveKeyPress && isDirtyRef.current === true) {
-        await handleSaveGenerator()
-      }
-    })()
-  }, [handleSaveGenerator, onSaveKeyPress])
+    return saveFile({ saveAs: false })
+  }, [saveFile])
 
   const handleSaveGeneratorDialog = async () => {
-    await handleSaveGenerator()
+    const location = await handleSaveGenerator()
+
+    if (location === undefined) {
+      setIsAppClosing(false)
+
+      return
+    }
+
     if (isAppClosing) {
       return window.studio.app.closeApplication()
     }
+
     blocker.proceed?.()
   }
 
@@ -134,6 +161,7 @@ export function Generator() {
     if (isAppClosing) {
       return window.studio.app.closeApplication()
     }
+
     blocker.proceed?.()
   }
 
@@ -141,13 +169,20 @@ export function Generator() {
     if (isAppClosing) {
       return window.studio.app.closeApplication()
     }
+
     blocker.reset?.()
   }
 
   return (
     <View
       title="Generator"
-      subTitle={<FileNameHeader file={file} isDirty={isDirty} />}
+      subTitle={
+        <FileNameHeader
+          file={file}
+          isDirty={isDirty}
+          canRename={!generatorFileData?.isExternal}
+        />
+      }
       actions={
         <GeneratorControls
           onSave={handleSaveGenerator}

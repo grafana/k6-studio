@@ -23,7 +23,7 @@ export async function generateScriptPreview(
   return prettify(script)
 }
 
-export async function exportScript(scriptPath: string) {
+export async function generateScriptFromGenerator(scriptPath: string) {
   const generator = selectGeneratorData(useGeneratorStore.getState())
   const filteredRequests = selectFilteredRequests(useGeneratorStore.getState())
 
@@ -33,15 +33,25 @@ export async function exportScript(scriptPath: string) {
     filteredRequests
   )
 
-  await window.studio.script.saveScript(scriptPath, script)
+  return script
 }
 
 export const loadGeneratorFile = async (filePath: string) => {
-  const generator = await window.studio.generator.loadGenerator(filePath)
-  return generator
+  const content = await window.studio.fs.openFile(filePath)
+
+  if (content.type !== 'generator') {
+    throw new Error(`Expected generator content, got ${content.type}`)
+  }
+
+  return content
 }
 
 export const loadHarFile = async (fileName: string) => {
-  const har = await window.studio.har.openFile(fileName)
-  return harToProxyData(har)
+  const content = await window.studio.fs.openFile(fileName)
+
+  if (content.type !== 'recording') {
+    throw new Error(`Expected recording content, got ${content.type}`)
+  }
+
+  return harToProxyData(content.data)
 }

@@ -10,7 +10,8 @@ import { TEMP_K6_ARCHIVE_PATH, TEMP_SCRIPT_SUFFIX } from '@/constants/workspace'
 import { ScriptHandler } from '@/handlers/script/types'
 import { getProxyArguments } from '@/main/proxy'
 import { ProxySettings } from '@/types/settings'
-import { createWriteStream, showOpenDialog } from '@/utils/fs'
+import { showOpenDialog } from '@/utils/dialog'
+import { createWriteStream } from '@/utils/fs'
 import { K6Client } from '@/utils/k6/client'
 import { createTrackingServer } from '@/utils/k6/tracking'
 import * as path from '@/utils/path'
@@ -65,7 +66,7 @@ const ArchiveManifestSchema = z.looseObject({
 export const showScriptSelectDialog = async (browserWindow: BrowserWindow) => {
   const result = await showOpenDialog(browserWindow, {
     properties: ['openFile'],
-    filters: [{ name: 'k6 test script', extensions: ['js'] }],
+    filters: [{ name: 'k6 test script', extensions: ['js', 'ts'] }],
   })
 
   if (result.canceled) return

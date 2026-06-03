@@ -7,8 +7,8 @@ import { showScriptSelectDialog, runScript } from '@/main/script'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent } from '@/utils/electron'
-import { readFile, unlink, writeFile } from '@/utils/fs'
-import { ArchiveError, K6Client } from '@/utils/k6/client'
+import { unlink, writeFile } from '@/utils/fs'
+import { ArchiveError } from '@/utils/k6/client'
 import { TestRun } from '@/utils/k6/testRun'
 import * as path from '@/utils/path'
 import { isExternalScript } from '@/utils/workspace'
@@ -30,29 +30,6 @@ export function initialize() {
     }
 
     return scriptPath
-  })
-
-  ipcMain.handle(ScriptHandler.Open, async (_, scriptPath: string) => {
-    console.log(`${ScriptHandler.Open} event received`)
-
-    const script = await readFile(scriptPath, {
-      encoding: 'utf-8',
-      flag: 'r',
-    })
-
-    const options = await new K6Client()
-      .inspect({ scriptPath })
-      .catch((err) => {
-        log.error('Failed to inspect the script', err)
-
-        return null
-      })
-
-    return {
-      script,
-      options: options ?? {},
-      isExternal: isExternalScript(scriptPath),
-    }
   })
 
   ipcMain.handle(
