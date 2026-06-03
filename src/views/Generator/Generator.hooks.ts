@@ -2,6 +2,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
 import { useCallback } from 'react'
 
+import { useDefaultLayout } from '@/components/primitives/ResizablePanel'
 import { useScriptExportedToast } from '@/hooks/useScriptExportedToast'
 import { selectGeneratorData, useGeneratorStore } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
@@ -10,6 +11,26 @@ import * as path from '@/utils/path'
 import { queryClient } from '@/utils/query'
 
 import { exportScript, loadGeneratorFile, loadHarFile } from './Generator.utils'
+
+export function useGeneratorLayout() {
+  const mainLayout = useDefaultLayout({
+    id: 'generator-main',
+  })
+
+  const sidebarLayout = useDefaultLayout({
+    id: 'generator-sidebar',
+  })
+
+  const detailsLayout = useDefaultLayout({
+    id: 'generator-details',
+  })
+
+  return {
+    mainLayout,
+    sidebarLayout,
+    detailsLayout,
+  }
+}
 
 export function useLoadHarFile(fileName?: string) {
   return useQuery({

@@ -1,20 +1,27 @@
 import { css } from '@emotion/react'
 import { Box, Flex, Heading, IconButton } from '@radix-ui/themes'
-import { Allotment } from 'allotment'
 import { XIcon } from 'lucide-react'
 import { PropsWithChildren, useEffect } from 'react'
 
+import {
+  Group,
+  Panel,
+  Separator,
+  useDefaultLayout,
+} from '@/components/primitives/ResizablePanel'
 import { ProxyData } from '@/types'
 
 import { RequestDetails } from './RequestDetails'
 import { ResponseDetails } from './ResponseDetails'
 
 interface HttpRequestDetailsProps {
-  selectedRequest: ProxyData | null
+  layout?: ReturnType<typeof useDefaultLayout>
+  selectedRequest: ProxyData
   onSelectRequest: (data: ProxyData | null) => void
 }
 
 export function HttpRequestDetails({
+  layout,
   selectedRequest,
   onSelectRequest,
 }: HttpRequestDetailsProps) {
@@ -25,7 +32,12 @@ export function HttpRequestDetails({
   }, [onSelectRequest])
 
   return (
-    <>
+    <div
+      css={css`
+        position: relative;
+        height: 100%;
+      `}
+    >
       <Box
         p="2"
         position="absolute"
@@ -44,23 +56,24 @@ export function HttpRequestDetails({
           <XIcon />
         </IconButton>
       </Box>
-      {selectedRequest !== null && (
-        <Box height="100%">
-          <Allotment defaultSizes={[1, 1]} vertical>
-            <Allotment.Pane minSize={200}>
-              <PaneContent heading="Request">
-                <RequestDetails data={selectedRequest} />
-              </PaneContent>
-            </Allotment.Pane>
-            <Allotment.Pane minSize={200} visible={!!selectedRequest.response}>
+      <Group orientation="vertical" {...layout}>
+        <Panel id="request" minSize={200}>
+          <PaneContent heading="Request">
+            <RequestDetails data={selectedRequest} />
+          </PaneContent>
+        </Panel>
+        {selectedRequest.response && (
+          <>
+            <Separator />
+            <Panel id="response" minSize={200}>
               <PaneContent heading="Response">
                 <ResponseDetails data={selectedRequest} />
               </PaneContent>
-            </Allotment.Pane>
-          </Allotment>
-        </Box>
-      )}
-    </>
+            </Panel>
+          </>
+        )}
+      </Group>
+    </div>
   )
 }
 

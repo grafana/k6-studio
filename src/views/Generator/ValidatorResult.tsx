@@ -1,6 +1,7 @@
-import { ReactNode, useEffect, useState } from 'react'
+import { useEffect, useState, ReactNode } from 'react'
 
-import { ValidatorLayout } from '@/components/Validator/ValidatorLayout'
+import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
+import { ExecutionDetails } from '@/components/Validator/ExecutionDetails'
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { Check, LogEntry } from '@/schemas/k6'
@@ -38,29 +39,42 @@ export function ValidatorResult({
     }
   }, [isRunning])
 
-  const details = selectedRequest && (
-    <HttpRequestDetails
-      selectedRequest={selectedRequest}
-      onSelectRequest={setSelectedRequest}
-    />
-  )
-
   return (
-    <ValidatorLayout
-      isRunning={isRunning}
-      script={script}
-      logs={logs}
-      checks={checks}
-      details={details}
-    >
-      <RequestsSection
-        proxyData={proxyData}
-        autoScroll={isRunning}
-        selectedRequestId={selectedRequest?.id}
-        noDataElement={noDataElement}
-        onSelectRequest={setSelectedRequest}
-        groups={groups}
-      />
-    </ValidatorLayout>
+    <Group>
+      <Panel id="main" minSize={250}>
+        <Group orientation="vertical">
+          <Panel id="requests">
+            <RequestsSection
+              proxyData={proxyData}
+              autoScroll={isRunning}
+              selectedRequestId={selectedRequest?.id}
+              noDataElement={noDataElement}
+              onSelectRequest={setSelectedRequest}
+              groups={groups}
+            />
+          </Panel>
+          <Separator />
+          <Panel id="execution" minSize={250}>
+            <ExecutionDetails
+              isRunning={isRunning}
+              script={script}
+              logs={logs}
+              checks={checks}
+            />
+          </Panel>
+        </Group>
+      </Panel>
+      {selectedRequest && (
+        <>
+          <Separator />
+          <Panel id="details" minSize={300}>
+            <HttpRequestDetails
+              selectedRequest={selectedRequest}
+              onSelectRequest={setSelectedRequest}
+            />
+          </Panel>
+        </>
+      )}
+    </Group>
   )
 }
