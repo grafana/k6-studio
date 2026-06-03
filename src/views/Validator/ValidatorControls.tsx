@@ -8,9 +8,9 @@ import {
 } from '@radix-ui/themes'
 import { BugIcon, EllipsisVerticalIcon } from 'lucide-react'
 
+import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
 import { RichDropdownMenuItem } from '@/components/RichDropdownMenuItem'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
-import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { StudioFile } from '@/types'

@@ -3,8 +3,8 @@ import { exhaustive } from '@/utils/typescript'
 import { CheckAssertionEditor } from './CheckAssertionEditor'
 import { TextAssertionEditor } from './TextAssertionEditor'
 import { TextInputAssertionEditor } from './TextInputAssertionEditor'
-import { VisibilityAssertionEditor } from './VisibilityAssertionEditor'
 import { AssertionData } from './types'
+import { VisibilityAssertionEditor } from './VisibilityAssertionEditor'
 
 interface AssertionEditorProps {
   assertion: AssertionData

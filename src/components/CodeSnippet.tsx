@@ -6,7 +6,7 @@ import { ReadOnlyEditor } from './Monaco/ReadOnlyEditor'
 
 export function CodeSnippet({
   value,
-  language = 'json',
+  language,
 }: {
   value: string
   language: string

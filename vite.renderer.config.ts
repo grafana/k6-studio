@@ -1,7 +1,6 @@
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 import react from '@vitejs/plugin-react'
-import type { ConfigEnv, UserConfig } from 'vite'
-import { defineConfig } from 'vite'
+import { defineConfig, type ConfigEnv, type UserConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 import { version } from './package.json'

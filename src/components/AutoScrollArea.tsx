@@ -6,7 +6,7 @@ import { useAutoScroll } from '@/hooks/useAutoScroll'
 
 interface AutoScrollAreaProps extends Omit<ScrollAreaProps, 'onScroll'> {
   tail?: boolean
-  items?: number
+  items?: unknown
   children?: ReactNode
   onScrollBack?: () => void
 }

@@ -37,7 +37,9 @@ export function DataFile() {
   return (
     <View
       title="Data file preview"
-      subTitle={<FileNameHeader file={file} showExt />}
+      subTitle={
+        <FileNameHeader file={file} showExt canRename={!preview.isExternal} />
+      }
       actions={<DataFileControls file={file} />}
       loading={isLoading}
     >
@@ -51,7 +53,7 @@ export function DataFile() {
         {isLoading ? (
           <TableSkeleton rootProps={{ size: '1' }} columns={8} rows={10} />
         ) : (
-          <DataFileTable preview={preview} isLoading={isLoading} />
+          <DataFileTable preview={preview.data} isLoading={isLoading} />
         )}
       </Grid>
     </View>

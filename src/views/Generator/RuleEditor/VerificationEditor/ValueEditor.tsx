@@ -68,7 +68,10 @@ export function ValueEditor() {
   // Update dropdown values when target changes
   useEffect(() => {
     const firstAvailableValueType = getAvailableValueTypes(target)[0]
-    firstAvailableValueType && handleChangeValueType(firstAvailableValueType)
+
+    if (firstAvailableValueType) {
+      handleChangeValueType(firstAvailableValueType)
+    }
   }, [target, handleChangeValueType])
 
   return (
