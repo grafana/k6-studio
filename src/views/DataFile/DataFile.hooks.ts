@@ -10,7 +10,7 @@ export function useDataFilePreview(fileName: string) {
         throw new Error(`Expected data-file content, got ${content.type}`)
       }
 
-      return content.data
+      return content
     },
     enabled: !!fileName,
   })

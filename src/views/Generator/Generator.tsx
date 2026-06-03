@@ -45,7 +45,7 @@ export function Generator() {
     data: recording,
     isLoading: isLoadingRecording,
     error: harError,
-  } = useLoadHarFile(generatorFileData?.recordingPath)
+  } = useLoadHarFile(generatorFileData?.data.recordingPath)
 
   const isLoading = isLoadingGenerator || isLoadingRecording
 
@@ -58,6 +58,7 @@ export function Generator() {
     content: () => ({
       type: 'generator' as const,
       data: selectGeneratorData(useGeneratorStore.getState()),
+      isExternal: generatorFileData?.isExternal ?? false,
     }),
     filters: [{ name: 'Generator', extensions: ['k6g'] }],
     onSave: async (location) => {
@@ -94,7 +95,7 @@ export function Generator() {
 
   useEffect(() => {
     if (!generatorFileData) return
-    setGeneratorFile(generatorFileData, recording)
+    setGeneratorFile(generatorFileData.data, recording)
   }, [setGeneratorFile, generatorFileData, recording])
 
   useEffect(() => {
@@ -172,7 +173,13 @@ export function Generator() {
   return (
     <View
       title="Generator"
-      subTitle={<FileNameHeader file={file} isDirty={isDirty} />}
+      subTitle={
+        <FileNameHeader
+          file={file}
+          isDirty={isDirty}
+          canRename={!generatorFileData?.isExternal}
+        />
+      }
       actions={
         <GeneratorControls
           onSave={handleSaveGenerator}

@@ -34,3 +34,15 @@ export function isExternalScript(scriptPath: string) {
 export function isExternalRecording(recordingPath: string) {
   return !path.equal(path.dirname(recordingPath), RECORDINGS_PATH)
 }
+
+export function isExternalGenerator(filePath: string) {
+  return !path.equal(path.dirname(filePath), GENERATORS_PATH)
+}
+
+export function isExternalBrowserTest(filePath: string) {
+  return !path.equal(path.dirname(filePath), BROWSER_TESTS_PATH)
+}
+
+export function isExternalDataFile(filePath: string) {
+  return !path.equal(path.dirname(filePath), DATA_FILES_PATH)
+}

@@ -38,9 +38,14 @@ import { ContextMenuState } from './types'
 interface BrowserTestEditorViewProps {
   file: StudioFile
   data: BrowserTestFile
+  isExternal: boolean
 }
 
-function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
+function BrowserTestEditorView({
+  file,
+  data,
+  isExternal,
+}: BrowserTestEditorViewProps) {
   const { drawerLayout, mainLayout, setDrawer, onTabClick } =
     useBrowserTestEditorLayout()
 
@@ -80,6 +85,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
         actions: test.actions,
         options: test.options,
       },
+      isExternal,
     }),
     filters: [{ name: 'Browser Test', extensions: ['k6b'] }],
     onSave: async (location) => {
@@ -108,7 +114,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
   return (
     <View
       title="Browser test"
-      subTitle={<FileNameHeader file={file} />}
+      subTitle={<FileNameHeader file={file} canRename={!isExternal} />}
       actions={
         <BrowserTestEditorControls
           file={file}
@@ -237,7 +243,12 @@ export function BrowserTestEditor() {
 
   return (
     <HighlightLocatorProvider>
-      <BrowserTestEditorView key={file.path} file={file} data={data} />
+      <BrowserTestEditorView
+        key={file.path}
+        file={file}
+        data={data.data}
+        isExternal={data.isExternal}
+      />
     </HighlightLocatorProvider>
   )
 }

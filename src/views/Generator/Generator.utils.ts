@@ -43,7 +43,7 @@ export const loadGeneratorFile = async (filePath: string) => {
     throw new Error(`Expected generator content, got ${content.type}`)
   }
 
-  return content.data
+  return content
 }
 
 export const loadHarFile = async (fileName: string) => {

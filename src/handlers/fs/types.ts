@@ -26,11 +26,13 @@ export type StorageLocation = UntitledLocation | FileLocation
 export interface GeneratorContent {
   type: 'generator'
   data: GeneratorFileData
+  isExternal: boolean
 }
 
 export interface BrowserTestContent {
   type: 'browser-test'
   data: BrowserTestFile
+  isExternal: boolean
 }
 
 export interface RecordingContent {
@@ -51,10 +53,12 @@ export interface ScriptContent {
 export interface DataFileContent {
   type: 'data-file'
   data: DataFilePreview
+  isExternal: boolean
 }
 
 export interface UnsupportedContent {
   type: 'unsupported'
+  isExternal: boolean
 }
 
 export type FileContent =

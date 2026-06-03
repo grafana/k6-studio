@@ -30,7 +30,7 @@ export function useLoadGeneratorFile(filePath: string) {
 export function useUpdateValueInGeneratorFile(filePath: string) {
   return useMutation({
     mutationFn: async ({ key, value }: { key: string; value: unknown }) => {
-      const generator = await loadGeneratorFile(filePath)
+      const { data: generator } = await loadGeneratorFile(filePath)
 
       await window.studio.generator.saveGenerator(
         { ...generator, [key]: value },
@@ -47,7 +47,7 @@ export function useIsGeneratorDirty(filePath: string) {
   // Comparing data without `scriptName`, which is saved to disk in the background
   // and should not be considered as a change
   const { scriptName: _, ...generatorStateData } = generatorState
-  const { scriptName: __, ...generatorFileData } = data || {}
+  const { scriptName: __, ...generatorFileData } = data?.data || {}
 
   // Convert to JSON instead of doing deep equal to remove
   // `property: undefined` values

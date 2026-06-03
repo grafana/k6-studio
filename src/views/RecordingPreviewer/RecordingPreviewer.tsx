@@ -50,7 +50,7 @@ export function RecordingPreviewer() {
   return (
     <View
       title="Recording"
-      subTitle={<FileNameHeader file={file} />}
+      subTitle={<FileNameHeader file={file} canRename={!isExternal} />}
       loading={isLoading}
       actions={
         <RecordingPreviewControls

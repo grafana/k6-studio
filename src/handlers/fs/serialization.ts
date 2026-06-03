@@ -12,7 +12,13 @@ import { DataFilePreview } from '@/types/testData'
 import { parseDataFile } from '@/utils/dataFile'
 import { K6Client } from '@/utils/k6/client'
 import * as path from '@/utils/path'
-import { isExternalRecording, isExternalScript } from '@/utils/workspace'
+import {
+  isExternalBrowserTest,
+  isExternalDataFile,
+  isExternalGenerator,
+  isExternalRecording,
+  isExternalScript,
+} from '@/utils/workspace'
 
 import { FileContent } from './types'
 
@@ -44,12 +50,17 @@ export async function deserializeContent(
 ): Promise<FileContent> {
   switch (type) {
     case 'generator':
-      return { type: 'generator', data: deserializeGenerator(filePath, raw) }
+      return {
+        type: 'generator',
+        data: deserializeGenerator(filePath, raw),
+        isExternal: isExternalGenerator(filePath),
+      }
 
     case 'browser-test':
       return {
         type: 'browser-test',
         data: BrowserTestFileDataSchema.parse(JSON.parse(raw)),
+        isExternal: isExternalBrowserTest(filePath),
       }
 
     case 'recording':
@@ -87,7 +98,11 @@ export async function deserializeContent(
         total: parsedData.length,
       }
 
-      return { type: 'data-file', data: preview }
+      return {
+        type: 'data-file',
+        data: preview,
+        isExternal: isExternalDataFile(filePath),
+      }
     }
   }
 }

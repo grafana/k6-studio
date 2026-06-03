@@ -24,7 +24,7 @@ import { stripUndefined } from '@/utils/object'
 import { useDebugSession } from '../Validator/Validator.hooks'
 
 export function useBrowserTest(filePath: string) {
-  return useQuery<BrowserTestFile>({
+  return useQuery({
     queryKey: ['browserTest', filePath],
     queryFn: async () => {
       const content = await window.studio.fs.openFile(filePath)
@@ -33,7 +33,7 @@ export function useBrowserTest(filePath: string) {
         throw new Error(`Expected browser-test content, got ${content.type}`)
       }
 
-      return content.data
+      return content
     },
   })
 }

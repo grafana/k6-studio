@@ -125,7 +125,7 @@ export function initialize() {
       const file = getStudioFileFromPath(filePath)
 
       if (!file) {
-        return { type: 'unsupported' }
+        return { type: 'unsupported', isExternal: true }
       }
 
       const raw = await readFile(filePath, { encoding: 'utf-8', flag: 'r' })

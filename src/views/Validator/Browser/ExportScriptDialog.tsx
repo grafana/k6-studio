@@ -95,12 +95,14 @@ export function ExportScriptDialog({
           includeStaticAssets,
         }
 
-      case 'generator':
+      case 'generator': {
         if (!selectedGeneratorPath) {
           return null
         }
 
-        return loadGeneratorFile(selectedGeneratorPath)
+        const { data } = await loadGeneratorFile(selectedGeneratorPath)
+        return data
+      }
     }
   }
 
