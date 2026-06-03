@@ -2,6 +2,8 @@
 import {
   BrowserWindow,
   dialog,
+  MessageBoxOptions,
+  MessageBoxReturnValue,
   OpenDialogOptions,
   OpenDialogReturnValue,
   SaveDialogOptions,
@@ -54,4 +56,11 @@ export async function showSaveDialog(
     ...result,
     filePath: result.filePath ? normalize(result.filePath) : result.filePath,
   }
+}
+
+export async function showMessageBox(
+  browserWindow: BrowserWindow,
+  options: MessageBoxOptions
+): Promise<MessageBoxReturnValue> {
+  return dialog.showMessageBox(browserWindow, options)
 }

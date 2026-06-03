@@ -4,9 +4,14 @@ import { RECORDINGS_PATH } from '@/constants/workspace'
 import { Recording } from '@/schemas/recording'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
-import { showOpenDialog, showSaveDialog } from '@/utils/dialog'
+import { showMessageBox, showOpenDialog, showSaveDialog } from '@/utils/dialog'
 import { browserWindowFromEvent } from '@/utils/electron'
-import { copyFile, createFileWithUniqueName, writeFile } from '@/utils/fs'
+import {
+  copyFile,
+  createFileWithUniqueName,
+  exists,
+  writeFile,
+} from '@/utils/fs'
 import * as path from '@/utils/path'
 
 import { HarHandler } from './types'
@@ -63,6 +68,7 @@ export function initialize() {
       message: 'Import HAR file',
       properties: ['openFile'],
       defaultPath: RECORDINGS_PATH,
+      buttonLabel: 'Import',
       filters: [{ name: 'HAR', extensions: ['har'] }],
     })
 
@@ -73,6 +79,20 @@ export function initialize() {
     }
 
     const destinationPath = path.join(RECORDINGS_PATH, path.basename(filePath))
+
+    if (await exists(destinationPath)) {
+      const { response } = await showMessageBox(browserWindow, {
+        type: 'warning',
+        buttons: ['Cancel', 'Overwrite'],
+        defaultId: 0,
+        cancelId: 0,
+        message: `"${path.basename(filePath)}" already exists. Do you want to overwrite it?`,
+      })
+
+      if (response === 0) {
+        return
+      }
+    }
 
     await copyFile(filePath, destinationPath)
 
