@@ -92,7 +92,7 @@ export function BrowserDebuggerContent({
                 />
               </Panel>
               <Separator />
-              <Panel id="actions" minSize={400}>
+              <Panel id="actions" defaultSize="30%" minSize={400}>
                 <BrowserActionsPanel
                   session={session}
                   onDebugScript={onDebugScript}
@@ -110,7 +110,13 @@ export function BrowserDebuggerContent({
             </Tabs.Trigger>
           </Tabs.List>
           <Separator data-disabled />
-          <Panel id="drawer" panelRef={setDrawer} collapsible minSize={100}>
+          <Panel
+            id="drawer"
+            panelRef={setDrawer}
+            collapsible
+            defaultSize="30%"
+            minSize={100}
+          >
             <Flex height="100%" direction="column" overflow="hidden">
               <Tabs.Content
                 css={css`

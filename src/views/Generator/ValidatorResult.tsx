@@ -67,7 +67,7 @@ export function ValidatorResult({
       {selectedRequest && (
         <>
           <Separator />
-          <Panel id="details" minSize={300}>
+          <Panel id="details" defaultSize="40%" minSize={300}>
             <HttpRequestDetails
               selectedRequest={selectedRequest}
               onSelectRequest={setSelectedRequest}

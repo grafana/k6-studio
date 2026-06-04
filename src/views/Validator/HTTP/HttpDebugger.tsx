@@ -95,7 +95,7 @@ export function HttpDebugger({
             </Tabs.Root>
           </Panel>
           <Separator />
-          <Panel id="execution" minSize={250}>
+          <Panel id="execution" defaultSize="30%" minSize={250}>
             <Box height="100%">
               <ExecutionDetails
                 isRunning={isRunning}
@@ -109,7 +109,7 @@ export function HttpDebugger({
       {selectedRequest && (
         <>
           <Separator />
-          <Panel id="details" minSize={300}>
+          <Panel id="details" defaultSize="40%" minSize={300}>
             <HttpRequestDetails
               selectedRequest={selectedRequest}
               onSelectRequest={setSelectedRequest}

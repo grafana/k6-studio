@@ -35,7 +35,7 @@ export function NetworkInspector({ actions, session }: NetworkInspectorProps) {
       {selectedRequest !== null && (
         <>
           <Separator />
-          <Panel id="details">
+          <Panel id="details" defaultSize="40%" minSize={300}>
             <HttpRequestDetails
               selectedRequest={selectedRequest}
               onSelectRequest={setSelectedRequest}
