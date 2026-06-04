@@ -32,28 +32,24 @@ afterEach(() => {
 })
 
 describe('realm-safe DOM guards', () => {
-  it('match elements created in a child realm, where bare instanceof fails', () => {
-    const doc = childRealm()
+  it.for([
+    ['input', HTMLInputElement, isHTMLInputElement],
+    ['button', HTMLButtonElement, isHTMLButtonElement],
+    ['select', HTMLSelectElement, isHTMLSelectElement],
+    ['textarea', HTMLTextAreaElement, isHTMLTextAreaElement],
+    ['label', HTMLLabelElement, isHTMLLabelElement],
+    ['a', HTMLAnchorElement, isHTMLAnchorElement],
+    ['iframe', HTMLIFrameElement, isHTMLIFrameElement],
+  ] as const)(
+    'matches <%s> created in a child realm, where bare instanceof fails',
+    ([tag, ctor, guard], { expect }) => {
+      const element = childRealm().createElement(tag)
 
-    const input = doc.createElement('input')
-    const button = doc.createElement('button')
-    const select = doc.createElement('select')
-    const textarea = doc.createElement('textarea')
-    const label = doc.createElement('label')
-    const anchor = doc.createElement('a')
-    const iframe = doc.createElement('iframe')
-
-    // Confirms the realm boundary: the top-window constructor does not match.
-    expect(input instanceof HTMLInputElement).toBe(false)
-
-    expect(isHTMLInputElement(input)).toBe(true)
-    expect(isHTMLButtonElement(button)).toBe(true)
-    expect(isHTMLSelectElement(select)).toBe(true)
-    expect(isHTMLTextAreaElement(textarea)).toBe(true)
-    expect(isHTMLLabelElement(label)).toBe(true)
-    expect(isHTMLAnchorElement(anchor)).toBe(true)
-    expect(isHTMLIFrameElement(iframe)).toBe(true)
-  })
+      // The top-window constructor does not match across the realm boundary.
+      expect(element).not.toBeInstanceOf(ctor)
+      expect(guard(element)).toBe(true)
+    }
+  )
 
   it('reject elements of a different type', () => {
     const doc = childRealm()
