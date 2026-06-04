@@ -25,7 +25,8 @@ export function RecordingSelector({
   const recordings = useStudioUIStore((store) => store.recordings)
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
 
-  const isKnownRecording = recordingPath !== '' && recordings.has(recordingPath)
+  const isKnownRecording =
+    recordingPath !== '' && recordings.has(path.key(recordingPath))
 
   const handleOpen = async () => {
     try {
