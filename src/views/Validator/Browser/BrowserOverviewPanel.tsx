@@ -2,7 +2,7 @@ import { css } from '@emotion/react'
 import { Box, Flex } from '@radix-ui/themes'
 import { useEffect, useState } from 'react'
 
-import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
+import { ReactMonacoEditor } from '@/components/Monaco/ReactMonacoEditor'
 import { PersistentTabs } from '@/components/primitives/PersistentTabs'
 import { SessionPlayer } from '@/components/SessionPlayer/SessionPlayer'
 import { ElementLocator } from '@/schemas/locator'
@@ -13,12 +13,14 @@ interface BrowserOverviewPanelProps {
   script: string
   session: DebugSession
   highlightedLocator: ElementLocator | null
+  onScriptChange: (value: string) => void
 }
 
 export function BrowserOverviewPanel({
   script,
   session,
   highlightedLocator,
+  onScriptChange,
 }: BrowserOverviewPanelProps) {
   const [tab, setTab] = useState('script')
 
@@ -52,10 +54,11 @@ export function BrowserOverviewPanel({
           value="script"
           forceMount
         >
-          <ReadOnlyEditor
+          <ReactMonacoEditor
+            height="100%"
             value={script}
-            showToolbar={false}
             language="typescript"
+            onChange={(value) => value !== undefined && onScriptChange(value)}
           />
         </PersistentTabs.Content>
         <PersistentTabs.Content

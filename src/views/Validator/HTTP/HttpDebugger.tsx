@@ -3,7 +3,7 @@ import styled from '@emotion/styled'
 import { Box, Flex, Tabs } from '@radix-ui/themes'
 import { useEffect, useState } from 'react'
 
-import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
+import { ReactMonacoEditor } from '@/components/Monaco/ReactMonacoEditor'
 import {
   Group,
   Panel,
@@ -28,12 +28,14 @@ interface HttpDebuggerProps {
   script: string
   session: DebugSession
   onDebugScript: () => void
+  onScriptChange: (value: string) => void
 }
 
 export function HttpDebugger({
   script,
   session,
   onDebugScript,
+  onScriptChange,
 }: HttpDebuggerProps) {
   const [tab, setTab] = useState('script')
 
@@ -69,10 +71,13 @@ export function HttpDebugger({
                   <Tabs.Trigger value="requests">Requests</Tabs.Trigger>
                 </Tabs.List>
                 <TabsContent value="script">
-                  <ReadOnlyEditor
+                  <ReactMonacoEditor
+                    height="100%"
                     value={script}
-                    showToolbar={false}
                     language="typescript"
+                    onChange={(value) =>
+                      value !== undefined && onScriptChange(value)
+                    }
                   />
                 </TabsContent>
                 <TabsContent value="requests">

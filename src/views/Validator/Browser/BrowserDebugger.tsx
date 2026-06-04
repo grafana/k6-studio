@@ -30,6 +30,7 @@ interface BrowserDebuggerProps {
   script: string
   session: DebugSession
   onDebugScript: () => void
+  onScriptChange: (value: string) => void
 }
 
 export function BrowserDebuggerContent({
@@ -37,6 +38,7 @@ export function BrowserDebuggerContent({
   script,
   session,
   onDebugScript,
+  onScriptChange,
 }: BrowserDebuggerProps) {
   const highlightedLocator = useHighlightedLocator()
 
@@ -89,6 +91,7 @@ export function BrowserDebuggerContent({
                   script={script}
                   session={session}
                   highlightedLocator={highlightedLocator}
+                  onScriptChange={onScriptChange}
                 />
               </Panel>
               <Separator />
