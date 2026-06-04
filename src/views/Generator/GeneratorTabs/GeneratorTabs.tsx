@@ -31,8 +31,23 @@ export function GeneratorTabs({
 }: GeneratorTabsProps) {
   const [tab, setTab] = useState('requests')
   const filteredRequests = useGeneratorStore(selectFilteredRequests)
-
   const hasRecording = useGeneratorStore(selectHasRecording)
+
+  const requests = useGeneratorStore((store) => store.requests)
+  const allowlist = useGeneratorStore((store) => store.allowlist)
+  const setAllowlist = useGeneratorStore((store) => store.setAllowlist)
+  const includeStaticAssets = useGeneratorStore(
+    (store) => store.includeStaticAssets
+  )
+  const setIncludeStaticAssets = useGeneratorStore(
+    (store) => store.setIncludeStaticAssets
+  )
+  const showAllowlistDialog = useGeneratorStore(
+    (store) => store.showAllowlistDialog
+  )
+  const setShowAllowlistDialog = useGeneratorStore(
+    (store) => store.setShowAllowlistDialog
+  )
 
   return (
     <Flex direction="column" height="100%" minHeight="0" asChild>
@@ -68,7 +83,16 @@ export function GeneratorTabs({
               <Flex pr="2" pl="4" gap="4">
                 <TestOptions />
                 <TestData />
-                <AllowlistDialog />
+                <AllowlistDialog
+                  requests={requests}
+                  allowlist={{ hosts: allowlist, includeStaticAssets }}
+                  open={showAllowlistDialog}
+                  onChange={({ hosts, includeStaticAssets }) => {
+                    setAllowlist(hosts)
+                    setIncludeStaticAssets(includeStaticAssets)
+                  }}
+                  onOpenChange={setShowAllowlistDialog}
+                />
               </Flex>
             </Flex>
           </Tabs.List>

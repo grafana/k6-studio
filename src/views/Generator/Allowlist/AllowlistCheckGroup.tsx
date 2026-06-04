@@ -2,13 +2,13 @@ import { CheckboxGroup, Flex, Text } from '@radix-ui/themes'
 
 type AllowlistCheckGroupProps = {
   hosts: string[]
-  allowlist: string[]
+  selected: string[]
   onValueChange: (allowlist: string[]) => void
 }
 
 export default function AllowlistCheckGroup({
   hosts,
-  allowlist,
+  selected: allowlist,
   onValueChange,
 }: AllowlistCheckGroupProps) {
   return (

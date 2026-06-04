@@ -19,7 +19,10 @@ import { ProxyData } from '@/types'
 import { safeAtob } from '@/utils/format'
 import { createNewGeneratorFile } from '@/utils/generator'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
-import { Allowlist } from '@/views/Generator/Allowlist/Allowlist'
+import {
+  Allowlist,
+  AllowlistEditor,
+} from '@/views/Generator/Allowlist/AllowlistEditor'
 import {
   generateScriptPreview,
   loadGeneratorFile,
@@ -75,8 +78,10 @@ export function ExportScriptDialog({
     return groupHostsByParty(uniqueHosts)
   }, [requests])
 
-  const [allowlist, setAllowlist] = useState<string[]>(firstParty.slice(0, 1))
-  const [includeStaticAssets, setIncludeStaticAssets] = useState(false)
+  const [allowlist, setAllowlist] = useState<Allowlist>({
+    hosts: firstParty.slice(0, 1),
+    includeStaticAssets: false,
+  })
 
   const [selectedGeneratorPath, setSelectedGeneratorPath] = useState(
     generators[0]?.path ?? ''
@@ -85,14 +90,14 @@ export function ExportScriptDialog({
   async function getGenerator() {
     switch (mode) {
       case 'allowlist':
-        if (allowlist.length === 0) {
+        if (allowlist.hosts.length === 0) {
           return null
         }
 
         return {
           ...createNewGeneratorFile(),
-          allowlist,
-          includeStaticAssets,
+          allowlist: allowlist.hosts,
+          includeStaticAssets: allowlist.includeStaticAssets,
         }
 
       case 'generator': {
@@ -150,7 +155,7 @@ export function ExportScriptDialog({
 
   const isDisabled =
     isExporting ||
-    (mode === 'allowlist' && allowlist.length === 0) ||
+    (mode === 'allowlist' && allowlist.hosts.length === 0) ||
     (mode === 'generator' && !selectedGeneratorPath)
 
   return (
@@ -180,14 +185,12 @@ export function ExportScriptDialog({
           </RadioGroup.Root>
 
           {mode === 'allowlist' && (
-            <Allowlist
+            <AllowlistEditor
               firstPartyHosts={firstParty}
               thirdPartyHosts={thirdParty}
               allowlist={allowlist}
               requests={requests}
-              includeStaticAssets={includeStaticAssets}
-              setAllowlist={setAllowlist}
-              setIncludeStaticAssets={setIncludeStaticAssets}
+              onChange={setAllowlist}
             />
           )}
 

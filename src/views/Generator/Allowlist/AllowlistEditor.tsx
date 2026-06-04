@@ -11,7 +11,6 @@ import {
   Inset,
   Separator,
 } from '@radix-ui/themes'
-import { every, includes } from 'lodash-es'
 import { InfoIcon, SearchIcon, XIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
@@ -22,23 +21,26 @@ import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 
 import AllowlistCheckGroup from './AllowlistCheckGroup'
 
-export function Allowlist({
+export interface Allowlist {
+  hosts: string[]
+  includeStaticAssets: boolean
+}
+
+interface AllowlistEditorProps {
+  firstPartyHosts: string[]
+  thirdPartyHosts: string[]
+  allowlist: Allowlist
+  requests: ProxyData[]
+  onChange: (allowlist: Allowlist) => void
+}
+
+export function AllowlistEditor({
   firstPartyHosts,
   thirdPartyHosts,
   allowlist,
   requests,
-  includeStaticAssets,
-  setAllowlist,
-  setIncludeStaticAssets,
-}: {
-  firstPartyHosts: string[]
-  thirdPartyHosts: string[]
-  allowlist: string[]
-  includeStaticAssets: boolean
-  requests: ProxyData[]
-  setAllowlist: (allowlist: string[]) => void
-  setIncludeStaticAssets: (includeStaticAssets: boolean) => void
-}) {
+  onChange,
+}: AllowlistEditorProps) {
   const [filter, setFilter] = useState('')
 
   const firstPartyFilteredHosts = useMemo(
@@ -53,33 +55,40 @@ export function Allowlist({
 
   const staticAssetCount = useMemo(() => {
     const allowedRequests = requests.filter((request) => {
-      return allowlist.includes(request.request.host)
+      return allowlist.hosts.includes(request.request.host)
     })
 
     return allowedRequests.filter(
       (request) => !isNonStaticAssetResponse(request)
     ).length
-  }, [requests, allowlist])
+  }, [requests, allowlist.hosts])
 
   function handleSelectAll() {
-    setAllowlist([...allowlist, ...firstPartyFilteredHosts])
+    onChange({
+      ...allowlist,
+      hosts: [...allowlist.hosts, ...firstPartyFilteredHosts],
+    })
   }
 
   function handleSelectNone() {
-    setAllowlist([])
+    onChange({ ...allowlist, hosts: [] })
   }
 
   function handleChangeHosts(hosts: string[]) {
-    setAllowlist(hosts)
+    onChange({ ...allowlist, hosts })
   }
 
   function handleCheckStaticAssets(checked: boolean) {
-    setIncludeStaticAssets(checked && staticAssetCount > 0)
+    onChange({
+      ...allowlist,
+      includeStaticAssets: checked && staticAssetCount > 0,
+    })
   }
 
   const isSelectAllDisabled = useMemo(
-    () => every(firstPartyFilteredHosts, (host) => includes(allowlist, host)),
-    [firstPartyFilteredHosts, allowlist]
+    () =>
+      firstPartyFilteredHosts.every((host) => allowlist.hosts.includes(host)),
+    [firstPartyFilteredHosts, allowlist.hosts]
   )
 
   return (
@@ -123,7 +132,7 @@ export function Allowlist({
             size="1"
             onClick={handleSelectNone}
             color="amber"
-            disabled={allowlist.length === 0}
+            disabled={allowlist.hosts.length === 0}
           >
             Select none
           </Button>
@@ -138,9 +147,9 @@ export function Allowlist({
                 <AllowlistSeparator text="Hosts" />
               )}
               <AllowlistCheckGroup
-                allowlist={allowlist}
-                onValueChange={handleChangeHosts}
+                selected={allowlist.hosts}
                 hosts={firstPartyFilteredHosts}
+                onValueChange={handleChangeHosts}
               />
               {thirdPartyFilteredHosts.length > 0 && (
                 <>
@@ -149,9 +158,9 @@ export function Allowlist({
                     tooltip="Selecting third-party hosts may include irrelevant or sensitive data outside your control. It is recommended that only hosts directly related to your app are selected."
                   />
                   <AllowlistCheckGroup
-                    allowlist={allowlist}
-                    onValueChange={handleChangeHosts}
+                    selected={allowlist.hosts}
                     hosts={thirdPartyFilteredHosts}
+                    onValueChange={handleChangeHosts}
                   />
                 </>
               )}
@@ -163,9 +172,9 @@ export function Allowlist({
       <Flex justify="between" align="center">
         <Label>
           <Checkbox
-            onCheckedChange={handleCheckStaticAssets}
-            checked={includeStaticAssets}
+            checked={allowlist.includeStaticAssets}
             disabled={staticAssetCount === 0}
+            onCheckedChange={handleCheckStaticAssets}
           />
           <Text size="2">Include static assets ({staticAssetCount})</Text>
         </Label>

@@ -1,6 +1,6 @@
 import { Button, Dialog, Flex } from '@radix-ui/themes'
 import { GlobeIcon } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { PopoverDialog } from '@/components/PopoverDialogs'
 import { useGeneratorStore } from '@/store/generator'
@@ -8,57 +8,61 @@ import {
   extractUniqueHosts,
   groupHostsByParty,
 } from '@/store/generator/slices/recording.utils'
+import { ProxyData } from '@/types'
 
-import { Allowlist } from './Allowlist'
+import { type Allowlist, AllowlistEditor } from './AllowlistEditor'
 
-export function AllowlistDialog() {
-  const requests = useGeneratorStore((store) => store.requests)
+interface AllowlistDialogProps {
+  requests: ProxyData[]
+  allowlist: Allowlist
+  open: boolean
+  onChange: (value: Allowlist) => void
+  onOpenChange: (open: boolean) => void
+}
 
-  const allowlist = useGeneratorStore((store) => store.allowlist)
-  const setAllowlist = useGeneratorStore((store) => store.setAllowlist)
-
+export function AllowlistDialog({
+  requests,
+  allowlist,
+  open,
+  onChange,
+  onOpenChange,
+}: AllowlistDialogProps) {
   const [openAsPopover, setOpenAsPopover] = useState(false)
-
-  const showAllowlistDialog = useGeneratorStore(
-    (store) => store.showAllowlistDialog
-  )
-  const setShowAllowlistDialog = useGeneratorStore(
-    (store) => store.setShowAllowlistDialog
-  )
-
-  const includeStaticAssets = useGeneratorStore(
-    (store) => store.includeStaticAssets
-  )
-  const setIncludeStaticAssets = useGeneratorStore(
-    (store) => store.setIncludeStaticAssets
-  )
 
   const { firstParty, thirdParty } = useMemo(() => {
     const uniqueHosts = extractUniqueHosts(requests)
     return groupHostsByParty(uniqueHosts)
   }, [requests])
 
+  const onChangeRef = useRef(onChange)
+
+  useEffect(() => {
+    onChangeRef.current = onChange
+  }, [onChange])
+
   useEffect(() => {
     // Using allowlist.length would require adding it as a dependency of useEffect.
     // This causes an unintended behavior of automatically selecting the first item when the user unselects all checkboxes. (making it impossible to make allowlist empty).
-    const allowlistCount = useGeneratorStore.getState().allowlist.length
-    if (firstParty[0] !== undefined && allowlistCount === 0) {
-      setAllowlist([firstParty[0]])
+    const { allowlist, includeStaticAssets } = useGeneratorStore.getState()
+
+    if (firstParty[0] !== undefined && allowlist.length === 0) {
+      onChangeRef.current({
+        includeStaticAssets: includeStaticAssets,
+        hosts: [firstParty[0]],
+      })
     }
-  }, [firstParty, setAllowlist])
+  }, [firstParty])
 
   function handleOpenChange(open: boolean) {
     if (!open) {
       setOpenAsPopover(false)
     }
 
-    setShowAllowlistDialog(open)
+    onOpenChange(open)
   }
 
   // Show dialog as popover when triggered from the button
   const Wrapper = openAsPopover ? PopoverWrapper : DialogWrapper
-
-  const allHosts = [...firstParty, ...thirdParty]
 
   const trigger = (
     <Button
@@ -68,24 +72,19 @@ export function AllowlistDialog() {
       onClick={() => setOpenAsPopover(true)}
     >
       <GlobeIcon />
-      Allowed hosts [{allowlist.length}/{allHosts.length}]
+      Allowed hosts [{allowlist.hosts.length}/
+      {firstParty.length + thirdParty.length}]
     </Button>
   )
 
   return (
-    <Wrapper
-      trigger={trigger}
-      open={showAllowlistDialog}
-      onOpenChange={handleOpenChange}
-    >
-      <Allowlist
+    <Wrapper trigger={trigger} open={open} onOpenChange={handleOpenChange}>
+      <AllowlistEditor
         firstPartyHosts={firstParty}
         thirdPartyHosts={thirdParty}
         allowlist={allowlist}
         requests={requests}
-        includeStaticAssets={includeStaticAssets}
-        setAllowlist={setAllowlist}
-        setIncludeStaticAssets={setIncludeStaticAssets}
+        onChange={onChange}
       />
     </Wrapper>
   )
