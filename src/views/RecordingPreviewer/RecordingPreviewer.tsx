@@ -55,7 +55,7 @@ export function RecordingPreviewer() {
       actions={
         <RecordingPreviewControls
           file={file}
-          isExternal={isExternal}
+          requests={proxyData}
           browserEvents={browserEvents}
         />
       }
