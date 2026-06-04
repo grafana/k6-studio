@@ -6,7 +6,6 @@ import { AlertTriangleIcon, PlusIcon } from 'lucide-react'
 import { useGeneratorStore } from '@/store/generator'
 import { useStudioUIStore } from '@/store/ui'
 import { useToast } from '@/store/ui/useToast'
-import { harToProxyData } from '@/utils/harToProxyData'
 import * as path from '@/utils/path'
 
 export function RecordingSelector({
@@ -34,8 +33,7 @@ export function RecordingSelector({
         throw new Error(`Expected recording content, got ${content.type}`)
       }
 
-      const proxyData = harToProxyData(content.data)
-      setRecording(proxyData, filePath)
+      setRecording(content.data, filePath)
       onChangeRecording?.()
     } catch (error) {
       showToast({
