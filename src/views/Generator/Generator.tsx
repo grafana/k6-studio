@@ -28,6 +28,10 @@ import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 
 export function Generator() {
   const setGeneratorFile = useGeneratorStore((store) => store.setGeneratorFile)
+  const resetGeneratorFile = useGeneratorStore(
+    (store) => store.resetGeneratorFile
+  )
+
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
 
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
@@ -103,6 +107,10 @@ export function Generator() {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     return isDirty && historyAction !== 'REPLACE'
   })
+
+  useEffect(() => {
+    resetGeneratorFile()
+  }, [file.path, resetGeneratorFile])
 
   useEffect(() => {
     if (!generatorFileData) {

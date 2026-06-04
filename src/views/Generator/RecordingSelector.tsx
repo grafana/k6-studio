@@ -10,7 +10,6 @@ import * as path from '@/utils/path'
 
 interface RecordingSelectorProps {
   id?: string
-  compact?: boolean
   error?: boolean
   onChangeRecording: (newPath: string) => void
 }
@@ -25,8 +24,8 @@ export function RecordingSelector({
   const recordings = useStudioUIStore((store) => store.recordings)
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
 
-  const isKnownRecording =
-    recordingPath !== '' && recordings.has(path.key(recordingPath))
+  const showGhostItem =
+    recordingPath !== '' && !recordings.has(path.key(recordingPath))
 
   const handleOpen = async () => {
     try {
@@ -60,6 +59,8 @@ export function RecordingSelector({
             id={id}
             placeholder="Select recording"
             css={css`
+              min-width: 200px;
+
               @media (max-width: 1060px) {
                 width: 125px;
               }
@@ -79,7 +80,7 @@ export function RecordingSelector({
           </Select.Trigger>
         </Tooltip>
         <Select.Content position="popper">
-          {!isKnownRecording && (
+          {showGhostItem && (
             <Select.Item value={recordingPath} disabled>
               {path.name(recordingPath)}
             </Select.Item>

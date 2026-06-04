@@ -63,11 +63,7 @@ export function RequestList({
         px="4"
         message="The selected recording could not be loaded, select another one from the dropdown"
         action={
-          <RecordingSelector
-            compact
-            error
-            onChangeRecording={onChangeRecording}
-          />
+          <RecordingSelector error onChangeRecording={onChangeRecording} />
         }
       ></EmptyMessage>
     )
@@ -78,9 +74,7 @@ export function RequestList({
       <EmptyMessage
         px="4"
         message="The selected recording is empty, select another one from the dropdown"
-        action={
-          <RecordingSelector compact onChangeRecording={onChangeRecording} />
-        }
+        action={<RecordingSelector onChangeRecording={onChangeRecording} />}
       />
     )
   }

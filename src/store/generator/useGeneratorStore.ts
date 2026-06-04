@@ -28,6 +28,7 @@ export interface GeneratorStore
     generatorFile: GeneratorFileData,
     recording?: ProxyData[]
   ) => void
+  resetGeneratorFile: () => void
 }
 
 export const useGeneratorStore = create<GeneratorStore>()(
@@ -77,6 +78,10 @@ export const useGeneratorStore = create<GeneratorStore>()(
         // rules
         state.rules = rules
         state.previewOriginalRequests = false
+      }),
+    resetGeneratorFile: () =>
+      set(() => {
+        return useGeneratorStore.getInitialState()
       }),
   }))
 )
