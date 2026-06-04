@@ -8,6 +8,11 @@ import { computeAccessibleName } from 'dom-accessibility-api'
 import { groupBy } from 'lodash-es'
 
 import { AriaDetails } from '@/schemas/recording'
+import {
+  isHTMLInputElement,
+  isHTMLSelectElement,
+  isHTMLTextAreaElement,
+} from '@/utils/dom/realm'
 import { exhaustive } from '@/utils/typescript'
 
 const ABSTRACT_ROLES: ReadonlySet<string> = new Set(
@@ -143,13 +148,10 @@ export function getElementRoles(element: Element): Set<ElementRole> {
 }
 
 function getLabelTexts(element: Element): string[] {
-  const { HTMLInputElement, HTMLTextAreaElement, HTMLSelectElement } =
-    element.ownerDocument.defaultView ?? window
-
   if (
-    element instanceof HTMLInputElement === false &&
-    element instanceof HTMLTextAreaElement === false &&
-    element instanceof HTMLSelectElement === false
+    !isHTMLInputElement(element) &&
+    !isHTMLTextAreaElement(element) &&
+    !isHTMLSelectElement(element)
   ) {
     return []
   }
