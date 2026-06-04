@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { observeWindowsForLayoutShift } from './observeLayoutShift'
+import { observeWindowsForLayoutShift } from './layout'
 
 describe('observeWindowsForLayoutShift', () => {
   afterEach(() => {
