@@ -139,9 +139,9 @@ class CDPRecordingSession
     // and generated test reflect the real interaction order.
     this.#events = mergeRecordedEvents(this.#events, events)
 
-    this.#server.send({ type: 'events-recorded', events })
+    this.#server.send({ type: 'events-recorded', events: this.#events })
 
-    this.emit('record', { events })
+    this.emit('record', { events: this.#events })
   }
 }
 

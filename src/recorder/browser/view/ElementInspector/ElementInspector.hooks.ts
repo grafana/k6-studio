@@ -99,8 +99,11 @@ export function useInspectedElement() {
 
       // The inspector running inside the iframe reports the element under the
       // cursor, so don't highlight the iframe element itself (and skip the
-      // expensive selector computation it would require).
+      // expensive selector computation it would require). Clear the hover so a
+      // prior in-frame highlight can't linger over the iframe's own surface.
       if (isHTMLIFrameElement(target)) {
+        setHoveredEl(null)
+
         return
       }
 
