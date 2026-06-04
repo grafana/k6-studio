@@ -1,7 +1,7 @@
 import { Box } from '@radix-ui/themes'
-import { Allotment } from 'allotment'
 import { ReactNode, useState } from 'react'
 
+import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { ProxyData } from '@/types'
@@ -19,8 +19,8 @@ export function NetworkInspector({ actions, session }: NetworkInspectorProps) {
   const groups = useProxyDataGroups(session.requests)
 
   return (
-    <Allotment>
-      <Allotment.Pane minSize={250}>
+    <Group>
+      <Panel id="requests" minSize={250}>
         <Box height="100%">
           <RequestsSection
             proxyData={session.requests}
@@ -31,15 +31,18 @@ export function NetworkInspector({ actions, session }: NetworkInspectorProps) {
             onSelectRequest={setSelectedRequest}
           />
         </Box>
-      </Allotment.Pane>
+      </Panel>
       {selectedRequest !== null && (
-        <Allotment.Pane>
-          <HttpRequestDetails
-            selectedRequest={selectedRequest}
-            onSelectRequest={setSelectedRequest}
-          />
-        </Allotment.Pane>
+        <>
+          <Separator />
+          <Panel id="details" defaultSize="40%" minSize={300}>
+            <HttpRequestDetails
+              selectedRequest={selectedRequest}
+              onSelectRequest={setSelectedRequest}
+            />
+          </Panel>
+        </>
       )}
-    </Allotment>
+    </Group>
   )
 }
