@@ -1,0 +1,10 @@
+{
+  "version": "v2.0.0",
+  "checksums": {
+    "macos-amd64": "287f3b0ab9f936f20c37c649f220842385a7961ead84d695d7b5192268c61b3f",
+    "macos-arm64": "9a725f3faf8fc9de70f0bd86fb9783e6fb02f822492862846375ec0d8f2b35f7",
+    "windows-amd64": "58bb8530af85c57abeb5cc2bae7581d6aa976d43ca538d4be79a1dcc93388b05",
+    "linux-amd64": "2ae87d976f6cdba17185bdd980d8819a3a98e9092c6f0638cd58272ecefc8b90",
+    "linux-arm64": "397d338c0c50821994aa51a630e511c599c2e903d00f7fa6c55a82258e7a84e6"
+  }
+}

@@ -75,8 +75,9 @@ function toStyles(colors: { [key: string]: string }) {
 const styles = css`
   --studio-color-scheme: light;
 
-  --studio-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI (Custom)',
-    Roboto, 'Helvetica Neue', 'Open Sans (Custom)', system-ui, sans-serif,
+  --studio-font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI (Custom)', Roboto,
+    'Helvetica Neue', 'Open Sans (Custom)', system-ui, sans-serif,
     'Apple Color Emoji', 'Segoe UI Emoji';
 
   --studio-foreground: var(--gray-12);

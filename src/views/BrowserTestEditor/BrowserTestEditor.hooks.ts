@@ -1,6 +1,5 @@
 import { arrayMove } from '@dnd-kit/sortable'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import log from 'electron-log/renderer'
+import { useQuery } from '@tanstack/react-query'
 import { debounce, isEqual } from 'lodash-es'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -17,49 +16,24 @@ import {
   BrowserThreshold,
   defaultBrowserTestOptions,
 } from '@/schemas/browserTest'
-import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 import { LoadProfileExecutorOptions, LoadZoneData } from '@/types/testOptions'
 import { getInitialStages } from '@/utils/generator'
 import { stripUndefined } from '@/utils/object'
-import { queryClient } from '@/utils/query'
 
 import { useDebugSession } from '../Validator/Validator.hooks'
 
 export function useBrowserTest(filePath: string) {
-  return useQuery<BrowserTestFile>({
+  return useQuery({
     queryKey: ['browserTest', filePath],
-    queryFn: () => {
-      return window.studio.browserTest.open(filePath)
-    },
-  })
-}
+    queryFn: async () => {
+      const content = await window.studio.fs.openFile(filePath)
 
-export function useSaveBrowserTest(filePath: string) {
-  const showToast = useToast()
+      if (content.type !== 'browser-test') {
+        throw new Error(`Expected browser-test content, got ${content.type}`)
+      }
 
-  return useMutation({
-    mutationFn: async (data: BrowserTestFile) => {
-      await window.studio.browserTest.save(filePath, data)
-      await queryClient.invalidateQueries({
-        queryKey: ['browserTest', filePath],
-      })
-    },
-
-    onSuccess: () => {
-      showToast({
-        title: 'Browser test saved',
-        status: 'success',
-      })
-    },
-
-    onError: (error) => {
-      showToast({
-        title: 'Failed to save browser test',
-        status: 'error',
-        description: error.message,
-      })
-      log.error(error)
+      return content
     },
   })
 }

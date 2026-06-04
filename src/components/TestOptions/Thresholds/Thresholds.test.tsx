@@ -4,8 +4,8 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
 
-import { Thresholds } from './Thresholds'
 import { createMetricsConfig } from './createMetricsConfig'
+import { Thresholds } from './Thresholds'
 
 interface ThresholdRow {
   metric: string

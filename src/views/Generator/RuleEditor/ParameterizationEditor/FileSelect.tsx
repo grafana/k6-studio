@@ -37,7 +37,7 @@ export function FileSelect() {
       return []
     }
 
-    return preview.props.map((prop) => ({
+    return preview.data.props.map((prop) => ({
       value: prop,
       label: (
         <Code

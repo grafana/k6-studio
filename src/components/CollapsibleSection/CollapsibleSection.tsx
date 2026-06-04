@@ -3,6 +3,7 @@ import * as Collapsible from '@radix-ui/react-collapsible'
 import { Flex, Reset } from '@radix-ui/themes'
 import { ChevronDownIcon, ChevronRightIcon } from 'lucide-react'
 import { useState } from 'react'
+
 import './CollapsibleSection.styles.css'
 
 export function CollapsibleSection({

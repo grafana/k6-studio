@@ -4,9 +4,9 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { enableMapSet } from 'immer'
 
 import { DevToolsDialog } from '@/components/DevToolsDialog'
+import { Theme as StudioTheme } from '@/components/primitives/Theme'
 import { SettingsDialog } from '@/components/Settings/SettingsDialog'
 import { Toasts } from '@/components/Toast/Toasts'
-import { Theme as StudioTheme } from '@/components/primitives/Theme'
 import { useTheme } from '@/hooks/useTheme'
 import { queryClient } from '@/utils/query'
 

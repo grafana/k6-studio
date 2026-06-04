@@ -5,8 +5,8 @@ import type { ReactNode } from 'react'
 
 import { AnyBrowserAction } from '@/schemas/browserTest'
 
-import { OptionsSummary } from './Actions/components/OptionsSummary'
 import { getActionEditorForAction } from './actionEditorRegistry'
+import { OptionsSummary } from './Actions/components/OptionsSummary'
 
 interface EditableActionProps {
   action: AnyBrowserAction
