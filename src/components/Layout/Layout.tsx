@@ -67,13 +67,7 @@ export function Layout() {
 
   return (
     <Flex height="100dvh">
-      <Group
-        {...layout}
-        id="sidebar-layout"
-        css={css`
-          --focus-border: var(--accent-9);
-        `}
-      >
+      <Group {...layout} id="sidebar-layout">
         <Box
           flexShrink="0"
           css={{

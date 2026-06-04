@@ -1,10 +1,15 @@
 import { css } from '@emotion/react'
 import styled from '@emotion/styled'
 import { Box, Flex, Tabs } from '@radix-ui/themes'
-import { Allotment } from 'allotment'
 import { useEffect, useState } from 'react'
 
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
+import {
+  Group,
+  Panel,
+  Separator,
+  useDefaultLayout,
+} from '@/components/primitives/ResizablePanel'
 import { ExecutionDetails } from '@/components/Validator/ExecutionDetails'
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
@@ -37,6 +42,9 @@ export function HttpDebugger({
 
   const isRunning = session.state === 'running'
 
+  const mainLayout = useDefaultLayout({ id: 'http-debugger-main' })
+  const innerLayout = useDefaultLayout({ id: 'http-debugger-inner' })
+
   // Clear selected request when starting a new run
   useEffect(() => {
     if (isRunning) {
@@ -46,10 +54,10 @@ export function HttpDebugger({
   }, [isRunning])
 
   return (
-    <Allotment defaultSizes={[3, 2]}>
-      <Allotment.Pane minSize={250}>
-        <Allotment vertical defaultSizes={[2, 1]}>
-          <Allotment.Pane>
+    <Group {...mainLayout}>
+      <Panel id="main" minSize={250}>
+        <Group orientation="vertical" {...innerLayout}>
+          <Panel id="tabs">
             <Tabs.Root asChild value={tab} onValueChange={setTab}>
               <Flex direction="column" height="100%" overflow="hidden">
                 <Tabs.List
@@ -85,8 +93,9 @@ export function HttpDebugger({
                 </TabsContent>
               </Flex>
             </Tabs.Root>
-          </Allotment.Pane>
-          <Allotment.Pane minSize={250}>
+          </Panel>
+          <Separator />
+          <Panel id="execution" minSize={250}>
             <Box height="100%">
               <ExecutionDetails
                 isRunning={isRunning}
@@ -94,17 +103,20 @@ export function HttpDebugger({
                 checks={session.checks}
               />
             </Box>
-          </Allotment.Pane>
-        </Allotment>
-      </Allotment.Pane>
+          </Panel>
+        </Group>
+      </Panel>
       {selectedRequest && (
-        <Allotment.Pane minSize={300}>
-          <HttpRequestDetails
-            selectedRequest={selectedRequest}
-            onSelectRequest={setSelectedRequest}
-          />
-        </Allotment.Pane>
+        <>
+          <Separator />
+          <Panel id="details" minSize={300}>
+            <HttpRequestDetails
+              selectedRequest={selectedRequest}
+              onSelectRequest={setSelectedRequest}
+            />
+          </Panel>
+        </>
       )}
-    </Allotment>
+    </Group>
   )
 }

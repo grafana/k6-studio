@@ -1,12 +1,12 @@
 import { Flex, Box } from '@radix-ui/themes'
-import { Allotment } from 'allotment'
 import { CirclePlusIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { EmptyMessage } from '@/components/EmptyMessage'
+import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
-import { ProxyData, Group } from '@/types'
+import { ProxyData, Group as GroupType } from '@/types'
 
 import { RequestsSection } from './RequestsSection'
 import { RecorderState } from './types'
@@ -14,8 +14,8 @@ import { RecorderState } from './types'
 interface RequestLogProps {
   recorderState?: RecorderState | undefined
   requests: ProxyData[]
-  groups: Group[]
-  onUpdateGroup?: (group: Group) => void
+  groups: GroupType[]
+  onUpdateGroup?: (group: GroupType) => void
   onCreateGroup?: (name: string) => void
   onResetRecording?: () => void
 }
@@ -41,8 +41,8 @@ export function RequestLog({
   }, [recorderState])
 
   return (
-    <Allotment defaultSizes={[1, 1]}>
-      <Allotment.Pane minSize={200}>
+    <Group>
+      <Panel id="requests" minSize={200}>
         <Flex direction="column" height="100%">
           <div css={{ flexGrow: 0, minHeight: 0 }}>
             <RequestsSection
@@ -71,15 +71,18 @@ export function RequestLog({
             </Box>
           )}
         </Flex>
-      </Allotment.Pane>
+      </Panel>
       {selectedRequest && (
-        <Allotment.Pane minSize={300}>
-          <HttpRequestDetails
-            selectedRequest={selectedRequest}
-            onSelectRequest={setSelectedRequest}
-          />
-        </Allotment.Pane>
+        <>
+          <Separator />
+          <Panel id="details" minSize={300}>
+            <HttpRequestDetails
+              selectedRequest={selectedRequest}
+              onSelectRequest={setSelectedRequest}
+            />
+          </Panel>
+        </>
       )}
-    </Allotment>
+    </Group>
   )
 }
