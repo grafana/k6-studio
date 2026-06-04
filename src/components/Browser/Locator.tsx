@@ -5,10 +5,12 @@ import {
   CaseSensitiveIcon,
   ImageIcon,
   LucideProps,
+  SquareStackIcon,
   TagIcon,
   TestTubeDiagonalIcon,
   WholeWordIcon,
 } from 'lucide-react'
+import { Fragment } from 'react'
 
 import { ElementLocator } from '@/schemas/locator'
 import { exhaustive } from '@/utils/typescript'
@@ -90,12 +92,37 @@ export function LocatorText({ locator }: LocatorComponentProps) {
   }
 }
 
+const iconStyles = css`
+  align-self: center;
+  && {
+    width: 12px;
+    height: 12px;
+    min-width: 12px;
+    min-height: 12px;
+  }
+`
+
+const codeStyles = css`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 300px;
+  font-size: 0.9em;
+`
+
 interface LocatorProps {
   locator: ElementLocator
+  // Chain of iframe locators (outermost first) the element lives in, shown as a
+  // prefix inside the badge so an element inside an iframe is recognizable.
+  frames?: ElementLocator[]
   onHighlightChange?: (highlighted: boolean) => void
 }
 
-export function Locator({ locator, onHighlightChange }: LocatorProps) {
+export function Locator({
+  locator,
+  frames = [],
+  onHighlightChange,
+}: LocatorProps) {
   const handleMouseEnter = () => {
     onHighlightChange?.(true)
   }
@@ -131,27 +158,16 @@ export function Locator({ locator, onHighlightChange }: LocatorProps) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <LocatorIcon
-        css={css`
-          align-self: center;
-          && {
-            width: 12px;
-            height: 12px;
-            min-width: 12px;
-            min-height: 12px;
-          }
-        `}
-        locator={locator}
-      />
-      <code
-        css={css`
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          max-width: 300px;
-          font-size: 0.9em;
-        `}
-      >
+      {frames.map((frame, index) => (
+        <Fragment key={index}>
+          <SquareStackIcon aria-label="Inside iframe" css={iconStyles} />
+          <code css={codeStyles}>
+            <LocatorText locator={frame} />
+          </code>
+        </Fragment>
+      ))}
+      <LocatorIcon css={iconStyles} locator={locator} />
+      <code css={codeStyles}>
         <LocatorText locator={locator} />
       </code>
     </div>

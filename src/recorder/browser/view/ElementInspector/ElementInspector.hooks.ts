@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Bounds, Position } from '@/components/Browser/types'
+import { isHTMLIFrameElement } from '@/utils/dom/realm'
 
+import { toTopFramePosition } from '../frameGeometry'
 import { useGlobalClass } from '../GlobalStyles'
 import { useHighlightDebounce } from '../hooks/useHighlightDebounce'
 import { usePreventClick } from '../hooks/usePreventClick'
@@ -46,6 +48,33 @@ export function useInspectedElement() {
 
   useGlobalClass('inspecting')
 
+  const reset = useCallback(() => {
+    setMousePosition({
+      top: 0,
+      left: 0,
+    })
+
+    unpin()
+  }, [unpin])
+
+  const pinElement = useCallback(
+    (element: Element, position: Position) => {
+      const tracked = toTrackedElement(element)
+
+      // In certain cases the mouse position is outside the bounds of the hovered
+      // element, e.g. when the last hovered element was the `body` element.
+      // Showing the menu when clicking outside the bounds is very confusing
+      // because you have no idea what element the menu is for.
+      if (!isInsideBounds(position, tracked.bounds)) {
+        return
+      }
+
+      setMousePosition(position)
+      pin(tracked)
+    },
+    [pin]
+  )
+
   useEffect(() => {
     const handleMouseOver = (ev: MouseEvent) => {
       const [target] = ev.composedPath()
@@ -68,6 +97,13 @@ export function useInspectedElement() {
         return
       }
 
+      // The inspector running inside the iframe reports the element under the
+      // cursor, so don't highlight the iframe element itself (and skip the
+      // expensive selector computation it would require).
+      if (isHTMLIFrameElement(target)) {
+        return
+      }
+
       setHoveredEl(toTrackedElement(target))
     }
 
@@ -77,15 +113,6 @@ export function useInspectedElement() {
       window.removeEventListener('mouseover', handleMouseOver)
     }
   }, [])
-
-  const reset = useCallback(() => {
-    setMousePosition({
-      top: 0,
-      left: 0,
-    })
-
-    unpin()
-  }, [unpin])
 
   usePreventClick({
     callback: (ev) => {
@@ -99,25 +126,51 @@ export function useInspectedElement() {
         return
       }
 
-      const position = {
+      pinElement(hoveredEl.element, {
         top: ev.clientY + window.scrollY,
         left: ev.clientX + window.scrollX,
-      }
-
-      // In certain cases the mouse position is outside the bounds of
-      // the hovered element, e.g. when the last hovered element was
-      // the `body` element. Showing the menu when clicking outside
-      // the bounds is very confusing because you have no idea what
-      // element the menu is for.
-      if (!isInsideBounds(position, hoveredEl.bounds)) {
-        return
-      }
-
-      setMousePosition(position)
-      pin(hoveredEl)
+      })
     },
-    dependencies: [pinned, hoveredEl, unpin],
+    dependencies: [pinned, hoveredEl, reset, pinElement],
   })
+
+  // Detection inside iframes runs in the child frames (see
+  // attachInspectionDetection) and reports back through this bridge with the
+  // live element reference. We delegate through refs so the bridge object stays
+  // stable while still seeing the latest state.
+  const hoverRef = useRef<(element: Element) => void>(() => {})
+  const pickRef = useRef<
+    (element: Element, clientX: number, clientY: number) => void
+  >(() => {})
+
+  hoverRef.current = (element) => {
+    setHoveredEl(toTrackedElement(element))
+  }
+
+  pickRef.current = (element, clientX, clientY) => {
+    if (pinned !== null) {
+      reset()
+
+      return
+    }
+
+    pinElement(
+      element,
+      toTopFramePosition(element.ownerDocument.defaultView, clientX, clientY)
+    )
+  }
+
+  useEffect(() => {
+    window.__K6_STUDIO_INSPECTION__ = {
+      hover: (element) => hoverRef.current(element),
+      pick: (element, clientX, clientY) =>
+        pickRef.current(element, clientX, clientY),
+    }
+
+    return () => {
+      delete window.__K6_STUDIO_INSPECTION__
+    }
+  }, [])
 
   const highlightedEl = useHighlightDebounce(hoveredEl)
 

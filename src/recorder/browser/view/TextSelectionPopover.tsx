@@ -4,6 +4,7 @@ import { useState } from 'react'
 
 import { Overlay } from '@/components/Browser/Overlay'
 
+import { getFramePathForElement, withFrames } from '../frames'
 import { getTabId } from '../utils'
 
 import { TextAssertionEditor } from './ElementInspector/assertions/TextAssertionEditor'
@@ -91,23 +92,32 @@ export function TextSelectionPopover({ onClose }: TextSelectionPopoverProps) {
   })
 
   const handleAdd = (assertion: TextAssertionData) => {
+    // Expansion stays within the same frame, so the selection's element gives
+    // the right frame chain.
+    const frames = selection
+      ? getFramePathForElement(selection.element.element)
+      : []
+
     client.send({
       type: 'record-events',
       events: [
-        {
-          eventId: nanoid(),
-          timestamp: Date.now(),
-          type: 'assert',
-          tab: getTabId(),
-          target: assertion.target,
-          assertion: {
-            type: 'text',
-            operation: {
-              type: 'contains',
-              value: assertion.text,
+        withFrames(
+          {
+            eventId: nanoid(),
+            timestamp: Date.now(),
+            type: 'assert',
+            tab: getTabId(),
+            target: assertion.target,
+            assertion: {
+              type: 'text',
+              operation: {
+                type: 'contains',
+                value: assertion.text,
+              },
             },
           },
-        },
+          frames
+        ),
       ],
     })
 

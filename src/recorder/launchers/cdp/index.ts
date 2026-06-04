@@ -2,7 +2,7 @@ import { ChildProcess, spawn } from 'child_process'
 import logger from 'electron-log/main'
 
 import { BrowserServer } from '@/recorder/server'
-import { ElementLocator } from '@/schemas/locator'
+import { ElementLocator, LocatorOptions } from '@/schemas/locator'
 import { BrowserEvent } from '@/schemas/recording'
 import { ChromeDevToolsClient, Transport } from '@/utils/cdp/client'
 import { PipeTransport } from '@/utils/cdp/transports/pipe'
@@ -20,6 +20,7 @@ import {
 import { getBrowserLaunchArgs } from '../utils'
 
 import { BrowserSession } from './browser'
+import { mergeRecordedEvents } from './events'
 import { Script } from './script'
 
 type InitState = 'init' | 'spawned' | 'ready'
@@ -31,6 +32,12 @@ const BROWSER_CDP_ARGS = [
   // Disable web security to allow our script to be executed in sandboxed iframes.
   '--disable-web-security',
   '--allow-running-insecure-content',
+  // Keep cross-origin iframes in the parent's process so the injected recording
+  // script runs inside them and can walk up to the top frame. Disabling the
+  // IsolateOrigins/site-per-process features (see FEATURES_TO_DISABLE) is not
+  // enough on its own in current Chrome; the site-isolation trials must also be
+  // turned off.
+  '--disable-site-isolation-trials',
 ]
 
 const BROWSER_CDP_WEBSOCKET_ARGS = [
@@ -100,8 +107,11 @@ class CDPRecordingSession
     })
   }
 
-  highlightElement(locator: ElementLocator | null): void {
-    this.#server.send({ type: 'highlight-elements', locator })
+  highlightElement(
+    locator: ElementLocator | null,
+    frames?: LocatorOptions[]
+  ): void {
+    this.#server.send({ type: 'highlight-elements', locator, frames })
   }
 
   navigateTo(url: string): void {
@@ -124,7 +134,10 @@ class CDPRecordingSession
   }
 
   #record(events: BrowserEvent[]) {
-    this.#events.push(...events)
+    // Frames record over separate WebSocket connections, so events can arrive
+    // out of order. Keep the buffer sorted by timestamp so the saved recording
+    // and generated test reflect the real interaction order.
+    this.#events = mergeRecordedEvents(this.#events, events)
 
     this.#server.send({ type: 'events-recorded', events })
 
