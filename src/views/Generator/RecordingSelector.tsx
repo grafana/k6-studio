@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { Flex, IconButton, Select, Tooltip } from '@radix-ui/themes'
+import { Flex, IconButton, Select, Tooltip, Text } from '@radix-ui/themes'
 import log from 'electron-log/renderer'
 import { AlertTriangleIcon, FolderOpenIcon } from 'lucide-react'
 
@@ -50,27 +50,33 @@ export function RecordingSelector({
   return (
     <Flex gap="2" align="center">
       <Select.Root value={recordingPath} onValueChange={onChangeRecording}>
-        <Select.Trigger
-          id={id}
-          placeholder="Select recording"
-          css={css`
-            @media (max-width: 1060px) {
-              width: 125px;
-            }
-          `}
+        <Tooltip
+          content={<Text wrap="nowrap">{recordingPath}</Text>}
+          hidden={recordingPath === ''}
+          delayDuration={1000}
         >
-          <Flex as="span" align="center" gap="1">
-            {error && (
-              <AlertTriangleIcon
-                css={css`
-                  flex-shrink: 0;
-                  color: var(--accent-9);
-                `}
-              />
-            )}
-            {path.name(recordingPath)}
-          </Flex>
-        </Select.Trigger>
+          <Select.Trigger
+            id={id}
+            placeholder="Select recording"
+            css={css`
+              @media (max-width: 1060px) {
+                width: 125px;
+              }
+            `}
+          >
+            <Flex as="span" align="center" gap="1">
+              {error && (
+                <AlertTriangleIcon
+                  css={css`
+                    flex-shrink: 0;
+                    color: var(--accent-9);
+                  `}
+                />
+              )}
+              {path.name(recordingPath)}
+            </Flex>
+          </Select.Trigger>
+        </Tooltip>
         <Select.Content position="popper">
           {!isKnownRecording && (
             <Select.Item value={recordingPath} disabled>
