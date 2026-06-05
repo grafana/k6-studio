@@ -40,6 +40,7 @@ export function Generator({ file, content }: GeneratorProps) {
   const [savedData, setSavedData] = useState<GeneratorFileData>(content.data)
 
   const setRecordingPath = useGeneratorStore((store) => store.setRecordingPath)
+  const recordingPath = useGeneratorStore((store) => store.recordingPath)
 
   const setRecording = useGeneratorStore((store) => store.setRecording)
   const setRecordingError = useGeneratorStore(
@@ -58,7 +59,7 @@ export function Generator({ file, content }: GeneratorProps) {
     data: recording,
     isLoading: isLoadingRecording,
     error: harError,
-  } = useLoadHarFile(content.data.recordingPath)
+  } = useLoadHarFile(recordingPath)
 
   const saveFile = useSaveFile({
     menuItems: {
