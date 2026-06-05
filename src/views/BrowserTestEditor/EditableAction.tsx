@@ -9,10 +9,10 @@ import { OptionsSummary } from './Actions/components/OptionsSummary'
 import { getActionEditorForAction } from './actionEditorRegistry'
 
 interface EditableActionProps {
-  action: AnyBrowserAction
-  onRemove: (actionId: string) => void
-  onChange: (action: AnyBrowserAction) => void
   dragHandle?: ReactNode
+  action: AnyBrowserAction
+  onChange: (action: AnyBrowserAction) => void
+  onRemove: (actionId: AnyBrowserAction) => void
 }
 
 export function EditableAction({
@@ -22,7 +22,7 @@ export function EditableAction({
   onChange,
 }: EditableActionProps) {
   const handleRemove = () => {
-    onRemove(action.id)
+    onRemove(action)
   }
 
   const editor = getActionEditorForAction(action)

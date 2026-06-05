@@ -1,4 +1,3 @@
-import { arrayMove } from '@dnd-kit/sortable'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
 import { debounce, isEqual } from 'lodash-es'
@@ -14,12 +13,11 @@ import {
   AnyBrowserAction,
   BrowserTestFile,
   BrowserTestOptions,
-  BrowserThreshold,
   defaultBrowserTestOptions,
 } from '@/schemas/browserTest'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
-import { LoadProfileExecutorOptions, LoadZoneData } from '@/types/testOptions'
+import { LoadProfileExecutorOptions } from '@/types/testOptions'
 import { getInitialStages } from '@/utils/generator'
 import { stripUndefined } from '@/utils/object'
 import { queryClient } from '@/utils/query'
@@ -179,6 +177,7 @@ function withSeededStages(
     return loadProfile
   }
   const seeded = { ...loadProfile, stages: getInitialStages() }
+
   return seeded
 }
 
@@ -188,80 +187,13 @@ export function useBrowserTestState(
   const { actions = [], options = defaultBrowserTestOptions } =
     browserTestFile ?? {}
 
-  const [actionState, setActionState] = useState(actions)
-
-  const [optionsState, setOptionsState] = useState<BrowserTestOptions>(() => ({
-    ...options,
-    loadProfile: withSeededStages(options.loadProfile),
+  const [test, setTest] = useState(() => ({
+    actions,
+    options: {
+      ...options,
+      loadProfile: withSeededStages(options.loadProfile),
+    },
   }))
-
-  useEffect(() => {
-    const { options: fileOptions } = browserTestFile ?? {}
-    const resolvedOptions = fileOptions ?? defaultBrowserTestOptions
-    const nextOptions: BrowserTestOptions = {
-      ...resolvedOptions,
-      loadProfile: withSeededStages(resolvedOptions.loadProfile),
-    }
-    setOptionsState((prev) =>
-      isEqual(stripUndefined(prev), stripUndefined(nextOptions))
-        ? prev
-        : nextOptions
-    )
-  }, [browserTestFile])
-
-  const addAction = (action: AnyBrowserAction) => {
-    setActionState([...actionState, action])
-  }
-
-  const updateAction = (updatedAction: AnyBrowserAction) => {
-    setActionState(
-      actionState.map((action) =>
-        action.id === updatedAction.id ? updatedAction : action
-      )
-    )
-  }
-
-  const removeAction = (id: string) => {
-    setActionState(actionState.filter((action) => action.id !== id))
-  }
-
-  const reorderActions = useCallback((activeId: string, overId: string) => {
-    setActionState((prev) => {
-      const oldIndex = prev.findIndex((action) => action.id === activeId)
-      const newIndex = prev.findIndex((action) => action.id === overId)
-      if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
-        return prev
-      }
-      return arrayMove(prev, oldIndex, newIndex)
-    })
-  }, [])
-
-  const setLoadProfile = useCallback(
-    (loadProfile: LoadProfileExecutorOptions) =>
-      setOptionsState((prev) => ({
-        ...prev,
-        // Merge so inactive-branch fields (e.g. user's stages while
-        // shared-iterations is active) survive an executor switch. Codegen
-        // reads only the active branch, so shadow fields are inert.
-        loadProfile: {
-          ...prev.loadProfile,
-          ...loadProfile,
-        },
-      })),
-    []
-  )
-
-  const setThresholds = useCallback(
-    (thresholds: BrowserThreshold[]) =>
-      setOptionsState((prev) => ({ ...prev, thresholds })),
-    []
-  )
-
-  const setLoadZones = useCallback(
-    (loadZones: LoadZoneData) =>
-      setOptionsState((prev) => ({ ...prev, cloud: { loadZones } })),
-    []
-  )
 
   const isDirty = useMemo(() => {
     // Baseline widens stages to match the in-memory state so seeded defaults
@@ -272,22 +204,16 @@ export function useBrowserTestState(
       ...options,
       loadProfile: withSeededStages(options.loadProfile),
     }
+
     return (
-      !isEqual(stripUndefined(actionState), stripUndefined(actions)) ||
-      !isEqual(stripUndefined(optionsState), stripUndefined(baseline))
+      !isEqual(stripUndefined(test.actions), stripUndefined(actions)) ||
+      !isEqual(stripUndefined(test.options), stripUndefined(baseline))
     )
-  }, [actions, actionState, optionsState, options])
+  }, [actions, options, test])
 
   return {
-    actions: actionState,
-    addAction,
-    updateAction,
-    removeAction,
-    reorderActions,
-    options: optionsState,
-    setLoadProfile,
-    setThresholds,
-    setLoadZones,
+    test,
+    setTest,
     isDirty,
   }
 }

@@ -33,21 +33,19 @@ import {
 
 interface EditableBrowserActionListProps {
   actions: AnyBrowserAction[]
-  onAddAction: (action: AnyBrowserAction) => void
-  onRemoveAction: (actionId: string) => void
-  onChangeAction: (action: AnyBrowserAction) => void
-  onReorderActions: (activeId: string, overId: string) => void
   optionsButton?: ReactNode
+  onChange: (actions: AnyBrowserAction[]) => void
 }
 
 export function EditableBrowserActionList({
   actions,
-  onAddAction,
-  onRemoveAction,
-  onChangeAction,
-  onReorderActions,
   optionsButton,
+  onChange,
 }: EditableBrowserActionListProps) {
+  const handleAddAction = (action: AnyBrowserAction) => {
+    onChange([...actions, action])
+  }
+
   return (
     <Flex direction="column" height="100%">
       <Heading
@@ -64,7 +62,7 @@ export function EditableBrowserActionList({
         `}
       >
         Actions ({actions.length})
-        <NewActionMenu onAddAction={onAddAction} />
+        <NewActionMenu onAddAction={handleAddAction} />
         {optionsButton && (
           <Box
             css={css`
@@ -79,12 +77,7 @@ export function EditableBrowserActionList({
         {actions.length === 0 ? (
           <EmptyMessage message="Build your browser test by adding actions." />
         ) : (
-          <SortableBrowserActionList
-            actions={actions}
-            onReorderActions={onReorderActions}
-            onRemoveAction={onRemoveAction}
-            onChangeAction={onChangeAction}
-          />
+          <SortableBrowserActionList actions={actions} onChange={onChange} />
         )}
       </ScrollArea>
     </Flex>

@@ -13,7 +13,11 @@ import {
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import { useCurrentFile } from '@/hooks/useCurrentFile'
 import { routeMap } from '@/routeMap'
-import { BrowserTestFile } from '@/schemas/browserTest'
+import {
+  AnyBrowserAction,
+  BrowserTestFile,
+  BrowserTestOptions,
+} from '@/schemas/browserTest'
 import { StudioFile } from '@/types'
 
 import { NetworkInspector } from '../Validator/Browser/NetworkInspector'
@@ -47,7 +51,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
 
   const [state, setState] = useState<ContextMenuState | null>(null)
 
-  const test = useBrowserTestState(data)
+  const { isDirty, test, setTest } = useBrowserTestState(data)
 
   const previewScript = useBrowserScriptPreview(test.actions, test.options)
 
@@ -63,15 +67,26 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
     options: test.options,
   })
 
+  const handleOptionsChange = (options: BrowserTestOptions) => {
+    setTest({ ...test, options })
+  }
+
+  const handleActionsChange = (actions: AnyBrowserAction[]) => {
+    setTest({ ...test, actions })
+  }
+
+  const handleAddAction = (action: AnyBrowserAction) => {
+    handleActionsChange([...test.actions, action])
+  }
+
   const handleSave = () => {
-    if (!test.isDirty || !data) {
+    if (!isDirty || !data) {
       return
     }
 
     const browserTestData: BrowserTestFile = {
       ...data,
-      actions: test.actions,
-      options: test.options,
+      ...test,
     }
 
     void saveBrowserTest(browserTestData)
@@ -86,7 +101,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
           file={file}
           preview={previewScript}
           session={session}
-          isDirty={test.isDirty}
+          isDirty={isDirty}
           onStartDebugging={startDebugging}
           onStopDebugging={stopDebugging}
           onSave={handleSave}
@@ -124,7 +139,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                       previewScript={previewScript}
                       shutdownDelay={shutdownDelay}
                       onStateChange={setState}
-                      onAddAction={test.addAction}
+                      onAddAction={handleAddAction}
                       onShutdownDelayChange={setShutdownDelay}
                     />
                   </Panel>
@@ -132,18 +147,13 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                   <Panel id="actions" minSize={400}>
                     <EditableBrowserActionList
                       actions={test.actions}
-                      onAddAction={test.addAction}
-                      onRemoveAction={test.removeAction}
-                      onChangeAction={test.updateAction}
-                      onReorderActions={test.reorderActions}
                       optionsButton={
                         <BrowserTestOptionsButton
                           options={test.options}
-                          onLoadProfileChange={test.setLoadProfile}
-                          onThresholdsChange={test.setThresholds}
-                          onLoadZonesChange={test.setLoadZones}
+                          onChange={handleOptionsChange}
                         />
                       }
+                      onChange={handleActionsChange}
                     />
                   </Panel>
                 </Group>
