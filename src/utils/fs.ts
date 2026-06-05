@@ -8,6 +8,7 @@ import { PathLike } from 'fs'
 import { access, writeFile } from 'fs/promises'
 import * as fs from 'fs/promises'
 
+import { formatLocalDate } from './date'
 import { EventEmitter } from './events'
 import * as path from './path'
 import { normalize } from './path'
@@ -70,7 +71,7 @@ export async function createFileWithUniqueName({
   prefix: string
   ext: string
 }): Promise<string> {
-  const timestamp = new Date().toISOString().split('T')[0] ?? ''
+  const timestamp = formatLocalDate(new Date())
   const template = `${prefix ? `${prefix} - ` : ''}${timestamp}${ext}`
 
   // Start from 2 as it follows the the OS behavior for duplicate files
