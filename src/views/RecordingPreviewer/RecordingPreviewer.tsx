@@ -1,56 +1,28 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
-import { useCurrentFile } from '@/hooks/useCurrentFile'
+import { RecordingContent } from '@/handlers/fs/types'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
-import { BrowserEvent } from '@/schemas/recording'
-import { ProxyData } from '@/types'
+import { StudioFile } from '@/types'
 
 import { RecordingInspector } from '../Recorder/RecordingInspector'
 
 import { RecordingPreviewControls } from './RecordingPreviewerControls'
 
-export function RecordingPreviewer() {
-  const [isExternal, setIsExternal] = useState(false)
-  const [proxyData, setProxyData] = useState<ProxyData[]>([])
-  const [browserEvents, setBrowserEvents] = useState<BrowserEvent[]>([])
+interface RecordingPreviewerProps {
+  file: StudioFile
+  content: RecordingContent
+}
 
-  const [isLoading, setIsLoading] = useState(true)
-  const file = useCurrentFile('recording')
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    ;(async () => {
-      setIsLoading(true)
-      setProxyData([])
-      const content = await window.studio.fs.openFile(file.path)
-      setIsLoading(false)
-
-      if (content.type !== 'recording') {
-        throw new Error(`Expected recording content, got ${content.type}`)
-      }
-
-      setIsExternal(content.isExternal)
-      setProxyData(content.data)
-      setBrowserEvents(content.browserEvents)
-    })()
-
-    return () => {
-      setIsExternal(false)
-      setProxyData([])
-      setBrowserEvents([])
-    }
-  }, [file.path, navigate])
+export function RecordingPreviewer({ file, content }: RecordingPreviewerProps) {
+  const proxyData = content.data
+  const browserEvents = content.browserEvents
 
   const groups = useProxyDataGroups(proxyData)
 
   return (
     <View
       title="Recording"
-      subTitle={<FileNameHeader file={file} canRename={!isExternal} />}
-      loading={isLoading}
+      subTitle={<FileNameHeader file={file} canRename={!content.isExternal} />}
       actions={
         <RecordingPreviewControls
           file={file}
@@ -59,13 +31,11 @@ export function RecordingPreviewer() {
         />
       }
     >
-      {!isLoading && (
-        <RecordingInspector
-          groups={groups}
-          requests={proxyData}
-          browserEvents={browserEvents}
-        />
-      )}
+      <RecordingInspector
+        groups={groups}
+        requests={proxyData}
+        browserEvents={browserEvents}
+      />
     </View>
   )
 }

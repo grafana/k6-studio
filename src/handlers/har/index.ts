@@ -67,7 +67,6 @@ export function initialize() {
     const dialogResult = await showOpenDialog(browserWindow, {
       message: 'Import HAR file',
       properties: ['openFile'],
-      defaultPath: RECORDINGS_PATH,
       buttonLabel: 'Import',
       filters: [{ name: 'HAR', extensions: ['har'] }],
     })

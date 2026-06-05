@@ -33,7 +33,7 @@ export function RecordTab({ onCollapseSidebar }: RecordTabProps) {
       const filePath = await window.studio.har.importFile()
 
       if (filePath) {
-        navigate(getViewPath('recording', filePath))
+        navigate(getViewPath(filePath))
       }
     } catch (error) {
       showToast({
