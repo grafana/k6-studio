@@ -1,0 +1,22 @@
+#!/bin/sh
+set -e
+
+# Register custom MIME types for k6 Studio
+if [ -d /usr/share/mime/packages ]; then
+  cat > /usr/share/mime/packages/k6-studio.xml << 'MIMEEOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-k6g">
+    <comment>k6 Studio Generator File</comment>
+    <glob pattern="*.k6g"/>
+  </mime-type>
+  <mime-type type="application/x-k6b">
+    <comment>k6 Studio Browser Recording</comment>
+    <glob pattern="*.k6b"/>
+  </mime-type>
+</mime-info>
+MIMEEOF
+  update-mime-database /usr/share/mime 2>/dev/null || true
+fi
+
+update-desktop-database /usr/share/applications 2>/dev/null || true

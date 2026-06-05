@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+# Remove custom MIME types for k6 Studio
+case "$1" in
+  remove|purge)
+    rm -f /usr/share/mime/packages/k6-studio.xml
+    update-mime-database /usr/share/mime 2>/dev/null || true
+    update-desktop-database /usr/share/applications 2>/dev/null || true
+    ;;
+esac

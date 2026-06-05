@@ -88,6 +88,22 @@ const config: ForgeConfig = {
         schemes: [CUSTOM_APP_PROTOCOL],
       },
     ],
+    extendInfo: {
+      CFBundleDocumentTypes: [
+        {
+          CFBundleTypeExtensions: ['k6g'],
+          CFBundleTypeName: 'k6 Studio Generator File',
+          CFBundleTypeRole: 'Editor',
+          LSHandlerRank: 'Owner',
+        },
+        {
+          CFBundleTypeExtensions: ['k6b'],
+          CFBundleTypeName: 'k6 Studio Browser Recording',
+          CFBundleTypeRole: 'Editor',
+          LSHandlerRank: 'Owner',
+        },
+      ],
+    },
   },
   rebuildConfig: {},
   makers: [
@@ -102,11 +118,24 @@ const config: ForgeConfig = {
       },
       ['darwin']
     ),
-    new MakerRpm({ options: { icon: './resources/icons/logo.png' } }),
+    new MakerRpm({
+      options: {
+        icon: './resources/icons/logo.png',
+        mimeType: ['application/x-k6g', 'application/x-k6b'],
+      },
+    }),
     new MakerDeb({
       options: {
         icon: './resources/icons/logo.png',
-        mimeType: [`x-scheme-handler/${CUSTOM_APP_PROTOCOL}`],
+        mimeType: [
+          `x-scheme-handler/${CUSTOM_APP_PROTOCOL}`,
+          'application/x-k6g',
+          'application/x-k6b',
+        ],
+        scripts: {
+          postinst: './resources/linux/postinst',
+          postrm: './resources/linux/postrm',
+        },
       },
     }),
   ],

@@ -1,7 +1,6 @@
 import * as Sentry from '@sentry/electron/main'
 import { app, autoUpdater, BrowserWindow, nativeTheme } from 'electron'
 import log from 'electron-log/main'
-import isSquirrelStartup from 'electron-squirrel-startup'
 import { updateElectronApp } from 'update-electron-app'
 
 import * as path from '@/utils/path'
@@ -9,6 +8,7 @@ import * as path from '@/utils/path'
 import * as handlers from './handlers'
 import { ProxyHandler } from './handlers/proxy/types'
 import { initializeDeepLinks, replayPendingDeepLink } from './main/deepLinks'
+import { handleWindowsInstall } from './main/fileAssociations'
 import * as mainState from './main/k6StudioState'
 import { initializeLogger } from './main/logger'
 import { configureApplicationMenu } from './main/menu'
@@ -52,8 +52,9 @@ if (process.env.NODE_ENV !== 'development') {
   updateElectronApp({ logger: log.scope('autoUpdater') })
 }
 
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (isSquirrelStartup) {
+// Handle creating/removing shortcuts and file associations on Windows
+// when installing/uninstalling via Squirrel.
+if (handleWindowsInstall()) {
   app.quit()
 }
 
