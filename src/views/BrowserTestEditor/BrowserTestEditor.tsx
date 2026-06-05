@@ -5,26 +5,22 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
-import { HighlightLocatorProvider } from '@/components/HighlightLocatorProvider'
 import { View } from '@/components/Layout/View'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import {
   LogsSection,
   useConsoleFilter,
 } from '@/components/Validator/LogsSection'
-import { useCurrentFile } from '@/hooks/useCurrentFile'
 import { useSaveFile } from '@/hooks/useSaveFile'
-import { getViewPath, routeMap } from '@/routeMap'
+import { getViewPath } from '@/routeMap'
 import { BrowserTestFile } from '@/schemas/browserTest'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
-import { queryClient } from '@/utils/query'
 
 import { NetworkInspector } from '../Validator/Browser/NetworkInspector'
 
 import {
   useBrowserScriptPreview,
-  useBrowserTest,
   useBrowserTestEditorLayout,
   useBrowserTestState,
   useBrowserTestValidator,
@@ -36,17 +32,17 @@ import { EditableBrowserActionList } from './EditableBrowserActionList'
 import { ContextMenuState } from './types'
 import { ValidationProvider } from './ValidationProvider'
 
-interface BrowserTestEditorViewProps {
+interface BrowserTestEditorProps {
   file: StudioFile
-  data: BrowserTestFile
+  initialData: BrowserTestFile
   isExternal: boolean
 }
 
-function BrowserTestEditorView({
+export function BrowserTestEditor({
   file,
-  data,
+  initialData,
   isExternal,
-}: BrowserTestEditorViewProps) {
+}: BrowserTestEditorProps) {
   const { drawerLayout, mainLayout, setDrawer, onTabClick } =
     useBrowserTestEditorLayout()
 
@@ -57,7 +53,7 @@ function BrowserTestEditorView({
 
   const [state, setState] = useState<ContextMenuState | null>(null)
 
-  const test = useBrowserTestState(data)
+  const test = useBrowserTestState(initialData)
 
   const previewScript = useBrowserScriptPreview(test.actions, test.options)
 
@@ -89,20 +85,18 @@ function BrowserTestEditorView({
     content: () => ({
       type: 'browser-test' as const,
       data: {
-        ...data,
+        ...initialData,
         actions: test.actions,
         options: test.options,
       },
-      isExternal,
+      isExternal: false,
     }),
     filters: [{ name: 'Browser Test', extensions: ['k6b'] }],
-    onSave: async (location) => {
-      await queryClient.invalidateQueries({
-        queryKey: ['browserTest', location.path],
-      })
-
-      if (location.path !== file.path) {
-        navigate(getViewPath('browser-test', location.path), { replace: true })
+    onSave: (location) => {
+      if (location.path === file.path) {
+        test.markAsSaved()
+      } else {
+        navigate(getViewPath(location.path), { replace: true })
       }
     },
     onError: (error) => {
@@ -239,32 +233,5 @@ function BrowserTestEditorView({
         </Flex>
       </View>
     </ValidationProvider>
-  )
-}
-
-export function BrowserTestEditor() {
-  const file = useCurrentFile('browser-test')
-  const navigate = useNavigate()
-
-  const { data, isLoading } = useBrowserTest(file.path)
-
-  if (isLoading) {
-    return null
-  }
-
-  if (data === undefined) {
-    navigate(routeMap.home)
-    return null
-  }
-
-  return (
-    <HighlightLocatorProvider>
-      <BrowserTestEditorView
-        key={file.path}
-        file={file}
-        data={data.data}
-        isExternal={data.isExternal}
-      />
-    </HighlightLocatorProvider>
   )
 }

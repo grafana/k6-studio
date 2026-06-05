@@ -6,7 +6,6 @@ import { getViewPath } from '@/routeMap'
 import { useStudioUIStore } from '@/store/ui'
 import { StudioFile } from '@/types'
 import * as path from '@/utils/path'
-import { queryClient } from '@/utils/query'
 
 export function useRenameFile(file: StudioFile) {
   const activeFilePath = useActiveFilePath()
@@ -39,14 +38,7 @@ export function useRenameFile(file: StudioFile) {
         return
       }
 
-      if (file.type === 'generator') {
-        queryClient.setQueryData(
-          ['generator', newName],
-          queryClient.getQueryData(['generator', file.fileName])
-        )
-      }
-
-      navigate(getViewPath(file.type, newPath), { replace: true })
+      navigate(getViewPath(newPath), { replace: true })
     },
   })
 }

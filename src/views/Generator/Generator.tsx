@@ -6,19 +6,18 @@ import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
-import { useCurrentFile } from '@/hooks/useCurrentFile'
+import { GeneratorContent } from '@/handlers/fs/types'
 import { useSaveFile } from '@/hooks/useSaveFile'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
-import { getRoutePath, getViewPath } from '@/routeMap'
+import { getViewPath } from '@/routeMap'
 import { useGeneratorStore, selectGeneratorData } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
-import { ProxyData } from '@/types'
-import { queryClient } from '@/utils/query'
+import { StudioFile, ProxyData } from '@/types'
+import { GeneratorFileData } from '@/types/generator'
 
 import {
   useGeneratorLayout,
   useIsGeneratorDirty,
-  useLoadGeneratorFile,
   useLoadHarFile,
 } from './Generator.hooks'
 import { GeneratorControls } from './GeneratorControls'
@@ -26,51 +25,47 @@ import { GeneratorTabs } from './GeneratorTabs'
 import { TestRuleContainer } from './TestRuleContainer'
 import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 
-export function Generator() {
+interface GeneratorProps {
+  file: StudioFile
+  content: GeneratorContent
+}
+
+export function Generator({ file, content }: GeneratorProps) {
   const setGeneratorFile = useGeneratorStore((store) => store.setGeneratorFile)
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
+  const [savedData, setSavedData] = useState<GeneratorFileData>(content.data)
 
   const showToast = useToast()
   const navigate = useNavigate()
 
-  const file = useCurrentFile('generator')
-  const scriptPreview = useScriptPreview(file.path)
+  const filePath = file.path
+  const scriptPreview = useScriptPreview(filePath)
 
   const { mainLayout, sidebarLayout, detailsLayout } = useGeneratorLayout()
-
-  const {
-    data: generatorFileData,
-    isLoading: isLoadingGenerator,
-    error: generatorError,
-  } = useLoadGeneratorFile(file.path)
 
   const {
     data: recording,
     isLoading: isLoadingRecording,
     error: harError,
-  } = useLoadHarFile(generatorFileData?.data.recordingPath)
-
-  const isLoading = isLoadingGenerator || isLoadingRecording
+  } = useLoadHarFile(content.data.recordingPath)
 
   const saveFile = useSaveFile({
     menuItems: {
-      save: !isLoading,
-      saveAs: !isLoading,
+      save: true,
+      saveAs: true,
     },
-    location: { type: 'file', path: file.path },
+    location: { type: 'file', path: filePath },
     content: () => ({
       type: 'generator' as const,
       data: selectGeneratorData(useGeneratorStore.getState()),
-      isExternal: generatorFileData?.isExternal ?? false,
+      isExternal: false,
     }),
     filters: [{ name: 'Generator', extensions: ['k6g'] }],
-    onSave: async (location) => {
-      await queryClient.invalidateQueries({
-        queryKey: ['generator', location.path],
-      })
-
-      if (location.path !== file.path) {
-        navigate(getViewPath('generator', location.path), { replace: true })
+    onSave: (location) => {
+      if (location.path === filePath) {
+        setSavedData(selectGeneratorData(useGeneratorStore.getState()))
+      } else {
+        navigate(getViewPath(location.path), { replace: true })
       }
     },
     onError: (error) => {
@@ -84,7 +79,9 @@ export function Generator() {
     },
   })
 
-  const isDirty = useIsGeneratorDirty(file.path)
+  const isLoading = isLoadingRecording
+
+  const isDirty = useIsGeneratorDirty(savedData)
   const isDirtyRef = useRef(isDirty)
 
   const [isAppClosing, setIsAppClosing] = useState(false)
@@ -97,20 +94,8 @@ export function Generator() {
   })
 
   useEffect(() => {
-    if (!generatorFileData) return
-    setGeneratorFile(generatorFileData.data, recording)
-  }, [setGeneratorFile, generatorFileData, recording])
-
-  useEffect(() => {
-    if (generatorError) {
-      showToast({
-        title: 'Failed to load generator',
-        status: 'error',
-      })
-      log.error(generatorError)
-      navigate(getRoutePath('home'), { replace: true })
-    }
-  }, [generatorError, showToast, navigate])
+    setGeneratorFile(content.data, recording)
+  }, [setGeneratorFile, content.data, recording])
 
   useEffect(() => {
     if (harError) {
@@ -180,11 +165,12 @@ export function Generator() {
         <FileNameHeader
           file={file}
           isDirty={isDirty}
-          canRename={!generatorFileData?.isExternal}
+          canRename={!content.isExternal}
         />
       }
       actions={
         <GeneratorControls
+          file={file}
           onSave={handleSaveGenerator}
           isDirty={isDirty}
           script={scriptPreview}
