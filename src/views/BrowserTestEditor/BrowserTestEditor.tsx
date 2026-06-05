@@ -163,7 +163,7 @@ function BrowserTestEditorView({
                     />
                   </Panel>
                   <Separator />
-                  <Panel id="actions" minSize={400}>
+                  <Panel id="actions" defaultSize="30%" minSize={400}>
                     <EditableBrowserActionList
                       actions={test.actions}
                       onAddAction={test.addAction}
@@ -192,7 +192,13 @@ function BrowserTestEditorView({
                 </Tabs.Trigger>
               </Tabs.List>
               <Separator data-disabled />
-              <Panel id="drawer" panelRef={setDrawer} collapsible minSize={100}>
+              <Panel
+                id="drawer"
+                panelRef={setDrawer}
+                collapsible
+                defaultSize="30%"
+                minSize={100}
+              >
                 <Flex height="100%" direction="column" overflow="hidden">
                   <Tabs.Content
                     css={css`

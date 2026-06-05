@@ -92,10 +92,7 @@ describe('deriveLogUpdates', () => {
 
   it('uses message.id in partKey for multiple messages', () => {
     const messages = [
-      assistantMessage(
-        [{ type: 'text', text: 'First message part' }],
-        'msg-a'
-      ),
+      assistantMessage([{ type: 'text', text: 'First message part' }], 'msg-a'),
       assistantMessage(
         [{ type: 'text', text: 'Second message part' }],
         'msg-b'
