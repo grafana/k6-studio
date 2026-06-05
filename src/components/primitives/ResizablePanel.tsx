@@ -23,7 +23,7 @@ export const Separator = styled(SeparatorPrimitive)`
   &[data-separator='hover']:not([data-disabled])::before,
   &[data-separator='active']:not([data-disabled])::before {
     --separator-size: 2px;
-    background-color: var(--focus-border);
+    background-color: var(--accent-9);
   }
 
   &[aria-orientation='vertical']::before {

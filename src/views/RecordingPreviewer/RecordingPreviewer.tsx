@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import invariant from 'tiny-invariant'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
@@ -8,13 +7,13 @@ import { useCurrentFile } from '@/hooks/useCurrentFile'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { BrowserEvent } from '@/schemas/recording'
 import { ProxyData } from '@/types'
-import { harToProxyData } from '@/utils/harToProxyData'
 
 import { RecordingInspector } from '../Recorder/RecordingInspector'
 
 import { RecordingPreviewControls } from './RecordingPreviewerControls'
 
 export function RecordingPreviewer() {
+  const [isExternal, setIsExternal] = useState(false)
   const [proxyData, setProxyData] = useState<ProxyData[]>([])
   const [browserEvents, setBrowserEvents] = useState<BrowserEvent[]>([])
 
@@ -26,16 +25,20 @@ export function RecordingPreviewer() {
     ;(async () => {
       setIsLoading(true)
       setProxyData([])
-      const har = await window.studio.har.openFile(file.path)
+      const content = await window.studio.fs.openFile(file.path)
       setIsLoading(false)
 
-      invariant(har, 'Failed to open file')
+      if (content.type !== 'recording') {
+        throw new Error(`Expected recording content, got ${content.type}`)
+      }
 
-      setProxyData(harToProxyData(har))
-      setBrowserEvents(har.log._browserEvents?.events ?? [])
+      setIsExternal(content.isExternal)
+      setProxyData(content.data)
+      setBrowserEvents(content.browserEvents)
     })()
 
     return () => {
+      setIsExternal(false)
       setProxyData([])
       setBrowserEvents([])
     }
@@ -46,10 +49,14 @@ export function RecordingPreviewer() {
   return (
     <View
       title="Recording"
-      subTitle={<FileNameHeader file={file} />}
+      subTitle={<FileNameHeader file={file} canRename={!isExternal} />}
       loading={isLoading}
       actions={
-        <RecordingPreviewControls file={file} browserEvents={browserEvents} />
+        <RecordingPreviewControls
+          file={file}
+          isExternal={isExternal}
+          browserEvents={browserEvents}
+        />
       }
     >
       {!isLoading && (

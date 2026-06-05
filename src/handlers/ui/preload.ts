@@ -5,7 +5,7 @@ import { AddToastPayload } from '@/types/toast'
 
 import { createListener } from '../utils'
 
-import { GetFilesResponse, UIHandler } from './types'
+import { GetFilesResponse, MenuItem, MenuState, UIHandler } from './types'
 
 export function toggleTheme() {
   ipcRenderer.send(UIHandler.ToggleTheme)
@@ -46,6 +46,10 @@ export function reportIssue() {
   return ipcRenderer.invoke(UIHandler.ReportIssue) as Promise<void>
 }
 
+export function setMenuState(state: MenuState) {
+  ipcRenderer.send(UIHandler.SetMenuState, state)
+}
+
 export function onAddFile(callback: (file: StudioFile) => void) {
   return createListener(UIHandler.AddFile, callback)
 }
@@ -56,4 +60,10 @@ export function onRemoveFile(callback: (file: StudioFile) => void) {
 
 export function onToast(callback: (toast: AddToastPayload) => void) {
   return createListener(UIHandler.Toast, callback)
+}
+
+export function onRequestSave(
+  callback: (options: { menuItem: MenuItem; saveAs: boolean }) => void
+) {
+  return createListener(UIHandler.RequestSave, callback)
 }

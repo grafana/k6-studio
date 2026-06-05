@@ -1,9 +1,9 @@
 import { AnyBrowserAction, LocatorClickModifier } from '@/schemas/browserTest'
 import { BrowserEvent, ClickEvent } from '@/schemas/recording'
+import { toLocatorOptions } from '@/utils/locator'
 import { exhaustive } from '@/utils/typescript'
 
 import { convertAssertion } from './convertAssertion'
-import { toLocatorOptions } from './locator'
 import { isFollowedByImplicitNavigation } from './navigation'
 
 function buildClickOptions(event: ClickEvent, nextEvent?: BrowserEvent) {

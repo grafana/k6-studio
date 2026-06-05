@@ -1,5 +1,6 @@
 import { css } from '@emotion/react'
 import { Flex, Tabs } from '@radix-ui/themes'
+import log from 'electron-log/renderer'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -12,9 +13,12 @@ import {
   useConsoleFilter,
 } from '@/components/Validator/LogsSection'
 import { useCurrentFile } from '@/hooks/useCurrentFile'
-import { routeMap } from '@/routeMap'
+import { useSaveFile } from '@/hooks/useSaveFile'
+import { getViewPath, routeMap } from '@/routeMap'
 import { BrowserTestFile } from '@/schemas/browserTest'
+import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
+import { queryClient } from '@/utils/query'
 
 import { NetworkInspector } from '../Validator/Browser/NetworkInspector'
 
@@ -23,7 +27,6 @@ import {
   useBrowserTest,
   useBrowserTestEditorLayout,
   useBrowserTestState,
-  useSaveBrowserTest,
   useBrowserTestValidator,
 } from './BrowserTestEditor.hooks'
 import { BrowserTestEditorControls } from './BrowserTestEditorControls'
@@ -36,13 +39,19 @@ import { ValidationProvider } from './ValidationProvider'
 interface BrowserTestEditorViewProps {
   file: StudioFile
   data: BrowserTestFile
+  isExternal: boolean
 }
 
-function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
+function BrowserTestEditorView({
+  file,
+  data,
+  isExternal,
+}: BrowserTestEditorViewProps) {
   const { drawerLayout, mainLayout, setDrawer, onTabClick } =
     useBrowserTestEditorLayout()
 
-  const { mutateAsync: saveBrowserTest } = useSaveBrowserTest(file.path)
+  const showToast = useToast()
+  const navigate = useNavigate()
 
   const consoleFilter = useConsoleFilter()
 
@@ -71,25 +80,50 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
 
   const isValidating = session.state === 'running'
 
+  const saveFile = useSaveFile({
+    menuItems: {
+      save: true,
+      saveAs: true,
+    },
+    location: { type: 'file', path: file.path },
+    content: () => ({
+      type: 'browser-test' as const,
+      data: {
+        ...data,
+        actions: test.actions,
+        options: test.options,
+      },
+      isExternal,
+    }),
+    filters: [{ name: 'Browser Test', extensions: ['k6b'] }],
+    onSave: async (location) => {
+      await queryClient.invalidateQueries({
+        queryKey: ['browserTest', location.path],
+      })
+
+      if (location.path !== file.path) {
+        navigate(getViewPath('browser-test', location.path), { replace: true })
+      }
+    },
+    onError: (error) => {
+      showToast({
+        title: 'Failed to save browser test',
+        status: 'error',
+        description: error.message,
+      })
+      log.error(error)
+    },
+  })
+
   const handleSave = () => {
-    if (!test.isDirty || !data) {
-      return
-    }
-
-    const browserTestData: BrowserTestFile = {
-      ...data,
-      actions: test.actions,
-      options: test.options,
-    }
-
-    void saveBrowserTest(browserTestData)
+    void saveFile({ saveAs: false })
   }
 
   return (
     <ValidationProvider states={states} isValidating={isValidating}>
       <View
         title="Browser test"
-        subTitle={<FileNameHeader file={file} />}
+        subTitle={<FileNameHeader file={file} canRename={!isExternal} />}
         actions={
           <BrowserTestEditorControls
             file={file}
@@ -138,7 +172,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                       />
                     </Panel>
                     <Separator />
-                    <Panel id="actions" minSize={400}>
+                    <Panel id="actions" defaultSize="30%" minSize={400}>
                       <EditableBrowserActionList
                         actions={test.actions}
                         onAddAction={test.addAction}
@@ -171,6 +205,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                   id="drawer"
                   panelRef={setDrawer}
                   collapsible
+                  defaultSize="30%"
                   minSize={100}
                 >
                   <Flex height="100%" direction="column" overflow="hidden">
@@ -224,7 +259,12 @@ export function BrowserTestEditor() {
 
   return (
     <HighlightLocatorProvider>
-      <BrowserTestEditorView key={file.path} file={file} data={data} />
+      <BrowserTestEditorView
+        key={file.path}
+        file={file}
+        data={data.data}
+        isExternal={data.isExternal}
+      />
     </HighlightLocatorProvider>
   )
 }

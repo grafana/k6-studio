@@ -14,7 +14,13 @@ export function useScript(fileName: string) {
   return useQuery({
     queryKey: ['script', fileName],
     queryFn: async () => {
-      return window.studio.script.openScript(fileName)
+      const content = await window.studio.fs.openFile(fileName)
+
+      if (content.type !== 'script') {
+        throw new Error(`Expected script content, got ${content.type}`)
+      }
+
+      return content
     },
     refetchOnMount: false,
     refetchOnReconnect: false,

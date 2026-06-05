@@ -8,10 +8,10 @@ import {
   BrowserEventTarget,
 } from '@/schemas/recording'
 import { toClickButton, toClickModifiers } from '@/utils/clickOptions'
+import { getElementLocator, isLocatorEqual } from '@/utils/locator'
 import { exhaustive } from '@/utils/typescript'
 
 import { isFollowedByImplicitNavigation } from './navigation'
-import { isLocatorEqual, getElementLocator } from './selectors'
 import {
   TestNode,
   PageNode,
