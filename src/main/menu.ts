@@ -78,10 +78,7 @@ function buildRecentFilesSubmenu(): MenuItemWithId[] {
           addRecentFile(filePath)
           configureApplicationMenu()
 
-          window.webContents.send(
-            AppHandler.Navigate,
-            getViewPath(file.type, file.path)
-          )
+          window.webContents.send(AppHandler.Navigate, getViewPath(file.path))
         },
       })
     ),
@@ -128,7 +125,7 @@ function buildTemplate(): Electron.MenuItemConstructorOptions[] {
 
                 window.webContents.send(
                   AppHandler.Navigate,
-                  getViewPath('generator', filePath)
+                  getViewPath(filePath)
                 )
               },
             },
@@ -143,7 +140,7 @@ function buildTemplate(): Electron.MenuItemConstructorOptions[] {
 
                 window.webContents.send(
                   AppHandler.Navigate,
-                  getViewPath('browser-test', filePath)
+                  getViewPath(filePath)
                 )
               },
             },
@@ -189,10 +186,7 @@ function buildTemplate(): Electron.MenuItemConstructorOptions[] {
             addRecentFile(filePath)
             configureApplicationMenu()
 
-            window.webContents.send(
-              AppHandler.Navigate,
-              getViewPath(file.type, file.path)
-            )
+            window.webContents.send(AppHandler.Navigate, getViewPath(file.path))
           },
         },
         {

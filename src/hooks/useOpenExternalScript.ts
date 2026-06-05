@@ -8,6 +8,6 @@ export function useOpenExternalScript() {
   return async () => {
     const path = await window.studio.script.showScriptSelectDialog()
     if (!path) return
-    navigate(getViewPath('script', path))
+    navigate(getViewPath(path))
   }
 }

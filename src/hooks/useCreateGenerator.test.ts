@@ -37,7 +37,7 @@ describe('useCreateGenerator', () => {
 
   it('should navigate to the correct path on successful generator creation', async () => {
     const filePath = '/some/path/test-file.json'
-    const routePath = `/generator/${encodeURIComponent(filePath)}`
+    const routePath = `/file/${encodeURIComponent(filePath)}`
 
     vi.mocked(getViewPath).mockReturnValue(routePath)
     vi.stubGlobal('studio', {
@@ -56,7 +56,7 @@ describe('useCreateGenerator', () => {
 
     expect(window.studio.generator.createGenerator).toHaveBeenCalledWith('')
     expect(navigate).toHaveBeenCalledWith(
-      '/generator/%2Fsome%2Fpath%2Ftest-file.json'
+      '/file/%2Fsome%2Fpath%2Ftest-file.json'
     )
   })
 
