@@ -6,6 +6,7 @@ import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
+import { GeneratorContent } from '@/handlers/fs/types'
 import { useSaveFile } from '@/hooks/useSaveFile'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { getViewPath } from '@/routeMap'
@@ -26,13 +27,13 @@ import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 
 interface GeneratorProps {
   file: StudioFile
-  initialData: GeneratorFileData
+  content: GeneratorContent
 }
 
-export function Generator({ file, initialData }: GeneratorProps) {
+export function Generator({ file, content }: GeneratorProps) {
   const setGeneratorFile = useGeneratorStore((store) => store.setGeneratorFile)
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
-  const [savedData, setSavedData] = useState<GeneratorFileData>(initialData)
+  const [savedData, setSavedData] = useState<GeneratorFileData>(content.data)
 
   const showToast = useToast()
   const navigate = useNavigate()
@@ -46,7 +47,7 @@ export function Generator({ file, initialData }: GeneratorProps) {
     data: recording,
     isLoading: isLoadingRecording,
     error: harError,
-  } = useLoadHarFile(initialData.recordingPath)
+  } = useLoadHarFile(content.data.recordingPath)
 
   const saveFile = useSaveFile({
     menuItems: {
@@ -93,8 +94,8 @@ export function Generator({ file, initialData }: GeneratorProps) {
   })
 
   useEffect(() => {
-    setGeneratorFile(initialData, recording)
-  }, [setGeneratorFile, initialData, recording])
+    setGeneratorFile(content.data, recording)
+  }, [setGeneratorFile, content.data, recording])
 
   useEffect(() => {
     if (harError) {
@@ -164,6 +165,7 @@ export function Generator({ file, initialData }: GeneratorProps) {
         <FileNameHeader
           file={file}
           isDirty={isDirty}
+          canRename={!content.isExternal}
         />
       }
       actions={

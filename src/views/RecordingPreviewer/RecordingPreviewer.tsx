@@ -1,7 +1,9 @@
+import { useMemo } from 'react'
+
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
+import { RecordingContent } from '@/handlers/fs/types'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
-import { Recording } from '@/schemas/recording'
 import { StudioFile } from '@/types'
 import { harToProxyData } from '@/utils/harToProxyData'
 
@@ -11,23 +13,23 @@ import { RecordingPreviewControls } from './RecordingPreviewerControls'
 
 interface RecordingPreviewerProps {
   file: StudioFile
-  content: Recording
+  content: RecordingContent
 }
 
 export function RecordingPreviewer({ file, content }: RecordingPreviewerProps) {
-  const proxyData = harToProxyData(content)
-  const browserEvents = content.log._browserEvents?.events ?? []
+  const proxyData = useMemo(() => harToProxyData(content.data), [content.data])
+  const browserEvents = content.data.log._browserEvents?.events ?? []
 
   const groups = useProxyDataGroups(proxyData)
 
   return (
     <View
       title="Recording"
-      subTitle={<FileNameHeader file={file} />}
+      subTitle={<FileNameHeader file={file} canRename={!content.isExternal} />}
       actions={
         <RecordingPreviewControls
           file={file}
-          isExternal={false}
+          isExternal={content.isExternal}
           browserEvents={browserEvents}
         />
       }

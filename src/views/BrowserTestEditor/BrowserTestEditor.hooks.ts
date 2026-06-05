@@ -13,7 +13,6 @@ import {
   BrowserTestFile,
   BrowserTestOptions,
   BrowserThreshold,
-  defaultBrowserTestOptions,
 } from '@/schemas/browserTest'
 import { StudioFile } from '@/types'
 import { LoadProfileExecutorOptions, LoadZoneData } from '@/types/testOptions'
@@ -140,9 +139,7 @@ function withSeededStages(
   return seeded
 }
 
-export function useBrowserTestState(browserTestFile: BrowserTestFile) {
-  const { actions = [], options = defaultBrowserTestOptions } = browserTestFile
-
+export function useBrowserTestState({ actions, options }: BrowserTestFile) {
   const initialOptions: BrowserTestOptions = {
     ...options,
     loadProfile: withSeededStages(options.loadProfile),
