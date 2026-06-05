@@ -136,10 +136,14 @@ const createWindow = async () => {
   mainWindow.on('resized', () => trackWindowState(mainWindow))
   mainWindow.on('close', (event) => {
     mainWindow.webContents.send('app:close')
-    if (
-      k6StudioState.currentClientRoute.startsWith('/generator') &&
-      !k6StudioState.wasAppClosedByClient
-    ) {
+
+    const isGeneratorRoute =
+      k6StudioState.currentClientRoute.startsWith('/file/') &&
+      decodeURIComponent(
+        k6StudioState.currentClientRoute.slice('/file/'.length)
+      ).endsWith('.k6g')
+
+    if (isGeneratorRoute && !k6StudioState.wasAppClosedByClient) {
       event.preventDefault()
     }
 

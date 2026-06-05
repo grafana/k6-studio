@@ -20,24 +20,10 @@ const Home = lazy(() =>
 const Recorder = lazy(() =>
   import('@/views/Recorder').then((module) => ({ default: module.Recorder }))
 )
-const RecordingPreviewer = lazy(() =>
-  import('@/views/RecordingPreviewer').then((module) => ({
-    default: module.RecordingPreviewer,
+const FileViewer = lazy(() =>
+  import('@/views/FileViewer').then((module) => ({
+    default: module.FileViewer,
   }))
-)
-const Generator = lazy(() =>
-  import('@/views/Generator').then((module) => ({ default: module.Generator }))
-)
-const BrowserTestEditor = lazy(() =>
-  import('@/views/BrowserTestEditor').then((module) => ({
-    default: module.BrowserTestEditor,
-  }))
-)
-const Validator = lazy(() =>
-  import('@/views/Validator').then((module) => ({ default: module.Validator }))
-)
-const DataFile = lazy(() =>
-  import('@/views/DataFile').then((module) => ({ default: module.DataFile }))
 )
 
 const router = createHashRouter(
@@ -49,17 +35,7 @@ const router = createHashRouter(
     >
       <Route index element={<Home />} />
       <Route path={routeMap.recorder} element={<Recorder />} />
-      <Route
-        path={routeMap.recordingPreviewer}
-        element={<RecordingPreviewer />}
-      />
-      <Route path={routeMap.generator} element={<Generator />} />
-      <Route
-        path={routeMap.browserTestEditor}
-        element={<BrowserTestEditor />}
-      />
-      <Route path={routeMap.validator} element={<Validator />} />
-      <Route path={routeMap.dataFilePreviewer} element={<DataFile />} />
+      <Route path={routeMap.file} element={<FileViewer />} />
       <Route path="*" element={<NoRouteFound />} />
     </Route>
   )

@@ -1,11 +1,11 @@
-import { Button, Flex, Text } from '@radix-ui/themes'
+import { Button } from '@radix-ui/themes'
 import {
   ExternalLink as ExternalLinkIcon,
   LinkIcon,
   RefreshCw,
 } from 'lucide-react'
 
-import grotCrashed from '@/assets/grot-crashed.svg'
+import { ErrorMessage as MessageContent } from '@/components/ErrorMessage'
 import { ExternalLink } from '@/components/ExternalLink'
 import { useAssistantSignOut } from '@/hooks/useAssistantAuth'
 
@@ -139,49 +139,5 @@ function ClassifiedError({ errorInfo, handlers }: ClassifiedErrorProps) {
     <MessageContent title={title} message={message}>
       {renderActions(handlers)}
     </MessageContent>
-  )
-}
-
-function MessageContent({
-  title,
-  message,
-  children,
-}: {
-  title: string
-  message: React.ReactNode
-  children?: React.ReactNode
-}) {
-  return (
-    <Flex
-      direction="column"
-      align="center"
-      gap="6"
-      justify="center"
-      height="100%"
-      p="6"
-    >
-      <img
-        css={{
-          maxWidth: '200px',
-          transform: 'scaleX(-1)',
-        }}
-        src={grotCrashed}
-        aria-label="Error illustration"
-      />
-
-      <Flex direction="column" align="center" gap="3" maxWidth="400px">
-        <Text size="4" weight="medium" align="center">
-          {title}
-        </Text>
-
-        <Text size="2" color="gray" align="center">
-          {message}
-        </Text>
-
-        <Flex gap="3" mt="4">
-          {children}
-        </Flex>
-      </Flex>
-    </Flex>
   )
 }
