@@ -88,6 +88,7 @@ function FileSwitch({
           key={filePath}
           file={file}
           initialData={content.data}
+          isExternal={content.isExternal}
         />
       )
 

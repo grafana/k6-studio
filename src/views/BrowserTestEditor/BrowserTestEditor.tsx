@@ -35,11 +35,13 @@ import { ContextMenuState } from './types'
 interface BrowserTestEditorProps {
   file: StudioFile
   initialData: BrowserTestFile
+  isExternal: boolean
 }
 
 export function BrowserTestEditor({
   file,
   initialData,
+  isExternal,
 }: BrowserTestEditorProps) {
   const { drawerLayout, mainLayout, setDrawer, onTabClick } =
     useBrowserTestEditorLayout()
@@ -108,7 +110,7 @@ export function BrowserTestEditor({
     <HighlightLocatorProvider>
       <View
         title="Browser test"
-        subTitle={<FileNameHeader file={file} />}
+        subTitle={<FileNameHeader file={file} canRename={!isExternal} />}
         actions={
           <BrowserTestEditorControls
             file={file}
