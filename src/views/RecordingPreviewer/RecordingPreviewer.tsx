@@ -1,11 +1,8 @@
-import { useMemo } from 'react'
-
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { RecordingContent } from '@/handlers/fs/types'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { StudioFile } from '@/types'
-import { harToProxyData } from '@/utils/harToProxyData'
 
 import { RecordingInspector } from '../Recorder/RecordingInspector'
 
@@ -17,8 +14,8 @@ interface RecordingPreviewerProps {
 }
 
 export function RecordingPreviewer({ file, content }: RecordingPreviewerProps) {
-  const proxyData = useMemo(() => harToProxyData(content.data), [content.data])
-  const browserEvents = content.data.log._browserEvents?.events ?? []
+  const proxyData = content.data
+  const browserEvents = content.browserEvents
 
   const groups = useProxyDataGroups(proxyData)
 

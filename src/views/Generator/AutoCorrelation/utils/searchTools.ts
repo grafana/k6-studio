@@ -1,6 +1,7 @@
 import Fuse from 'fuse.js'
 
-import { ProxyData, Request, Response } from '@/types'
+import { Header, ProxyData, Request, Response } from '@/types'
+import { safeAtob } from '@/utils/format'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 
 import { prepareRequestsForAI } from './stripRequestData'
@@ -46,6 +47,12 @@ export function getRequestsMetadata(
     }))
 }
 
+const flattenHeaders = (headers: Header[] | undefined) =>
+  (headers ?? []).map(([key, value]) => `${key}: ${value}`)
+
+const decodeContent = (content: string | null | undefined) =>
+  safeAtob(content ?? '')
+
 export function searchRequests(
   requests: ProxyData[],
   query: string,
@@ -54,11 +61,31 @@ export function searchRequests(
   const filteredRequests = requests.filter(isNonStaticAssetResponse)
 
   const fuse = new Fuse(filteredRequests, {
+    // Fuse defaults (location: 0, distance: 100) only match near the start of a
+    // field, so a token deep in a header or body is never found. ignoreLocation
+    // matches anywhere in any field (this also broadens url/host matching).
+    ignoreLocation: true,
     keys: [
       'request.url',
       'request.method',
       'request.host',
       'response.statusCode',
+      {
+        name: 'requestHeaders',
+        getFn: (data) => flattenHeaders(data.request.headers),
+      },
+      {
+        name: 'responseHeaders',
+        getFn: (data) => flattenHeaders(data.response?.headers),
+      },
+      {
+        name: 'requestBody',
+        getFn: (data) => decodeContent(data.request.content),
+      },
+      {
+        name: 'responseBody',
+        getFn: (data) => decodeContent(data.response?.content),
+      },
     ],
   })
 

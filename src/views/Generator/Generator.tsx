@@ -197,7 +197,7 @@ export function Generator({ file, content }: GeneratorProps) {
         {selectedRequest && (
           <>
             <Separator />
-            <Panel id="request-details" minSize={300}>
+            <Panel id="request-details" defaultSize="40%" minSize={300}>
               <HttpRequestDetails
                 layout={detailsLayout}
                 selectedRequest={selectedRequest}

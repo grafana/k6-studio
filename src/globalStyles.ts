@@ -1,6 +1,5 @@
 import { css } from '@emotion/react'
 import '@radix-ui/themes/styles.css'
-import 'allotment/dist/style.css'
 
 import InterVariable from '@/assets/fonts/Inter/InterVariable.woff2'
 
