@@ -15,7 +15,7 @@ export function useCreateGenerator() {
         const fileName =
           await window.studio.generator.createGenerator(recordingPath)
 
-        navigate(getViewPath('generator', fileName))
+        navigate(getViewPath(fileName))
       } catch (error) {
         showToast({
           status: 'error',

@@ -1,47 +1,26 @@
 import { Grid } from '@radix-ui/themes'
-import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
-import { TableSkeleton } from '@/components/TableSkeleton'
-import { useCurrentFile } from '@/hooks/useCurrentFile'
-import { getRoutePath } from '@/routeMap'
-import { useToast } from '@/store/ui/useToast'
+import { DataFileContent } from '@/handlers/fs/types'
+import { StudioFile } from '@/types'
 
-import { useDataFilePreview } from './DataFile.hooks'
 import { DataFileControls } from './DataFileControls'
 import { DataFileTable } from './DataFileTable'
 
-export function DataFile() {
-  const file = useCurrentFile('data-file')
-  const navigate = useNavigate()
-  const showToast = useToast()
+interface DataFileProps {
+  file: StudioFile
+  content: DataFileContent
+}
 
-  const { data: preview, isLoading, isError } = useDataFilePreview(file.path)
-
-  useEffect(() => {
-    if (isError) {
-      showToast({
-        title: 'Failed to load data file',
-        status: 'error',
-      })
-      navigate(getRoutePath('home'))
-    }
-  }, [isError, navigate, showToast])
-
-  if (!preview) {
-    return null
-  }
-
+export function DataFile({ file, content }: DataFileProps) {
   return (
     <View
       title="Data file preview"
       subTitle={
-        <FileNameHeader file={file} showExt canRename={!preview.isExternal} />
+        <FileNameHeader file={file} showExt canRename={!content.isExternal} />
       }
       actions={<DataFileControls file={file} />}
-      loading={isLoading}
     >
       <Grid
         rows="auto minmax(0, 1fr)"
@@ -50,11 +29,7 @@ export function DataFile() {
         height="100%"
         minHeight="0"
       >
-        {isLoading ? (
-          <TableSkeleton rootProps={{ size: '1' }} columns={8} rows={10} />
-        ) : (
-          <DataFileTable preview={preview.data} isLoading={isLoading} />
-        )}
+        <DataFileTable preview={content.data} isLoading={false} />
       </Grid>
     </View>
   )

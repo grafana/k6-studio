@@ -14,7 +14,7 @@ export function useCreateBrowserTest() {
       try {
         const fileName = await window.studio.browserTest.create(actions)
 
-        navigate(getViewPath('browser-test', fileName))
+        navigate(getViewPath(fileName))
       } catch {
         showToast({
           status: 'error',

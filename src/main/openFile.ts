@@ -80,10 +80,7 @@ function handleOpenFile(filePath: string) {
     addRecentFile(normalizedPath)
     configureApplicationMenu()
 
-    mainWindow.webContents.send(
-      AppHandler.Navigate,
-      getViewPath(file.type, file.path)
-    )
+    mainWindow.webContents.send(AppHandler.Navigate, getViewPath(file.path))
 
     if (mainWindow.isMinimized()) {
       mainWindow.restore()

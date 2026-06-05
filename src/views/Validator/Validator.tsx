@@ -1,11 +1,11 @@
 import { Flex } from '@radix-ui/themes'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
-import { useCurrentFile } from '@/hooks/useCurrentFile'
+import { ScriptContent } from '@/handlers/fs/types'
 import { useOpenExternalScript } from '@/hooks/useOpenExternalScript'
 import { useSaveFile } from '@/hooks/useSaveFile'
 import { getViewPath } from '@/routeMap'
@@ -14,40 +14,23 @@ import { StudioFile } from '@/types'
 import { queryClient } from '@/utils/query'
 
 import { Debugger } from './Debugger'
-import { useDebugSession, useScript } from './Validator.hooks'
+import { useDebugSession } from './Validator.hooks'
 import { ValidatorControls } from './ValidatorControls'
 
 interface ValidatorProps {
   file: StudioFile
+  content: ScriptContent
 }
 
-function Content({ file }: ValidatorProps) {
-  const { data, isLoading } = useScript(file.path)
-
+export function Validator({ file, content }: ValidatorProps) {
   const [showRunInCloudDialog, setShowRunInCloudDialog] = useState(false)
-  const [scriptContent, setScriptContent] = useState<string | undefined>(
-    undefined
-  )
-  const hasInitialized = useRef(false)
+  const [scriptContent, setScriptContent] = useState<string>(content.data)
 
   const showToast = useToast()
   const handleSelectExternalScript = useOpenExternalScript()
   const navigate = useNavigate()
 
-  // Initialize scriptContent once when data first loads
-  useEffect(() => {
-    if (data?.data !== undefined && !hasInitialized.current) {
-      hasInitialized.current = true
-      setScriptContent(data.data)
-    }
-  }, [data?.data])
-
-  const currentScript = scriptContent ?? data?.data ?? ''
-
-  const isDirty =
-    data !== undefined &&
-    scriptContent !== undefined &&
-    scriptContent !== data.data
+  const isDirty = scriptContent !== content.data
 
   const saveFile = useSaveFile({
     menuItems: {
@@ -57,9 +40,9 @@ function Content({ file }: ValidatorProps) {
     location: { type: 'file', path: file.path },
     content: () => ({
       type: 'script' as const,
-      data: currentScript,
-      isExternal: data?.isExternal ?? false,
-      options: data?.options ?? {},
+      data: scriptContent,
+      isExternal: content.isExternal ?? false,
+      options: content.options ?? {},
     }),
     filters: [{ name: 'k6 Script', extensions: ['js'] }],
     onSave: async (location) => {
@@ -68,7 +51,7 @@ function Content({ file }: ValidatorProps) {
       })
 
       if (location.path !== file.path) {
-        navigate(getViewPath('script', location.path), { replace: true })
+        navigate(getViewPath(location.path), { replace: true })
       }
     },
     onError: (error) => {
@@ -91,8 +74,8 @@ function Content({ file }: ValidatorProps) {
 
   const isRunning = session?.state === 'running'
 
-  const scenarios = data?.options?.scenarios
-    ? Object.keys(data.options.scenarios)
+  const scenarios = content.options?.scenarios
+    ? Object.keys(content.options.scenarios)
     : ['default']
 
   async function handleDebugScript(scenarioName?: string) {
@@ -134,13 +117,13 @@ function Content({ file }: ValidatorProps) {
   return (
     <View
       title="Validator"
-      subTitle={<FileNameHeader file={file} canRename={!data?.isExternal} />}
+      subTitle={<FileNameHeader file={file} canRename={!content.isExternal} />}
       actions={
         <ValidatorControls
           file={file}
           isRunning={isRunning}
-          canDelete={data !== undefined && !data.isExternal}
           isDirty={isDirty}
+          canDelete={!content.isExternal}
           scenarios={scenarios}
           onRunScript={handleDebugScript}
           onRunInCloud={handleRunInCloud}
@@ -149,13 +132,12 @@ function Content({ file }: ValidatorProps) {
           onSave={handleSave}
         />
       }
-      loading={isLoading}
     >
       <Flex flexGrow="1" direction="column" align="stretch">
         <Debugger
           file={file}
-          script={currentScript}
-          options={data?.options ?? {}}
+          script={scriptContent}
+          options={content.options}
           session={session}
           onDebugScript={handleDebugScript}
           onScriptChange={setScriptContent}
@@ -168,10 +150,4 @@ function Content({ file }: ValidatorProps) {
       />
     </View>
   )
-}
-
-export function Validator() {
-  const file = useCurrentFile('script')
-
-  return <Content key={file.path} file={file} />
 }

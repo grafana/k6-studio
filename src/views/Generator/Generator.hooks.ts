@@ -5,6 +5,7 @@ import { useDefaultLayout } from '@/components/primitives/ResizablePanel'
 import { useExportScript } from '@/hooks/useExportScript'
 import { selectGeneratorData, useGeneratorStore } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
+import { GeneratorFileData } from '@/types/generator'
 import * as path from '@/utils/path'
 
 import {
@@ -41,13 +42,6 @@ export function useLoadHarFile(fileName?: string) {
   })
 }
 
-export function useLoadGeneratorFile(filePath: string) {
-  return useQuery({
-    queryKey: ['generator', filePath],
-    queryFn: () => loadGeneratorFile(filePath),
-  })
-}
-
 export function useUpdateValueInGeneratorFile(filePath: string) {
   return useMutation({
     mutationFn: async ({ key, value }: { key: string; value: unknown }) => {
@@ -61,20 +55,17 @@ export function useUpdateValueInGeneratorFile(filePath: string) {
   })
 }
 
-export function useIsGeneratorDirty(filePath: string) {
+export function useIsGeneratorDirty(savedData: GeneratorFileData) {
   const generatorState = useGeneratorStore(selectGeneratorData)
-  const { data } = useLoadGeneratorFile(filePath)
 
   // Comparing data without `scriptName`, which is saved to disk in the background
   // and should not be considered as a change
   const { scriptName: _, ...generatorStateData } = generatorState
-  const { scriptName: __, ...generatorFileData } = data?.data || {}
+  const { scriptName: __, ...savedFileData } = savedData
 
   // Convert to JSON instead of doing deep equal to remove
   // `property: undefined` values
-  return (
-    JSON.stringify(generatorStateData) !== JSON.stringify(generatorFileData)
-  )
+  return JSON.stringify(generatorStateData) !== JSON.stringify(savedFileData)
 }
 
 export function useScriptExport(generatorFilePath: string) {
