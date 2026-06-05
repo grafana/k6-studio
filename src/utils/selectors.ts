@@ -1,5 +1,6 @@
 import { InjectedScript } from '@/browser/injectedScript'
-import { ElementLocator } from '@/schemas/locator'
+import { ElementLocator, LocatorOptions } from '@/schemas/locator'
+import { isHTMLIFrameElement } from '@/utils/dom/realm'
 
 let _injectedScript: InjectedScript | null = null
 
@@ -110,4 +111,43 @@ export function findElementsByLocator(
 
   const result = script.querySelectorAll({ parts }, container)
   return typeof result === 'string' ? [] : result
+}
+
+/**
+ * Resolves a locator that may live inside a chain of (possibly nested) iframes.
+ * `frames` is ordered outermost first; each entry locates the next `<iframe>` to
+ * descend into. Returns an empty array if any frame in the chain can't be found
+ * or its document can't be reached.
+ */
+export function findElementsByFrameChain(
+  root: HTMLElement,
+  frames: LocatorOptions[] | undefined,
+  locator: ElementLocator
+): Element[] {
+  let container: HTMLElement | null = root
+
+  for (const frame of frames ?? []) {
+    if (container === null) {
+      return []
+    }
+
+    const frameLocator = frame.values[frame.current]
+
+    if (frameLocator === undefined) {
+      return []
+    }
+
+    const [iframe] = findElementsByLocator(container, frameLocator)
+    const contentDocument = isHTMLIFrameElement(iframe)
+      ? iframe.contentDocument
+      : null
+
+    container = contentDocument?.documentElement ?? null
+  }
+
+  if (container === null) {
+    return []
+  }
+
+  return findElementsByLocator(container, locator)
 }

@@ -7,7 +7,6 @@ import { useCurrentFile } from '@/hooks/useCurrentFile'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { BrowserEvent } from '@/schemas/recording'
 import { ProxyData } from '@/types'
-import { harToProxyData } from '@/utils/harToProxyData'
 
 import { RecordingInspector } from '../Recorder/RecordingInspector'
 
@@ -34,8 +33,8 @@ export function RecordingPreviewer() {
       }
 
       setIsExternal(content.isExternal)
-      setProxyData(harToProxyData(content.data))
-      setBrowserEvents(content.data.log._browserEvents?.events ?? [])
+      setProxyData(content.data)
+      setBrowserEvents(content.browserEvents)
     })()
 
     return () => {
