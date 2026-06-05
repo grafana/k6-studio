@@ -1,7 +1,7 @@
 import 'node_modules/rrweb/dist/style.min.css'
 import { css } from '@emotion/react'
 import { Flex, Box } from '@radix-ui/themes'
-import { ReactNode, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 
 import { isBrowserAssertion } from '@/main/runner/schema'
 import { ElementLocator } from '@/schemas/locator'
@@ -10,6 +10,7 @@ import { DebugSession } from '@/views/Validator/types'
 import { AddressBar } from './AddressBar'
 import { LocatorHighlights } from './LocatorHighlights'
 import { OnSeekEvent, PlaybackControls } from './PlaybackControls'
+import { usePlayerContext } from './PlayerContext'
 import { PlayerMouseEvent, usePlayer } from './SessionPlayer.hooks'
 import { getPageState } from './SessionPlayer.utils'
 import { Page } from './types'
@@ -52,6 +53,16 @@ export function SessionPlayer({
     interactive,
     onClick,
   })
+
+  const { setPlayer } = usePlayerContext()
+
+  useEffect(() => {
+    setPlayer(player)
+
+    return () => {
+      setPlayer(null)
+    }
+  }, [player, setPlayer])
 
   const handleSeek = ({ time, commit }: OnSeekEvent) => {
     seek(time, { scrubbing: !commit })

@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { HighlightLocatorProvider } from '@/components/HighlightLocatorProvider'
+import { HtmlInspector } from '@/components/HtmlInspector'
 import { View } from '@/components/Layout/View'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import {
@@ -20,6 +21,7 @@ import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 import { queryClient } from '@/utils/query'
 
+import { PlayerContextProvider } from '../../components/SessionPlayer/PlayerContext'
 import { NetworkInspector } from '../Validator/Browser/NetworkInspector'
 
 import {
@@ -190,6 +192,9 @@ function BrowserTestEditorView({
                 <Tabs.Trigger value="network" onClick={onTabClick}>
                   Network ({session.requests.length})
                 </Tabs.Trigger>
+                <Tabs.Trigger value="elements" onClick={onTabClick}>
+                  Elements
+                </Tabs.Trigger>
               </Tabs.List>
               <Separator data-disabled />
               <Panel
@@ -222,6 +227,15 @@ function BrowserTestEditorView({
                   >
                     <NetworkInspector session={session} />
                   </Tabs.Content>
+                  <Tabs.Content
+                    css={css`
+                      overflow: hidden;
+                      flex: 1 1 0;
+                    `}
+                    value="elements"
+                  >
+                    <HtmlInspector sessionState={session.state} />
+                  </Tabs.Content>
                 </Flex>
               </Panel>
             </Group>
@@ -249,12 +263,14 @@ export function BrowserTestEditor() {
 
   return (
     <HighlightLocatorProvider>
-      <BrowserTestEditorView
-        key={file.path}
-        file={file}
-        data={data.data}
-        isExternal={data.isExternal}
-      />
+      <PlayerContextProvider>
+        <BrowserTestEditorView
+          key={file.path}
+          file={file}
+          data={data.data}
+          isExternal={data.isExternal}
+        />
+      </PlayerContextProvider>
     </HighlightLocatorProvider>
   )
 }
