@@ -38,4 +38,22 @@ export function initialize() {
 
     return path.join(DATA_FILES_PATH, path.basename(filePath))
   })
+
+  ipcMain.handle(DataFileHandler.Open, async (event) => {
+    const browserWindow = browserWindowFromEvent(event)
+
+    const dialogResult = await showOpenDialog(browserWindow, {
+      message: 'Open data file',
+      properties: ['openFile'],
+      filters: [{ name: 'Supported data files', extensions: ['csv', 'json'] }],
+    })
+
+    const filePath = dialogResult.filePaths[0]
+
+    if (dialogResult.canceled || !filePath) {
+      return
+    }
+
+    return filePath
+  })
 }

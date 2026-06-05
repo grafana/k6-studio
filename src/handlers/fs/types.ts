@@ -10,6 +10,7 @@ export enum FsHandler {
   ShowSaveAsDialog = 'fs:show-save-as-dialog',
   SaveFile = 'fs:save-file',
   OpenFile = 'fs:open-file',
+  Exists = 'fs:exists',
 }
 
 export interface UntitledLocation {

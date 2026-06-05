@@ -31,3 +31,7 @@ export function openFile(filePath: string) {
     filePath
   ) as Promise<FileContent>
 }
+
+export function fileExists(filePath: string) {
+  return ipcRenderer.invoke(FsHandler.Exists, filePath) as Promise<boolean>
+}
