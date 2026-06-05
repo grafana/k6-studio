@@ -1,7 +1,7 @@
-import { getElementLocator } from '@/codegen/browser/selectors'
 import { Locator } from '@/components/Browser/Locator'
 import { ElementLocator } from '@/schemas/locator'
 import { ElementSelector } from '@/schemas/recording'
+import { getElementLocator } from '@/utils/locator'
 import { useIsRecording } from '@/views/Recorder/RecordingContext'
 
 interface SelectorProps {

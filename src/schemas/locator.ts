@@ -103,3 +103,8 @@ export type PlaceholderLocator = z.infer<typeof GetByPlaceholderLocatorSchema>
 export type TitleLocator = z.infer<typeof GetByTitleLocatorSchema>
 export type TextLocator = z.infer<typeof GetByTextLocatorSchema>
 export type LocatorOptions = z.infer<typeof LocatorOptionsSchema>
+
+/** Locator options for a plain CSS selector. */
+export function cssLocatorOptions(selector: string): LocatorOptions {
+  return { current: 'css', values: { css: { type: 'css', selector } } }
+}

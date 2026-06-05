@@ -1,5 +1,14 @@
 import { ElementSelector } from '@/schemas/recording'
 import { ElementRole } from '@/utils/dom/aria'
+import {
+  isHTMLAnchorElement,
+  isHTMLButtonElement,
+  isHTMLImageElement,
+  isHTMLInputElement,
+  isHTMLLabelElement,
+  isHTMLSelectElement,
+  isHTMLTextAreaElement,
+} from '@/utils/dom/realm'
 
 /**
  * Adapted list of widgets that are interacted with a simple click, regardless where the item
@@ -28,36 +37,26 @@ const SIMPLE_CLICK_WIDGET_ROLES = [
 export function findInteractiveElement(element: Element): Element | null {
   let current: Element | null = element
 
-  const {
-    HTMLButtonElement,
-    HTMLInputElement,
-    HTMLSelectElement,
-    HTMLTextAreaElement,
-    HTMLLabelElement,
-    HTMLAnchorElement,
-    HTMLImageElement,
-  } = element.ownerDocument.defaultView ?? window
-
   while (current !== null) {
     // https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Content_categories#interactive_content
     if (
-      current instanceof HTMLButtonElement ||
-      current instanceof HTMLLabelElement ||
-      current instanceof HTMLTextAreaElement ||
-      current instanceof HTMLSelectElement
+      isHTMLButtonElement(current) ||
+      isHTMLLabelElement(current) ||
+      isHTMLTextAreaElement(current) ||
+      isHTMLSelectElement(current)
     ) {
       return current
     }
 
-    if (current instanceof HTMLAnchorElement && current.hasAttribute('href')) {
+    if (isHTMLAnchorElement(current) && current.hasAttribute('href')) {
       return current
     }
 
-    if (current instanceof HTMLImageElement && current.hasAttribute('usemap')) {
+    if (isHTMLImageElement(current) && current.hasAttribute('usemap')) {
       return current
     }
 
-    if (current instanceof HTMLInputElement && current.type !== 'hidden') {
+    if (isHTMLInputElement(current) && current.type !== 'hidden') {
       return current
     }
 
@@ -80,7 +79,8 @@ function findByForAttribute(target: HTMLLabelElement) {
     return null
   }
 
-  return document.getElementById(forAttribute)
+  // Look up in the label's own document so it works for labels inside iframes.
+  return target.ownerDocument.getElementById(forAttribute)
 }
 
 const CHILD_INPUT_SELECTOR = [
@@ -113,7 +113,7 @@ export interface LabeledControl {
 }
 
 export function findAssociatedElement(label: Element): Element | null {
-  if (label instanceof HTMLLabelElement === false) {
+  if (!isHTMLLabelElement(label)) {
     return null
   }
 
@@ -125,19 +125,19 @@ export function findAssociatedElement(label: Element): Element | null {
 }
 
 export function isNativeCheckbox(element: Element) {
-  return element instanceof HTMLInputElement && element.type === 'checkbox'
+  return isHTMLInputElement(element) && element.type === 'checkbox'
 }
 
 export function isNativeRadio(element: Element) {
-  return element instanceof HTMLInputElement && element.type === 'radio'
+  return isHTMLInputElement(element) && element.type === 'radio'
 }
 
 export function isNativeButton(element: Element) {
-  if (element instanceof HTMLButtonElement) {
+  if (isHTMLButtonElement(element)) {
     return true
   }
 
-  if (element instanceof HTMLInputElement === false) {
+  if (!isHTMLInputElement(element)) {
     return false
   }
 
@@ -149,7 +149,7 @@ export function isNativeButton(element: Element) {
 }
 
 export function isNonButtonInput(element: Element) {
-  if (element instanceof HTMLInputElement === false) {
+  if (!isHTMLInputElement(element)) {
     return false
   }
 
