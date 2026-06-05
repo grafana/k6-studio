@@ -1,7 +1,10 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 
-import { extractUniqueJsonPaths } from '@/store/generator/slices/recording.utils'
+import {
+  extractUniqueJsonPaths,
+  getHostsByParty,
+} from '@/store/generator/slices/recording.utils'
 import { ProxyData } from '@/types'
 import { GeneratorFileData } from '@/types/generator'
 import { exhaustive } from '@/utils/typescript'
@@ -78,6 +81,9 @@ export const useGeneratorStore = create<GeneratorStore>()(
         state.allowlist = allowlist
 
         if (allowlist.length === 0 && recording.length > 0) {
+          const { firstParty } = getHostsByParty(recording)
+
+          state.allowlist = firstParty.slice(0, 1)
           state.showAllowlistDialog = true
         }
 

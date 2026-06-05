@@ -3,11 +3,11 @@ import { uniq } from 'lodash-es'
 import { useFeaturesStore } from '@/store/features'
 import { Header, ProxyData } from '@/types'
 
-export function extractUniqueHosts(requests: ProxyData[]) {
+function extractUniqueHosts(requests: ProxyData[]) {
   return uniq(requests.map((request) => request.request.host).filter(Boolean))
 }
 
-export function groupHostsByParty(hosts: string[]): {
+function groupHostsByParty(hosts: string[]): {
   firstParty: string[]
   thirdParty: string[]
 } {
@@ -21,6 +21,12 @@ export function groupHostsByParty(hosts: string[]): {
     },
     { firstParty: [], thirdParty: [] }
   )
+}
+
+export function getHostsByParty(requests: ProxyData[]) {
+  const uniqueHosts = extractUniqueHosts(requests)
+
+  return groupHostsByParty(uniqueHosts)
 }
 
 export function isHostThirdParty(host: string) {

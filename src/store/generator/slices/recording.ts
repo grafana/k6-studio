@@ -3,6 +3,7 @@ import { ImmerStateCreator } from '@/utils/typescript'
 
 import {
   extractUniqueJsonPaths,
+  getHostsByParty,
   shouldResetAllowList,
   shouldShowAllowListDialog,
 } from './recording.utils'
@@ -47,6 +48,9 @@ export const createRecordingSlice: ImmerStateCreator<RecordingSliceStore> = (
   setRecording: (requests: ProxyData[], path: string) =>
     set((state) => {
       if (shouldResetAllowList({ requests, allowList: state.allowlist })) {
+        const { firstParty } = getHostsByParty(state.requests)
+
+        state.allowlist = firstParty.slice(0, 1)
         state.allowlist = []
       }
 

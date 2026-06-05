@@ -1,13 +1,9 @@
 import { Button, Dialog, Flex } from '@radix-ui/themes'
 import { GlobeIcon } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { PopoverDialog } from '@/components/PopoverDialogs'
-import { useGeneratorStore } from '@/store/generator'
-import {
-  extractUniqueHosts,
-  groupHostsByParty,
-} from '@/store/generator/slices/recording.utils'
+import { getHostsByParty } from '@/store/generator/slices/recording.utils'
 import { ProxyData } from '@/types'
 
 import { type Allowlist, AllowlistEditor } from './AllowlistEditor'
@@ -30,28 +26,8 @@ export function AllowlistDialog({
   const [openAsPopover, setOpenAsPopover] = useState(false)
 
   const { firstParty, thirdParty } = useMemo(() => {
-    const uniqueHosts = extractUniqueHosts(requests)
-    return groupHostsByParty(uniqueHosts)
+    return getHostsByParty(requests)
   }, [requests])
-
-  const onChangeRef = useRef(onChange)
-
-  useEffect(() => {
-    onChangeRef.current = onChange
-  }, [onChange])
-
-  useEffect(() => {
-    // Using allowlist.length would require adding it as a dependency of useEffect.
-    // This causes an unintended behavior of automatically selecting the first item when the user unselects all checkboxes. (making it impossible to make allowlist empty).
-    const { allowlist, includeStaticAssets } = useGeneratorStore.getState()
-
-    if (firstParty[0] !== undefined && allowlist.length === 0) {
-      onChangeRef.current({
-        includeStaticAssets: includeStaticAssets,
-        hosts: [firstParty[0]],
-      })
-    }
-  }, [firstParty])
 
   function handleOpenChange(open: boolean) {
     if (!open) {

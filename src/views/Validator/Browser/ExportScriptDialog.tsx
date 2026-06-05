@@ -10,10 +10,7 @@ import {
 import { useMemo, useState } from 'react'
 
 import { useExportScript } from '@/hooks/useExportScript'
-import {
-  extractUniqueHosts,
-  groupHostsByParty,
-} from '@/store/generator/slices/recording.utils'
+import { getHostsByParty } from '@/store/generator/slices/recording.utils'
 import { useStudioUIStore } from '@/store/ui'
 import { ProxyData } from '@/types'
 import { safeAtob } from '@/utils/format'
@@ -73,9 +70,7 @@ export function ExportScriptDialog({
   )
 
   const { firstParty, thirdParty } = useMemo(() => {
-    const uniqueHosts = extractUniqueHosts(requests)
-
-    return groupHostsByParty(uniqueHosts)
+    return getHostsByParty(requests)
   }, [requests])
 
   const [allowlist, setAllowlist] = useState<Allowlist>({
