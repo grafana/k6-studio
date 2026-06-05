@@ -54,7 +54,7 @@ export const tools = {
       query: z
         .string()
         .describe(
-          'Search query - can match against URL, method, path, host, status code. Examples: "login", "POST", "/api/users", "401"'
+          'Search query - can match against URL, method, path, host, status code, request/response header names and values, and request/response body content. Examples: "login", "POST", "/api/users", "401", "content-type", "csrf_token"'
         ),
       limit: z
         .number()

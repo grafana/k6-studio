@@ -3,6 +3,7 @@ import {
   CssLocator,
   ElementLocator,
   LabelLocator,
+  LocatorOptions,
   PlaceholderLocator,
   RoleLocator,
   TestIdLocator,
@@ -170,5 +171,20 @@ export function isLocatorEqual(a: ElementLocator, b: ElementLocator): boolean {
 
     default:
       return exhaustive(a)
+  }
+}
+
+export function toLocatorOptions(selector: ElementSelector): LocatorOptions {
+  return {
+    current: getElementLocator(selector).type,
+    values: {
+      css: getCssLocator(selector),
+      role: getRoleLocator(selector) ?? undefined,
+      testid: getTestIdLocator(selector) ?? undefined,
+      alt: getAltTextLocator(selector) ?? undefined,
+      label: getLabelLocator(selector) ?? undefined,
+      placeholder: getPlaceholderLocator(selector) ?? undefined,
+      title: getTitleLocator(selector) ?? undefined,
+    },
   }
 }

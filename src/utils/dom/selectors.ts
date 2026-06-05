@@ -224,14 +224,18 @@ function generateTestIdSelector(element: Element): string | undefined {
   return testId
 }
 
+export function getCssSelector(element: Element): string {
+  return finder(element, {
+    root: element.ownerDocument.documentElement,
+  })
+}
+
 export function generateSelectors(
   element: Element,
   aria: AriaDetails
 ): ElementSelector {
   return {
-    css: finder(element, {
-      root: element.ownerDocument.documentElement,
-    }),
+    css: getCssSelector(element),
     testId: generateTestIdSelector(element),
     alt: generateAltTextSelector(element),
     label: generateLabelSelector(element, aria),

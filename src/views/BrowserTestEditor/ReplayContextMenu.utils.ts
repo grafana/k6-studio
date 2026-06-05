@@ -1,3 +1,9 @@
+import { PlayerMouseEvent } from '@/components/SessionPlayer/SessionPlayer.hooks'
+import { LocatorOptions } from '@/schemas/locator'
+import { ElementSelector } from '@/schemas/recording'
+import { getAriaDetails } from '@/utils/dom/aria'
+import { findInteractiveElement } from '@/utils/dom/dom'
+import { generateSelectors } from '@/utils/dom/selectors'
 import {
   getAltTextLocator,
   getCssLocator,
@@ -6,13 +12,7 @@ import {
   getRoleLocator,
   getTestIdLocator,
   getTitleLocator,
-} from '@/codegen/browser/selectors'
-import { PlayerMouseEvent } from '@/components/SessionPlayer/SessionPlayer.hooks'
-import { LocatorOptions } from '@/schemas/locator'
-import { ElementSelector } from '@/schemas/recording'
-import { getAriaDetails } from '@/utils/dom/aria'
-import { findInteractiveElement } from '@/utils/dom/dom'
-import { generateSelectors } from '@/utils/dom/selectors'
+} from '@/utils/locator'
 
 import { ContextMenuState } from './types'
 
