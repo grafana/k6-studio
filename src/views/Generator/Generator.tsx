@@ -121,11 +121,9 @@ export function Generator() {
   }, [generatorFileData, setGeneratorFile])
 
   useEffect(() => {
-    if (recording === undefined) {
-      return
+    if (recording !== undefined) {
+      setRecording(recording)
     }
-
-    setRecording(recording)
     setRecordingError(harError)
   }, [harError, recording, setRecording, setRecordingError])
 
