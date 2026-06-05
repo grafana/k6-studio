@@ -73,13 +73,13 @@ function makePlugin(traceId?: string): ExpectPlugin {
   }
 }
 
-function appendPlugin(baseConfig: ExpectConfig, plugin: ExpectPlugin) {
+function appendPlugin(baseConfig: ExpectConfig, newPlugin: ExpectPlugin) {
   const plugins =
-    baseConfig.plugins?.filter((plugin) => plugin.name !== plugin.name) ?? []
+    baseConfig.plugins?.filter((plugin) => plugin.name !== newPlugin.name) ?? []
 
   return {
     ...baseConfig,
-    plugins: [...plugins, plugin],
+    plugins: [...plugins, newPlugin],
   }
 }
 
