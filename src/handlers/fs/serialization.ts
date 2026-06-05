@@ -10,6 +10,7 @@ import { RecordingSchema } from '@/schemas/recording'
 import { StudioFileType } from '@/types'
 import { DataFilePreview } from '@/types/testData'
 import { parseDataFile } from '@/utils/dataFile'
+import { harToProxyData } from '@/utils/harToProxyData'
 import { K6Client } from '@/utils/k6/client'
 import * as path from '@/utils/path'
 import {
@@ -63,12 +64,16 @@ export async function deserializeContent(
         isExternal: isExternalBrowserTest(filePath),
       }
 
-    case 'recording':
+    case 'recording': {
+      const recording = RecordingSchema.parse(JSON.parse(raw))
+
       return {
         type: 'recording',
-        data: RecordingSchema.parse(JSON.parse(raw)),
+        data: harToProxyData(recording),
+        browserEvents: recording.log._browserEvents?.events ?? [],
         isExternal: isExternalRecording(filePath),
       }
+    }
 
     case 'script': {
       const options = await new K6Client()

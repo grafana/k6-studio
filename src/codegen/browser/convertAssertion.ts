@@ -1,8 +1,7 @@
 import { AnyBrowserAction } from '@/schemas/browserTest'
 import { AssertEvent } from '@/schemas/recording'
+import { toLocatorOptions } from '@/utils/locator'
 import { exhaustive } from '@/utils/typescript'
-
-import { toLocatorOptions } from './locator'
 
 export function convertAssertion(
   event: AssertEvent

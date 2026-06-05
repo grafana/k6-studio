@@ -6,7 +6,6 @@ import {
 } from '@/store/generator'
 import { ProxyData } from '@/types'
 import { GeneratorFileData } from '@/types/generator'
-import { harToProxyData } from '@/utils/harToProxyData'
 import { prettify } from '@/utils/prettify'
 
 export async function generateScriptPreview(
@@ -53,5 +52,5 @@ export const loadHarFile = async (fileName: string) => {
     throw new Error(`Expected recording content, got ${content.type}`)
   }
 
-  return harToProxyData(content.data)
+  return content.data
 }

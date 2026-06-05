@@ -1,5 +1,6 @@
 import { BrowserTestFile } from '@/schemas/browserTest'
-import { Recording } from '@/schemas/recording'
+import { BrowserEvent } from '@/schemas/recording'
+import { ProxyData } from '@/types'
 import { GeneratorFileData } from '@/types/generator'
 import { DataFilePreview } from '@/types/testData'
 import { K6TestOptions } from '@/utils/k6/schema'
@@ -38,7 +39,8 @@ export interface BrowserTestContent {
 
 export interface RecordingContent {
   type: 'recording'
-  data: Recording
+  data: ProxyData[]
+  browserEvents: BrowserEvent[]
 
   // Temporary until we support referencing external recordings in HTTP tests.
   isExternal: boolean
