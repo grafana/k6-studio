@@ -108,6 +108,19 @@ function proxyMatchers<T>(
         )
       }
 
+      if (name === '$trace') {
+        return (id: string) => {
+          return proxyMatchers(
+            id,
+            baseExpect,
+            soft,
+            negated,
+            value,
+            customMessage
+          )
+        }
+      }
+
       const matcher = target[name] as MatcherFn
 
       if (typeof matcher !== 'function') {
