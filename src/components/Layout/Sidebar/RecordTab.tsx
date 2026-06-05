@@ -2,7 +2,7 @@ import { Button, Flex, IconButton, Tooltip } from '@radix-ui/themes'
 import log from 'electron-log/renderer'
 import { HistoryIcon, PlusIcon, UploadIcon, VideoIcon } from 'lucide-react'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import {
   Group,
@@ -10,7 +10,7 @@ import {
   Separator,
   useDefaultLayout,
 } from '@/components/primitives/ResizablePanel'
-import { getRoutePath } from '@/routeMap'
+import { getRoutePath, getViewPath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
 
 import { RecentURLsPanel } from './RecentURLsPanel'
@@ -26,10 +26,15 @@ export function RecordTab({ onCollapseSidebar }: RecordTabProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const { recordings, isEmpty } = useFiles(searchTerm)
   const showToast = useToast()
+  const navigate = useNavigate()
 
   const handleImportRecording = async () => {
     try {
-      await window.studio.har.importFile()
+      const filePath = await window.studio.har.importFile()
+
+      if (filePath) {
+        navigate(getViewPath('recording', filePath))
+      }
     } catch (error) {
       showToast({
         title: 'Failed to import recording',
