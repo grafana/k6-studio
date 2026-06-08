@@ -1,10 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 
-export function useFileExists(filePath: string, defaultValue = true) {
+export function useFileExists(filePath: string, defaultValue = false) {
   const { data = defaultValue } = useQuery({
     queryKey: ['file-exists', filePath],
     queryFn: () => window.studio.fs.fileExists(filePath),
-    staleTime: 1000 * 60, // 1 minute
   })
 
   return data
