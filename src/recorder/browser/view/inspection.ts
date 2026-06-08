@@ -6,7 +6,7 @@ import { isElement, isHTMLIFrameElement } from '@/utils/dom/realm'
  * while the inspector tool is active.
  */
 export interface InspectionBridge {
-  hover(element: Element): void
+  hover(element: Element | null): void
   pick(element: Element, clientX: number, clientY: number): void
 }
 
@@ -100,12 +100,15 @@ export function attachInspectionDetection() {
 
     const [target] = event.composedPath()
 
-    // Skip iframe elements: the inspector running inside the iframe reports the
-    // actual element under the cursor, which also avoids an expensive selector
-    // computation on the (often deeply nested) iframe element here.
-    if (isElement(target) && !isHTMLIFrameElement(target)) {
-      bridge.hover(target)
+    if (!isElement(target)) {
+      return
     }
+
+    // The inspector running inside the iframe reports the actual element under
+    // the cursor, so don't highlight the iframe element itself; clear the hover
+    // instead so a prior highlight can't linger over it (this also avoids an
+    // expensive selector computation on the often deeply nested iframe element).
+    bridge.hover(isHTMLIFrameElement(target) ? null : target)
   })
 
   document.addEventListener(
@@ -126,6 +129,12 @@ export function attachInspectionDetection() {
       // The inspector is active, so swallow the page click and pick instead.
       event.preventDefault()
       event.stopPropagation()
+
+      // Don't pick the iframe element itself; the inspector inside it picks the
+      // real element under the cursor.
+      if (isHTMLIFrameElement(target)) {
+        return
+      }
 
       bridge.pick(target, event.clientX, event.clientY)
     },

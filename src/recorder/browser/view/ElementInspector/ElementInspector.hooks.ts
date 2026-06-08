@@ -141,13 +141,13 @@ export function useInspectedElement() {
   // attachInspectionDetection) and reports back through this bridge with the
   // live element reference. We delegate through refs so the bridge object stays
   // stable while still seeing the latest state.
-  const hoverRef = useRef<(element: Element) => void>(() => {})
+  const hoverRef = useRef<(element: Element | null) => void>(() => {})
   const pickRef = useRef<
     (element: Element, clientX: number, clientY: number) => void
   >(() => {})
 
   hoverRef.current = (element) => {
-    setHoveredEl(toTrackedElement(element))
+    setHoveredEl(element ? toTrackedElement(element) : null)
   }
 
   pickRef.current = (element, clientX, clientY) => {
