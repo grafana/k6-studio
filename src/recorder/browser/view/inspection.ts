@@ -44,6 +44,16 @@ function getTextSelectionBridge(): TextSelectionBridge | undefined {
 }
 
 /**
+ * True when the top frame has an inspector or text-selection tool active. Child
+ * frames keep their own UI store where `tool` is never set, so they detect an
+ * active tool through the top frame's bridge to avoid recording inspector picks
+ * and text selections as real interactions.
+ */
+export function isTopFrameToolActive(): boolean {
+  return getBridge() !== undefined || getTextSelectionBridge() !== undefined
+}
+
+/**
  * Reads the current selection from `document`, returning the range and the
  * element it lives in. Shared by the top frame and child-frame detection.
  */
