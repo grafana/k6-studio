@@ -1,7 +1,10 @@
 import { useCallback, useRef, useState, useEffect } from 'react'
 
 import { useContainerElement } from '@/components/primitives/ContainerProvider'
-import { observeWindowsForLayoutShift } from '@/utils/dom/layout'
+import {
+  collectLayoutShiftWindows,
+  observeWindowsForLayoutShift,
+} from '@/utils/dom/layout'
 
 import { toTrackedElement } from './ElementInspector/utils'
 import { toTopFrameBounds } from './frameGeometry'
@@ -118,13 +121,9 @@ export function useTextSelection() {
     }
 
     // The selected range may live inside an iframe that scrolls independently
-    // of the top document, so recompute on a shift in either frame.
+    // of the top document, so recompute on a shift in any frame on the path.
     const frameWindow = selectionRange.startContainer.ownerDocument?.defaultView
-    const windows = new Set<Window>([window])
-
-    if (frameWindow != null) {
-      windows.add(frameWindow)
-    }
+    const windows = collectLayoutShiftWindows(window, frameWindow)
 
     return observeWindowsForLayoutShift(windows, recompute)
   }, [selectionRange])

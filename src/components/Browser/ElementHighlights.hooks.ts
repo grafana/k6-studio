@@ -2,7 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { ElementLocator, LocatorOptions } from '@/schemas/locator'
-import { observeWindowsForLayoutShift } from '@/utils/dom/layout'
+import {
+  collectLayoutShiftWindows,
+  observeWindowsForLayoutShift,
+} from '@/utils/dom/layout'
 import { isElement } from '@/utils/dom/realm'
 import { findElementsByFrameChain } from '@/utils/selectors'
 
@@ -67,19 +70,10 @@ export function useHighlightedElements(
     // A highlighted element can live inside a (nested) iframe that scrolls or
     // resizes independently of the top document, so recompute bounds on a shift
     // in any document an element belongs to.
-    const windows = new Set<Window>()
-
-    if (rootWindow !== null) {
-      windows.add(rootWindow)
-    }
-
-    for (const element of elements) {
-      const elementWindow = element.ownerDocument.defaultView
-
-      if (elementWindow !== null) {
-        windows.add(elementWindow)
-      }
-    }
+    const windows = collectLayoutShiftWindows(
+      rootWindow,
+      ...elements.map((element) => element.ownerDocument.defaultView)
+    )
 
     return observeWindowsForLayoutShift(windows, recompute)
   }, [root, target, frames])
