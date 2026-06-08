@@ -8,6 +8,7 @@ import {
   Tooltip,
 } from '@radix-ui/themes'
 import {
+  FileQuestionIcon,
   FolderOpenIcon,
   InfoIcon,
   PlusIcon,
@@ -88,7 +89,7 @@ function DataFileRow({ file, onRemove }: DataFileRowProps) {
     )
   )
 
-  const exists = useFileExists(file.name)
+  const { isSuccess, isError, data: exists } = useFileExists(file.name)
 
   return (
     <Table.Row
@@ -98,7 +99,17 @@ function DataFileRow({ file, onRemove }: DataFileRowProps) {
     >
       <Table.Cell>
         <Flex align="center" gap="1">
-          {!exists && (
+          {isError && (
+            <Tooltip content="An error occurred while checking the file">
+              <FileQuestionIcon
+                css={css`
+                  color: var(--red-9);
+                `}
+                aria-label="An error occurred while checking the file"
+              />
+            </Tooltip>
+          )}
+          {isSuccess && !exists && (
             <Tooltip content="Data file is missing">
               <TriangleAlertIcon
                 css={css`
