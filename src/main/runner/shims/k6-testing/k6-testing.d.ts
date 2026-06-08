@@ -1,5 +1,5 @@
 /* eslint-disable */
-declare module 'https://jslib.k6.io/k6-testing/*/index.js' {
+declare module '__K6_TESTING_EXPECT_PATH__' {
   /**
    * SoftMode defines how soft assertions should be handled when they fail.
    *
@@ -7,7 +7,7 @@ declare module 'https://jslib.k6.io/k6-testing/*/index.js' {
    * - 'fail': The assertion will mark the test as failed using exec.test.fail, but will continue execution.
    */
   export type SoftMode = 'throw' | 'fail'
-  declare function assert(
+  function assert(
     condition: boolean,
     message: string,
     soft?: boolean,
@@ -413,7 +413,7 @@ declare module 'https://jslib.k6.io/k6-testing/*/index.js' {
       message?: string
     }
   }[keyof ErrorFormats]
-  declare const ANSI_COLORS: {
+  const ANSI_COLORS: {
     readonly reset: '\u001B[0m'
     readonly black: '\u001B[30m'
     readonly red: '\u001B[31m'

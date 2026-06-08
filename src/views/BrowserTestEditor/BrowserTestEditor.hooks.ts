@@ -44,7 +44,8 @@ export function useBrowserTestEditorLayout() {
 
 export function useBrowserScriptPreview(
   browserActions: AnyBrowserAction[],
-  options?: BrowserTestOptions
+  options?: BrowserTestOptions,
+  trace = false
 ) {
   const [preview, setPreview] = useState('')
 
@@ -53,12 +54,14 @@ export function useBrowserScriptPreview(
     debounce(
       async (
         actions: AnyBrowserAction[],
-        currentOptions: BrowserTestOptions | undefined
+        currentOptions: BrowserTestOptions | undefined,
+        trace: boolean
       ) => {
         try {
           const test = convertActionsToTest({
             browserActions: actions,
             options: currentOptions,
+            trace,
           })
 
           const script = await emitScript(test)
@@ -75,10 +78,10 @@ export function useBrowserScriptPreview(
   )
 
   useEffect(() => {
-    void generatePreview(browserActions, options)
+    void generatePreview(browserActions, options, trace)
 
     return () => generatePreview.cancel()
-  }, [browserActions, options, generatePreview])
+  }, [browserActions, options, trace, generatePreview])
 
   return preview
 }
@@ -111,7 +114,7 @@ export function useBrowserTestValidator({
     [actions, shutdownDelay]
   )
 
-  const script = useBrowserScriptPreview(actionsWithTimeout, options)
+  const script = useBrowserScriptPreview(actionsWithTimeout, options, true)
   const session = useDebugSession({
     type: 'raw',
     content: script,

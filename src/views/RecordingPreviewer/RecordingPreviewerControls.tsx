@@ -18,17 +18,17 @@ import { useExportScript } from '@/hooks/useExportScript'
 import { getRoutePath } from '@/routeMap'
 import { BrowserEvent } from '@/schemas/recording'
 import { useFeaturesStore } from '@/store/features'
-import { StudioFile } from '@/types'
+import { ProxyData, StudioFile } from '@/types'
 
 interface RecordingPreviewControlsProps {
   file: StudioFile
-  isExternal: boolean
+  requests: ProxyData[]
   browserEvents: BrowserEvent[]
 }
 
 export function RecordingPreviewControls({
   file,
-  isExternal,
+  requests,
   browserEvents,
 }: RecordingPreviewControlsProps) {
   const navigate = useNavigate()
@@ -115,15 +115,15 @@ export function RecordingPreviewControls({
             icon={<ServerCogIcon />}
             label="HTTP test"
             description="Generate a k6 script from HTTP requests using rules"
-            disabled={isExternal}
-            onClick={handleCreateGenerator}
+            disabled={requests.length === 0}
+            onSelect={handleCreateGenerator}
           />
           <RichDropdownMenuItem
             icon={<MonitorIcon />}
             label="Browser test"
             description={browserTestDescription}
-            disabled={isExternal || browserEvents.length === 0}
-            onClick={handleBrowserTest}
+            disabled={browserEvents.length === 0}
+            onSelect={handleBrowserTest}
           />
         </DropdownMenu.Content>
       </DropdownMenu.Root>
@@ -134,7 +134,10 @@ export function RecordingPreviewControls({
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DropdownMenu.Item color="red" onClick={handleDeleteRecordingConfirm}>
+          <DropdownMenu.Item
+            color="red"
+            onSelect={handleDeleteRecordingConfirm}
+          >
             Move to Trash
           </DropdownMenu.Item>
         </DropdownMenu.Content>

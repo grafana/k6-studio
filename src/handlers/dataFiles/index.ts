@@ -1,12 +1,11 @@
-import { COPYFILE_EXCL } from 'constants'
 import { ipcMain } from 'electron'
 import invariant from 'tiny-invariant'
 
 import { MAX_DATA_FILE_SIZE } from '@/constants/files'
 import { DATA_FILES_PATH } from '@/constants/workspace'
-import { showOpenDialog } from '@/utils/dialog'
+import { showMessageBox, showOpenDialog } from '@/utils/dialog'
 import { browserWindowFromEvent } from '@/utils/electron'
-import { copyFile, stat } from '@/utils/fs'
+import { copyFile, exists, stat } from '@/utils/fs'
 import * as path from '@/utils/path'
 
 import { DataFileHandler } from './types'
@@ -30,13 +29,25 @@ export function initialize() {
     const { size } = await stat(filePath)
     invariant(size <= MAX_DATA_FILE_SIZE, 'File is too large')
 
-    await copyFile(
-      filePath,
-      path.join(DATA_FILES_PATH, path.basename(filePath)),
-      COPYFILE_EXCL
-    )
+    const destinationPath = path.join(DATA_FILES_PATH, path.basename(filePath))
 
-    return path.join(DATA_FILES_PATH, path.basename(filePath))
+    if (await exists(destinationPath)) {
+      const { response } = await showMessageBox(browserWindow, {
+        type: 'question',
+        buttons: ['Cancel', 'Overwrite'],
+        defaultId: 0,
+        cancelId: 0,
+        message: `"${path.basename(filePath)}" already exists. Do you want to overwrite it?`,
+      })
+
+      if (response === 0) {
+        return
+      }
+    }
+
+    await copyFile(filePath, destinationPath)
+
+    return destinationPath
   })
 
   ipcMain.handle(DataFileHandler.Open, async (event) => {

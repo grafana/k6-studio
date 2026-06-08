@@ -76,6 +76,12 @@ export interface RoleLocatorOptionsExpression {
   }
 }
 
+export interface TraceExpression {
+  type: 'TraceExpression'
+  traceId: string
+  target: Expression
+}
+
 export interface NewRoleLocatorExpression {
   type: 'NewRoleLocatorExpression'
   role: Expression
@@ -220,7 +226,12 @@ export type Assertion =
 export interface ExpectExpression {
   type: 'ExpectExpression'
   actual: Expression
-  expected: Assertion
+}
+
+export interface AssertExpression {
+  type: 'AssertExpression'
+  expect: Expression
+  assertion: Assertion
 }
 
 export type Expression =
@@ -248,11 +259,13 @@ export type Expression =
   | SelectOptionValueExpression
   | SelectOptionsExpression
   | ExpectExpression
+  | AssertExpression
   | WaitForExpression
   | WaitForOptionsExpression
   | WaitForNavigationExpression
   | WaitForTimeoutExpression
   | PromiseAllExpression
+  | TraceExpression
 
 export interface VariableDeclaration {
   type: 'VariableDeclaration'

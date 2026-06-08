@@ -332,13 +332,18 @@ function emitExpectExpression(
 
   const locator = emitExpression(context, expression.actual)
 
-  const expect = new ExpressionBuilder(identifier('expect'))
-    .call([locator])
-    .done()
+  return new ExpressionBuilder(identifier('expect')).call([locator]).done()
+}
 
-  switch (expression.expected.type) {
+function emitAssertExpression(
+  context: ScenarioContext,
+  expression: ir.AssertExpression
+): ts.Expression {
+  const expect = emitExpression(context, expression.expect)
+
+  switch (expression.assertion.type) {
     case 'TextContainsAssertion': {
-      const text = emitExpression(context, expression.expected.text)
+      const text = emitExpression(context, expression.assertion.text)
 
       return new ExpressionBuilder(expect)
         .member('toContainText')
@@ -391,8 +396,8 @@ function emitExpectExpression(
       return new ExpressionBuilder(expect)
         .member('toHaveAttribute')
         .call([
-          emitExpression(context, expression.expected.attribute),
-          emitExpression(context, expression.expected.value),
+          emitExpression(context, expression.assertion.attribute),
+          emitExpression(context, expression.assertion.value),
         ])
         .await(context)
         .done()
@@ -400,13 +405,13 @@ function emitExpectExpression(
     case 'HasValueAssertion':
       return new ExpressionBuilder(expect)
         .member('toHaveValue')
-        .call([emitExpression(context, expression.expected.expected)])
+        .call([emitExpression(context, expression.assertion.expected)])
         .await(context)
         .done()
 
     case 'HasValuesAssertion': {
       const expectedValues = mapNonEmpty(
-        expression.expected.expected,
+        expression.assertion.expected,
         (value) => emitExpression(context, value)
       )
 
@@ -418,7 +423,7 @@ function emitExpectExpression(
     }
 
     default: {
-      return exhaustive(expression.expected)
+      return exhaustive(expression.assertion)
     }
   }
 }
@@ -500,6 +505,16 @@ function emitPromiseAllExpression(
     .done()
 }
 
+function emitTraceExpression(
+  context: ScenarioContext,
+  expression: ir.TraceExpression
+): ts.Expression {
+  const target = emitExpression(context, expression.target)
+  const traceId = string(expression.traceId)
+
+  return new ExpressionBuilder(target).member('$trace').call([traceId]).done()
+}
+
 function emitExpression(
   context: ScenarioContext,
   expression: ir.Expression
@@ -577,6 +592,9 @@ function emitExpression(
     case 'ExpectExpression':
       return emitExpectExpression(context, expression)
 
+    case 'AssertExpression':
+      return emitAssertExpression(context, expression)
+
     case 'WaitForExpression':
       return emitWaitForExpression(context, expression)
 
@@ -591,6 +609,9 @@ function emitExpression(
 
     case 'PromiseAllExpression':
       return emitPromiseAllExpression(context, expression)
+
+    case 'TraceExpression':
+      return emitTraceExpression(context, expression)
 
     default:
       return exhaustive(expression)
