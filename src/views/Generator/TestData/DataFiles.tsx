@@ -89,7 +89,7 @@ function DataFileRow({ file, onRemove }: DataFileRowProps) {
     )
   )
 
-  const { isSuccess, isError, data: exists } = useFileExists(file.name)
+  const fileState = useFileExists(file.name)
 
   return (
     <Table.Row
@@ -99,7 +99,7 @@ function DataFileRow({ file, onRemove }: DataFileRowProps) {
     >
       <Table.Cell>
         <Flex align="center" gap="1">
-          {isError && (
+          {fileState === 'error' && (
             <Tooltip content="An error occurred while checking the file">
               <FileQuestionIcon
                 css={css`
@@ -109,7 +109,7 @@ function DataFileRow({ file, onRemove }: DataFileRowProps) {
               />
             </Tooltip>
           )}
-          {isSuccess && !exists && (
+          {fileState === 'missing' && (
             <Tooltip content="Data file is missing">
               <TriangleAlertIcon
                 css={css`
@@ -128,11 +128,11 @@ function DataFileRow({ file, onRemove }: DataFileRowProps) {
       <Table.Cell>
         <Tooltip
           content="Data file is referenced in a rule"
-          hidden={!isFileInUse && exists}
+          hidden={!isFileInUse && fileState === 'exists'}
         >
           <IconButton
             aria-label="Remove"
-            disabled={isFileInUse && exists}
+            disabled={isFileInUse && fileState === 'exists'}
             onClick={onRemove}
           >
             <Trash2Icon />
