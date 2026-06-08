@@ -394,7 +394,7 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
   const updateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isFirstDom = useRef(true)
 
-  const serializeDom = useCallback(() => {
+  const serializeDom = useCallback((player: Replayer, autoExpand = false) => {
     if (player === null) {
       return
     }
@@ -405,26 +405,31 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
       return
     }
 
-    const serialized = serializeNode(player, documentElement)
+    const rootNode = serializeNode(player, documentElement)
 
-    setDomRoot(serialized)
+    setDomRoot(rootNode)
 
-    if (serialized === null || serialized.type !== Node.ELEMENT_NODE) {
+    if (rootNode?.type !== Node.ELEMENT_NODE || !autoExpand) {
       return
     }
 
-    const bodyEl = serialized.children.find(
-      (c) => c.type === Node.ELEMENT_NODE && c.tagName === 'body'
+    // If autoExpand is true, expand the html and body tags.
+    const bodyEl = rootNode.children.find(
+      (child) => child.type === Node.ELEMENT_NODE && child.tagName === 'body'
     )
 
-    const newExpanded = new Set([serialized.key])
+    setExpandedKeys((prev) => {
+      const next = new Set(prev)
 
-    if (bodyEl !== undefined) {
-      newExpanded.add(bodyEl.key)
-    }
+      next.add(rootNode.key)
 
-    setExpandedKeys(newExpanded)
-  }, [player])
+      if (bodyEl !== undefined) {
+        next.add(bodyEl.key)
+      }
+
+      return next
+    })
+  }, [])
 
   useEffect(() => {
     if (!player) {
@@ -434,6 +439,8 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
       return
     }
 
+    isFirstDom.current = false
+
     const scheduleUpdate = () => {
       if (updateTimerRef.current !== null) {
         clearTimeout(updateTimerRef.current)
@@ -441,7 +448,7 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
 
       updateTimerRef.current = setTimeout(() => {
         updateTimerRef.current = null
-        serializeDom()
+        serializeDom(player)
       }, 150)
     }
 
@@ -464,12 +471,12 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
       observer.disconnect()
 
       setTimeout(() => {
-        serializeDom()
+        serializeDom(player)
         attachObserver()
       }, 0)
     }
 
-    serializeDom()
+    serializeDom(player, true)
     attachObserver()
 
     player.on(ReplayerEvents.FullsnapshotRebuilded, handleFullSnapshot)
