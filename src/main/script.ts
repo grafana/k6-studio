@@ -28,21 +28,12 @@ export type K6Process = ChildProcessWithoutNullStreams
 const K6_TESTING_LIB_REGEX =
   /^https\/jslib\.k6\.io\/k6-testing\/\d+\.\d+\.\d+\/index\.js$/i
 
-const K6_TESTING_UNSUPPORTED_VERSIONS = new Set(
-  ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.6.1'].map(
-    (version) => `https/jslib.k6.io/k6-testing/${version}/index.js`
-  )
-)
-
 function isSupportedTestingLibrary(path: string) {
   if (path === K6_TESTING_OVERRIDE.replace('://', '/')) {
     return true
   }
 
-  return (
-    K6_TESTING_LIB_REGEX.test(path) &&
-    !K6_TESTING_UNSUPPORTED_VERSIONS.has(path)
-  )
+  return K6_TESTING_LIB_REGEX.test(path)
 }
 
 const ArchiveManifestSchema = z.looseObject({

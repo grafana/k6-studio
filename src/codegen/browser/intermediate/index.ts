@@ -7,6 +7,16 @@ import * as ir from './ast'
 import { IntermediateContext } from './context'
 import { substituteVariables } from './variables'
 
+function emitTraceNode(context: IntermediateContext, node: m.TraceNode) {
+  const previous = context.reference(node.inputs.previous)
+
+  context.inline(node, {
+    type: 'TraceExpression',
+    traceId: node.traceId,
+    target: previous,
+  })
+}
+
 function emitPageNode(context: IntermediateContext, node: m.PageNode) {
   const expression: ir.NewPageExpression = {
     type: 'NewPageExpression',
@@ -394,15 +404,24 @@ function emitAssertion(
   }
 }
 
-function emitAssertNode(context: IntermediateContext, node: m.AssertNode) {
+function emitExpectNode(context: IntermediateContext, node: m.ExpectNode) {
   const locator = context.reference(node.inputs.locator)
+
+  context.inline(node, {
+    type: 'ExpectExpression',
+    actual: locator,
+  })
+}
+
+function emitAssertNode(context: IntermediateContext, node: m.AssertNode) {
+  const expect = context.reference(node.inputs.expect)
 
   context.emit({
     type: 'ExpressionStatement',
     expression: {
-      type: 'ExpectExpression',
-      actual: locator,
-      expected: emitAssertion(context, node.operation),
+      type: 'AssertExpression',
+      expect,
+      assertion: emitAssertion(context, node.operation),
     },
   })
 }
@@ -455,6 +474,9 @@ function emitWaitForTimeoutNode(
 
 function emitNode(context: IntermediateContext, node: m.TestNode) {
   switch (node.type) {
+    case 'trace':
+      return emitTraceNode(context, node)
+
     case 'page':
       return emitPageNode(context, node)
 
@@ -481,6 +503,9 @@ function emitNode(context: IntermediateContext, node: m.TestNode) {
 
     case 'select-options':
       return emitSelectOptionsNode(context, node)
+
+    case 'expect':
+      return emitExpectNode(context, node)
 
     case 'assert':
       return emitAssertNode(context, node)

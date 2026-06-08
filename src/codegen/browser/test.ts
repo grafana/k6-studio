@@ -125,6 +125,24 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
     return toNodeRef(previousLocator)
   }
 
+  function getExpect(
+    tab: string,
+    target: BrowserEventTarget,
+    eventId: string
+  ): NodeRef {
+    const locator = getLocator(tab, target)
+
+    const expectNode: TestNode = {
+      type: 'expect',
+      nodeId: `${eventId}-expect`,
+      inputs: { locator },
+    }
+
+    nodes.push(expectNode)
+
+    return toNodeRef(expectNode)
+  }
+
   function getWaitForNavigation(
     currentEvent: BrowserEvent,
     nextEvent?: BrowserEvent
@@ -255,7 +273,7 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
           operation: toAssertionOperation(event.assertion),
           inputs: {
             previous,
-            locator: getLocator(event.tab, event.target),
+            expect: getExpect(event.tab, event.target, event.eventId),
           },
         }
       }
@@ -295,11 +313,33 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
   return nodes
 }
 
-function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
+function buildBrowserNodeGraphFromActions(
+  browserActions: AnyBrowserAction[],
+  trace = false
+) {
   const nodes: TestNode[] = []
   let previousLocatorNode: LocatorNode | null = null
 
   let currentPage: PageNode | undefined = undefined
+
+  function withTrace(action: AnyBrowserAction, nodeRef: NodeRef) {
+    if (!trace) {
+      return nodeRef
+    }
+
+    const traceNode: TestNode = {
+      type: 'trace',
+      nodeId: crypto.randomUUID(),
+      traceId: action.id,
+      inputs: {
+        previous: nodeRef,
+      },
+    }
+
+    nodes.push(traceNode)
+
+    return toNodeRef(traceNode)
+  }
 
   // We create the page lazily so that we don't emit a page node if
   // the test is empty.
@@ -318,6 +358,7 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
 
   function getLocator({ current, values }: LocatorOptions): NodeRef {
     const currentLocator = values[current]
+
     if (!currentLocator) {
       throw new Error(
         `Current locator of type "${current}" not found in locator values.`
@@ -353,6 +394,21 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
     return toNodeRef(previousLocatorNode)
   }
 
+  function getExpectNode(
+    locatorRef: NodeRef,
+    action: AnyBrowserAction
+  ): NodeRef {
+    const expectNode: TestNode = {
+      type: 'expect',
+      nodeId: crypto.randomUUID(),
+      inputs: { locator: locatorRef },
+    }
+
+    nodes.push(expectNode)
+
+    return withTrace(action, toNodeRef(expectNode))
+  }
+
   function toNode(action: AnyBrowserAction): TestNode {
     switch (action.method) {
       case 'page.goto':
@@ -362,7 +418,7 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
           url: action.url,
           source: 'address-bar',
           inputs: {
-            page: getPage(),
+            page: withTrace(action, getPage()),
           },
         }
       case 'page.reload':
@@ -370,7 +426,7 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
           type: 'reload',
           nodeId: crypto.randomUUID(),
           inputs: {
-            page: getPage(),
+            page: withTrace(action, getPage()),
           },
         }
       case 'locator.waitFor':
@@ -378,7 +434,7 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
           type: 'wait-for',
           nodeId: crypto.randomUUID(),
           inputs: {
-            locator: getLocator(action.locator),
+            locator: withTrace(action, getLocator(action.locator)),
           },
           options: action.options,
         }
@@ -392,7 +448,7 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
             ? { page: getPage() }
             : undefined,
           inputs: {
-            locator: getLocator(action.locator),
+            locator: withTrace(action, getLocator(action.locator)),
           },
         }
       case 'locator.check':
@@ -401,7 +457,7 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
           nodeId: crypto.randomUUID(),
           checked: true,
           inputs: {
-            locator: getLocator(action.locator),
+            locator: withTrace(action, getLocator(action.locator)),
           },
         }
       case 'locator.uncheck':
@@ -410,7 +466,7 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
           nodeId: crypto.randomUUID(),
           checked: false,
           inputs: {
-            locator: getLocator(action.locator),
+            locator: withTrace(action, getLocator(action.locator)),
           },
         }
       case 'locator.toBeChecked':
@@ -423,7 +479,7 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
             expected: action.checked ? 'checked' : 'unchecked',
           },
           inputs: {
-            locator: getLocator(action.locator),
+            expect: getExpectNode(getLocator(action.locator), action),
           },
         }
       case 'locator.toBeVisible':
@@ -435,7 +491,7 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
             visible: action.visible,
           },
           inputs: {
-            locator: getLocator(action.locator),
+            expect: getExpectNode(getLocator(action.locator), action),
           },
         }
       case 'locator.toHaveValue': {
@@ -455,7 +511,7 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
                   expected: action.expected.values.single ?? '',
                 },
           inputs: {
-            locator: getLocator(action.locator),
+            expect: getExpectNode(getLocator(action.locator), action),
           },
         }
       }
@@ -468,7 +524,7 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
             value: action.expected,
           },
           inputs: {
-            locator: getLocator(action.locator),
+            expect: getExpectNode(getLocator(action.locator), action),
           },
         }
       case 'locator.fill':
@@ -477,7 +533,7 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
           nodeId: crypto.randomUUID(),
           value: action.value,
           inputs: {
-            locator: getLocator(action.locator),
+            locator: withTrace(action, getLocator(action.locator)),
           },
         }
       case 'locator.clear':
@@ -485,7 +541,7 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
           type: 'clear',
           nodeId: crypto.randomUUID(),
           inputs: {
-            locator: getLocator(action.locator),
+            locator: withTrace(action, getLocator(action.locator)),
           },
         }
       case 'locator.selectOption': {
@@ -504,7 +560,7 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
           selected,
           multiple: selected.length > 1,
           inputs: {
-            locator: getLocator(action.locator),
+            locator: withTrace(action, getLocator(action.locator)),
           },
         }
       }
@@ -514,7 +570,7 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
           nodeId: crypto.randomUUID(),
           timeout: action.timeout,
           inputs: {
-            page: getPage(),
+            page: withTrace(action, getPage()),
           },
         }
       case 'page.waitForNavigation':
@@ -553,13 +609,15 @@ export function convertEventsToTest({ browserEvents }: Recording): Test {
 export function convertActionsToTest({
   browserActions,
   options,
+  trace = false,
 }: {
   browserActions: AnyBrowserAction[]
   options?: BrowserTestOptions
+  trace?: boolean
 }): Test {
   return {
     defaultScenario: {
-      nodes: buildBrowserNodeGraphFromActions(browserActions),
+      nodes: buildBrowserNodeGraphFromActions(browserActions, trace),
     },
     scenarios: {},
     options,

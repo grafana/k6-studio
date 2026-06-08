@@ -12,6 +12,14 @@ export interface NodeRef {
   nodeId: NodeId
 }
 
+export interface TraceNode extends NodeBase {
+  type: 'trace'
+  traceId: string
+  inputs: {
+    previous: NodeRef
+  }
+}
+
 export interface PageNode extends NodeBase {
   type: 'page'
 }
@@ -121,12 +129,19 @@ export type AssertionOperation =
   | HasValueAssertion
   | HasValuesAssertion
 
+export interface ExpectNode extends NodeBase {
+  type: 'expect'
+  inputs: {
+    locator: NodeRef
+  }
+}
+
 export interface AssertNode extends NodeBase {
   type: 'assert'
   operation: AssertionOperation
   inputs: {
     previous?: NodeRef
-    locator: NodeRef
+    expect: NodeRef
   }
 }
 
@@ -160,6 +175,7 @@ export interface WaitForTimeoutNode extends NodeBase {
 }
 
 export type TestNode =
+  | TraceNode
   | PageNode
   | GotoNode
   | ReloadNode
@@ -169,6 +185,7 @@ export type TestNode =
   | TypeTextNode
   | SelectOptionsNode
   | CheckNode
+  | ExpectNode
   | AssertNode
   | WaitForNode
   | WaitForTimeoutNode
