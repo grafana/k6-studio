@@ -1,13 +1,13 @@
-name: 'Release'
+name: "Release"
 
 on:
   workflow_call:
     inputs:
       version-suffix:
-        description: 'Optional version suffix appended to package.json version'
+        description: "Optional version suffix appended to package.json version"
         type: string
         required: false
-        default: ''
+        default: ""
 
 permissions: {}
 
@@ -36,13 +36,13 @@ jobs:
         run: python update_version.py
 
       - name: setup pnpm
-        uses: pnpm/action-setup@8912a9102ac27614460f54aedde9e1e7f9aec20d # v6
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
 
       - name: setup node
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: 24.11
-          cache: 'pnpm'
+          cache: "pnpm"
 
       # appdmg (used for DMG builds) depends on native modules compiled via node-gyp,
       # which requires Python setuptools. macOS runners ship with Python 3.12+ where
@@ -82,7 +82,7 @@ jobs:
       - name: publish macOS arm64
         if: startsWith(matrix.platform, 'macos-latest')
         env:
-          NODE_OPTIONS: '--max_old_space_size=8192'
+          NODE_OPTIONS: "--max_old_space_size=8192"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # apple notarization
           APPLE_API_KEY: ./apple_api_key.p8
@@ -96,7 +96,7 @@ jobs:
       - name: publish macOS x86_64
         if: startsWith(matrix.platform, 'macos-15-intel')
         env:
-          NODE_OPTIONS: '--max_old_space_size=8192'
+          NODE_OPTIONS: "--max_old_space_size=8192"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # apple notarization
           APPLE_API_KEY: ./apple_api_key.p8
@@ -132,7 +132,7 @@ jobs:
         if: startsWith(matrix.platform, 'windows-')
         with:
           # renovate: datasource=dotnet-version depName=dotnet-sdk
-          dotnet-version: '8.0.414'
+          dotnet-version: "8.0.414"
 
       - name: Install Sign CLI tool
         id: install-sign-tool
@@ -140,7 +140,7 @@ jobs:
         shell: pwsh
         env:
           # renovate: datasource=nuget depName=sign
-          DOTNET_SIGN_VERSION: '0.9.1-beta.25379.1'
+          DOTNET_SIGN_VERSION: "0.9.1-beta.25379.1"
         run: |
           $toolPath = Join-Path -Path ${env:RUNNER_TEMP} -ChildPath (New-Guid).ToString()
           New-Item -ItemType Directory -Path $toolPath | Out-Null
@@ -154,7 +154,7 @@ jobs:
       - name: publish Windows
         if: startsWith(matrix.platform, 'windows-')
         env:
-          NODE_OPTIONS: '--max_old_space_size=8192'
+          NODE_OPTIONS: "--max_old_space_size=8192"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # windows cert
           TRUSTED_SIGNING_ACCOUNT: grafana-premium-eastus
@@ -170,7 +170,7 @@ jobs:
       - name: publish Linux
         if: startsWith(matrix.platform, 'ubuntu-')
         env:
-          NODE_OPTIONS: '--max_old_space_size=8192'
+          NODE_OPTIONS: "--max_old_space_size=8192"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # sentry integration
           # sentry vite plugin integration during build
