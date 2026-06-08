@@ -79,20 +79,50 @@ describe('BrowserEventList highlighting', () => {
 })
 
 describe('BrowserEventList iframe indicator', () => {
-  it('marks an element captured inside an iframe with the frame in its badge', () => {
-    const event = clickEvent([{ selectors: { css: 'iframe#outer' } }])
+  it('shows the element first, then each frame innermost-first joined by "in"', () => {
+    // frames are stored outermost-first; the badge reads element-first.
+    const event = clickEvent([
+      { selectors: { css: 'iframe#outer' } },
+      { selectors: { css: 'iframe#inner' } },
+    ])
 
-    const { getByLabelText, getByText } = renderList(event, vi.fn())
+    const { getAllByLabelText, getByText } = renderList(event, vi.fn())
 
-    expect(getByLabelText('Inside iframe')).toBeTruthy()
-    expect(getByText('iframe#outer')).toBeTruthy()
+    const badge = getByText('#checkout-button').closest('div')
+
+    if (badge === null) {
+      throw new Error('locator badge not found')
+    }
+
+    expect(getAllByLabelText('iframe')).toHaveLength(2)
+    expect(badge.textContent).toMatch(
+      /#checkout-button.*in.*iframe#inner.*in.*iframe#outer/
+    )
   })
 
-  it('shows no iframe marker for a top-frame event', () => {
+  it('collapses to a frame count when the chain is deep', () => {
+    const event = clickEvent([
+      { selectors: { css: 'iframe#a' } },
+      { selectors: { css: 'iframe#b' } },
+      { selectors: { css: 'iframe#c' } },
+    ])
+
+    const { getByText, queryByText, queryByLabelText } = renderList(
+      event,
+      vi.fn()
+    )
+
+    expect(getByText(/in 3 frames/)).toBeTruthy()
+    expect(queryByText('iframe#a')).toBeNull()
+    expect(queryByLabelText('iframe')).toBeNull()
+  })
+
+  it('shows no frame suffix for a top-frame event', () => {
     const event = clickEvent(undefined)
 
-    const { queryByLabelText } = renderList(event, vi.fn())
+    const { getByText, queryByLabelText } = renderList(event, vi.fn())
 
-    expect(queryByLabelText('Inside iframe')).toBeNull()
+    expect(getByText('#checkout-button')).toBeTruthy()
+    expect(queryByLabelText('iframe')).toBeNull()
   })
 })

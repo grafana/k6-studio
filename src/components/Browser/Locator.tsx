@@ -110,10 +110,47 @@ const codeStyles = css`
   font-size: 0.9em;
 `
 
+// Frames are de-emphasized so the target element stays in focus.
+const frameStyles = css`
+  color: var(--gray-11);
+`
+
+// Beyond this many frames the chain is summarized as a count.
+const COLLAPSE_THRESHOLD = 2
+
+// Renders the iframe context after the element, reading "<element> in <frame>
+// in <frame>" innermost-first, or "in N frames" once the chain gets deep.
+function FrameChain({ frames }: { frames: ElementLocator[] }) {
+  if (frames.length === 0) {
+    return null
+  }
+
+  if (frames.length > COLLAPSE_THRESHOLD) {
+    return <span css={frameStyles}>in {frames.length} frames</span>
+  }
+
+  return (
+    <>
+      {[...frames].reverse().map((frame, index) => (
+        <Fragment key={index}>
+          <span css={frameStyles}>in</span>
+          <SquareStackIcon
+            aria-label="iframe"
+            css={[iconStyles, frameStyles]}
+          />
+          <code css={[codeStyles, frameStyles]}>
+            <LocatorText locator={frame} />
+          </code>
+        </Fragment>
+      ))}
+    </>
+  )
+}
+
 interface LocatorProps {
   locator: ElementLocator
-  // Chain of iframe locators (outermost first) the element lives in, shown as a
-  // prefix inside the badge so an element inside an iframe is recognizable.
+  // Chain of iframe locators (outermost first) the element lives in, shown after
+  // the element as " in <frame>" so an element inside an iframe is recognizable.
   frames?: ElementLocator[]
   onHighlightChange?: (highlighted: boolean) => void
 }
@@ -158,18 +195,11 @@ export function Locator({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {frames.map((frame, index) => (
-        <Fragment key={index}>
-          <SquareStackIcon aria-label="Inside iframe" css={iconStyles} />
-          <code css={codeStyles}>
-            <LocatorText locator={frame} />
-          </code>
-        </Fragment>
-      ))}
       <LocatorIcon css={iconStyles} locator={locator} />
       <code css={codeStyles}>
         <LocatorText locator={locator} />
       </code>
+      <FrameChain frames={frames} />
     </div>
   )
 }
