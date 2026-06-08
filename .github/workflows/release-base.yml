@@ -44,6 +44,9 @@ jobs:
           node-version: 24.11
           cache: "pnpm"
 
+      - name: setup pnpm
+        run: npm install -g pnpm@11.5.2
+
       # appdmg (used for DMG builds) depends on native modules compiled via node-gyp,
       # which requires Python setuptools. macOS runners ship with Python 3.12+ where
       # setuptools was removed. See https://github.com/electron/forge/issues/3371
