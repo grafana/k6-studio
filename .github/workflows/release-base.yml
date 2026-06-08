@@ -35,13 +35,10 @@ jobs:
           PACKAGE_VERSION: ${{ inputs.version-suffix }}
         run: python update_version.py
 
-      - name: "Echo home directory for debugging"
-        run: echo ${HOME}
-
       - name: setup pnpm
         uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
         with:
-          dest: ${HOME}/setup-pnpm
+          dest: ~/pnpm
 
       - name: setup node
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
