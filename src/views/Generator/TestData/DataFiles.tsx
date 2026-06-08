@@ -132,7 +132,7 @@ function DataFileRow({ file, onRemove }: DataFileRowProps) {
         >
           <IconButton
             aria-label="Remove"
-            disabled={isFileInUse && exists}
+            disabled={isFileInUse && exists !== false}
             onClick={onRemove}
           >
             <Trash2Icon />
