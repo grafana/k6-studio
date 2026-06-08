@@ -110,11 +110,6 @@ const codeStyles = css`
   font-size: 0.9em;
 `
 
-// Frames are de-emphasized so the target element stays in focus.
-const frameStyles = css`
-  color: var(--gray-11);
-`
-
 // Beyond this many frames the chain is summarized as a count.
 const COLLAPSE_THRESHOLD = 2
 
@@ -126,19 +121,16 @@ function FrameChain({ frames }: { frames: ElementLocator[] }) {
   }
 
   if (frames.length > COLLAPSE_THRESHOLD) {
-    return <span css={frameStyles}>in {frames.length} frames</span>
+    return <span>in {frames.length} frames</span>
   }
 
   return (
     <>
       {[...frames].reverse().map((frame, index) => (
         <Fragment key={index}>
-          <span css={frameStyles}>in</span>
-          <SquareStackIcon
-            aria-label="iframe"
-            css={[iconStyles, frameStyles]}
-          />
-          <code css={[codeStyles, frameStyles]}>
+          <span>in</span>
+          <SquareStackIcon aria-label="iframe" css={iconStyles} />
+          <code css={codeStyles}>
             <LocatorText locator={frame} />
           </code>
         </Fragment>
