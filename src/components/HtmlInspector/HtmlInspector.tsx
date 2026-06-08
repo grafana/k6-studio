@@ -2,20 +2,43 @@ import { css } from '@emotion/react'
 import { Box, Flex, ScrollArea, Text } from '@radix-ui/themes'
 import { ChevronRightIcon } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ReplayerEvents } from 'rrweb'
+import { Replayer, ReplayerEvents } from 'rrweb'
 
 import { useHighlightLocator } from '@/components/HighlightLocatorProvider'
 import { usePlayerContext } from '@/components/SessionPlayer/PlayerContext'
 import { DebuggerState } from '@/views/Validator/types'
 
-interface SerializedNode {
-  key: string
-  nodeType: number
-  tagName?: string
-  attributes: Array<{ name: string; value: string }>
-  children: SerializedNode[]
-  textContent?: string
+interface SerializedNodeBase {
+  key: number
+  node: Node
 }
+
+interface SerializedText extends SerializedNodeBase {
+  type: typeof Node.TEXT_NODE
+  textContent: string
+  node: Text
+}
+
+interface SerializedComment extends SerializedNodeBase {
+  type: typeof Node.COMMENT_NODE
+  textContent: string
+  node: Comment
+}
+
+interface SerializedAttribute {
+  name: string
+  value: string
+}
+
+interface SerializedElement extends SerializedNodeBase {
+  type: typeof Node.ELEMENT_NODE
+  tagName: string
+  attributes: SerializedAttribute[]
+  children: SerializedNode[]
+  node: Element
+}
+
+type SerializedNode = SerializedText | SerializedComment | SerializedElement
 
 const VOID_ELEMENTS = new Set([
   'area',
@@ -36,7 +59,9 @@ const VOID_ELEMENTS = new Set([
 
 const RRWEB_ATTR_PREFIX = /^(rr-|rr_|rrweb)/
 
-function serializeNode(node: Node, path: string): SerializedNode | null {
+function serializeNode(player: Replayer, node: Node): SerializedNode | null {
+  const key = player.getMirror().getId(node)
+
   if (node.nodeType === Node.TEXT_NODE) {
     const text = node.textContent?.trim() ?? ''
 
@@ -45,10 +70,9 @@ function serializeNode(node: Node, path: string): SerializedNode | null {
     }
 
     return {
-      key: path,
-      nodeType: Node.TEXT_NODE,
-      attributes: [],
-      children: [],
+      key,
+      type: Node.TEXT_NODE,
+      node: node as Text,
       textContent: text.length > 200 ? text.slice(0, 200) + '…' : text,
     }
   }
@@ -61,10 +85,9 @@ function serializeNode(node: Node, path: string): SerializedNode | null {
     }
 
     return {
-      key: path,
-      nodeType: Node.COMMENT_NODE,
-      attributes: [],
-      children: [],
+      key,
+      type: Node.COMMENT_NODE,
+      node: node as Comment,
       textContent: text.length > 200 ? text.slice(0, 200) + '…' : text,
     }
   }
@@ -73,36 +96,51 @@ function serializeNode(node: Node, path: string): SerializedNode | null {
     return null
   }
 
-  const el = node as Element
-  const tagName = el.tagName.toLowerCase()
-  const attributes = Array.from(el.attributes)
-    .filter((attr) => !RRWEB_ATTR_PREFIX.test(attr.name))
-    .map((attr) => ({ name: attr.name, value: attr.value }))
+  const element = node as Element
 
-  const children = Array.from(el.childNodes)
-    .map((child, i) => serializeNode(child, `${path}/${i}`))
-    .filter((n): n is SerializedNode => n !== null)
+  const tagName = element.tagName.toLowerCase()
+  const attributes = Array.from(element.attributes)
+    .filter((attr) => !RRWEB_ATTR_PREFIX.test(attr.name))
+    .flatMap((attr) => {
+      // rrweb adds the classes `rrweb-paused` when the recording is paused and `:hover` to simulate elements
+      // being hovered, s we want to hide these from the inspector. We don't want to do string manipulations
+      // on every class attribute in the DOM, so we check if these classes are present. By using `classList`
+      // we can (presumably) get constant time lookup instead of doing a linear string search.
+      if (
+        attr.name === 'class' &&
+        (element.classList.contains('rrweb-paused') ||
+          element.classList.contains(':hover'))
+      ) {
+        const value = attr.value
+          .split(/\s+/)
+          .filter((cls) => cls !== 'rrweb-paused' && cls !== ':hover')
+          .join(' ')
+
+        if (value === '') {
+          return []
+        }
+
+        return {
+          name: attr.name,
+          value,
+        }
+      }
+
+      return { name: attr.name, value: attr.value }
+    })
+
+  const children = Array.from(element.childNodes)
+    .map((child) => serializeNode(player, child))
+    .filter((n) => n !== null)
 
   return {
-    key: path,
-    nodeType: Node.ELEMENT_NODE,
+    key,
+    type: Node.ELEMENT_NODE,
+    node: element,
     tagName,
     attributes,
     children,
   }
-}
-
-function resolveNodePath(root: Element, key: string): Element | null {
-  const segments = key.split('/')
-  let node: Node = root
-
-  for (let i = 1; i < segments.length; i++) {
-    const child = node.childNodes[parseInt(segments[i]!, 10)]
-    if (!child) return null
-    node = child
-  }
-
-  return node.nodeType === Node.ELEMENT_NODE ? (node as Element) : null
 }
 
 const nodeLineStyle = css`
@@ -164,57 +202,13 @@ const chevronStyle = css`
   top: 2px;
 `
 
-interface DomNodeProps {
-  node: SerializedNode
-  depth: number
-  expandedKeys: Set<string>
-  onToggleExpand: (key: string) => void
-  onHoverNode: (key: string | null) => void
+interface OpenTagProps {
+  tagName: string
+  attributes: SerializedAttribute[]
 }
 
-function DomNode({
-  node,
-  depth,
-  expandedKeys,
-  onToggleExpand,
-  onHoverNode,
-}: DomNodeProps) {
-  const isExpanded = expandedKeys.has(node.key)
-  const hasChildren = node.children.length > 0
-  const indent = depth * 16
-
-  if (node.nodeType === Node.TEXT_NODE) {
-    return (
-      <div
-        css={nodeLineStyle}
-        style={{ paddingLeft: indent + 20 }}
-        onMouseEnter={() => onHoverNode(null)}
-      >
-        <span css={textNodeStyle}>&quot;{node.textContent}&quot;</span>
-      </div>
-    )
-  }
-
-  if (node.nodeType === Node.COMMENT_NODE) {
-    return (
-      <div
-        css={nodeLineStyle}
-        style={{ paddingLeft: indent + 20 }}
-        onMouseEnter={() => onHoverNode(null)}
-      >
-        <span css={commentStyle}>
-          {'<!-- '}
-          {node.textContent}
-          {' -->'}
-        </span>
-      </div>
-    )
-  }
-
-  const tagName = node.tagName ?? 'unknown'
-  const isVoid = VOID_ELEMENTS.has(tagName)
-
-  const openingTag = (
+function OpenTag({ tagName, attributes }: OpenTagProps) {
+  return (
     <>
       <span css={punctuationStyle}>{'<'}</span>
       <span
@@ -225,7 +219,7 @@ function DomNode({
         `}
       >
         <span css={tagNameStyle}>{tagName}</span>
-        {node.attributes.map((attr) => (
+        {attributes.map((attr) => (
           <span key={attr.name}>
             <span css={attrNameStyle}>{attr.name}</span>
             {attr.value !== '' && (
@@ -241,23 +235,81 @@ function DomNode({
       <span css={punctuationStyle}>{'>'}</span>
     </>
   )
+}
 
-  const closingTag = (
+interface CloseTagProps {
+  tagName: string
+}
+
+function CloseTag({ tagName }: CloseTagProps) {
+  return (
     <>
       <span css={punctuationStyle}>{'</'}</span>
       <span css={tagNameStyle}>{tagName}</span>
       <span css={punctuationStyle}>{'>'}</span>
     </>
   )
+}
+
+interface DomNodeProps {
+  node: SerializedNode
+  depth: number
+  expandedKeys: Set<number>
+  onToggleExpand: (key: number) => void
+  onHoverNode: (node: SerializedElement | null) => void
+}
+
+function DomNode({
+  node,
+  depth,
+  expandedKeys,
+  onToggleExpand,
+  onHoverNode,
+}: DomNodeProps) {
+  const indent = depth * 16
+
+  if (node.type === Node.TEXT_NODE) {
+    return (
+      <div
+        css={nodeLineStyle}
+        style={{ paddingLeft: indent + 20 }}
+        onMouseEnter={() => onHoverNode(null)}
+      >
+        <span css={textNodeStyle}>&quot;{node.textContent}&quot;</span>
+      </div>
+    )
+  }
+
+  if (node.type === Node.COMMENT_NODE) {
+    return (
+      <div
+        css={nodeLineStyle}
+        style={{ paddingLeft: indent + 20 }}
+        onMouseEnter={() => onHoverNode(null)}
+      >
+        <span css={commentStyle}>
+          {'<!-- '}
+          {node.textContent}
+          {' -->'}
+        </span>
+      </div>
+    )
+  }
+
+  const isExpanded = expandedKeys.has(node.key)
+  const hasChildren = node.children.length > 0
+
+  const tagName = node.tagName ?? 'unknown'
+  const isVoid = VOID_ELEMENTS.has(tagName)
 
   if (isVoid) {
     return (
       <div
         css={nodeLineStyle}
         style={{ paddingLeft: indent + 20 }}
-        onMouseEnter={() => onHoverNode(node.key)}
+        onMouseEnter={() => onHoverNode(node)}
       >
-        {openingTag}
+        <OpenTag tagName={tagName} attributes={node.attributes} />
       </div>
     )
   }
@@ -267,10 +319,10 @@ function DomNode({
       <div
         css={nodeLineStyle}
         style={{ paddingLeft: indent + 20 }}
-        onMouseEnter={() => onHoverNode(node.key)}
+        onMouseEnter={() => onHoverNode(node)}
       >
-        {openingTag}
-        {closingTag}
+        <OpenTag tagName={tagName} attributes={node.attributes} />
+        <CloseTag tagName={tagName} />
       </div>
     )
   }
@@ -281,7 +333,7 @@ function DomNode({
         css={[nodeLineStyle, clickableNodeLineStyle]}
         style={{ paddingLeft: indent + 4 }}
         onClick={() => onToggleExpand(node.key)}
-        onMouseEnter={() => onHoverNode(node.key)}
+        onMouseEnter={() => onHoverNode(node)}
       >
         <ChevronRightIcon
           style={{
@@ -301,11 +353,11 @@ function DomNode({
             `,
           ]}
         />
-        {openingTag}
+        <OpenTag tagName={tagName} attributes={node.attributes} />
         {!isExpanded && (
           <>
             <span css={ellipsisStyle}>{'…'}</span>
-            {closingTag}
+            <CloseTag tagName={tagName} />
           </>
         )}
       </div>
@@ -322,7 +374,7 @@ function DomNode({
             />
           ))}
           <div css={nodeLineStyle} style={{ paddingLeft: indent + 20 }}>
-            {closingTag}
+            <CloseTag tagName={tagName} />
           </div>
         </>
       )}
@@ -338,39 +390,41 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
   const { player } = usePlayerContext()
   const setHighlightedLocator = useHighlightLocator()
   const [domRoot, setDomRoot] = useState<SerializedNode | null>(null)
-  const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set())
+  const [expandedKeys, setExpandedKeys] = useState<Set<number>>(new Set())
   const updateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isFirstDom = useRef(true)
 
   const serializeDom = useCallback(() => {
-    const doc = player?.iframe?.contentDocument
-
-    if (!doc?.documentElement) {
+    if (player === null) {
       return
     }
 
-    const serialized = serializeNode(doc.documentElement, '0')
+    const documentElement = player.iframe.contentDocument?.documentElement
+
+    if (documentElement === undefined) {
+      return
+    }
+
+    const serialized = serializeNode(player, documentElement)
 
     setDomRoot(serialized)
-  }, [player])
 
-  // Auto-expand <html> and <body> the first time the DOM is available
-  useEffect(() => {
-    if (!domRoot || !isFirstDom.current) {
+    if (serialized === null || serialized.type !== Node.ELEMENT_NODE) {
       return
     }
 
-    isFirstDom.current = false
+    const bodyEl = serialized.children.find(
+      (c) => c.type === Node.ELEMENT_NODE && c.tagName === 'body'
+    )
 
-    const bodyKey = domRoot.children.find((c) => c.tagName === 'body')?.key
-    const newExpanded = new Set<string>(['0'])
+    const newExpanded = new Set([serialized.key])
 
-    if (bodyKey !== undefined) {
-      newExpanded.add(bodyKey)
+    if (bodyEl !== undefined) {
+      newExpanded.add(bodyEl.key)
     }
 
     setExpandedKeys(newExpanded)
-  }, [domRoot])
+  }, [player])
 
   useEffect(() => {
     if (!player) {
@@ -431,7 +485,7 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
     }
   }, [player, serializeDom])
 
-  const handleToggleExpand = (key: string) => {
+  const handleToggleExpand = (key: number) => {
     setExpandedKeys((prev) => {
       const next = new Set(prev)
 
@@ -446,16 +500,20 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
   }
 
   const handleHoverNode = useCallback(
-    (key: string | null) => {
-      if (key === null) {
+    (target: SerializedElement | null) => {
+      if (target === null) {
         setHighlightedLocator(null)
+
         return
       }
 
       const doc = player?.iframe?.contentDocument
-      if (!doc?.documentElement) return
 
-      setHighlightedLocator(resolveNodePath(doc.documentElement, key))
+      if (!doc?.documentElement) {
+        return
+      }
+
+      setHighlightedLocator(target.node)
     },
     [player, setHighlightedLocator]
   )
