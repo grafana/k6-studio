@@ -4,6 +4,7 @@ import { ChevronRightIcon } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ReplayerEvents } from 'rrweb'
 
+import { useHighlightLocator } from '@/components/HighlightLocatorProvider'
 import { usePlayerContext } from '@/components/SessionPlayer/PlayerContext'
 import { DebuggerState } from '@/views/Validator/types'
 
@@ -91,6 +92,19 @@ function serializeNode(node: Node, path: string): SerializedNode | null {
   }
 }
 
+function resolveNodePath(root: Element, key: string): Element | null {
+  const segments = key.split('/')
+  let node: Node = root
+
+  for (let i = 1; i < segments.length; i++) {
+    const child = node.childNodes[parseInt(segments[i]!, 10)]
+    if (!child) return null
+    node = child
+  }
+
+  return node.nodeType === Node.ELEMENT_NODE ? (node as Element) : null
+}
+
 const nodeLineStyle = css`
   display: flex;
   align-items: baseline;
@@ -155,16 +169,27 @@ interface DomNodeProps {
   depth: number
   expandedKeys: Set<string>
   onToggleExpand: (key: string) => void
+  onHoverNode: (key: string | null) => void
 }
 
-function DomNode({ node, depth, expandedKeys, onToggleExpand }: DomNodeProps) {
+function DomNode({
+  node,
+  depth,
+  expandedKeys,
+  onToggleExpand,
+  onHoverNode,
+}: DomNodeProps) {
   const isExpanded = expandedKeys.has(node.key)
   const hasChildren = node.children.length > 0
   const indent = depth * 16
 
   if (node.nodeType === Node.TEXT_NODE) {
     return (
-      <div css={nodeLineStyle} style={{ paddingLeft: indent + 20 }}>
+      <div
+        css={nodeLineStyle}
+        style={{ paddingLeft: indent + 20 }}
+        onMouseEnter={() => onHoverNode(null)}
+      >
         <span css={textNodeStyle}>&quot;{node.textContent}&quot;</span>
       </div>
     )
@@ -172,7 +197,11 @@ function DomNode({ node, depth, expandedKeys, onToggleExpand }: DomNodeProps) {
 
   if (node.nodeType === Node.COMMENT_NODE) {
     return (
-      <div css={nodeLineStyle} style={{ paddingLeft: indent + 20 }}>
+      <div
+        css={nodeLineStyle}
+        style={{ paddingLeft: indent + 20 }}
+        onMouseEnter={() => onHoverNode(null)}
+      >
         <span css={commentStyle}>
           {'<!-- '}
           {node.textContent}
@@ -223,7 +252,11 @@ function DomNode({ node, depth, expandedKeys, onToggleExpand }: DomNodeProps) {
 
   if (isVoid) {
     return (
-      <div css={nodeLineStyle} style={{ paddingLeft: indent + 20 }}>
+      <div
+        css={nodeLineStyle}
+        style={{ paddingLeft: indent + 20 }}
+        onMouseEnter={() => onHoverNode(node.key)}
+      >
         {openingTag}
       </div>
     )
@@ -231,7 +264,11 @@ function DomNode({ node, depth, expandedKeys, onToggleExpand }: DomNodeProps) {
 
   if (!hasChildren) {
     return (
-      <div css={nodeLineStyle} style={{ paddingLeft: indent + 20 }}>
+      <div
+        css={nodeLineStyle}
+        style={{ paddingLeft: indent + 20 }}
+        onMouseEnter={() => onHoverNode(node.key)}
+      >
         {openingTag}
         {closingTag}
       </div>
@@ -244,6 +281,7 @@ function DomNode({ node, depth, expandedKeys, onToggleExpand }: DomNodeProps) {
         css={[nodeLineStyle, clickableNodeLineStyle]}
         style={{ paddingLeft: indent + 4 }}
         onClick={() => onToggleExpand(node.key)}
+        onMouseEnter={() => onHoverNode(node.key)}
       >
         <ChevronRightIcon
           style={{
@@ -280,6 +318,7 @@ function DomNode({ node, depth, expandedKeys, onToggleExpand }: DomNodeProps) {
               depth={depth + 1}
               expandedKeys={expandedKeys}
               onToggleExpand={onToggleExpand}
+              onHoverNode={onHoverNode}
             />
           ))}
           <div css={nodeLineStyle} style={{ paddingLeft: indent + 20 }}>
@@ -297,6 +336,7 @@ interface HtmlInspectorProps {
 
 export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
   const { player } = usePlayerContext()
+  const setHighlightedLocator = useHighlightLocator()
   const [domRoot, setDomRoot] = useState<SerializedNode | null>(null)
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set())
   const updateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -405,6 +445,25 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
     })
   }
 
+  const handleHoverNode = useCallback(
+    (key: string | null) => {
+      if (key === null) {
+        setHighlightedLocator(null)
+        return
+      }
+
+      const doc = player?.iframe?.contentDocument
+      if (!doc?.documentElement) return
+
+      setHighlightedLocator(resolveNodePath(doc.documentElement, key))
+    },
+    [player, setHighlightedLocator]
+  )
+
+  const handleMouseLeave = useCallback(() => {
+    setHighlightedLocator(null)
+  }, [setHighlightedLocator])
+
   if (sessionState === 'pending') {
     return (
       <Flex align="center" justify="center" height="100%">
@@ -430,6 +489,7 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
       css={css`
         height: 100%;
       `}
+      onMouseLeave={handleMouseLeave}
     >
       <Box p="1">
         <DomNode
@@ -437,6 +497,7 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
           depth={0}
           expandedKeys={expandedKeys}
           onToggleExpand={handleToggleExpand}
+          onHoverNode={handleHoverNode}
         />
       </Box>
     </ScrollArea>
