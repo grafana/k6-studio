@@ -72,6 +72,13 @@ export function attachInteractionListeners(
     event.preventDefault()
   }
 
+  // Surface the click to the caller, but block its default action (e.g.
+  // following a link) the same way as the other navigation events.
+  const handleClick = (event: PointerEvent) => {
+    event.preventDefault()
+    onClick(event)
+  }
+
   const cleanups = documents.flatMap((document) => {
     const root = document.documentElement
 
@@ -83,7 +90,7 @@ export function attachInteractionListeners(
       root.addEventListener(type, preventInteraction, true)
     }
 
-    root.addEventListener('click', onClick, true)
+    root.addEventListener('click', handleClick, true)
 
     return [
       () => {
@@ -91,7 +98,7 @@ export function attachInteractionListeners(
           root.removeEventListener(type, preventInteraction, true)
         }
 
-        root.removeEventListener('click', onClick, true)
+        root.removeEventListener('click', handleClick, true)
       },
     ]
   })

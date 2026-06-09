@@ -199,6 +199,24 @@ describe('attachInteractionListeners', () => {
     cleanup()
   })
 
+  it('blocks default navigation on click while still forwarding it', () => {
+    document.body.innerHTML = '<a id="link" href="#x">x</a>'
+    const onClick = vi.fn()
+
+    const cleanup = attachInteractionListeners([document], {
+      onClick,
+      onReload: vi.fn(),
+    })
+
+    const event = new MouseEvent('click', { bubbles: true, cancelable: true })
+    document.getElementById('link')?.dispatchEvent(event)
+
+    expect(event.defaultPrevented).toBe(true)
+    expect(onClick).toHaveBeenCalledTimes(1)
+
+    cleanup()
+  })
+
   it('reattaches when a collected iframe loads', () => {
     document.body.innerHTML = '<iframe></iframe>'
     const [iframe] = document.querySelectorAll('iframe')
