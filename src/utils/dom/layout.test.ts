@@ -1,6 +1,50 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { observeWindowsForLayoutShift } from './layout'
+import {
+  collectLayoutShiftWindows,
+  observeWindowsForLayoutShift,
+} from './layout'
+
+interface FakeWindow {
+  parent: FakeWindow
+}
+
+function fakeWindow(): FakeWindow {
+  const win = {} as FakeWindow
+  win.parent = win
+  return win
+}
+
+describe('collectLayoutShiftWindows', () => {
+  it('includes every frame on the path from content to root', () => {
+    const top = fakeWindow()
+    const middle = fakeWindow()
+    const leaf = fakeWindow()
+
+    middle.parent = top
+    leaf.parent = middle
+
+    const windows = collectLayoutShiftWindows(
+      top as unknown as Window,
+      leaf as unknown as Window
+    )
+
+    expect(windows).toEqual(
+      new Set([top, middle, leaf].map((win) => win as unknown as Window))
+    )
+  })
+
+  it('returns only the root when content is already in the root frame', () => {
+    const top = fakeWindow()
+
+    const windows = collectLayoutShiftWindows(
+      top as unknown as Window,
+      top as unknown as Window
+    )
+
+    expect(windows).toEqual(new Set([top as unknown as Window]))
+  })
+})
 
 describe('observeWindowsForLayoutShift', () => {
   afterEach(() => {

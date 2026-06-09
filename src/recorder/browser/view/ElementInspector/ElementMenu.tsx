@@ -11,6 +11,7 @@ import { ComponentProps, ReactNode } from 'react'
 
 import { Toolbar } from '@/components/primitives/Toolbar'
 import { ElementRole } from '@/utils/dom/aria'
+import { isHTMLTextAreaElement } from '@/utils/dom/realm'
 
 import { AssertionData, CheckAssertionData } from './assertions/types'
 import {
@@ -120,7 +121,7 @@ function TextInputAssertion({
       type: 'text-input',
       target: input.target,
       multiline:
-        input.element instanceof HTMLTextAreaElement ||
+        isHTMLTextAreaElement(input.element) ||
         input.element.getAttribute('aria-multiline') === 'true',
       expected: getTextBoxValue(input.element),
     })

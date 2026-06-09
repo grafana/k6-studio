@@ -2,8 +2,9 @@ import { css } from '@emotion/react'
 
 import { Flex } from '@/components/primitives/Flex'
 import { Table } from '@/components/primitives/Table'
-import { ElementLocator } from '@/schemas/locator'
+import { ElementLocator, LocatorOptions } from '@/schemas/locator'
 import { BrowserEvent } from '@/schemas/recording'
+import { toFrameOptions } from '@/utils/locator'
 
 import { EventDescription } from './EventDescription'
 import { EventIcon } from './EventIcon'
@@ -11,7 +12,10 @@ import { EventIcon } from './EventIcon'
 interface BrowserEventListProps {
   events: BrowserEvent[]
   onNavigate: (url: string) => void
-  onHighlight: (locator: ElementLocator | null) => void
+  onHighlight: (
+    locator: ElementLocator | null,
+    frames?: LocatorOptions[]
+  ) => void
 }
 
 export function BrowserEventList({
@@ -28,6 +32,8 @@ export function BrowserEventList({
     >
       <Table.Body>
         {events.map((event) => {
+          const frames = 'frames' in event ? event.frames : undefined
+
           return (
             <Table.Row key={event.eventId}>
               <Table.Cell
@@ -52,7 +58,9 @@ export function BrowserEventList({
                     <EventDescription
                       event={event}
                       onNavigate={onNavigate}
-                      onHighlight={onHighlight}
+                      onHighlight={(locator) =>
+                        onHighlight(locator, toFrameOptions(frames))
+                      }
                     />
                   </div>
                 </Flex>

@@ -15,7 +15,11 @@ export function WaitForDescription({
   return (
     <>
       Wait for{' '}
-      <Selector selectors={event.target.selectors} onHighlight={onHighlight} />
+      <Selector
+        selectors={event.target.selectors}
+        frames={event.frames}
+        onHighlight={onHighlight}
+      />
     </>
   )
 }
