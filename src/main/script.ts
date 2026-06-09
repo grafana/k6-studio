@@ -25,6 +25,18 @@ import { configureOptions, getDebugTarget } from './runner/utils'
 
 export type K6Process = ChildProcessWithoutNullStreams
 
+// Disable web security and site isolation so cross-origin (and nested) iframes
+// render in the same process, where the generated test's frameLocator chains can
+// reach them. The validator is authoring-only, so this matches the recorder.
+// K6_BROWSER_ARGS is split on every comma by k6, so each flag must be comma-free
+// (hence `disable-features=site-per-process` alone, not the recorder's
+// `IsolateOrigins,site-per-process`).
+const VALIDATOR_BROWSER_SECURITY_ARGS = [
+  'disable-web-security',
+  'disable-features=site-per-process',
+  'disable-site-isolation-trials',
+]
+
 const K6_TESTING_LIB_REGEX =
   /^https\/jslib\.k6\.io\/k6-testing\/\d+\.\d+\.\d+\/index\.js$/i
 
@@ -121,7 +133,9 @@ export const runScript = async ({
       HTTPS_PROXY: `http://localhost:${proxySettings.port}`,
       NO_PROXY: 'jslib.k6.io',
       K6_TRACKING_SERVER_PORT: String(trackingServer?.port),
-      K6_BROWSER_ARGS: proxyArgs.join(','),
+      K6_BROWSER_ARGS: [...proxyArgs, ...VALIDATOR_BROWSER_SECURITY_ARGS].join(
+        ','
+      ),
       K6_TESTING_COLORIZE: 'false',
       ...(scenarioName ? { SCENARIO_NAME: scenarioName } : {}),
     },
