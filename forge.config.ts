@@ -58,6 +58,7 @@ const config: ForgeConfig = {
     postMake: getPostMakeHook(),
   },
   packagerConfig: {
+    appBundleId: 'io.grafana.k6-studio',
     executableName: 'k6-studio',
     icon: './resources/icons/logo',
     asar: true,
@@ -89,14 +90,38 @@ const config: ForgeConfig = {
       },
     ],
     extendInfo: {
+      // Export custom UTIs so macOS LaunchServices can resolve .k6g/.k6b to this app.
+      // Without this, LSHandlerRank=Owner may not reliably make k6 Studio the default handler.
+      UTExportedTypeDeclarations: [
+        {
+          UTTypeIdentifier: 'io.grafana.k6studio.k6g',
+          UTTypeDescription: 'k6 Studio Generator File',
+          UTTypeConformsTo: ['public.data'],
+          UTTypeTagSpecification: {
+            'public.filename-extension': ['k6g'],
+            'public.mime-type': 'application/x-k6g',
+          },
+        },
+        {
+          UTTypeIdentifier: 'io.grafana.k6studio.k6b',
+          UTTypeDescription: 'k6 Studio Browser Recording',
+          UTTypeConformsTo: ['public.data'],
+          UTTypeTagSpecification: {
+            'public.filename-extension': ['k6b'],
+            'public.mime-type': 'application/x-k6b',
+          },
+        },
+      ],
       CFBundleDocumentTypes: [
         {
+          LSItemContentTypes: ['io.grafana.k6studio.k6g'],
           CFBundleTypeExtensions: ['k6g'],
           CFBundleTypeName: 'k6 Studio Generator File',
           CFBundleTypeRole: 'Editor',
           LSHandlerRank: 'Owner',
         },
         {
+          LSItemContentTypes: ['io.grafana.k6studio.k6b'],
           CFBundleTypeExtensions: ['k6b'],
           CFBundleTypeName: 'k6 Studio Browser Recording',
           CFBundleTypeRole: 'Editor',
