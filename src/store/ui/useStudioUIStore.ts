@@ -3,7 +3,7 @@ import { immer } from 'zustand/middleware/immer'
 
 import { SettingsTabValue } from '@/components/Settings/types'
 import { FolderContent, ProxyStatus, StudioFile } from '@/types'
-import * as path from '@/utils/path'
+import { PathMap } from '@/utils/path'
 import { exhaustive } from '@/utils/typescript'
 
 interface State extends FolderContent {
@@ -28,11 +28,11 @@ export type StudioUIStore = State & Actions
 
 export const useStudioUIStore = create<StudioUIStore>()(
   immer((set) => ({
-    recordings: new Map(),
-    generators: new Map(),
-    scripts: new Map(),
-    dataFiles: new Map(),
-    browserTests: new Map(),
+    recordings: new PathMap(),
+    generators: new PathMap(),
+    scripts: new PathMap(),
+    dataFiles: new PathMap(),
+    browserTests: new PathMap(),
     proxyStatus: 'offline',
     isSettingsDialogOpen: false,
     selectedSettingsTab: 'proxy',
@@ -40,22 +40,21 @@ export const useStudioUIStore = create<StudioUIStore>()(
 
     addFile: (file) =>
       set((state) => {
-        const fileKey = path.key(file.path)
         switch (file.type) {
           case 'recording':
-            state.recordings.set(fileKey, file)
+            state.recordings.set(file.path, file)
             break
           case 'generator':
-            state.generators.set(fileKey, file)
+            state.generators.set(file.path, file)
             break
           case 'browser-test':
-            state.browserTests.set(fileKey, file)
+            state.browserTests.set(file.path, file)
             break
           case 'script':
-            state.scripts.set(fileKey, file)
+            state.scripts.set(file.path, file)
             break
           case 'data-file':
-            state.dataFiles.set(fileKey, file)
+            state.dataFiles.set(file.path, file)
             break
           default:
             exhaustive(file.type)
@@ -63,22 +62,21 @@ export const useStudioUIStore = create<StudioUIStore>()(
       }),
     removeFile: (file) =>
       set((state) => {
-        const fileKey = path.key(file.path)
         switch (file.type) {
           case 'recording':
-            state.recordings.delete(fileKey)
+            state.recordings.delete(file.path)
             break
           case 'generator':
-            state.generators.delete(fileKey)
+            state.generators.delete(file.path)
             break
           case 'browser-test':
-            state.browserTests.delete(fileKey)
+            state.browserTests.delete(file.path)
             break
           case 'script':
-            state.scripts.delete(fileKey)
+            state.scripts.delete(file.path)
             break
           case 'data-file':
-            state.dataFiles.delete(fileKey)
+            state.dataFiles.delete(file.path)
             break
           default:
             exhaustive(file.type)
@@ -92,11 +90,11 @@ export const useStudioUIStore = create<StudioUIStore>()(
       dataFiles,
     }) =>
       set((state) => {
-        state.recordings = recordings
-        state.generators = generators
-        state.browserTests = browserTests
-        state.scripts = scripts
-        state.dataFiles = dataFiles
+        state.recordings = new PathMap(recordings)
+        state.generators = new PathMap(generators)
+        state.browserTests = new PathMap(browserTests)
+        state.scripts = new PathMap(scripts)
+        state.dataFiles = new PathMap(dataFiles)
       }),
     setProxyStatus: (status) =>
       set((state) => {
