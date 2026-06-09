@@ -7,20 +7,7 @@ import { locatorProxy } from './locator'
 // The locator-creating methods shared by Page and FrameLocator. Both expose the
 // same `locator`/`getBy*` signatures and return a Locator, so the proxy wiring
 // is identical and lives here to avoid duplicating it in each root proxy.
-type ElementLocatorMethods =
-  | 'locator'
-  | 'getByRole'
-  | 'getByAltText'
-  | 'getByLabel'
-  | 'getByPlaceholder'
-  | 'getByTitle'
-  | 'getByText'
-  | 'getByTestId'
-
-export function elementLocatorProxies(): Pick<
-  ProxyOptions<FrameLocator>['proxies'],
-  ElementLocatorMethods
-> {
+export function elementLocatorProxies(): ProxyOptions<FrameLocator>['proxies'] {
   return {
     locator(target, selector: string) {
       return locatorProxy(target, {

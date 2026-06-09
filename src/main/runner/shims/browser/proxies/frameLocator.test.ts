@@ -10,10 +10,6 @@ vi.hoisted(() => {
   ;(globalThis as { __ENV?: Record<string, string> }).__ENV = {}
 })
 
-vi.mock('k6/http', () => ({
-  default: { asyncRequest: () => ({ catch: () => {} }) },
-}))
-
 // Raw k6 objects have no `$trace` member; the shim adds it by proxying. A locator
 // reached through a frame must be proxied too, otherwise calling `$trace` on it
 // throws `Object has no member '$trace'` at runtime.

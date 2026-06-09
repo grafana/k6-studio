@@ -102,6 +102,7 @@ export const runScript = async ({
   const proxyArgs = await getProxyArguments(proxySettings, {
     prefix: '',
   })
+  const browserArgs = [...proxyArgs, ...VALIDATOR_BROWSER_SECURITY_ARGS]
 
   const trackingServer = await createTrackingServer()
 
@@ -133,9 +134,7 @@ export const runScript = async ({
       HTTPS_PROXY: `http://localhost:${proxySettings.port}`,
       NO_PROXY: 'jslib.k6.io',
       K6_TRACKING_SERVER_PORT: String(trackingServer?.port),
-      K6_BROWSER_ARGS: [...proxyArgs, ...VALIDATOR_BROWSER_SECURITY_ARGS].join(
-        ','
-      ),
+      K6_BROWSER_ARGS: browserArgs.join(','),
       K6_TESTING_COLORIZE: 'false',
       ...(scenarioName ? { SCENARIO_NAME: scenarioName } : {}),
     },
