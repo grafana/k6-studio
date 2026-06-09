@@ -11,7 +11,7 @@ export function useRecordedEvents() {
 
   useEffect(() => {
     return client.on('events-recorded', (event) => {
-      setEvents((prev) => [...prev, ...event.data.events])
+      setEvents(event.data.events)
     })
   }, [client])
 
