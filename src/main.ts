@@ -86,7 +86,9 @@ const createWindow = async () => {
     minHeight: 600,
     show: false,
     icon,
-    title: 'Grafana k6 Studio',
+    title: DEV_GIT_BRANCH
+      ? `Grafana k6 Studio [${DEV_GIT_BRANCH}]`
+      : 'Grafana k6 Studio',
     backgroundColor: nativeTheme.themeSource === 'light' ? '#fff' : '#111110',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),

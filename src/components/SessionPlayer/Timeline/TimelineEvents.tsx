@@ -3,6 +3,7 @@ import { Reset } from '@radix-ui/themes'
 import { MouseEvent, useRef, useState } from 'react'
 
 import { BrowserDebuggerEvent } from '@/main/runner/schema'
+import { ActionStatus, getStatusColor } from '@/utils/browserActionStatus'
 
 import { Time } from '../types'
 
@@ -95,7 +96,8 @@ function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
     width: `${width}%`,
   }
 
-  const status = segment.action.result?.type ?? 'unknown'
+  const status: ActionStatus =
+    segment.action.state === 'end' ? segment.action.result.type : 'running'
 
   const handlePointerDown = (ev: MouseEvent<HTMLElement>) => {
     mouseDownX.current = ev.clientX
@@ -134,7 +136,6 @@ function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
         <TimelineTooltip open={showTooltip} action={segment.action}>
           <button
             disabled={disabled}
-            data-status={status}
             css={css`
               z-index: 0;
 
@@ -148,6 +149,7 @@ function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
               border: none;
               border-radius: var(--slider-border-radius);
               box-shadow: 0 0 0 1px var(--black-a5);
+              background-color: ${getStatusColor(status, 9)};
 
               transition:
                 transform 0.1s ease,
@@ -160,22 +162,6 @@ function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
               &:hover {
                 transform: scaleY(1.5);
                 z-index: 1;
-              }
-
-              &[data-status='pass'] {
-                background-color: var(--green-9);
-              }
-
-              &[data-status='error'] {
-                background-color: var(--red-9);
-              }
-
-              &[data-status='aborted'] {
-                background-color: var(--orange-9);
-              }
-
-              &[data-status='unknown'] {
-                background-color: var(--gray-9);
               }
             `}
             onClick={handleClick}

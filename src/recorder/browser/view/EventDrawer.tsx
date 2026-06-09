@@ -4,7 +4,7 @@ import { XIcon } from 'lucide-react'
 
 import { BrowserEventList } from '@/components/BrowserEventList'
 import { useContainerElement } from '@/components/primitives/ContainerProvider'
-import { ElementLocator } from '@/schemas/locator'
+import { ElementLocator, LocatorOptions } from '@/schemas/locator'
 import { BrowserEvent } from '@/schemas/recording'
 import { RecordingContext } from '@/views/Recorder/RecordingContext'
 
@@ -42,10 +42,14 @@ export function EventDrawer({ open, events, onOpenChange }: EventDrawerProps) {
   const container = useContainerElement()
   const [settings, setSettings] = useInBrowserSettings()
 
-  const handleHighlight = (locator: ElementLocator | null) => {
+  const handleHighlight = (
+    locator: ElementLocator | null,
+    frames?: LocatorOptions[]
+  ) => {
     client.send({
       type: 'highlight-elements',
       locator,
+      frames,
     })
   }
 

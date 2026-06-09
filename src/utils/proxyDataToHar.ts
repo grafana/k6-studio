@@ -30,7 +30,12 @@ function createLog(
     entries,
     _browserEvents: {
       version: '2',
-      events,
+      // Events arrive over separate per-frame sockets and are appended in
+      // arrival order, so sort by timestamp here, the point where the recording
+      // is persisted, so the saved file and the generated test reflect the real
+      // interaction order. Array.prototype.sort is stable, preserving the order
+      // of events sharing a timestamp.
+      events: [...events].sort((a, b) => a.timestamp - b.timestamp),
     },
   }
 }

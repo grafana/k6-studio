@@ -1,6 +1,6 @@
 import { z } from 'zod/v4'
 
-import { ElementLocatorSchema } from '@/schemas/locator'
+import { ElementLocatorSchema, LocatorOptionsSchema } from '@/schemas/locator'
 import { BrowserEventSchema } from '@/schemas/recording'
 
 export const InBrowserSettingsSchema = z.object({
@@ -37,6 +37,9 @@ export const EventsRecordedSchema = z.object({
 export const HighlightElementsSchema = z.object({
   type: z.literal('highlight-elements'),
   locator: ElementLocatorSchema.nullable(),
+  // Chain of iframe locators the element lives in, so highlighting can resolve
+  // into nested frames. Absent for top-frame elements.
+  frames: LocatorOptionsSchema.array().optional(),
 })
 
 export const NavigateSchema = z.object({

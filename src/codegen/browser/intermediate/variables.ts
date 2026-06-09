@@ -65,6 +65,12 @@ function substituteExpression(
     case 'TextLocatorOptionsExpression':
       return node
 
+    case 'TraceExpression':
+      return {
+        ...node,
+        target: substituteExpression(node.target, substitutions),
+      }
+
     case 'ClosePageExpression':
       return {
         ...node,
@@ -197,7 +203,13 @@ function substituteExpression(
       return {
         type: 'ExpectExpression',
         actual: substituteExpression(node.actual, substitutions),
-        expected: substituteAssertion(node.expected, substitutions),
+      }
+
+    case 'AssertExpression':
+      return {
+        type: 'AssertExpression',
+        expect: substituteExpression(node.expect, substitutions),
+        assertion: substituteAssertion(node.assertion, substitutions),
       }
 
     case 'PromiseAllExpression':

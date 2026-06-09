@@ -6,6 +6,12 @@ export function getTempScriptPath() {
   return ipcRenderer.invoke(FsHandler.GetTempScriptPath) as Promise<string>
 }
 
+export function showOpenDialog(filters: FileFilter[]) {
+  return ipcRenderer.invoke(FsHandler.ShowOpenDialog, filters) as Promise<
+    string | undefined
+  >
+}
+
 export function showSaveAsDialog(
   location: StorageLocation,
   filters: FileFilter[]

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   buildClickAction,
@@ -88,6 +88,18 @@ describe('convertEventsToTest', () => {
 })
 
 describe('convertActionsToTest', () => {
+  beforeEach(() => {
+    let counter = 0
+
+    vi.stubGlobal('crypto', {
+      randomUUID: () => `${counter++}`,
+    })
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   it('defaults to a left click when no options are set', () => {
     const test = convertActionsToTest({
       browserActions: [buildClickAction({ options: undefined })],
@@ -174,6 +186,97 @@ describe('convertActionsToTest', () => {
     )
 
     expect(clickNode?.waitForNavigation).toBeUndefined()
+  })
+
+  it('adds trace nodes for pages and locators, and connects them to the correct previous nodes', () => {
+    const test = convertActionsToTest({
+      browserActions: [
+        { method: 'page.goto', id: '1', url: 'https://example.com' },
+        {
+          method: 'locator.click',
+          id: '2',
+          locator: {
+            current: 'css',
+            values: {
+              css: {
+                type: 'css',
+                selector: 'button#submit',
+              },
+            },
+          },
+        },
+      ],
+      trace: true,
+    })
+
+    const nodes = test.defaultScenario?.nodes ?? []
+
+    expect(nodes).toEqual([
+      {
+        type: 'page',
+        nodeId: '1',
+      },
+      {
+        type: 'trace',
+        nodeId: '2',
+        traceId: '1',
+        inputs: {
+          previous: {
+            nodeId: '1',
+          },
+        },
+      },
+      {
+        type: 'goto',
+        nodeId: '0',
+        url: 'https://example.com',
+        source: 'address-bar',
+        inputs: {
+          page: {
+            nodeId: '2',
+          },
+        },
+      },
+      {
+        type: 'locator',
+        nodeId: '4',
+        locator: {
+          type: 'css',
+          selector: 'button#submit',
+        },
+        inputs: {
+          page: {
+            nodeId: '1',
+          },
+        },
+      },
+      {
+        type: 'trace',
+        nodeId: '5',
+        traceId: '2',
+        inputs: {
+          previous: {
+            nodeId: '4',
+          },
+        },
+      },
+      {
+        type: 'click',
+        nodeId: '3',
+        button: 'left',
+        modifiers: {
+          alt: false,
+          ctrl: false,
+          meta: false,
+          shift: false,
+        },
+        inputs: {
+          locator: {
+            nodeId: '5',
+          },
+        },
+      },
+    ])
   })
 
   it('threads inputType:aria through toBeChecked to is-checked IR operation', () => {

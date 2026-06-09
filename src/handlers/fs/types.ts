@@ -7,6 +7,7 @@ import { K6TestOptions } from '@/utils/k6/schema'
 
 export enum FsHandler {
   GetTempScriptPath = 'fs:get-temp-script-path',
+  ShowOpenDialog = 'fs:show-open-dialog',
   ShowSaveAsDialog = 'fs:show-save-as-dialog',
   SaveFile = 'fs:save-file',
   OpenFile = 'fs:open-file',
