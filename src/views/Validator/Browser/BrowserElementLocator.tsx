@@ -17,7 +17,7 @@ export function BrowserElementLocator({ locator }: BrowserElementLocatorProps) {
       return
     }
 
-    setHighlightedLocator(locator)
+    setHighlightedLocator({ locator })
   }
 
   return <Locator locator={locator} onHighlightChange={handleHighlightChange} />
