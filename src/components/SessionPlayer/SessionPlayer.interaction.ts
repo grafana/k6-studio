@@ -79,11 +79,16 @@ export function attachInteractionListeners(
       return []
     }
 
+    const handleClick = (event: PointerEvent) => {
+      event.preventDefault()
+      onClick(event)
+    }
+
     for (const type of BLOCKED_EVENTS) {
       root.addEventListener(type, preventInteraction, true)
     }
 
-    root.addEventListener('click', onClick, true)
+    root.addEventListener('click', handleClick, true)
 
     return [
       () => {
@@ -91,7 +96,7 @@ export function attachInteractionListeners(
           root.removeEventListener(type, preventInteraction, true)
         }
 
-        root.removeEventListener('click', onClick, true)
+        root.removeEventListener('click', handleClick, true)
       },
     ]
   })
