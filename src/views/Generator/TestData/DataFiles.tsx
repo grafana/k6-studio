@@ -153,15 +153,17 @@ function AddDataFileDropdown() {
   )
 
   const handleAdd = (fileName: string) => {
-    if (selectedFiles.find((file) => file.name === fileName)) return
+    if (selectedFiles.find((file) => file.name === fileName)) {
+      return
+    }
 
     setFiles([...selectedFiles, { name: fileName }])
   }
 
-  const importDataFile = useOpenDataFile()
+  const openDataFile = useOpenDataFile()
 
   const handleImportDataFile = async () => {
-    const fileName = await importDataFile()
+    const fileName = await openDataFile()
 
     if (fileName) {
       handleAdd(fileName)
