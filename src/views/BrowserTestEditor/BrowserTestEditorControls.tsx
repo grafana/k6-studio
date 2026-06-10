@@ -43,7 +43,7 @@ export function BrowserTestEditorControls({
 }: BrowserTestEditorControlsProps) {
   const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
 
-  const handleDelete = useDeleteFile({
+  const deleteFile = useDeleteFile({
     file,
     navigateHomeOnDelete: true,
   })
@@ -52,6 +52,10 @@ export function BrowserTestEditorControls({
     fileName: file.displayName,
     content: () => preview,
   })
+
+  const handleDeleteFile = () => {
+    void deleteFile({ force: true })
+  }
 
   const handleExportScript = () => {
     void exportScript()
@@ -99,7 +103,7 @@ export function BrowserTestEditorControls({
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DropdownMenu.Item color="red" onClick={handleDelete}>
+          <DropdownMenu.Item color="red" onClick={handleDeleteFile}>
             Move to Trash
           </DropdownMenu.Item>
         </DropdownMenu.Content>

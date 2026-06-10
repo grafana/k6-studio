@@ -6,6 +6,7 @@ import { updateElectronApp } from 'update-electron-app'
 
 import * as path from '@/utils/path'
 
+import { PROJECT_PATH } from './constants/workspace'
 import * as handlers from './handlers'
 import { ProxyHandler } from './handlers/proxy/types'
 import { initializeDeepLinks, replayPendingDeepLink } from './main/deepLinks'
@@ -21,6 +22,7 @@ import {
 import { getSettings, initSettings } from './main/settings'
 import { closeWatcher, configureWatcher } from './main/watcher'
 import { showWindow, trackWindowState } from './main/window'
+import { workspaceIndex } from './main/workspaceIndex'
 import { configureSystemProxy } from './services/http'
 import { initEventTracking } from './services/usageTracking'
 import { ProxyStatus } from './types'
@@ -101,6 +103,9 @@ const createWindow = async () => {
 
   configureApplicationMenu()
   configureWatcher(mainWindow)
+
+  void workspaceIndex.build(PROJECT_PATH)
+
   k6StudioState.wasAppClosedByClient = false
 
   k6StudioState.proxyEmitter.on('status:change', (status: ProxyStatus) => {
