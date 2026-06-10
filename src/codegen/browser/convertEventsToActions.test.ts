@@ -32,6 +32,33 @@ describe('convertEventsToActions', () => {
     })
   })
 
+  it('skips navigation to non-web urls', () => {
+    const events: BrowserEvent[] = [
+      {
+        type: 'navigate-to-page',
+        eventId: '1',
+        timestamp: 0,
+        tab: 'tab1',
+        url: 'chrome://new-tab-page/',
+        source: 'address-bar',
+      },
+    ]
+    expect(convertEventsToActions(events)).toEqual([])
+  })
+
+  it('skips reload of a non-web url', () => {
+    const events: BrowserEvent[] = [
+      {
+        type: 'reload-page',
+        eventId: '1',
+        timestamp: 0,
+        tab: 'tab1',
+        url: 'chrome://new-tab-page/',
+      },
+    ]
+    expect(convertEventsToActions(events)).toEqual([])
+  })
+
   it('converts reload-page to page.reload', () => {
     const events: BrowserEvent[] = [
       {

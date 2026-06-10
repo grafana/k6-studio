@@ -1,5 +1,6 @@
 import { AnyBrowserAction, LocatorClickModifier } from '@/schemas/browserTest'
 import { BrowserEvent, ClickEvent } from '@/schemas/recording'
+import { isWebUrl } from '@/utils/browserEvents'
 import { toLocatorOptions } from '@/utils/locator'
 import { exhaustive } from '@/utils/typescript'
 
@@ -32,11 +33,13 @@ function convertEvent(
 ): AnyBrowserAction | undefined {
   switch (event.type) {
     case 'navigate-to-page':
-      if (event.source === 'implicit') return undefined
+      if (event.source === 'implicit' || !isWebUrl(event.url)) return undefined
 
       return { id: crypto.randomUUID(), method: 'page.goto', url: event.url }
 
     case 'reload-page':
+      if (!isWebUrl(event.url)) return undefined
+
       return { id: crypto.randomUUID(), method: 'page.reload' }
 
     case 'click':

@@ -49,6 +49,7 @@ export function BrowserEventList({
                       align-items: center;
                       gap: 0.25rem;
                       flex: 1 1 0;
+                      min-width: 0;
                       overflow: hidden;
                       white-space: nowrap;
                       text-overflow: ellipsis;

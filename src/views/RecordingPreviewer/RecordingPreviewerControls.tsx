@@ -5,6 +5,7 @@ import {
   MonitorIcon,
   ServerCogIcon,
 } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { emitScript } from '@/codegen/browser'
@@ -19,6 +20,17 @@ import { getRoutePath } from '@/routeMap'
 import { BrowserEvent } from '@/schemas/recording'
 import { useFeaturesStore } from '@/store/features'
 import { ProxyData, StudioFile } from '@/types'
+import {
+  EventPage,
+  groupEventsByPage,
+  normalizeEntryNavigation,
+} from '@/utils/browserEvents'
+
+import { SelectPageDialog } from './SelectPageDialog'
+
+function toPageActions(page: EventPage) {
+  return convertEventsToActions(normalizeEntryNavigation(page.events))
+}
 
 interface RecordingPreviewControlsProps {
   file: StudioFile
@@ -46,11 +58,36 @@ export function RecordingPreviewControls({
   )
   const createBrowserTest = useCreateBrowserTest()
 
+  const [isSelectPageOpen, setIsSelectPageOpen] = useState(false)
+
+  // Only offer pages that produce at least one browser action. Internal-only
+  // tabs (e.g. a `chrome://new-tab-page/` that never navigated anywhere) would
+  // otherwise show up in the picker and create an empty test.
+  const pages = useMemo(
+    () =>
+      groupEventsByPage(browserEvents).filter(
+        (page) => toPageActions(page).length > 0
+      ),
+    [browserEvents]
+  )
+
   const handleCreateGenerator = () => createTestGenerator(file.path)
 
   const handleCreateBrowserTest = () => {
-    const actions = convertEventsToActions(browserEvents)
-    void createBrowserTest(actions)
+    if (pages.length > 1) {
+      setIsSelectPageOpen(true)
+      return
+    }
+
+    const page = pages[0]
+    if (page) {
+      void createBrowserTest(toPageActions(page))
+    }
+  }
+
+  const handleSelectPage = (page: EventPage) => {
+    setIsSelectPageOpen(false)
+    void createBrowserTest(toPageActions(page))
   }
 
   const browserTestDescription = isBrowserEditorEnabled
@@ -142,6 +179,12 @@ export function RecordingPreviewControls({
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
+      <SelectPageDialog
+        open={isSelectPageOpen}
+        onOpenChange={setIsSelectPageOpen}
+        pages={pages}
+        onSelectPage={handleSelectPage}
+      />
     </>
   )
 }
