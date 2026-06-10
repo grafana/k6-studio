@@ -3,6 +3,7 @@ import {
   expect,
   chromium,
   type Browser,
+  type BrowserContext,
   type Page,
 } from '@playwright/test'
 import { type ChildProcess, spawn } from 'node:child_process'
@@ -101,6 +102,26 @@ async function waitForDebugPort(
   throw new Error(`CDP port never came up. App stderr:\n${probes.getStderr()}`)
 }
 
+// DevToolsActivePort is written when Chromium's CDP server binds, which happens
+// before the main process creates the window and loads the renderer. So at
+// connect time context.pages() may not yet list the Home window -- poll until it
+// appears rather than throwing immediately.
+async function waitForRendererPage(context: BrowserContext, timeoutMs: number) {
+  const deadline = Date.now() + timeoutMs
+
+  while (Date.now() < deadline) {
+    const page = context
+      .pages()
+      .find((candidate) => !candidate.url().startsWith('devtools://'))
+    if (page) {
+      return page
+    }
+    await new Promise((resolve) => setTimeout(resolve, 250))
+  }
+
+  throw new Error('No renderer page exposed over CDP within timeout')
+}
+
 // Launches the packaged app and exposes its renderer window as a Page.
 //
 // The production fuses disable the Node inspector, so Playwright's
@@ -162,12 +183,7 @@ export const test = base.extend<{ appWindow: Page }>({
       if (!context) {
         throw new Error('No browser context exposed over CDP')
       }
-      const window = context
-        .pages()
-        .find((page) => !page.url().startsWith('devtools://'))
-      if (!window) {
-        throw new Error('No renderer page exposed over CDP')
-      }
+      const window = await waitForRendererPage(context, 20_000)
 
       await use(window)
     } finally {
