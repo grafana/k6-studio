@@ -34,6 +34,12 @@ export enum UsageEventName {
   AutocorrelationFailed = 'autocorrelation_failed',
   AutocorrelationAborted = 'autocorrelation_aborted',
   AutocorrelationErrored = 'autocorrelation_errored',
+
+  HostSelectionStarted = 'host_selection_started',
+  HostSelectionSucceeded = 'host_selection_succeeded',
+  HostSelectionFailed = 'host_selection_failed',
+  HostSelectionAborted = 'host_selection_aborted',
+  HostSelectionErrored = 'host_selection_errored',
 }
 
 export interface UsageEventMetadata {
@@ -151,6 +157,26 @@ interface AutocorrelationErroredEvent {
   event: UsageEventName.AutocorrelationErrored
 }
 
+interface HostSelectionStartedEvent {
+  event: UsageEventName.HostSelectionStarted
+}
+
+interface HostSelectionSucceededEvent {
+  event: UsageEventName.HostSelectionSucceeded
+}
+
+interface HostSelectionFailedEvent {
+  event: UsageEventName.HostSelectionFailed
+}
+
+interface HostSelectionAbortedEvent {
+  event: UsageEventName.HostSelectionAborted
+}
+
+interface HostSelectionErroredEvent {
+  event: UsageEventName.HostSelectionErrored
+}
+
 export type UsageEvent =
   | AppInstalledEvent
   | UserLoggedInEvent
@@ -173,5 +199,10 @@ export type UsageEvent =
   | AutocorrelationFailedEvent
   | AutocorrelationAbortedEvent
   | AutocorrelationErroredEvent
+  | HostSelectionStartedEvent
+  | HostSelectionSucceededEvent
+  | HostSelectionFailedEvent
+  | HostSelectionAbortedEvent
+  | HostSelectionErroredEvent
 
 export type UsageEventWithMetadata = UsageEvent & UsageEventMetadata

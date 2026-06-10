@@ -42,10 +42,6 @@ function encodeSSEOpen(events: Array<Record<string, unknown>>): {
 import { sendTaskCancel } from './a2a/cancelTask'
 import { GrafanaAssistantLanguageModel } from './grafanaAssistantProvider'
 
-vi.mock('./tools', () => ({
-  getToolDefinitionsForA2A: () => [],
-}))
-
 vi.mock('./a2a/config', () => ({
   getA2AConfig: vi.fn(() =>
     Promise.resolve({
@@ -143,11 +139,13 @@ function makeCompletedSSEEvent(taskId: string, contextId: string) {
 
 function makeOptions(
   chatId: string,
-  userText: string
+  userText: string,
+  tools?: LanguageModelV2CallOptions['tools']
 ): LanguageModelV2CallOptions {
   return {
     prompt: [{ role: 'user', content: [{ type: 'text', text: userText }] }],
     providerOptions: { grafanaAssistant: { chatId } },
+    tools,
   } as unknown as LanguageModelV2CallOptions
 }
 
@@ -197,6 +195,55 @@ describe('GrafanaAssistantLanguageModel', () => {
       const params = secondCallBody.params as Record<string, unknown>
 
       expect(params.contextId).toBe('ctx-from-server')
+    })
+  })
+
+  describe('client-provided tools', () => {
+    it('forwards function tools from call options to the A2A request', async () => {
+      const model = new GrafanaAssistantLanguageModel()
+
+      fetchSpy.mockResolvedValueOnce(
+        makeSSEResponse(
+          encodeSSEChunked([makeCompletedSSEEvent('t1', 'ctx-1')])
+        )
+      )
+
+      const result = await model.doStream(
+        makeOptions('tools-chat', 'Hello', [
+          {
+            type: 'function',
+            name: 'suggestHosts',
+            description: 'Suggest hosts',
+            inputSchema: { type: 'object' },
+          },
+          {
+            type: 'provider-defined',
+            id: 'provider.tool',
+            name: 'providerTool',
+            args: {},
+          },
+        ])
+      )
+      await drainStream(result.stream)
+
+      const body = JSON.parse(
+        fetchSpy.mock.calls.at(-1)![1]!.body as string
+      ) as Record<string, unknown>
+      const params = body.params as {
+        metadata: Record<string, { tools: unknown }>
+      }
+      const metadata =
+        params.metadata[
+          'https://grafana.com/extensions/client-provided-tools/v1'
+        ]
+
+      expect(metadata?.tools).toEqual([
+        {
+          name: 'suggestHosts',
+          description: 'Suggest hosts',
+          inputSchema: { type: 'object' },
+        },
+      ])
     })
   })
 

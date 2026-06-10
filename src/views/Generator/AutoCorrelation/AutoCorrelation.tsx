@@ -1,10 +1,10 @@
 import { Box, Flex } from '@radix-ui/themes'
 import { ReactNode, useEffect, useRef } from 'react'
 
+import { ActionsLog } from '@/components/Assistant/ActionsLog'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { selectFilteredRequests, useGeneratorStore } from '@/store/generator'
 
-import { ActionsLog } from './ActionsLog'
 import { ErrorMessage } from './ErrorMessage'
 import { FooterActions } from './FooterActions'
 import { IntroductionMessage } from './IntroductionMessage'

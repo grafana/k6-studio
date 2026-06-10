@@ -1,7 +1,8 @@
+import { UIMessage } from 'ai'
 import { useCallback, useRef, useState } from 'react'
 
-import type { ActionLogEntry, Message } from './types'
-import { deriveLogUpdates } from './utils/deriveLogUpdates'
+import { deriveLogUpdates } from './deriveLogUpdates'
+import type { ActionLogEntry } from './types'
 
 export function useActionsLog() {
   const [entries, setEntries] = useState<ActionLogEntry[]>([])
@@ -22,7 +23,7 @@ export function useActionsLog() {
   }
 
   const syncFromMessages = useCallback(function syncFromMessages(
-    messages: Message[],
+    messages: UIMessage[],
     isLoading: boolean
   ) {
     if (!isLoading) return

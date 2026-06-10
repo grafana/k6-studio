@@ -1,6 +1,7 @@
 import { useChat } from '@ai-sdk/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { useActionsLog } from '@/components/Assistant/useActionsLog'
 import { UsageEventName } from '@/services/usageTracking/types'
 import {
   selectFilteredRequests,
@@ -9,27 +10,27 @@ import {
 } from '@/store/generator'
 import type { AiCorrelationRule } from '@/types/autoCorrelation'
 import { createTerminalToolGuard } from '@/utils/assistant/chat'
+import { IPCChatTransport } from '@/utils/assistant/IPCChatTransport'
+import {
+  getRequestDetails,
+  getRequestsMetadata,
+  searchRequests,
+} from '@/utils/assistant/searchToolHandlers'
+import { prepareRequestsForAI } from '@/utils/assistant/stripRequestData'
+import { serializeToolDefinitions } from '@/utils/assistant/tools'
 import { exhaustive } from '@/utils/typescript'
 import { validateScript } from '@/utils/validateScript'
 
 import { generateScriptPreview } from '../Generator.utils'
 
-import { systemPrompt } from './constants'
+import { systemPrompt, tools } from './constants'
 import type {
   CorrelationStatus,
   Message,
   SuggestedRuleEntry,
   ToolCall,
 } from './types'
-import { useActionsLog } from './useActionsLog'
 import { computeAddRuleResult } from './utils/computeAddRuleResult'
-import { IPCChatTransport } from './utils/IPCChatTransport'
-import {
-  getRequestDetails,
-  getRequestsMetadata,
-  searchRequests,
-} from './utils/searchTools'
-import { prepareRequestsForAI } from './utils/stripRequestData'
 import { validationMatchesRecording } from './utils/validationMatchesRecording'
 
 const outcomeEvents = {
@@ -60,7 +61,10 @@ export const useGenerateRules = ({
 
   const recording = useGeneratorStore(selectFilteredRequests)
   const generator = useGeneratorStore(selectGeneratorData)
-  const transport = useMemo(() => new IPCChatTransport(), [])
+  const transport = useMemo(
+    () => new IPCChatTransport({ tools: serializeToolDefinitions(tools) }),
+    []
+  )
   const finishGuard = useMemo(() => createTerminalToolGuard('finish'), [])
   const actionsLog = useActionsLog()
 

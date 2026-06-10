@@ -1,0 +1,159 @@
+import { useChat } from '@ai-sdk/react'
+import {
+  InferUITools,
+  StaticToolCall,
+  ToolSet,
+  UIDataTypes,
+  UIMessage,
+} from 'ai'
+import { useEffect, useMemo, useRef, useState } from 'react'
+
+import { useActionsLog } from '@/components/Assistant/useActionsLog'
+import { UsageEvent } from '@/services/usageTracking/types'
+
+import { createTerminalToolGuard } from './chat'
+import { IPCChatTransport } from './IPCChatTransport'
+import { serializeToolDefinitions } from './tools'
+
+export type AgentMessage<TTools extends ToolSet> = UIMessage<
+  never,
+  UIDataTypes,
+  InferUITools<TTools>
+>
+
+export type AgentRunStatus =
+  | 'not-started'
+  | 'running'
+  | 'completed'
+  | 'error'
+  | 'aborted'
+
+interface UseAssistantAgentOptions<TTools extends ToolSet> {
+  tools: TTools
+  /**
+   * Executes a tool call client-side and returns its output (or a promise
+   * of it). Calling the `finish` tool marks the run as completed.
+   */
+  onToolCall: (toolCall: StaticToolCall<TTools>) => unknown
+  trackingEvents: {
+    started: UsageEvent
+    errored: UsageEvent
+    aborted: UsageEvent
+  }
+}
+
+export function useAssistantAgent<TTools extends ToolSet>({
+  tools,
+  onToolCall,
+  trackingEvents,
+}: UseAssistantAgentOptions<TTools>) {
+  const [status, setStatus] = useState<AgentRunStatus>('not-started')
+
+  const statusRef = useRef(status)
+  const onToolCallRef = useRef(onToolCall)
+
+  useEffect(() => {
+    onToolCallRef.current = onToolCall
+  })
+
+  function setStatusAndRef(next: AgentRunStatus) {
+    statusRef.current = next
+    setStatus(next)
+  }
+
+  const transport = useMemo(
+    () =>
+      new IPCChatTransport<AgentMessage<TTools>>({
+        tools: serializeToolDefinitions(tools),
+      }),
+    // The toolset is a static module-level definition per agent.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  )
+  const finishGuard = useMemo(() => createTerminalToolGuard('finish'), [])
+  const actionsLog = useActionsLog()
+
+  const {
+    sendMessage,
+    error,
+    messages,
+    addToolOutput,
+    stop: stopGeneration,
+    clearError,
+    setMessages,
+  } = useChat<AgentMessage<TTools>>({
+    transport,
+    sendAutomaticallyWhen: finishGuard.guard,
+    onError: (chatError) => {
+      setStatusAndRef('error')
+      window.studio.app.trackEvent(trackingEvents.errored)
+      console.error(chatError)
+    },
+    onToolCall: async ({ toolCall }) => {
+      if (toolCall.dynamic) {
+        return
+      }
+
+      // TS cannot relate useChat's tool-call type to StaticToolCall while
+      // TTools is unresolved; the shapes are identical for concrete toolsets.
+      const staticToolCall = {
+        ...toolCall,
+        type: 'tool-call' as const,
+      } as StaticToolCall<TTools>
+
+      const output = await onToolCallRef.current(staticToolCall)
+
+      if (toolCall.toolName === 'finish') {
+        setStatusAndRef('completed')
+      }
+
+      void addToolOutput({
+        tool: toolCall.toolName,
+        toolCallId: toolCall.toolCallId,
+        output: output as never,
+      })
+    },
+  })
+
+  const syncMessagesToLog = actionsLog.syncFromMessages
+
+  useEffect(() => {
+    syncMessagesToLog(messages, statusRef.current === 'running')
+  }, [messages, syncMessagesToLog])
+
+  function start(initialText: string) {
+    window.studio.app.trackEvent(trackingEvents.started)
+    actionsLog.startTimer()
+    setStatusAndRef('running')
+    clearError()
+
+    return sendMessage({ text: initialText })
+  }
+
+  function stop() {
+    if (statusRef.current !== 'running') {
+      return
+    }
+
+    window.studio.app.trackEvent(trackingEvents.aborted)
+    void stopGeneration()
+    setStatusAndRef('aborted')
+  }
+
+  function reset() {
+    setMessages([])
+    clearError()
+    setStatusAndRef('not-started')
+    actionsLog.reset()
+    finishGuard.reset()
+  }
+
+  return {
+    start,
+    stop,
+    reset,
+    status,
+    error,
+    actionsLog,
+  }
+}

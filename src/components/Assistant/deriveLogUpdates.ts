@@ -1,6 +1,4 @@
-import { isTextUIPart } from 'ai'
-
-import type { Message } from '../types'
+import { isTextUIPart, UIMessage } from 'ai'
 
 export interface LogAddition {
   partKey: string
@@ -18,11 +16,11 @@ export interface LogUpdates {
 }
 
 export function deriveLogUpdates(
-  messages: Message[],
+  messages: UIMessage[],
   seen: ReadonlyMap<string, string>
 ): LogUpdates {
   return messages
-    .filter((message): message is Message => message.role === 'assistant')
+    .filter((message) => message.role === 'assistant')
     .flatMap((message) =>
       message.parts.flatMap((part, partIndex) => {
         if (!isTextUIPart(part) || !part.text.trim()) {

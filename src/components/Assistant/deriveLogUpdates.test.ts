@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import type { Message } from '../types'
+import type { Message } from '@/views/Generator/AutoCorrelation/types'
 
 import { deriveLogUpdates } from './deriveLogUpdates'
 

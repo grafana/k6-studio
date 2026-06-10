@@ -1,4 +1,4 @@
-import { ActionLogEntry } from '@/views/Generator/AutoCorrelation/types'
+import { ActionLogEntry } from '@/components/Assistant/types'
 
 export const STEP_ORDER = [
   'hosts',

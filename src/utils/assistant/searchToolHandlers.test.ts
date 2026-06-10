@@ -6,7 +6,7 @@ import {
   createResponse,
 } from '@/test/factories/proxyData'
 
-import { searchRequests } from './searchTools'
+import { searchRequests } from './searchToolHandlers'
 
 describe('searchRequests', () => {
   it('matches by request header name and value', () => {

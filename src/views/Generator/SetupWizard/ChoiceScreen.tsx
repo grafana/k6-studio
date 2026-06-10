@@ -9,6 +9,8 @@ import {
 } from 'lucide-react'
 import { ReactNode } from 'react'
 
+import { AssistantAuthGate } from '@/components/Assistant/AssistantAuthGate'
+
 interface ChoiceCardProps {
   icon: LucideIcon
   accent?: boolean
@@ -42,7 +44,10 @@ function ChoiceCard({
     >
       <Flex direction="column" gap="4" height="100%">
         {badge !== undefined && (
-          <Badge color="orange" css={{ position: 'absolute', top: 16, right: 16 }}>
+          <Badge
+            color="orange"
+            css={{ position: 'absolute', top: 16, right: 16 }}
+          >
             {badge}
           </Badge>
         )}
@@ -68,7 +73,10 @@ function ChoiceCard({
         <Flex direction="column" gap="2">
           {bullets.map((bullet) => (
             <Flex key={bullet} gap="2" align="start">
-              <Text color={accent ? 'orange' : 'green'} css={{ display: 'flex', marginTop: 2 }}>
+              <Text
+                color={accent ? 'orange' : 'green'}
+                css={{ display: 'flex', marginTop: 2 }}
+              >
                 <CheckIcon size={15} />
               </Text>
               <Text size="1" color="gray">
@@ -115,7 +123,13 @@ export function ChoiceScreen({
           you through the setup, or configure every rule yourself.
         </Text>
       </Flex>
-      <Flex gap="5" width="100%" maxWidth="760px" justify="center" align="stretch">
+      <Flex
+        gap="5"
+        width="100%"
+        maxWidth="760px"
+        justify="center"
+        align="stretch"
+      >
         <ChoiceCard
           accent
           badge="Recommended"
@@ -129,9 +143,15 @@ export function ChoiceScreen({
             'Recommends thresholds from real latency',
           ]}
           action={
-            <Button size="3" css={{ width: '100%' }} onClick={onStartGuidedSetup}>
-              Start guided setup <ArrowRightIcon size={17} />
-            </Button>
+            <AssistantAuthGate>
+              <Button
+                size="3"
+                css={{ width: '100%' }}
+                onClick={onStartGuidedSetup}
+              >
+                Start guided setup <ArrowRightIcon size={17} />
+              </Button>
+            </AssistantAuthGate>
           }
         />
         <ChoiceCard
@@ -157,7 +177,11 @@ export function ChoiceScreen({
         />
       </Flex>
       <Flex mt="6" gap="2" align="center">
-        <Text size="1" color="gray" css={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <Text
+          size="1"
+          color="gray"
+          css={{ display: 'flex', alignItems: 'center', gap: 6 }}
+        >
           <SparklesIcon size={13} /> Assistant is powered by Grafana Cloud · in
           public preview
         </Text>

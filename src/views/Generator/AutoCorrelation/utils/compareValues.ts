@@ -1,8 +1,7 @@
 import { Header } from '@/types'
+import { shouldSkipCookie } from '@/utils/assistant/skipCookies'
+import { StrippedProxyData } from '@/utils/assistant/stripRequestData'
 import { safeJsonParse } from '@/utils/json'
-
-import { shouldSkipCookie } from './skipCookies'
-import { StrippedProxyData } from './stripRequestData'
 
 const MAX_RECURSION_DEPTH = 5
 const MAX_MISMATCHES = 20

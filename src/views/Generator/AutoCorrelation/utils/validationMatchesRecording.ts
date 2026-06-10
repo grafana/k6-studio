@@ -1,5 +1,6 @@
+import { StrippedProxyData } from '@/utils/assistant/stripRequestData'
+
 import { compareResponseValues, ValueMismatch } from './compareValues'
-import { StrippedProxyData } from './stripRequestData'
 
 interface ValidationMismatch {
   request: {

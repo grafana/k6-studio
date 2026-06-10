@@ -5,7 +5,16 @@ import {
   UIMessageChunk,
 } from 'ai'
 
-import { StreamChatChunk, StreamChatRequest } from '@/handlers/ai/types'
+import {
+  RemoteToolDefinition,
+  StreamChatChunk,
+  StreamChatRequest,
+} from '@/handlers/ai/types'
+
+interface IPCChatTransportOptions {
+  /** Tool definitions for the agent driving this chat. */
+  tools: RemoteToolDefinition[]
+}
 
 /**
  * Custom ChatTransport implementation that uses Electron IPC for communication
@@ -14,6 +23,8 @@ import { StreamChatChunk, StreamChatRequest } from '@/handlers/ai/types'
 export class IPCChatTransport<
   Message extends UIMessage,
 > implements ChatTransport<Message> {
+  constructor(private readonly options: IPCChatTransportOptions) {}
+
   sendMessages(
     options: {
       trigger: 'submit-message' | 'regenerate-message'
@@ -33,6 +44,7 @@ export class IPCChatTransport<
       trigger: options.trigger,
       messageId: options.messageId,
       messages: options.messages,
+      tools: this.options.tools,
       headers,
       body: options.body,
     }

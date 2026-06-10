@@ -1,38 +1,16 @@
 import type { FlexibleSchema } from '@ai-sdk/provider-utils'
-import { asSchema, JSONSchema7, tool, ToolSet } from 'ai'
+import { asSchema, tool, ToolSet } from 'ai'
 import { z } from 'zod'
 
-import {
-  BaseExtractorSchema,
-  BeginEndSelectorSchema,
-  HeaderNameSelectorSchema,
-  JsonSelectorSchema,
-  RegexSelectorSchema,
-} from '@/types/autoCorrelation'
+import { RemoteToolDefinition } from '@/handlers/ai/types'
 
-export interface RemoteToolDefinition {
-  name: string
-  description: string
-  inputSchema: JSONSchema7
-}
-
-const addRuleBeginEndSchema = z.object({
-  extractor: BaseExtractorSchema.extend({ selector: BeginEndSelectorSchema }),
-})
-
-const addRuleRegexSchema = z.object({
-  extractor: BaseExtractorSchema.extend({ selector: RegexSelectorSchema }),
-})
-
-const addRuleJsonSchema = z.object({
-  extractor: BaseExtractorSchema.extend({ selector: JsonSelectorSchema }),
-})
-
-const addRuleHeaderNameSchema = z.object({
-  extractor: BaseExtractorSchema.extend({ selector: HeaderNameSelectorSchema }),
-})
-
-export function getToolDefinitionsForA2A(): RemoteToolDefinition[] {
+/**
+ * Converts renderer-side tool definitions (with zod schemas) into the
+ * JSON-schema form sent over IPC and forwarded to the assistant.
+ */
+export function serializeToolDefinitions(
+  tools: ToolSet
+): RemoteToolDefinition[] {
   return Object.entries(tools).map(([name, toolDef]) => ({
     name,
     description: toolDef.description ?? '',
@@ -41,12 +19,11 @@ export function getToolDefinitionsForA2A(): RemoteToolDefinition[] {
   }))
 }
 
-export const tools = {
-  runValidation: tool({
-    description: 'Start a validation run with the current set of rules',
-    inputSchema: z.object({}),
-  }),
-
+/**
+ * Recording-search tools shared by every assistant agent. Their handlers live
+ * in `searchToolHandlers.ts`.
+ */
+export const recordingSearchTools = {
   searchRequests: tool({
     description:
       'Search for requests in the recording using a query string. Returns metadata only (id, method, url, statusCode) without full request/response bodies. Use this to find specific requests efficiently before fetching full details.',
@@ -99,37 +76,6 @@ export const tools = {
         .optional()
         .describe(
           'Optional array of fields to include. If not specified, returns all fields.'
-        ),
-    }),
-  }),
-
-  addRuleBeginEnd: tool({
-    description: 'Create a correlation rule with a begin-end selector.',
-    inputSchema: z.object({ rule: addRuleBeginEndSchema }),
-  }),
-
-  addRuleRegex: tool({
-    description: 'Create a correlation rule with a regex selector.',
-    inputSchema: z.object({ rule: addRuleRegexSchema }),
-  }),
-
-  addRuleJson: tool({
-    description: 'Create a correlation rule with a JSON-path selector.',
-    inputSchema: z.object({ rule: addRuleJsonSchema }),
-  }),
-
-  addRuleHeaderName: tool({
-    description: 'Create a correlation rule with a header-name selector.',
-    inputSchema: z.object({ rule: addRuleHeaderNameSchema }),
-  }),
-
-  finish: tool({
-    description: 'Call this tool once correlation is finished.',
-    inputSchema: z.object({
-      outcome: z
-        .enum(['success', 'partial-success', 'failure'])
-        .describe(
-          'Use success when all requests are correlated and validation is passing. Use partial-success when some requests are still failing but significant progress has been made. Use failure when no progress has been made and validation is still failing.'
         ),
     }),
   }),
