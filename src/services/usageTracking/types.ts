@@ -40,6 +40,19 @@ export enum UsageEventName {
   HostSelectionFailed = 'host_selection_failed',
   HostSelectionAborted = 'host_selection_aborted',
   HostSelectionErrored = 'host_selection_errored',
+
+  ParameterizationStarted = 'parameterization_started',
+  ParameterizationSucceeded = 'parameterization_succeeded',
+  ParameterizationPartiallySucceeded = 'parameterization_partially_succeeded',
+  ParameterizationFailed = 'parameterization_failed',
+  ParameterizationAborted = 'parameterization_aborted',
+  ParameterizationErrored = 'parameterization_errored',
+
+  ThresholdSuggestionStarted = 'threshold_suggestion_started',
+  ThresholdSuggestionSucceeded = 'threshold_suggestion_succeeded',
+  ThresholdSuggestionFailed = 'threshold_suggestion_failed',
+  ThresholdSuggestionAborted = 'threshold_suggestion_aborted',
+  ThresholdSuggestionErrored = 'threshold_suggestion_errored',
 }
 
 export interface UsageEventMetadata {
@@ -177,6 +190,50 @@ interface HostSelectionErroredEvent {
   event: UsageEventName.HostSelectionErrored
 }
 
+interface ParameterizationStartedEvent {
+  event: UsageEventName.ParameterizationStarted
+}
+
+interface ParameterizationSucceededEvent {
+  event: UsageEventName.ParameterizationSucceeded
+}
+
+interface ParameterizationPartiallySucceededEvent {
+  event: UsageEventName.ParameterizationPartiallySucceeded
+}
+
+interface ParameterizationFailedEvent {
+  event: UsageEventName.ParameterizationFailed
+}
+
+interface ParameterizationAbortedEvent {
+  event: UsageEventName.ParameterizationAborted
+}
+
+interface ParameterizationErroredEvent {
+  event: UsageEventName.ParameterizationErrored
+}
+
+interface ThresholdSuggestionStartedEvent {
+  event: UsageEventName.ThresholdSuggestionStarted
+}
+
+interface ThresholdSuggestionSucceededEvent {
+  event: UsageEventName.ThresholdSuggestionSucceeded
+}
+
+interface ThresholdSuggestionFailedEvent {
+  event: UsageEventName.ThresholdSuggestionFailed
+}
+
+interface ThresholdSuggestionAbortedEvent {
+  event: UsageEventName.ThresholdSuggestionAborted
+}
+
+interface ThresholdSuggestionErroredEvent {
+  event: UsageEventName.ThresholdSuggestionErrored
+}
+
 export type UsageEvent =
   | AppInstalledEvent
   | UserLoggedInEvent
@@ -204,5 +261,16 @@ export type UsageEvent =
   | HostSelectionFailedEvent
   | HostSelectionAbortedEvent
   | HostSelectionErroredEvent
+  | ParameterizationStartedEvent
+  | ParameterizationSucceededEvent
+  | ParameterizationPartiallySucceededEvent
+  | ParameterizationFailedEvent
+  | ParameterizationAbortedEvent
+  | ParameterizationErroredEvent
+  | ThresholdSuggestionStartedEvent
+  | ThresholdSuggestionSucceededEvent
+  | ThresholdSuggestionFailedEvent
+  | ThresholdSuggestionAbortedEvent
+  | ThresholdSuggestionErroredEvent
 
 export type UsageEventWithMetadata = UsageEvent & UsageEventMetadata

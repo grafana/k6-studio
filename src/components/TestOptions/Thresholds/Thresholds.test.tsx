@@ -102,4 +102,39 @@ describe('Thresholds (controlled)', () => {
     )
     expect(screen.getByDisplayValue('100')).toBeDefined()
   })
+
+  it('renders row annotations when getRowAnnotation matches', () => {
+    const value = [
+      {
+        id: 'suggested-1',
+        metric: 'response_time' as const,
+        statistic: 'avg' as const,
+        condition: '<' as const,
+        value: 100,
+        stopTest: false,
+      },
+      {
+        id: 'manual-1',
+        metric: 'response_time' as const,
+        statistic: 'avg' as const,
+        condition: '<' as const,
+        value: 200,
+        stopTest: false,
+      },
+    ]
+    render(
+      <Theme>
+        <Thresholds
+          value={value}
+          onChange={vi.fn()}
+          metricsConfig={config}
+          getRowAnnotation={(id) =>
+            id === 'suggested-1' ? 'observed p95 611 ms' : undefined
+          }
+        />
+      </Theme>
+    )
+
+    expect(screen.getAllByText('observed p95 611 ms')).toHaveLength(1)
+  })
 })

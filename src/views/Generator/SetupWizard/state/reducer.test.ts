@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  initialWizardState,
-  isStepReachable,
-  wizardReducer,
-} from './reducer'
+import { initialWizardState, isStepReachable, wizardReducer } from './reducer'
 import { StepId, StepResult, WizardState } from './types'
 
 function completedStep(): WizardState['steps'][StepId] {
@@ -59,7 +55,12 @@ describe('wizardReducer', () => {
 
   it('continue does nothing on the last step', () => {
     const state: WizardState = {
-      ...stateWithCompleted('hosts', 'autocorrelation', 'parameterization', 'thresholds'),
+      ...stateWithCompleted(
+        'hosts',
+        'autocorrelation',
+        'parameterization',
+        'thresholds'
+      ),
       activeStep: 'thresholds',
     }
 
@@ -116,7 +117,10 @@ describe('wizardReducer', () => {
   it('goToStep ignores steps beyond the completed prefix', () => {
     const state = stateWithCompleted('hosts')
 
-    const next = wizardReducer(state, { type: 'goToStep', stepId: 'thresholds' })
+    const next = wizardReducer(state, {
+      type: 'goToStep',
+      stepId: 'thresholds',
+    })
 
     expect(next.activeStep).toBe('hosts')
   })

@@ -1,6 +1,12 @@
 import { exhaustive } from '@/utils/typescript'
 
-import { STEP_ORDER, StepId, StepState, WizardAction, WizardState } from './types'
+import {
+  STEP_ORDER,
+  StepId,
+  StepState,
+  WizardAction,
+  WizardState,
+} from './types'
 
 const notStarted: StepState = { status: 'not-started' }
 

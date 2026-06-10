@@ -15,6 +15,8 @@ interface ThresholdsProps<M extends string> {
   value: Array<ThresholdLikeRow & { metric: M }>
   onChange: (next: Array<ThresholdLikeRow & { metric: M }>) => void
   metricsConfig: MetricsConfig<M>
+  /** Returns an annotation rendered beneath the row with the given threshold id. */
+  getRowAnnotation?: (id: string) => string | undefined
   // Resolver is contravariant in TFieldValues so callers with narrower schemas
   // cannot assign to a concrete form type. Use any to accept all resolvers.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -25,6 +27,7 @@ export function Thresholds<M extends string>({
   value,
   onChange,
   metricsConfig,
+  getRowAnnotation,
   resolver,
 }: ThresholdsProps<M>) {
   type Row = ThresholdLikeRow & { metric: M }
@@ -113,6 +116,7 @@ export function Thresholds<M extends string>({
                 index={index}
                 remove={remove}
                 metricsConfig={metricsConfig}
+                getRowAnnotation={getRowAnnotation}
               />
             ))}
             <Table.Row>

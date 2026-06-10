@@ -104,7 +104,9 @@ export function Stepper() {
                 <button
                   type="button"
                   aria-label={`Step ${index + 1}: ${config.label}`}
-                  aria-current={stepId === state.activeStep ? 'step' : undefined}
+                  aria-current={
+                    stepId === state.activeStep ? 'step' : undefined
+                  }
                   disabled={!isClickable}
                   onClick={() => dispatch({ type: 'goToStep', stepId })}
                   css={{
