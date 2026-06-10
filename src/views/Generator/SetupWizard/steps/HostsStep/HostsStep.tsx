@@ -1,8 +1,6 @@
-import { Box, Button, Callout, Checkbox, Flex, Text } from '@radix-ui/themes'
-import { AlertTriangleIcon, CheckIcon } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { Box, Callout, Checkbox, Flex, Text } from '@radix-ui/themes'
+import { CheckIcon } from 'lucide-react'
 
-import { ActionsLog } from '@/components/Assistant/ActionsLog'
 import { useGeneratorStore } from '@/store/generator'
 
 import { useStepState } from '../../state/SetupWizardContext'
@@ -10,6 +8,8 @@ import { HostSuggestion } from '../../state/types'
 import { useWizardNavigation } from '../../state/useWizardNavigation'
 import { StepFrame } from '../../StepFrame'
 import { WizardFooter } from '../../WizardFooter'
+import { AgentRunPanel } from '../AgentRunPanel'
+import { useAutoStartAgent } from '../useAutoStartAgent'
 
 import { HostRow } from './HostRow'
 import { useHostsAgent } from './useHostsAgent'
@@ -115,77 +115,24 @@ export function HostsStep() {
   const { goBack, goNext } = useWizardNavigation()
   const { start, restart, stop, logEntries, status } = useHostsAgent()
 
-  const hasAutoStarted = useRef(false)
-
-  useEffect(() => {
-    if (hasAutoStarted.current || stepState.status !== 'not-started') {
-      return
-    }
-
-    hasAutoStarted.current = true
-    start()
-    // The ref guard makes this a mount-only auto-start.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stepState.status])
-
-  useEffect(() => {
-    return () => {
-      stop()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  useAutoStartAgent(stepState.status, start, stop)
 
   if (stepState.status === 'completed') {
     return <CompletedHostsStep />
   }
 
   return (
-    <>
-      <StepFrame stepId="hosts">
-        <Flex direction="column" gap="3" flexGrow="1" css={{ minHeight: 0 }}>
-          {(stepState.status === 'error' || stepState.status === 'aborted') && (
-            <Callout.Root color="amber">
-              <Callout.Icon>
-                <AlertTriangleIcon size={16} />
-              </Callout.Icon>
-              <Callout.Text>
-                {stepState.status === 'error'
-                  ? 'The Assistant could not analyze the hosts in this recording.'
-                  : 'The analysis was stopped.'}
-              </Callout.Text>
-            </Callout.Root>
-          )}
-          {(stepState.status === 'error' || stepState.status === 'aborted') && (
-            <Flex>
-              <Button variant="outline" color="gray" onClick={restart}>
-                Run analysis again
-              </Button>
-            </Flex>
-          )}
-          <Box
-            css={{
-              border: '1px solid var(--gray-4)',
-              borderRadius: 'var(--radius-3)',
-              minHeight: 200,
-              flexGrow: 1,
-            }}
-          >
-            <ActionsLog entries={logEntries} />
-          </Box>
-        </Flex>
-      </StepFrame>
-      <WizardFooter
-        isLastStep={false}
-        canContinue={false}
-        onBack={goBack}
-        onContinue={goNext}
-      >
-        {status === 'running' && (
-          <Text size="1" color="gray">
-            Analyzing hosts...
-          </Text>
-        )}
-      </WizardFooter>
-    </>
+    <AgentRunPanel
+      stepId="hosts"
+      stepState={stepState}
+      logEntries={logEntries}
+      status={status}
+      onRestart={restart}
+      errorMessage="The Assistant could not analyze the hosts in this recording."
+      runningLabel="Analyzing hosts..."
+      isLastStep={false}
+      onBack={goBack}
+      onContinue={goNext}
+    />
   )
 }

@@ -1,17 +1,17 @@
 import { StaticToolCall } from 'ai'
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 
 import { UsageEventName } from '@/services/usageTracking/types'
 import { selectFilteredRequests, useGeneratorStore } from '@/store/generator'
 import {
-  getRequestDetails,
-  getRequestsMetadata,
-  searchRequests,
-} from '@/utils/assistant/searchToolHandlers'
+  handleRecordingSearchToolCall,
+  isRecordingSearchToolCall,
+} from '@/utils/assistant/handleRecordingSearchToolCall'
 import { useAssistantAgent } from '@/utils/assistant/useAssistantAgent'
 import { exhaustive } from '@/utils/typescript'
 
 import { useSetupWizard } from '../../state/SetupWizardContext'
+import { useStepAgentLifecycle } from '../useStepAgentLifecycle'
 
 import {
   addParameterInputSchema,
@@ -49,32 +49,16 @@ export function useParameterizationAgent() {
 
   const { actionsLog, status } = agent
 
-  function handleToolCall(toolCall: ParameterizationToolCall) {
+  function handleToolCall(toolCall: ParameterizationToolCall): unknown {
+    if (isRecordingSearchToolCall(toolCall)) {
+      return handleRecordingSearchToolCall(
+        toolCall,
+        requests,
+        actionsLog.addEntry
+      )
+    }
+
     switch (toolCall.toolName) {
-      case 'searchRequests': {
-        const { query, limit } = toolCall.input
-        actionsLog.addEntry({
-          type: 'info',
-          text: `Searching requests for "${query}"`,
-        })
-        return searchRequests(requests, query, limit ?? 20)
-      }
-
-      case 'getRequestsMetadata': {
-        const { startIndex, endIndex } = toolCall.input
-        actionsLog.addEntry({ type: 'info', text: 'Reading request metadata' })
-        return getRequestsMetadata(requests, startIndex ?? 0, endIndex)
-      }
-
-      case 'getRequestDetails': {
-        const { requestIds, fields } = toolCall.input
-        actionsLog.addEntry({
-          type: 'info',
-          text: `Inspecting ${requestIds.length} request${requestIds.length > 1 ? 's' : ''}`,
-        })
-        return getRequestDetails(requests, requestIds, fields)
-      }
-
       case 'addParameter': {
         const { parameter } = addParameterInputSchema.parse(toolCall.input)
         const proposal = aiParameterToRule(parameter)
@@ -126,26 +110,12 @@ export function useParameterizationAgent() {
     })
   }
 
-  useEffect(() => {
-    if (status === 'completed') {
-      dispatchCompletion()
-      return
-    }
-
-    if (status === 'error') {
-      dispatch({
-        type: 'stepRunFailed',
-        stepId: 'parameterization',
-        message: 'The Assistant run failed. Try again.',
-      })
-    }
-
-    if (status === 'aborted') {
-      dispatch({ type: 'stepRunAborted', stepId: 'parameterization' })
-    }
-    // Only react to status transitions; the completion payload is read from refs.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status])
+  useStepAgentLifecycle({
+    stepId: 'parameterization',
+    status,
+    onCompleted: dispatchCompletion,
+    failureMessage: 'The Assistant run failed. Try again.',
+  })
 
   function start() {
     proposalsRef.current = []
