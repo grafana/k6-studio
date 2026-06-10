@@ -20,6 +20,7 @@ vi.mock('@/hooks/useProxyStatus', () => ({ useProxyStatus: vi.fn() }))
 const footerContext: AutoCorrelationFooterContext = {
   isLoading: false,
   ruleEntries: [],
+  logEntries: [],
   correlationStatus: 'success',
   stop: vi.fn(),
   accept: vi.fn(),

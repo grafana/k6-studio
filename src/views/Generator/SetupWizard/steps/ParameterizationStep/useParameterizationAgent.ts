@@ -10,7 +10,7 @@ import {
 import { useAssistantAgent } from '@/utils/assistant/useAssistantAgent'
 import { exhaustive } from '@/utils/typescript'
 
-import { useSetupWizard } from '../../state/SetupWizardContext'
+import { useSetupWizard, useStepState } from '../../state/SetupWizardContext'
 import { useStepAgentLifecycle } from '../useStepAgentLifecycle'
 
 import {
@@ -20,6 +20,7 @@ import {
 } from './constants'
 import {
   aiParameterToRule,
+  mergeVariables,
   ParameterizationProposal,
 } from './parameterization.utils'
 
@@ -33,6 +34,7 @@ const outcomeEvents = {
 
 export function useParameterizationAgent() {
   const { dispatch } = useSetupWizard()
+  const stepState = useStepState('parameterization')
   const requests = useGeneratorStore(selectFilteredRequests)
 
   const proposalsRef = useRef<ParameterizationProposal[]>([])
@@ -92,9 +94,16 @@ export function useParameterizationAgent() {
 
   const dispatchCompletion = () => {
     const proposals = proposalsRef.current
-    const { rules, setRules } = useGeneratorStore.getState()
+    const { rules, setRules, variables, setVariables } =
+      useGeneratorStore.getState()
 
     setRules([...rules, ...proposals.map((proposal) => proposal.rule)])
+    setVariables(
+      mergeVariables(
+        variables,
+        proposals.map((proposal) => proposal.variable)
+      )
+    )
     dispatch({
       type: 'stepRunCompleted',
       stepId: 'parameterization',
@@ -128,7 +137,39 @@ export function useParameterizationAgent() {
     })
   }
 
+  // Re-running the step withdraws the previously committed rules and the
+  // variables they introduced before starting a fresh analysis.
+  function cleanupCommittedProposals() {
+    if (
+      stepState.status !== 'completed' ||
+      stepState.result.step !== 'parameterization'
+    ) {
+      return
+    }
+
+    const ruleIds = new Set(
+      stepState.result.suggestions.map((suggestion) => suggestion.ruleId)
+    )
+    const { rules, setRules, variables, setVariables } =
+      useGeneratorStore.getState()
+    const removedVariableNames = new Set(
+      rules.flatMap((rule) =>
+        ruleIds.has(rule.id) &&
+        rule.type === 'parameterization' &&
+        rule.value.type === 'variable'
+          ? [rule.value.variableName]
+          : []
+      )
+    )
+
+    setRules(rules.filter((rule) => !ruleIds.has(rule.id)))
+    setVariables(
+      variables.filter((variable) => !removedVariableNames.has(variable.name))
+    )
+  }
+
   function restart() {
+    cleanupCommittedProposals()
     agent.reset()
     start()
   }

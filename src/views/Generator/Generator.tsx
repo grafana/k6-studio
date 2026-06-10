@@ -266,7 +266,12 @@ export function Generator({ file, content }: GeneratorProps) {
       loading={isLoading}
     >
       {setupSummary !== null && (
-        <Callout.Root color="green" m="2" role="status">
+        <Callout.Root
+          color="green"
+          m="2"
+          role="status"
+          css={{ position: 'relative', paddingRight: 'var(--space-7)' }}
+        >
           <Callout.Icon>
             <WandSparklesIcon size={16} />
           </Callout.Icon>
@@ -277,6 +282,12 @@ export function Generator({ file, content }: GeneratorProps) {
             color="gray"
             aria-label="Dismiss"
             onClick={() => setSetupSummary(null)}
+            css={{
+              position: 'absolute',
+              top: '50%',
+              right: 'var(--space-3)',
+              transform: 'translateY(-50%)',
+            }}
           >
             <XIcon size={14} />
           </IconButton>

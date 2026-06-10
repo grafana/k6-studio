@@ -1,5 +1,4 @@
-import { Callout, Flex, Text } from '@radix-ui/themes'
-import { CheckIcon } from 'lucide-react'
+import { Flex, Text } from '@radix-ui/themes'
 
 import { useGeneratorStore } from '@/store/generator'
 
@@ -9,6 +8,7 @@ import { useWizardNavigation } from '../../state/useWizardNavigation'
 import { StepFrame } from '../../StepFrame'
 import { WizardFooter } from '../../WizardFooter'
 import { AgentRunPanel } from '../AgentRunPanel'
+import { CompletedStepSummary } from '../CompletedStepSummary'
 import { useAutoStartAgent } from '../useAutoStartAgent'
 
 import { ParamCard } from './ParamCard'
@@ -47,7 +47,7 @@ function ParamCardList({
   )
 }
 
-function CompletedParameterizationStep() {
+function CompletedParameterizationStep({ onRerun }: { onRerun: () => void }) {
   const stepState = useStepState('parameterization')
   const { goBack, goNext } = useWizardNavigation()
 
@@ -62,12 +62,11 @@ function CompletedParameterizationStep() {
     <>
       <StepFrame stepId="parameterization">
         <Flex direction="column" gap="3">
-          <Callout.Root color="amber">
-            <Callout.Icon>
-              <CheckIcon size={16} />
-            </Callout.Icon>
-            <Callout.Text>{stepState.summary}</Callout.Text>
-          </Callout.Root>
+          <CompletedStepSummary
+            summary={stepState.summary}
+            log={stepState.log}
+            onRerun={onRerun}
+          />
           <ParamCardList suggestions={stepState.result.suggestions} />
         </Flex>
       </StepFrame>
@@ -90,7 +89,7 @@ export function ParameterizationStep() {
   useAutoStartAgent(stepState.status, start, stop)
 
   if (stepState.status === 'completed') {
-    return <CompletedParameterizationStep />
+    return <CompletedParameterizationStep onRerun={restart} />
   }
 
   return (

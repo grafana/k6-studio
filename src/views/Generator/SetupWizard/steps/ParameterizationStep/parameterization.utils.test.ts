@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest'
 
 import { ParameterizationRuleSchema } from '@/schemas/generator'
 
-import { AiParameter, aiParameterToRule } from './parameterization.utils'
+import {
+  AiParameter,
+  aiParameterToRule,
+  mergeVariables,
+} from './parameterization.utils'
 
 const parameter: AiParameter = {
   field: 'email',
@@ -15,20 +19,21 @@ const parameter: AiParameter = {
     from: 'body',
     path: 'email',
   },
-  value: { type: 'string', value: 'user@example.com' },
+  variableName: 'email',
 }
 
 describe('aiParameterToRule', () => {
-  it('maps an AI proposal to a valid parameterization rule', () => {
-    const { rule } = aiParameterToRule(parameter)
+  it('maps an AI proposal to a variable-backed parameterization rule', () => {
+    const { rule, variable } = aiParameterToRule(parameter)
 
     expect(rule).toMatchObject({
       type: 'parameterization',
       enabled: true,
       filter: { path: '/api/login' },
       selector: parameter.selector,
-      value: parameter.value,
+      value: { type: 'variable', variableName: 'email' },
     })
+    expect(variable).toEqual({ name: 'email', value: 'user@example.com' })
     expect(() => ParameterizationRuleSchema.parse(rule)).not.toThrow()
   })
 
@@ -50,5 +55,23 @@ describe('aiParameterToRule', () => {
     const second = aiParameterToRule(parameter)
 
     expect(first.rule.id).not.toBe(second.rule.id)
+  })
+})
+
+describe('mergeVariables', () => {
+  it('appends new variables and skips duplicates by name', () => {
+    const merged = mergeVariables(
+      [{ name: 'username', value: 'default' }],
+      [
+        { name: 'username', value: 'other' },
+        { name: 'password', value: 'secret' },
+        { name: 'password', value: 'secret-again' },
+      ]
+    )
+
+    expect(merged).toEqual([
+      { name: 'username', value: 'default' },
+      { name: 'password', value: 'secret' },
+    ])
   })
 })

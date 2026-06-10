@@ -27,22 +27,31 @@ function percentile(sortedValues: number[], fraction: number): number {
 }
 
 /**
- * Approximates per-request response times (in ms) as the delta between the
- * request start and the first response byte.
+ * Computes the per-request duration in ms. Live proxy data carries response
+ * timestamps; HAR-imported recordings encode the entry's total time as
+ * `request.timestampEnd` (see harToProxyData).
  */
+function getRequestDuration({ request, response }: ProxyData): number {
+  if (!request.timestampStart) {
+    return 0
+  }
+
+  const candidates = [
+    response?.timestampEnd,
+    request.timestampEnd,
+    response?.timestampStart,
+  ]
+  const end = candidates.find((value) => value !== undefined && value > 0)
+
+  return end === undefined ? 0 : (end - request.timestampStart) * 1000
+}
+
 export function computeResponseTimeStats(
   requests: ProxyData[]
 ): ResponseTimeStats {
   const durations = requests
-    .flatMap(({ request, response }) => {
-      if (!response || !request.timestampStart || !response.timestampStart) {
-        return []
-      }
-
-      const duration = (response.timestampStart - request.timestampStart) * 1000
-
-      return duration > 0 ? [duration] : []
-    })
+    .map(getRequestDuration)
+    .filter((duration) => duration > 0)
     .sort((left, right) => left - right)
 
   const failedCount = requests.filter(

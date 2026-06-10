@@ -9,12 +9,13 @@ import { ErrorMessage } from './ErrorMessage'
 import { FooterActions } from './FooterActions'
 import { IntroductionMessage } from './IntroductionMessage'
 import { RulesCreated } from './RulesCreated'
-import { CorrelationStatus, SuggestedRuleEntry } from './types'
+import { ActionLogEntry, CorrelationStatus, SuggestedRuleEntry } from './types'
 import { useGenerateRules } from './useGenerateRules'
 
 export interface AutoCorrelationFooterContext {
   isLoading: boolean
   ruleEntries: SuggestedRuleEntry[]
+  logEntries: ActionLogEntry[]
   correlationStatus: CorrelationStatus
   stop: () => void
   accept: () => void
@@ -120,6 +121,7 @@ export function AutoCorrelation({
       return footer({
         isLoading,
         ruleEntries,
+        logEntries: actionsLog,
         correlationStatus,
         stop,
         accept: acceptRules,
@@ -149,6 +151,10 @@ export function AutoCorrelation({
     <Flex
       css={{
         height: '100%',
+        // In a flex column parent (the wizard step) take the remaining space
+        // instead of overflowing it.
+        flex: '1 1 0%',
+        minHeight: 0,
         borderTop: '1px solid var(--gray-5)',
       }}
       direction="column"

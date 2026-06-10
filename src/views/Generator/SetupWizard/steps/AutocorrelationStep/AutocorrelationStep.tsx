@@ -1,7 +1,8 @@
 import { Button, Callout, Flex } from '@radix-ui/themes'
-import { CheckIcon, UnplugIcon } from 'lucide-react'
+import { UnplugIcon } from 'lucide-react'
 
 import { useProxyStatus } from '@/hooks/useProxyStatus'
+import { useGeneratorStore } from '@/store/generator'
 import {
   AutoCorrelation,
   AutoCorrelationFooterContext,
@@ -12,6 +13,7 @@ import { useSetupWizard, useStepState } from '../../state/SetupWizardContext'
 import { useWizardNavigation } from '../../state/useWizardNavigation'
 import { StepFrame, StepHeader } from '../../StepFrame'
 import { WizardFooter } from '../../WizardFooter'
+import { CompletedStepSummary } from '../CompletedStepSummary'
 
 const TERMINAL_STATUSES: CorrelationStatus[] = [
   'success',
@@ -32,6 +34,7 @@ function getSummary(context: AutoCorrelationFooterContext): string {
 }
 
 function CompletedStep() {
+  const { dispatch } = useSetupWizard()
   const stepState = useStepState('autocorrelation')
   const { goBack, goNext } = useWizardNavigation()
 
@@ -39,15 +42,26 @@ function CompletedStep() {
     return null
   }
 
+  // Re-running withdraws the rules accepted by the previous run; the fresh
+  // mount of AutoCorrelation auto-starts a new analysis.
+  const handleRerun = () => {
+    if (stepState.result.step === 'autocorrelation') {
+      const committedIds = new Set(stepState.result.ruleIds)
+      const { rules, setRules } = useGeneratorStore.getState()
+      setRules(rules.filter((rule) => !committedIds.has(rule.id)))
+    }
+
+    dispatch({ type: 'stepRunReset', stepId: 'autocorrelation' })
+  }
+
   return (
     <>
       <StepFrame stepId="autocorrelation">
-        <Callout.Root color="green">
-          <Callout.Icon>
-            <CheckIcon size={16} />
-          </Callout.Icon>
-          <Callout.Text>{stepState.summary}</Callout.Text>
-        </Callout.Root>
+        <CompletedStepSummary
+          summary={stepState.summary}
+          log={stepState.log}
+          onRerun={handleRerun}
+        />
       </StepFrame>
       <WizardFooter
         isLastStep={false}
@@ -128,7 +142,7 @@ export function AutocorrelationStep() {
         step: 'autocorrelation',
         ruleIds: context.ruleEntries.map((entry) => entry.rule.id),
       },
-      log: [],
+      log: context.logEntries,
       summary: getSummary(context),
     })
     goNext()

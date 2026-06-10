@@ -70,6 +70,7 @@ function harEntryToResponse({ response }: HarEntry): Response | undefined {
     content,
     contentLength: response.content?.size ?? 0,
     timestampStart: 0,
+    timestampEnd: 0,
     path: '',
   }
 }

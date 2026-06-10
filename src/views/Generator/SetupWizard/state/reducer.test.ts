@@ -147,6 +147,17 @@ describe('wizardReducer', () => {
     })
   })
 
+  it('resets a step back to not-started', () => {
+    const state = stateWithCompleted('hosts')
+
+    const next = wizardReducer(state, {
+      type: 'stepRunReset',
+      stepId: 'hosts',
+    })
+
+    expect(next.steps.hosts).toEqual({ status: 'not-started' })
+  })
+
   it('records failures and aborts', () => {
     const failed = wizardReducer(
       { ...initialWizardState, screen: 'wizard' },
@@ -177,5 +188,16 @@ describe('isStepReachable', () => {
 
     expect(isStepReachable(state, 'hosts')).toBe(true)
     expect(isStepReachable(state, 'autocorrelation')).toBe(false)
+  })
+
+  it('keeps later completed steps reachable after an earlier step resets', () => {
+    const state = wizardReducer(
+      stateWithCompleted('hosts', 'autocorrelation', 'parameterization'),
+      { type: 'stepRunReset', stepId: 'hosts' }
+    )
+
+    expect(isStepReachable(state, 'autocorrelation')).toBe(true)
+    expect(isStepReachable(state, 'parameterization')).toBe(true)
+    expect(isStepReachable(state, 'thresholds')).toBe(false)
   })
 })

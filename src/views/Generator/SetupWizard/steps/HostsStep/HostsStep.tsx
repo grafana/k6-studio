@@ -1,5 +1,4 @@
-import { Box, Callout, Checkbox, Flex, Text } from '@radix-ui/themes'
-import { CheckIcon } from 'lucide-react'
+import { Box, Checkbox, Flex, Text } from '@radix-ui/themes'
 
 import { useGeneratorStore } from '@/store/generator'
 
@@ -9,6 +8,7 @@ import { useWizardNavigation } from '../../state/useWizardNavigation'
 import { StepFrame } from '../../StepFrame'
 import { WizardFooter } from '../../WizardFooter'
 import { AgentRunPanel } from '../AgentRunPanel'
+import { CompletedStepSummary } from '../CompletedStepSummary'
 import { useAutoStartAgent } from '../useAutoStartAgent'
 
 import { HostRow } from './HostRow'
@@ -74,7 +74,7 @@ function HostList({ suggestions }: { suggestions: HostSuggestion[] }) {
   )
 }
 
-function CompletedHostsStep() {
+function CompletedHostsStep({ onRerun }: { onRerun: () => void }) {
   const stepState = useStepState('hosts')
   const allowlist = useGeneratorStore((store) => store.allowlist)
   const { goBack, goNext } = useWizardNavigation()
@@ -89,12 +89,11 @@ function CompletedHostsStep() {
     <>
       <StepFrame stepId="hosts">
         <Flex direction="column" gap="3">
-          <Callout.Root color="green">
-            <Callout.Icon>
-              <CheckIcon size={16} />
-            </Callout.Icon>
-            <Callout.Text>{stepState.summary}</Callout.Text>
-          </Callout.Root>
+          <CompletedStepSummary
+            summary={stepState.summary}
+            log={stepState.log}
+            onRerun={onRerun}
+          />
           <HostList suggestions={suggestions} />
         </Flex>
       </StepFrame>
@@ -118,7 +117,7 @@ export function HostsStep() {
   useAutoStartAgent(stepState.status, start, stop)
 
   if (stepState.status === 'completed') {
-    return <CompletedHostsStep />
+    return <CompletedHostsStep onRerun={restart} />
   }
 
   return (

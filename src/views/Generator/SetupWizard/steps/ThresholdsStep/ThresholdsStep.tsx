@@ -1,5 +1,4 @@
-import { Callout, Flex } from '@radix-ui/themes'
-import { CheckIcon } from 'lucide-react'
+import { Flex } from '@radix-ui/themes'
 
 import { Thresholds } from '@/components/TestOptions/Thresholds/Thresholds'
 import { useGeneratorStore } from '@/store/generator'
@@ -10,6 +9,7 @@ import { useWizardNavigation } from '../../state/useWizardNavigation'
 import { StepFrame } from '../../StepFrame'
 import { WizardFooter } from '../../WizardFooter'
 import { AgentRunPanel } from '../AgentRunPanel'
+import { CompletedStepSummary } from '../CompletedStepSummary'
 import { useAutoStartAgent } from '../useAutoStartAgent'
 
 import { useThresholdsAgent } from './useThresholdsAgent'
@@ -18,7 +18,14 @@ interface ThresholdsStepProps {
   onComplete: () => void
 }
 
-function CompletedThresholdsStep({ onComplete }: ThresholdsStepProps) {
+interface CompletedThresholdsStepProps extends ThresholdsStepProps {
+  onRerun: () => void
+}
+
+function CompletedThresholdsStep({
+  onComplete,
+  onRerun,
+}: CompletedThresholdsStepProps) {
   const stepState = useStepState('thresholds')
   const thresholds = useGeneratorStore((store) => store.thresholds)
   const setThresholds = useGeneratorStore((store) => store.setThresholds)
@@ -37,12 +44,11 @@ function CompletedThresholdsStep({ onComplete }: ThresholdsStepProps) {
     <>
       <StepFrame stepId="thresholds">
         <Flex direction="column" gap="3">
-          <Callout.Root color="green">
-            <Callout.Icon>
-              <CheckIcon size={16} />
-            </Callout.Icon>
-            <Callout.Text>{stepState.summary}</Callout.Text>
-          </Callout.Root>
+          <CompletedStepSummary
+            summary={stepState.summary}
+            log={stepState.log}
+            onRerun={onRerun}
+          />
           <Thresholds
             value={thresholds}
             onChange={setThresholds}
@@ -69,7 +75,7 @@ export function ThresholdsStep({ onComplete }: ThresholdsStepProps) {
   useAutoStartAgent(stepState.status, start, stop)
 
   if (stepState.status === 'completed') {
-    return <CompletedThresholdsStep onComplete={onComplete} />
+    return <CompletedThresholdsStep onComplete={onComplete} onRerun={restart} />
   }
 
   return (

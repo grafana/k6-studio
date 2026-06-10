@@ -22,10 +22,14 @@ export const initialWizardState: WizardState = {
 }
 
 /**
- * A step can be revisited once completed, or entered when every step
- * before it is completed (i.e. it is the next step in line).
+ * A completed step can always be revisited; otherwise a step is reachable
+ * when every step before it is completed (i.e. it is the next step in line).
  */
 export function isStepReachable(state: WizardState, stepId: StepId): boolean {
+  if (state.steps[stepId].status === 'completed') {
+    return true
+  }
+
   const index = STEP_ORDER.indexOf(stepId)
   const completedPrefixLength = STEP_ORDER.findIndex(
     (step) => state.steps[step].status !== 'completed'
@@ -81,6 +85,9 @@ export function wizardReducer(
 
     case 'stepRunAborted':
       return withStepState(state, action.stepId, { status: 'aborted' })
+
+    case 'stepRunReset':
+      return withStepState(state, action.stepId, { status: 'not-started' })
 
     case 'back': {
       const index = STEP_ORDER.indexOf(state.activeStep)

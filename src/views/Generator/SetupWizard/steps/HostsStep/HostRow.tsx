@@ -12,15 +12,11 @@ const CATEGORY_LABELS: Record<HostCategory, string> = {
 }
 
 function SuggestionBadge({ suggested }: { suggested: boolean }) {
-  if (suggested) {
-    return <Badge color="orange">Suggested</Badge>
+  if (!suggested) {
+    return null
   }
 
-  return (
-    <Badge color="gray" variant="outline">
-      Excluded by Assistant
-    </Badge>
-  )
+  return <Badge color="orange">Suggested</Badge>
 }
 
 interface HostRowProps {

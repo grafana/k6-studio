@@ -36,7 +36,7 @@ export function WizardShell({ onComplete }: WizardShellProps) {
   return (
     <Flex flexGrow="1" css={{ minHeight: 0 }}>
       <Stepper />
-      <Flex direction="column" flexGrow="1" css={{ minWidth: 0 }}>
+      <Flex direction="column" flexGrow="1" css={{ minWidth: 0, minHeight: 0 }}>
         <ActiveStep stepId={state.activeStep} onComplete={onComplete} />
       </Flex>
     </Flex>

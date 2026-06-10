@@ -11,7 +11,7 @@ import {
 import { useAssistantAgent } from '@/utils/assistant/useAssistantAgent'
 import { exhaustive } from '@/utils/typescript'
 
-import { useSetupWizard } from '../../state/SetupWizardContext'
+import { useSetupWizard, useStepState } from '../../state/SetupWizardContext'
 import { useStepAgentLifecycle } from '../useStepAgentLifecycle'
 
 import {
@@ -30,6 +30,7 @@ interface ThresholdProposal {
 
 export function useThresholdsAgent() {
   const { dispatch } = useSetupWizard()
+  const stepState = useStepState('thresholds')
   const requests = useGeneratorStore(selectFilteredRequests)
 
   const proposalsRef = useRef<ThresholdProposal[]>([])
@@ -156,7 +157,25 @@ export function useThresholdsAgent() {
     })
   }
 
+  // Re-running the step withdraws the previously committed thresholds.
+  function cleanupCommittedThresholds() {
+    if (
+      stepState.status !== 'completed' ||
+      stepState.result.step !== 'thresholds'
+    ) {
+      return
+    }
+
+    const committedIds = new Set(Object.keys(stepState.result.rationaleById))
+    const { thresholds, setThresholds } = useGeneratorStore.getState()
+
+    setThresholds(
+      thresholds.filter((threshold) => !committedIds.has(threshold.id))
+    )
+  }
+
   function restart() {
+    cleanupCommittedThresholds()
     agent.reset()
     start()
   }

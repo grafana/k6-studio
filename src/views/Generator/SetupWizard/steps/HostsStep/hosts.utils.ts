@@ -60,7 +60,8 @@ export function formatHostInventory(inventory: HostInventoryEntry[]): string {
 /**
  * Joins the agent's suggestions with the client-side inventory. Hosts the
  * agent omitted are kept (excluded by default) and invented hosts dropped, so
- * the result always covers exactly the hosts in the recording.
+ * the result always covers exactly the hosts in the recording. Suggested
+ * hosts sort first.
  */
 export function mergeHostSuggestions(
   inventory: HostInventoryEntry[],
@@ -70,25 +71,27 @@ export function mergeHostSuggestions(
     suggestions.map((suggestion) => [suggestion.host, suggestion])
   )
 
-  return inventory.map(({ host, requestCount }) => {
-    const suggestion = byHost.get(host)
+  return inventory
+    .map(({ host, requestCount }): HostSuggestion => {
+      const suggestion = byHost.get(host)
 
-    if (!suggestion) {
+      if (!suggestion) {
+        return {
+          host,
+          category: 'other',
+          suggested: false,
+          reason: 'Not classified by the Assistant.',
+          requestCount,
+        }
+      }
+
       return {
         host,
-        category: 'other',
-        suggested: false,
-        reason: 'Not classified by the Assistant.',
+        category: suggestion.category,
+        suggested: suggestion.include,
+        reason: suggestion.reason,
         requestCount,
       }
-    }
-
-    return {
-      host,
-      category: suggestion.category,
-      suggested: suggestion.include,
-      reason: suggestion.reason,
-      requestCount,
-    }
-  })
+    })
+    .sort((left, right) => Number(right.suggested) - Number(left.suggested))
 }

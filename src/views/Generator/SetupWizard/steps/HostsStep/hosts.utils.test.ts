@@ -64,51 +64,35 @@ describe('mergeHostSuggestions', () => {
     },
   ]
 
-  it('joins suggestions with request counts from the inventory', () => {
+  it('joins suggestions with request counts and sorts suggested hosts first', () => {
     const merged = mergeHostSuggestions(inventory, [
       {
         host: 'api.example.com',
         category: 'api',
+        include: false,
+        reason: 'Not under test.',
+      },
+      {
+        host: 'cdn.example.com',
+        category: 'cdn',
+        include: false,
+        reason: 'Static assets.',
+      },
+      {
+        host: 'fonts.gstatic.com',
+        category: 'other',
         include: true,
         reason: 'Primary backend.',
       },
-      {
-        host: 'cdn.example.com',
-        category: 'cdn',
-        include: false,
-        reason: 'Static assets.',
-      },
-      {
-        host: 'fonts.gstatic.com',
-        category: 'cdn',
-        include: false,
-        reason: 'External fonts.',
-      },
     ])
 
-    expect(merged).toEqual([
-      {
-        host: 'api.example.com',
-        category: 'api',
-        suggested: true,
-        reason: 'Primary backend.',
-        requestCount: 2,
-      },
-      {
-        host: 'cdn.example.com',
-        category: 'cdn',
-        suggested: false,
-        reason: 'Static assets.',
-        requestCount: 1,
-      },
-      {
-        host: 'fonts.gstatic.com',
-        category: 'cdn',
-        suggested: false,
-        reason: 'External fonts.',
-        requestCount: 1,
-      },
+    expect(merged.map((entry) => entry.host)).toEqual([
+      'fonts.gstatic.com',
+      'api.example.com',
+      'cdn.example.com',
     ])
+    expect(merged[0]).toMatchObject({ suggested: true, requestCount: 1 })
+    expect(merged[1]).toMatchObject({ suggested: false, requestCount: 2 })
   })
 
   it('backfills hosts the agent omitted as not suggested', () => {
