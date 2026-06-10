@@ -19,7 +19,11 @@ export function harToProxyData(har: Recording): ProxyData[] {
   })
 }
 
-function harEntryToRequest({ request, startedDateTime }: HarEntry): Request {
+function harEntryToRequest({
+  request,
+  startedDateTime,
+  time,
+}: HarEntry): Request {
   let content = request.postData?.text ?? ''
   const postDataParams = request.postData?.params
 
@@ -46,7 +50,12 @@ function harEntryToRequest({ request, startedDateTime }: HarEntry): Request {
     cookies: (request.cookies ?? []).map((c) => [c.name, c.value]),
     content,
     timestampStart: startedDateTime ? isoToUnixTimestamp(startedDateTime) : 0,
-    timestampEnd: 0,
+    // HAR stores the entry's total duration in ms; encode it as the request
+    // end so response-time stats survive the HAR round-trip.
+    timestampEnd:
+      startedDateTime && time > 0
+        ? isoToUnixTimestamp(startedDateTime) + time / 1000
+        : 0,
     scheme: url.protocol.replace(':', ''),
     host: url.hostname,
     path: url.pathname + url.search,
