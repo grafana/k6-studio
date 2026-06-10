@@ -81,6 +81,11 @@ IMPORTANT: Your reasoning is displayed to the user in a compact log. Maximum 1-2
 
 Do NOT parameterize values that are correlated session state (tokens or IDs extracted from earlier responses) - those are handled by correlation rules. Focus on a small number of high-signal values rather than parameterizing everything.
 
+## addParameter input constraints
+
+- value.type must be "string" (with a "value" field) or "customCode" (with a "code" field). Variables and data files are NOT valid proposals - the user can switch to them later.
+- A "json" selector always has from: "body". For values in the URL or query string use a "regex" or "begin-end" selector with from: "url"; for header values use from: "headers".
+
 ## Process
 
 1. Use getRequestsMetadata and searchRequests to find candidate requests, then getRequestDetails to inspect them.

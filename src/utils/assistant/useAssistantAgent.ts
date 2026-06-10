@@ -101,9 +101,26 @@ export function useAssistantAgent<TTools extends ToolSet>({
         type: 'tool-call' as const,
       } as StaticToolCall<TTools>
 
-      const output = await onToolCallRef.current(staticToolCall)
+      // A handler failure (e.g. the model sent input that fails zod
+      // validation) must still produce a tool output: throwing here would
+      // leave the assistant waiting for a response forever. Returning the
+      // error lets the model correct itself and retry.
+      let output: unknown
+      let didToolFail = false
+      try {
+        output = await onToolCallRef.current(staticToolCall)
+      } catch (toolError) {
+        console.error(toolError)
+        didToolFail = true
+        output = {
+          error:
+            toolError instanceof Error
+              ? toolError.message
+              : 'Tool execution failed',
+        }
+      }
 
-      if (toolCall.toolName === 'finish') {
+      if (toolCall.toolName === 'finish' && !didToolFail) {
         setStatusAndRef('completed')
       }
 

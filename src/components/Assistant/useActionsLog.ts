@@ -6,7 +6,9 @@ import type { ActionLogEntry } from './types'
 
 export function useActionsLog() {
   const [entries, setEntries] = useState<ActionLogEntry[]>([])
-  const startTimeRef = useRef(0)
+  // Initialized at mount so entries added before startTimer() still get
+  // sensible relative timestamps instead of epoch-based ones.
+  const startTimeRef = useRef(Date.now())
   const reasoningPartsRef = useRef(new Map<string, string>())
   const lastValidationEntryIdRef = useRef<string | null>(null)
 

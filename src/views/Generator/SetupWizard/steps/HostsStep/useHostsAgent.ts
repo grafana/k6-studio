@@ -139,14 +139,14 @@ export function useHostsAgent() {
     suggestionsRef.current = []
 
     dispatch({ type: 'stepRunStarted', stepId: 'hosts' })
+    // agent.start resets the log timer, so the entry goes in afterwards.
+    void agent.start(
+      `${systemPrompt}\n\nHost inventory:\n${formatHostInventory(inventory)}`
+    )
     actionsLog.addEntry({
       type: 'info',
       text: `Reading **${requests.length} requests** across **${inventory.length} hosts**`,
     })
-
-    void agent.start(
-      `${systemPrompt}\n\nHost inventory:\n${formatHostInventory(inventory)}`
-    )
   }
 
   function restart() {

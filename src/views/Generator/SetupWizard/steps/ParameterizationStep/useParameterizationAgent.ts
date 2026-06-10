@@ -120,12 +120,12 @@ export function useParameterizationAgent() {
   function start() {
     proposalsRef.current = []
     dispatch({ type: 'stepRunStarted', stepId: 'parameterization' })
+    // agent.start resets the log timer, so the entry goes in afterwards.
+    void agent.start(systemPrompt)
     actionsLog.addEntry({
       type: 'info',
       text: 'Scanning request bodies and query strings',
     })
-
-    void agent.start(systemPrompt)
   }
 
   function restart() {

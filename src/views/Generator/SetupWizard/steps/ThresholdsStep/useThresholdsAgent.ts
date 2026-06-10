@@ -146,14 +146,14 @@ export function useThresholdsAgent() {
     const stats = computeResponseTimeStats(requests)
 
     dispatch({ type: 'stepRunStarted', stepId: 'thresholds' })
+    // agent.start resets the log timer, so the entry goes in afterwards.
+    void agent.start(
+      `${systemPrompt}\n\nObserved statistics:\n${JSON.stringify(stats)}`
+    )
     actionsLog.addEntry({
       type: 'info',
       text: `Analyzing response times across **${stats.requestCount} requests**`,
     })
-
-    void agent.start(
-      `${systemPrompt}\n\nObserved statistics:\n${JSON.stringify(stats)}`
-    )
   }
 
   function restart() {

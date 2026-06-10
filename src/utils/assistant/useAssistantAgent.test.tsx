@@ -102,6 +102,47 @@ describe('useAssistantAgent', () => {
     })
   })
 
+  it('returns an error output instead of throwing when a handler fails', async () => {
+    const onToolCall = vi.fn().mockImplementation(() => {
+      throw new Error('invalid parameter input')
+    })
+    renderAgent(onToolCall)
+
+    await act(() =>
+      capturedOptions.onToolCall!({
+        toolCall: { toolName: 'doWork', toolCallId: 'call-1', input: {} },
+      })
+    )
+
+    expect(addToolOutput).toHaveBeenCalledWith({
+      tool: 'doWork',
+      toolCallId: 'call-1',
+      output: { error: 'invalid parameter input' },
+    })
+  })
+
+  it('does not complete when the finish handler fails', async () => {
+    const onToolCall = vi.fn().mockImplementation(() => {
+      throw new Error('boom')
+    })
+    const { result } = renderAgent(onToolCall)
+
+    act(() => {
+      void result.current.start('prompt')
+    })
+    await act(() =>
+      capturedOptions.onToolCall!({
+        toolCall: {
+          toolName: 'finish',
+          toolCallId: 'call-2',
+          input: { outcome: 'success' },
+        },
+      })
+    )
+
+    expect(result.current.status).toBe('running')
+  })
+
   it('ignores dynamic tool calls', async () => {
     const onToolCall = vi.fn()
     renderAgent(onToolCall)
