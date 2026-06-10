@@ -46,38 +46,6 @@ export function equal(a: string, b: string): boolean {
   return key(a) === key(b)
 }
 
-/**
- * A Map whose keys are automatically normalized via `path.key()`, so lookups
- * are case-insensitive on macOS and Windows regardless of how the caller
- * spells the path.
- */
-export class PathMap<V> extends Map<string, V> {
-  constructor(entries?: Iterable<readonly [string, V]> | null) {
-    super()
-    if (entries) {
-      for (const [k, v] of entries) {
-        this.set(key(k), v)
-      }
-    }
-  }
-
-  override get(k: string): V | undefined {
-    return super.get(key(k))
-  }
-
-  override set(k: string, v: V): this {
-    return super.set(key(k), v)
-  }
-
-  override has(k: string): boolean {
-    return super.has(key(k))
-  }
-
-  override delete(k: string): boolean {
-    return super.delete(key(k))
-  }
-}
-
 export {
   basename,
   delimiter,

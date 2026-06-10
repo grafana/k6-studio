@@ -5,7 +5,6 @@ import { EntryInfo, readdirp } from 'readdirp'
 import { deserializeGenerator } from '@/handlers/generator/serialization'
 import { readFile } from '@/utils/fs'
 import * as path from '@/utils/path'
-import { PathMap } from '@/utils/path'
 
 const INDEXED_EXTENSIONS = new Set([
   '.har',
@@ -17,10 +16,10 @@ const INDEXED_EXTENSIONS = new Set([
   '.ts',
 ])
 
-// generatorPath → set of referencedFilePaths (keys normalized via PathMap)
-const forwardIndex = new PathMap<Set<string>>()
-// referencedFilePath → set of generatorPaths that reference it (keys normalized via PathMap)
-const reverseIndex = new PathMap<Set<string>>()
+// path.key(generatorPath) → set of path.key(referencedFilePath)
+const forwardIndex = new Map<string, Set<string>>()
+// path.key(referencedFilePath) → set of path.key(generatorPath)
+const reverseIndex = new Map<string, Set<string>>()
 
 function extractReferences(generatorPath: string, data: string): string[] {
   const generator = deserializeGenerator(generatorPath, data)
@@ -50,7 +49,8 @@ function extractReferences(generatorPath: string, data: string): string[] {
 }
 
 function indexEntry(generatorPath: string, newReferences: string[]) {
-  const oldReferences = forwardIndex.get(generatorPath) ?? []
+  const generatorKey = path.key(generatorPath)
+  const oldReferences = forwardIndex.get(generatorKey) ?? []
 
   // Remove stale reverse-index entries
   for (const reference of oldReferences) {
@@ -60,7 +60,7 @@ function indexEntry(generatorPath: string, newReferences: string[]) {
       continue
     }
 
-    referencers.delete(path.key(generatorPath))
+    referencers.delete(generatorKey)
 
     if (referencers.size === 0) {
       reverseIndex.delete(reference)
@@ -68,22 +68,23 @@ function indexEntry(generatorPath: string, newReferences: string[]) {
   }
 
   if (newReferences.length === 0) {
-    forwardIndex.delete(generatorPath)
+    forwardIndex.delete(generatorKey)
 
     return
   }
 
-  forwardIndex.set(generatorPath, new Set(newReferences.map(path.key)))
+  forwardIndex.set(generatorKey, new Set(newReferences.map(path.key)))
 
   for (const ref of newReferences) {
-    let referencers = reverseIndex.get(ref)
+    const refKey = path.key(ref)
+    let referencers = reverseIndex.get(refKey)
 
     if (referencers === undefined) {
       referencers = new Set()
-      reverseIndex.set(ref, referencers)
+      reverseIndex.set(refKey, referencers)
     }
 
-    referencers.add(path.key(generatorPath))
+    referencers.add(generatorKey)
   }
 }
 
@@ -146,9 +147,10 @@ function get(filePath: string): {
   references: string[]
   referencedBy: string[]
 } {
+  const fileKey = path.key(filePath)
   return {
-    references: [...(forwardIndex.get(filePath) ?? [])],
-    referencedBy: [...(reverseIndex.get(filePath) ?? [])],
+    references: [...(forwardIndex.get(fileKey) ?? [])],
+    referencedBy: [...(reverseIndex.get(fileKey) ?? [])],
   }
 }
 
