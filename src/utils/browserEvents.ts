@@ -66,9 +66,11 @@ export function normalizeEntryNavigation(
     return events
   }
 
-  const triggeredByPreviousAction = events
-    .slice(0, entryIndex)
-    .some((event) => event.type === 'click' || event.type === 'submit-form')
+  // A click or form submission only triggers a navigation that immediately
+  // follows it, so only the directly preceding action can own this navigation.
+  const previous = events[entryIndex - 1]
+  const triggeredByPreviousAction =
+    previous?.type === 'click' || previous?.type === 'submit-form'
 
   if (triggeredByPreviousAction) {
     return events

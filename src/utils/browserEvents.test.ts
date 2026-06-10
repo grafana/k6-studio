@@ -154,6 +154,21 @@ describe('normalizeEntryNavigation', () => {
     expect(normalizeEntryNavigation(events)).toEqual(events)
   })
 
+  it('promotes when an earlier click triggered a different (internal) navigation', () => {
+    const events = [
+      click('tab1'),
+      implicitNavigate('tab1', 'chrome://new-tab-page/'),
+      implicitNavigate('tab1', 'https://github.com/'),
+    ]
+
+    const result = normalizeEntryNavigation(events)
+
+    expect(result[2]).toMatchObject({
+      url: 'https://github.com/',
+      source: 'address-bar',
+    })
+  })
+
   it('leaves an explicit entry navigation unchanged', () => {
     const events = [navigate('tab1', 'https://github.com/'), click('tab1')]
 
