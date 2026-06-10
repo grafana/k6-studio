@@ -16,10 +16,29 @@ const INDEXED_EXTENSIONS = new Set([
   '.ts',
 ])
 
-// path.key(generatorPath) → set of path.key(referencedFilePath)
-const forwardIndex = new Map<string, Set<string>>()
-// path.key(referencedFilePath) → set of path.key(generatorPath)
-const reverseIndex = new Map<string, Set<string>>()
+// Type aliases to make the code easier to understand.
+type ReferencingFile = string
+type ReferencedFile = string
+type OriginalPath = string
+
+// Using `path.key` normalizes the path to make comparisons easier across platforms, but we
+// still want to get the original path in order to e.g. display it to the user. To get the
+// origina path back we use a nested Map where the inner map is keyed by `path.key` and the
+// value is the original path. We then do two lookups using normalized paths.
+
+// A forward index that answers "which files is this file referencing?" If 'a' is referencing
+// 'b' and 'c' then the index for 'a' contains 'b' and 'c'.
+const referencesIndex = new Map<
+  ReferencingFile,
+  Map<ReferencedFile, OriginalPath>
+>()
+
+// A reverse index that answers "which files are referencing this file?" If 'a' is referencing
+// 'b' and 'c' then the index for 'b' and 'c' contains 'a'.
+const referencedByIndex = new Map<
+  ReferencedFile,
+  Map<ReferencingFile, OriginalPath>
+>()
 
 function extractReferences(generatorPath: string, data: string): string[] {
   const generator = deserializeGenerator(generatorPath, data)
@@ -48,43 +67,57 @@ function extractReferences(generatorPath: string, data: string): string[] {
   return references
 }
 
-function indexEntry(generatorPath: string, newReferences: string[]) {
-  const generatorKey = path.key(generatorPath)
-  const oldReferences = forwardIndex.get(generatorKey) ?? []
+function addToIndex(
+  indexFilePath: OriginalPath,
+  newReferences: OriginalPath[]
+) {
+  const indexedFileKey = path.key(indexFilePath)
+  const oldReferences = referencesIndex.get(indexedFileKey)
 
-  // Remove stale reverse-index entries
-  for (const reference of oldReferences) {
-    const referencers = reverseIndex.get(reference)
+  // First we make sure to remove all the old references in the reverse index, so if
+  // 'a' was is by 'b' and 'c' and 'b' is removed then the reverse index for 'a'
+  // only contains 'c'.
+  for (const refKey of oldReferences?.keys() ?? []) {
+    const referencers = referencedByIndex.get(refKey)
 
     if (referencers === undefined) {
       continue
     }
 
-    referencers.delete(generatorKey)
+    referencers.delete(indexedFileKey)
 
+    // If the file is no longer referenced by any file, remove it to avoid memory leaks.
     if (referencers.size === 0) {
-      reverseIndex.delete(reference)
+      referencedByIndex.delete(refKey)
     }
   }
 
+  // If the file is no longer referencing any files, remove it to avoid memory leaks.
   if (newReferences.length === 0) {
-    forwardIndex.delete(generatorKey)
+    referencesIndex.delete(indexedFileKey)
 
     return
   }
 
-  forwardIndex.set(generatorKey, new Set(newReferences.map(path.key)))
+  // Index the new references for the file in the forward index. The original path is keyed
+  // by the normalized path.
+  referencesIndex.set(
+    indexedFileKey,
+    new Map(newReferences.map((ref) => [path.key(ref), ref]))
+  )
 
-  for (const ref of newReferences) {
-    const refKey = path.key(ref)
-    let referencers = reverseIndex.get(refKey)
+  // Next we add the new references to the reverse index so that if 'a' is now referencing
+  // 'b' and 'c' then the reverse index for 'b' and 'c' contains 'a'.
+  for (const newRefKey of newReferences.map(path.key)) {
+    let referencers = referencedByIndex.get(newRefKey)
 
     if (referencers === undefined) {
-      referencers = new Set()
-      reverseIndex.set(refKey, referencers)
+      referencers = new Map<string, string>()
+      referencedByIndex.set(newRefKey, referencers)
     }
 
-    referencers.add(generatorKey)
+    // The original indexed path is keyed by the normalized path
+    referencers.set(indexedFileKey, indexFilePath)
   }
 }
 
@@ -97,16 +130,16 @@ async function add(filePath: string) {
     const data = await readFile(filePath, 'utf-8')
     const refs = extractReferences(filePath, data)
 
-    indexEntry(filePath, refs)
+    addToIndex(filePath, refs)
   } catch (err) {
     log.warn(`workspace: failed to index ${filePath}`, err)
 
-    indexEntry(filePath, [])
+    addToIndex(filePath, [])
   }
 }
 
 function remove(filePath: string) {
-  indexEntry(filePath, [])
+  addToIndex(filePath, [])
 }
 
 async function build(
@@ -149,8 +182,8 @@ function get(filePath: string): {
 } {
   const fileKey = path.key(filePath)
   return {
-    references: [...(forwardIndex.get(fileKey) ?? [])],
-    referencedBy: [...(reverseIndex.get(fileKey) ?? [])],
+    references: Array.from(referencesIndex.get(fileKey)?.values() ?? []),
+    referencedBy: Array.from(referencedByIndex.get(fileKey)?.values() ?? []),
   }
 }
 
