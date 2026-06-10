@@ -4,14 +4,38 @@ name: E2E Smoke
 # build/startup regressions release builds would miss.
 on:
   workflow_dispatch:
-  # TEMPORARY: runs the 4-OS matrix on this PR for first-time verification.
-  # Remove this trigger before merging -- workflow_dispatch is the intended
-  # long-term entry point.
+  # Run on PRs that touch packaging, startup, native deps, or the test harness
+  # itself -- the changes that can break a packaged build, which unit tests and
+  # `pnpm start` never exercise. Most PRs (UI, codegen) skip it. release-please
+  # release PRs bump package.json (releaseType: node), so they always match and
+  # the full matrix runs as the pre-release gate.
   pull_request:
     branches:
       - main
+    paths:
+      - 'forge.config.ts'
+      - 'windowsSign*.ts'
+      - 'entitlements.plist'
+      - 'vite.*.config.*'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'src/main.ts'
+      - 'src/main/**'
+      - 'src/preload.ts'
+      - 'scripts/install-k6.js'
+      - 'k6-versions.json'
+      - 'resources/**'
+      - 'playwright.config.ts'
+      - 'e2e/**'
+      - '.github/workflows/smoke.yml'
 
 permissions: {}
+
+# Supersede an in-flight run when a PR is updated, so rapid pushes (and the
+# frequently-updated release-please PR) don't stack redundant 4-OS matrices.
+concurrency:
+  group: smoke-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   smoke:
