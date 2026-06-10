@@ -53,6 +53,10 @@ export enum UsageEventName {
   ThresholdSuggestionFailed = 'threshold_suggestion_failed',
   ThresholdSuggestionAborted = 'threshold_suggestion_aborted',
   ThresholdSuggestionErrored = 'threshold_suggestion_errored',
+
+  TestSetupWizardOpened = 'test_setup_wizard_opened',
+  TestSetupWizardCompleted = 'test_setup_wizard_completed',
+  TestSetupWizardDismissed = 'test_setup_wizard_dismissed',
 }
 
 export interface UsageEventMetadata {
@@ -234,6 +238,19 @@ interface ThresholdSuggestionErroredEvent {
   event: UsageEventName.ThresholdSuggestionErrored
 }
 
+interface TestSetupWizardOpenedEvent {
+  event: UsageEventName.TestSetupWizardOpened
+}
+
+interface TestSetupWizardCompletedEvent {
+  event: UsageEventName.TestSetupWizardCompleted
+}
+
+/** The user chose the manual path instead of the guided setup. */
+interface TestSetupWizardDismissedEvent {
+  event: UsageEventName.TestSetupWizardDismissed
+}
+
 export type UsageEvent =
   | AppInstalledEvent
   | UserLoggedInEvent
@@ -272,5 +289,8 @@ export type UsageEvent =
   | ThresholdSuggestionFailedEvent
   | ThresholdSuggestionAbortedEvent
   | ThresholdSuggestionErroredEvent
+  | TestSetupWizardOpenedEvent
+  | TestSetupWizardCompletedEvent
+  | TestSetupWizardDismissedEvent
 
 export type UsageEventWithMetadata = UsageEvent & UsageEventMetadata

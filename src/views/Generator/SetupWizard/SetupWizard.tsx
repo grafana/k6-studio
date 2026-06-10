@@ -1,8 +1,10 @@
 import { Button, Text } from '@radix-ui/themes'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { View } from '@/components/Layout/View'
 import { getRoutePath, getViewPath } from '@/routeMap'
+import { UsageEventName } from '@/services/usageTracking/types'
 import { useGeneratorStore } from '@/store/generator'
 import { basename } from '@/utils/path'
 
@@ -11,9 +13,11 @@ import { useSetupWizard, SetupWizardProvider } from './state/SetupWizardContext'
 import { STEP_ORDER } from './state/types'
 import { WizardShell } from './WizardShell'
 
+export type SetupWizardOutcome = 'completed' | 'manual'
+
 interface SetupWizardProps {
   isLoading: boolean
-  onExit: () => void
+  onExit: (outcome: SetupWizardOutcome) => void
 }
 
 export function SetupWizard(props: SetupWizardProps) {
@@ -45,17 +49,27 @@ function SetupWizardBody({ onExit }: Pick<SetupWizardProps, 'onExit'>) {
   )
 
   const handleComplete = () => {
+    window.studio.app.trackEvent({
+      event: UsageEventName.TestSetupWizardCompleted,
+    })
     // Step 1 already committed an allowlist, so the generator should not
     // pop the host-selection dialog it shows for fresh recordings.
     setShowAllowlistDialog(false)
-    onExit()
+    onExit('completed')
+  }
+
+  const handleConfigureManually = () => {
+    window.studio.app.trackEvent({
+      event: UsageEventName.TestSetupWizardDismissed,
+    })
+    onExit('manual')
   }
 
   if (state.screen === 'choice') {
     return (
       <ChoiceScreen
         onStartGuidedSetup={() => dispatch({ type: 'startWizard' })}
-        onConfigureManually={onExit}
+        onConfigureManually={handleConfigureManually}
       />
     )
   }
@@ -66,6 +80,12 @@ function SetupWizardBody({ onExit }: Pick<SetupWizardProps, 'onExit'>) {
 function SetupWizardView({ isLoading, onExit }: SetupWizardProps) {
   const navigate = useNavigate()
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
+
+  useEffect(() => {
+    window.studio.app.trackEvent({
+      event: UsageEventName.TestSetupWizardOpened,
+    })
+  }, [])
 
   const handleCancel = () => {
     if (recordingPath === '') {

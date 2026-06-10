@@ -1,4 +1,6 @@
+import { Callout, IconButton } from '@radix-ui/themes'
 import log from 'electron-log/renderer'
+import { WandSparklesIcon, XIcon } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useBlocker, useNavigate, useSearchParams } from 'react-router-dom'
 
@@ -23,8 +25,29 @@ import {
 import { GeneratorControls } from './GeneratorControls'
 import { GeneratorTabs } from './GeneratorTabs'
 import { SetupWizard } from './SetupWizard'
+import { SetupWizardOutcome } from './SetupWizard/SetupWizard'
 import { TestRuleContainer } from './TestRuleContainer'
 import { UnsavedChangesDialog } from './UnsavedChangesDialog'
+
+function buildSetupSummary(store: {
+  allowlist: string[]
+  rules: Array<{ type: string }>
+  thresholds: unknown[]
+}): string {
+  const correlationCount = store.rules.filter(
+    (rule) => rule.type === 'correlation'
+  ).length
+  const parameterCount = store.rules.filter(
+    (rule) => rule.type === 'parameterization'
+  ).length
+
+  return [
+    `${store.allowlist.length} hosts`,
+    `${correlationCount} correlation rules`,
+    `${parameterCount} parameters`,
+    `${store.thresholds.length} thresholds`,
+  ].join(' · ')
+}
 
 interface GeneratorProps {
   file: StudioFile
@@ -39,6 +62,7 @@ export function Generator({ file, content }: GeneratorProps) {
 
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const [savedData, setSavedData] = useState<GeneratorFileData>(content.data)
+  const [setupSummary, setSetupSummary] = useState<string | null>(null)
 
   const setRecordingPath = useGeneratorStore((store) => store.setRecordingPath)
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
@@ -195,7 +219,11 @@ export function Generator({ file, content }: GeneratorProps) {
 
   // `replace` keeps the dirty blocker from firing on wizard-internal
   // navigation (it only blocks non-REPLACE history actions).
-  const handleExitSetupMode = () => {
+  const handleExitSetupMode = (outcome: SetupWizardOutcome) => {
+    if (outcome === 'completed') {
+      setSetupSummary(buildSetupSummary(useGeneratorStore.getState()))
+    }
+
     setSearchParams({}, { replace: true })
   }
 
@@ -237,6 +265,23 @@ export function Generator({ file, content }: GeneratorProps) {
       }
       loading={isLoading}
     >
+      {setupSummary !== null && (
+        <Callout.Root color="green" m="2" role="status">
+          <Callout.Icon>
+            <WandSparklesIcon size={16} />
+          </Callout.Icon>
+          <Callout.Text>Configured with Assistant: {setupSummary}</Callout.Text>
+          <IconButton
+            size="1"
+            variant="ghost"
+            color="gray"
+            aria-label="Dismiss"
+            onClick={() => setSetupSummary(null)}
+          >
+            <XIcon size={14} />
+          </IconButton>
+        </Callout.Root>
+      )}
       <Group {...sidebarLayout}>
         <Panel id="main" minSize={580}>
           <Group orientation="vertical" {...mainLayout}>
