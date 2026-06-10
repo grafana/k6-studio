@@ -1,6 +1,6 @@
 import log from 'electron-log/renderer'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useBlocker, useNavigate } from 'react-router-dom'
+import { useBlocker, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
@@ -22,6 +22,7 @@ import {
 } from './Generator.hooks'
 import { GeneratorControls } from './GeneratorControls'
 import { GeneratorTabs } from './GeneratorTabs'
+import { SetupWizard } from './SetupWizard'
 import { TestRuleContainer } from './TestRuleContainer'
 import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 
@@ -49,6 +50,9 @@ export function Generator({ file, content }: GeneratorProps) {
 
   const showToast = useToast()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const isSetupMode = searchParams.get('mode') === 'setup'
 
   const filePath = file.path
   const scriptPreview = useScriptPreview(filePath)
@@ -189,6 +193,30 @@ export function Generator({ file, content }: GeneratorProps) {
     blocker.reset?.()
   }
 
+  // `replace` keeps the dirty blocker from firing on wizard-internal
+  // navigation (it only blocks non-REPLACE history actions).
+  const handleExitSetupMode = () => {
+    setSearchParams({}, { replace: true })
+  }
+
+  const unsavedChangesDialog = (
+    <UnsavedChangesDialog
+      open={blocker.state === 'blocked' || (isAppClosing && isDirty)}
+      onSave={handleSaveGeneratorDialog}
+      onDiscard={handleDiscardGeneratorDialog}
+      onCancel={handleCancelGeneratorDialog}
+    />
+  )
+
+  if (isSetupMode) {
+    return (
+      <>
+        <SetupWizard isLoading={isLoading} onExit={handleExitSetupMode} />
+        {unsavedChangesDialog}
+      </>
+    )
+  }
+
   return (
     <View
       title="Generator"
@@ -239,12 +267,7 @@ export function Generator({ file, content }: GeneratorProps) {
           </>
         )}
       </Group>
-      <UnsavedChangesDialog
-        open={blocker.state === 'blocked' || (isAppClosing && isDirty)}
-        onSave={handleSaveGeneratorDialog}
-        onDiscard={handleDiscardGeneratorDialog}
-        onCancel={handleCancelGeneratorDialog}
-      />
+      {unsavedChangesDialog}
     </View>
   )
 }
