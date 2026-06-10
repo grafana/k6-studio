@@ -11,8 +11,6 @@ import os from 'node:os'
 import path from 'node:path'
 
 const EXECUTABLE_NAME = 'k6-studio'
-// Distinct from the recorder's CDP port (9222) and the dev server's (9223).
-const DEBUG_PORT = 9789
 
 // `electron-forge package` writes to `out/<productName>-<platform>-<arch>/`.
 // Resolve the executable for the current platform so tests run unchanged on
@@ -56,29 +54,51 @@ function resolvePackagedExecutable() {
   return path.join(baseDir, EXECUTABLE_NAME)
 }
 
-async function waitForDebugEndpoint(
-  timeoutMs: number,
+// Electron writes the actual remote-debugging port to DevToolsActivePort in the
+// user-data dir once the CDP server is listening. Reading it (rather than a
+// fixed port) ties the connection to the instance we spawned and avoids
+// colliding with any other Electron on the machine.
+function readDebugPort(userDataDir: string) {
+  const portFile = path.join(userDataDir, 'DevToolsActivePort')
+  if (!fs.existsSync(portFile)) {
+    return undefined
+  }
+  const port = Number(fs.readFileSync(portFile, 'utf8').split('\n')[0])
+  return Number.isInteger(port) && port > 0 ? port : undefined
+}
+
+interface DebugPortProbes {
   getStderr: () => string
+  getExit: () => string | undefined
+  getError: () => Error | undefined
+}
+
+async function waitForDebugPort(
+  userDataDir: string,
+  timeoutMs: number,
+  probes: DebugPortProbes
 ) {
   const deadline = Date.now() + timeoutMs
 
   while (Date.now() < deadline) {
-    try {
-      const response = await fetch(
-        `http://127.0.0.1:${DEBUG_PORT}/json/version`
-      )
-      if (response.ok) {
-        return
-      }
-    } catch {
-      // endpoint not up yet
+    const error = probes.getError()
+    if (error) {
+      throw new Error(`App failed to launch: ${error.message}`)
     }
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    const exit = probes.getExit()
+    if (exit) {
+      throw new Error(
+        `App exited before exposing CDP (${exit}). App stderr:\n${probes.getStderr()}`
+      )
+    }
+    const port = readDebugPort(userDataDir)
+    if (port !== undefined) {
+      return port
+    }
+    await new Promise((resolve) => setTimeout(resolve, 250))
   }
 
-  throw new Error(
-    `CDP endpoint never came up on port ${DEBUG_PORT}. App stderr:\n${getStderr()}`
-  )
+  throw new Error(`CDP port never came up. App stderr:\n${probes.getStderr()}`)
 }
 
 // Launches the packaged app and exposes its renderer window as a Page.
@@ -87,9 +107,10 @@ async function waitForDebugEndpoint(
 // `_electron.launch` (which attaches to it) cannot drive the packaged app.
 // Instead launch the real artifact with Chromium's remote debugging port -- a
 // switch fuses do not affect -- and connect over CDP. An isolated user-data dir
-// gives the app its own single-instance lock and a clean profile, otherwise the
-// lock collides with a running k6 Studio (e.g. a dev `pnpm start`) and the
-// second instance immediately quits.
+// is required for two reasons: it gives the app its own single-instance lock so
+// it does not collide with a running k6 Studio (e.g. a dev `pnpm start`, which
+// would make the second instance immediately quit), and it gives a known path
+// to read the chosen port from (<userDataDir>/DevToolsActivePort).
 export const test = base.extend<{ appWindow: Page }>({
   appWindow: async ({}, use) => {
     const executablePath = resolvePackagedExecutable()
@@ -100,10 +121,8 @@ export const test = base.extend<{ appWindow: Page }>({
     let app: ChildProcess | undefined
     let browser: Browser | undefined
 
-    const args = [
-      `--remote-debugging-port=${DEBUG_PORT}`,
-      `--user-data-dir=${userDataDir}`,
-    ]
+    // Port 0 lets Electron pick a free port, reported via DevToolsActivePort.
+    const args = ['--remote-debugging-port=0', `--user-data-dir=${userDataDir}`]
     // Ubuntu CI runners restrict unprivileged user namespaces (AppArmor), so
     // Electron's Chromium sandbox fails to start and the app never exposes the
     // debugging port. The smoke test only launches a throwaway packaged build,
@@ -116,32 +135,53 @@ export const test = base.extend<{ appWindow: Page }>({
       app = spawn(executablePath, args, {
         stdio: ['ignore', 'ignore', 'pipe'],
       })
+
       let stderr = ''
       app.stderr?.on('data', (chunk: Buffer) => {
         stderr += chunk.toString()
       })
+      // Capturing 'error' both surfaces spawn failures (missing/non-executable
+      // binary) and stops the unhandled event from crashing the test worker.
+      let spawnError: Error | undefined
+      app.on('error', (error) => {
+        spawnError = error
+      })
+      let exitInfo: string | undefined
+      app.on('exit', (code, signal) => {
+        exitInfo = `code=${code} signal=${signal ?? 'none'}`
+      })
 
-      await waitForDebugEndpoint(30_000, () => stderr)
+      const port = await waitForDebugPort(userDataDir, 30_000, {
+        getStderr: () => stderr,
+        getExit: () => exitInfo,
+        getError: () => spawnError,
+      })
 
-      browser = await chromium.connectOverCDP(`http://127.0.0.1:${DEBUG_PORT}`)
+      browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`)
       const context = browser.contexts()[0]
       if (!context) {
         throw new Error('No browser context exposed over CDP')
       }
-      const window =
-        context.pages().find((page) => !page.url().startsWith('devtools://')) ??
-        (await context.waitForEvent('page'))
+      const window = context
+        .pages()
+        .find((page) => !page.url().startsWith('devtools://'))
+      if (!window) {
+        throw new Error('No renderer page exposed over CDP')
+      }
 
       await use(window)
     } finally {
       // Kill the app even if browser.close() rejects (e.g. the packaged app
-      // already exited) -- otherwise an orphaned Electron keeps CDP bound to the
-      // port and breaks the next run.
+      // already exited), then remove the throwaway profile.
       try {
         await browser?.close()
       } finally {
         app?.kill('SIGKILL')
       }
+      // The profile dir is a throwaway under os.tmpdir() (OS-reaped; CI runners
+      // are ephemeral). We deliberately do not rmSync it -- SIGKILL is async and
+      // the dying helper processes keep writing to it, which races rmSync into
+      // ENOTEMPTY.
     }
   },
 })

@@ -17,6 +17,7 @@ jobs:
   smoke:
     permissions:
       contents: read
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:

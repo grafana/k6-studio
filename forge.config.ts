@@ -16,6 +16,11 @@ import { getPlatform, getArch } from './src/utils/electron'
 import { windowsSign } from './windowsSign'
 import { spawnSignFile } from './windowsSignHook'
 
+// Apple signing credentials are present only in release. Their absence marks a
+// creds-free build (e.g. the smoke-test workflow), which skips osxSign/notarize
+// and instead gets a deep ad-hoc signature from the postPackage hook.
+const hasAppleSigningCreds = Boolean(process.env.APPLE_API_KEY)
+
 function getPlatformSpecificResources() {
   // on mac we are using a single image to build both architectures so we
   // will need to include both binaries in the final package for it to work.
@@ -37,7 +42,7 @@ function getPostPackageHook() {
   // the binary after packaging, invalidating any earlier signature, so apply a
   // deep ad-hoc signature as the final step. Config hooks run after plugin hooks,
   // so this lands after the fuse flip. No-op off macOS or when releasing.
-  if (getPlatform() !== 'mac' || process.env.APPLE_API_KEY) {
+  if (getPlatform() !== 'mac' || hasAppleSigningCreds) {
     return undefined
   }
 
@@ -116,7 +121,7 @@ const config: ForgeConfig = {
     // builds skip this and get a deep ad-hoc signature from the postPackage hook
     // instead -- signing here as well would race the fuse flip and leave an
     // invalid signature the OS refuses to launch.
-    osxSign: process.env.APPLE_API_KEY
+    osxSign: hasAppleSigningCreds
       ? {
           optionsForFile: () => {
             return {
@@ -127,9 +132,9 @@ const config: ForgeConfig = {
       : undefined,
     // Notarization uploads to Apple and requires real credentials, so only run
     // it when they are present. Smoke builds skip it.
-    osxNotarize: process.env.APPLE_API_KEY
+    osxNotarize: hasAppleSigningCreds
       ? {
-          appleApiKey: process.env.APPLE_API_KEY,
+          appleApiKey: process.env.APPLE_API_KEY ?? '',
           appleApiKeyId: process.env.APPLE_API_KEY_ID ?? '',
           appleApiIssuer: process.env.APPLE_API_ISSUER ?? '',
         }
