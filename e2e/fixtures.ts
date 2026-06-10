@@ -56,7 +56,10 @@ function resolvePackagedExecutable() {
   return path.join(baseDir, EXECUTABLE_NAME)
 }
 
-async function waitForDebugEndpoint(timeoutMs: number) {
+async function waitForDebugEndpoint(
+  timeoutMs: number,
+  getStderr: () => string
+) {
   const deadline = Date.now() + timeoutMs
 
   while (Date.now() < deadline) {
@@ -73,7 +76,9 @@ async function waitForDebugEndpoint(timeoutMs: number) {
     await new Promise((resolve) => setTimeout(resolve, 500))
   }
 
-  throw new Error(`CDP endpoint never came up on port ${DEBUG_PORT}`)
+  throw new Error(
+    `CDP endpoint never came up on port ${DEBUG_PORT}. App stderr:\n${getStderr()}`
+  )
 }
 
 // Launches the packaged app and exposes its renderer window as a Page.
@@ -95,17 +100,28 @@ export const test = base.extend<{ appWindow: Page }>({
     let app: ChildProcess | undefined
     let browser: Browser | undefined
 
-    try {
-      app = spawn(
-        executablePath,
-        [
-          `--remote-debugging-port=${DEBUG_PORT}`,
-          `--user-data-dir=${userDataDir}`,
-        ],
-        { stdio: 'ignore' }
-      )
+    const args = [
+      `--remote-debugging-port=${DEBUG_PORT}`,
+      `--user-data-dir=${userDataDir}`,
+    ]
+    // Ubuntu CI runners restrict unprivileged user namespaces (AppArmor), so
+    // Electron's Chromium sandbox fails to start and the app never exposes the
+    // debugging port. The smoke test only launches a throwaway packaged build,
+    // so disabling the sandbox on Linux is safe.
+    if (process.platform === 'linux') {
+      args.push('--no-sandbox')
+    }
 
-      await waitForDebugEndpoint(30_000)
+    try {
+      app = spawn(executablePath, args, {
+        stdio: ['ignore', 'ignore', 'pipe'],
+      })
+      let stderr = ''
+      app.stderr?.on('data', (chunk: Buffer) => {
+        stderr += chunk.toString()
+      })
+
+      await waitForDebugEndpoint(30_000, () => stderr)
 
       browser = await chromium.connectOverCDP(`http://127.0.0.1:${DEBUG_PORT}`)
       const context = browser.contexts()[0]
@@ -118,8 +134,14 @@ export const test = base.extend<{ appWindow: Page }>({
 
       await use(window)
     } finally {
-      await browser?.close()
-      app?.kill('SIGKILL')
+      // Kill the app even if browser.close() rejects (e.g. the packaged app
+      // already exited) -- otherwise an orphaned Electron keeps CDP bound to the
+      // port and breaks the next run.
+      try {
+        await browser?.close()
+      } finally {
+        app?.kill('SIGKILL')
+      }
     }
   },
 })
