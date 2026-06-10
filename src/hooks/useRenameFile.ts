@@ -1,9 +1,11 @@
 import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 
+import { UpdateFileReferencesResult } from '@/handlers/workspace/types'
 import { useActiveFilePath } from '@/hooks/useCurrentFile'
 import { getViewPath } from '@/routeMap'
 import { useStudioUIStore } from '@/store/ui'
+import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 import * as path from '@/utils/path'
 
@@ -16,6 +18,7 @@ export interface RenameFileVariables {
 
 interface RenamedResult {
   renamed: true
+  updateResult?: UpdateFileReferencesResult
 }
 
 interface NotRenamedResult {
@@ -31,32 +34,76 @@ export function useRenameFile(file: StudioFile) {
   const navigate = useNavigate()
   const addFile = useStudioUIStore((state) => state.addFile)
   const removeFile = useStudioUIStore((state) => state.removeFile)
+  const showToast = useToast()
 
   return useMutation({
     mutationFn: async ({
       newName,
       onReferenced = 'block',
     }: RenameFileVariables): Promise<RenameFileResult> => {
-      if (onReferenced !== 'force') {
-        const { referencedBy } =
-          await window.studio.workspace.getFileReferences(file.path)
+      if (onReferenced === 'force') {
+        await window.studio.ui.renameFile(file, newName)
 
-        if (referencedBy.length > 0) {
-          if (onReferenced === 'update') {
-            throw new Error('onReferenced: update is not yet implemented')
-          }
-
-          return { renamed: false, references: referencedBy }
+        return {
+          renamed: true,
         }
       }
 
+      const { referencedBy } = await window.studio.workspace.getFileReferences(
+        file.path
+      )
+
+      if (referencedBy.length === 0) {
+        await window.studio.ui.renameFile(file, newName)
+
+        return {
+          renamed: true,
+        }
+      }
+
+      if (onReferenced === 'block') {
+        return {
+          renamed: false,
+          references: referencedBy,
+        }
+      }
+
+      // We do the file rename first because that might fail because a file with the new name might
+      // already exist. There's also a possibility that that we succeed in renaming the file but fail
+      // to update the references and, in that case, it's better that we notify the user and leave
+      // the file renamed. This is a convenience feature after all.
       await window.studio.ui.renameFile(file, newName)
 
-      return { renamed: true }
+      const updateResult = await window.studio.workspace.updateFileReferences({
+        oldPath: file.path,
+        newPath: path.join(path.dirname(file.path), newName),
+        referencingFiles: referencedBy,
+      })
+
+      return {
+        renamed: true,
+        updateResult,
+      }
     },
     onSuccess: (result, { newName }) => {
       if (!result.renamed) {
         return
+      }
+
+      if (result.updateResult) {
+        const { updated, failed } = result.updateResult
+
+        if (failed > 0) {
+          showToast({
+            title: `Updated ${updated} references. ${failed} failed. See logs for details.`,
+            status: 'error',
+          })
+        } else {
+          showToast({
+            title: `Updated references in ${updated} files`,
+            status: 'success',
+          })
+        }
       }
 
       // There's a slight delay between the add and remove callbacks being triggered,

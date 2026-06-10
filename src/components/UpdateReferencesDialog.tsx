@@ -52,9 +52,9 @@ export function UpdateReferencesDialog({
             </Button>
           </Dialog.Close>
           <Button variant="outline" color="red" onClick={onRename}>
-            Rename
+            Rename anyway
           </Button>
-          <Button onClick={onUpdateAndRename}>Update</Button>
+          <Button onClick={onUpdateAndRename}>Update files</Button>
         </Flex>
       </Dialog.Content>
     </Dialog.Root>
