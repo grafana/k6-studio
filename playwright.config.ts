@@ -7,5 +7,9 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   reporter: 'list',
-  timeout: 60_000,
+  // Per-test timeout covers fixture setup AND the test body. The appWindow
+  // fixture can wait up to 30s for the CDP port + 20s for the renderer, then the
+  // spec allows 20s for the first assertion (~70s worst case), so keep this
+  // comfortably above that ceiling to avoid cutting off a slow CI startup.
+  timeout: 120_000,
 })
