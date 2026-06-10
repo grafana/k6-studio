@@ -23,8 +23,8 @@ export function FileInUseDialog({
         <Dialog.Title>File is in use</Dialog.Title>
         <Flex direction="column" gap="3">
           <Text>
-            <Text weight="bold">{path.name(fileName)}</Text> is referenced by
-            the following files:
+            <Text weight="bold">{path.name(fileName)}</Text> is used by the
+            following files:
           </Text>
           <Flex direction="column" gap="1" pl="3">
             {references.map((filePath) => (
