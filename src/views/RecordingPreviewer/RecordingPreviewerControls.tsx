@@ -159,7 +159,7 @@ export function RecordingPreviewControls({
             icon={<MonitorIcon />}
             label="Browser test"
             description={browserTestDescription}
-            disabled={browserEvents.length === 0}
+            disabled={pages.length === 0}
             onSelect={handleBrowserTest}
           />
         </DropdownMenu.Content>
