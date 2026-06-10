@@ -1,135 +1,129 @@
 import { ContextMenu, DropdownMenu, IconButton } from '@radix-ui/themes'
 import { EllipsisIcon } from 'lucide-react'
-import { PropsWithChildren } from 'react'
+import { ReactNode, useState, useRef } from 'react'
 
 import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { StudioFile } from '@/types'
 
+import { FileInUseDialog } from '../FileInUseDialog'
+
+type MenuComponent = typeof DropdownMenu | typeof ContextMenu
+
+interface MenuComponentProps {
+  file: StudioFile
+  isSelected: boolean
+  children: ReactNode
+  onRename: () => void
+}
+
+function makeMenuComponent(
+  { Root, Trigger, Content, Separator, Item }: MenuComponent,
+  contentProps: ContextMenu.ContentProps | DropdownMenu.ContentProps = {}
+) {
+  return ({ file, isSelected, children, onRename }: MenuComponentProps) => {
+    const focusTriggerOnClose = useRef(true)
+
+    const [referencesToConfirm, setReferencesToConfirm] = useState<
+      string[] | null
+    >(null)
+
+    const deleteFile = useDeleteFile({
+      file,
+      navigateHomeOnDelete: isSelected,
+    })
+
+    const handleOpenChange = (open: boolean) => {
+      if (open) {
+        focusTriggerOnClose.current = true
+      }
+    }
+
+    const handleCloseAutoFocus = (event: Event) => {
+      if (!focusTriggerOnClose.current) {
+        event.preventDefault()
+      }
+    }
+
+    const handleRename = () => {
+      // When renaming a file the focus will move to the file name input. We need
+      // to block the trigger from steam the focus back when the menu closes.
+      focusTriggerOnClose.current = false
+
+      onRename()
+    }
+
+    const handleDeleteFile = async () => {
+      const result = await deleteFile()
+
+      if (result.deleted) {
+        return
+      }
+
+      setReferencesToConfirm(result.references)
+    }
+
+    const handleConfirmDelete = () => {
+      void deleteFile({ force: true })
+
+      setReferencesToConfirm(null)
+    }
+
+    const handleCancelDelete = () => {
+      setReferencesToConfirm(null)
+    }
+
+    const handleOpenFolder = () => {
+      window.studio.ui.openContainingFolder(file)
+    }
+
+    return (
+      <>
+        <Root onOpenChange={handleOpenChange}>
+          <Trigger>{children}</Trigger>
+          <Content onCloseAutoFocus={handleCloseAutoFocus} {...contentProps}>
+            <Item onSelect={handleRename}>Rename</Item>
+            <Item onSelect={handleOpenFolder}>Open containing folder</Item>
+            <Separator />
+            <Item color="red" onSelect={handleDeleteFile}>
+              Move to trash
+            </Item>
+          </Content>
+        </Root>
+        <FileInUseDialog
+          open={referencesToConfirm !== null}
+          filePath={file.path}
+          references={referencesToConfirm ?? []}
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+        />
+      </>
+    )
+  }
+}
+
 interface FileContextMenuProps {
   file: StudioFile
   isSelected: boolean
+  children: ReactNode
   onRename: () => void
 }
 
-export function FileContextMenu({
-  file,
-  children,
-  isSelected,
-  onRename,
-}: PropsWithChildren<FileContextMenuProps>) {
-  const items = useFileContextMenuItems({ file, isSelected, onRename })
+const ContextMenuComponent = makeMenuComponent(ContextMenu)
+const DropdownMenuComponent = makeMenuComponent(DropdownMenu, {
+  side: 'bottom',
+  align: 'end',
+})
 
+export function FileContextMenu(props: FileContextMenuProps) {
+  return <ContextMenuComponent {...props} />
+}
+
+export function FileActionsMenu(props: Omit<MenuComponentProps, 'children'>) {
   return (
-    <ContextMenu.Root>
-      <ContextMenu.Trigger>{children}</ContextMenu.Trigger>
-
-      <SharedFileMenuContent
-        items={items}
-        MenuContent={ContextMenu.Content}
-        MenuItemComponent={ContextMenu.Item}
-      />
-    </ContextMenu.Root>
-  )
-}
-
-export function FileActionsMenu({
-  file,
-  isSelected,
-  onRename,
-}: FileContextMenuProps) {
-  const items = useFileContextMenuItems({ file, isSelected, onRename })
-
-  return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger>
-        <IconButton variant="ghost" aria-label="Actions" color="gray" size="1">
-          <EllipsisIcon />
-        </IconButton>
-      </DropdownMenu.Trigger>
-
-      <SharedFileMenuContent
-        items={items}
-        MenuContent={DropdownMenu.Content}
-        MenuItemComponent={DropdownMenu.Item}
-      />
-    </DropdownMenu.Root>
-  )
-}
-
-interface UseFileContextMenuItemsArgs {
-  file: StudioFile
-  isSelected: boolean
-  onRename: () => void
-}
-
-function useFileContextMenuItems({
-  file,
-  isSelected,
-  onRename,
-}: UseFileContextMenuItemsArgs): FileContextMenuItem[] {
-  const handleOpenFolder = () => {
-    window.studio.ui.openContainingFolder(file)
-  }
-
-  const handleDelete = useDeleteFile({
-    file,
-    navigateHomeOnDelete: isSelected,
-  })
-
-  return [
-    { label: 'Rename', onClick: onRename },
-    { label: 'Open containing folder', onClick: handleOpenFolder },
-    { label: 'Move to Trash', destructive: true, onClick: handleDelete },
-  ]
-}
-
-type FileContextMenuItem = {
-  label: string
-  onClick: () => void | Promise<void>
-  destructive?: boolean
-}
-
-type MenuItemComponent = typeof ContextMenu.Item | typeof DropdownMenu.Item
-type MenuContentComponent =
-  | typeof ContextMenu.Content
-  | typeof DropdownMenu.Content
-
-interface SharedFileMenuContentProps {
-  items: FileContextMenuItem[]
-  MenuContent: MenuContentComponent
-  MenuItemComponent: MenuItemComponent
-}
-
-function SharedFileMenuContent({
-  items,
-  MenuContent,
-  MenuItemComponent,
-}: SharedFileMenuContentProps) {
-  return (
-    <MenuContent size="1">
-      {items.map((item) => (
-        <SharedMenuItem
-          key={item.label}
-          item={item}
-          MenuItemComponent={MenuItemComponent}
-        />
-      ))}
-    </MenuContent>
-  )
-}
-
-interface SharedMenuItemProps {
-  item: FileContextMenuItem
-  MenuItemComponent: MenuItemComponent
-}
-
-function SharedMenuItem({ item, MenuItemComponent }: SharedMenuItemProps) {
-  return (
-    <MenuItemComponent
-      color={item.destructive ? 'red' : undefined}
-      onClick={item.onClick}
-    >
-      {item.label}
-    </MenuItemComponent>
+    <DropdownMenuComponent {...props}>
+      <IconButton variant="ghost" aria-label="Actions" color="gray" size="1">
+        <EllipsisIcon />
+      </IconButton>
+    </DropdownMenuComponent>
   )
 }

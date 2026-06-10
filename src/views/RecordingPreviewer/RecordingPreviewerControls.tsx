@@ -5,11 +5,13 @@ import {
   MonitorIcon,
   ServerCogIcon,
 } from 'lucide-react'
+import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { emitScript } from '@/codegen/browser'
 import { convertEventsToActions } from '@/codegen/browser/convertEventsToActions'
 import { convertEventsToTest } from '@/codegen/browser/test'
+import { FileInUseDialog } from '@/components/FileInUseDialog'
 import { RichDropdownMenuItem } from '@/components/RichDropdownMenuItem'
 import { useCreateBrowserTest } from '@/hooks/useCreateBrowserTest'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
@@ -46,6 +48,10 @@ export function RecordingPreviewControls({
   )
   const createBrowserTest = useCreateBrowserTest()
 
+  const [referencesToConfirm, setReferencesToConfirm] = useState<
+    string[] | null
+  >(null)
+
   const handleCreateGenerator = () => createTestGenerator(file.path)
 
   const handleCreateBrowserTest = () => {
@@ -57,19 +63,39 @@ export function RecordingPreviewControls({
     ? 'Create a browser test from recorded interactions'
     : 'Export a k6 script simulating browser interactions'
 
-  const handleDelete = useDeleteFile({
+  const deleteFile = useDeleteFile({
     file,
     navigateHomeOnDelete: false,
   })
 
   const handleDiscardConfirm = () => {
-    handleDelete()
+    void deleteFile({ force: true })
+
     navigate(getRoutePath('recorder'))
   }
 
-  const handleDeleteRecordingConfirm = () => {
-    handleDelete()
+  const handleDelete = async () => {
+    const result = await deleteFile()
+
+    if (result.deleted) {
+      navigate(getRoutePath('home'))
+
+      return
+    }
+
+    setReferencesToConfirm(result.references)
+  }
+
+  const handleConfirmDelete = () => {
+    void deleteFile({ force: true })
+
     navigate(getRoutePath('home'))
+
+    setReferencesToConfirm(null)
+  }
+
+  const handleCancelDelete = () => {
+    setReferencesToConfirm(null)
   }
 
   const exportScript = useExportScript({
@@ -134,14 +160,18 @@ export function RecordingPreviewControls({
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DropdownMenu.Item
-            color="red"
-            onSelect={handleDeleteRecordingConfirm}
-          >
-            Move to Trash
+          <DropdownMenu.Item color="red" onSelect={handleDelete}>
+            Move to trash
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
+      <FileInUseDialog
+        open={referencesToConfirm !== null}
+        filePath={file.path}
+        references={referencesToConfirm ?? []}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </>
   )
 }
