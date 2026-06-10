@@ -1,0 +1,63 @@
+name: E2E Smoke
+
+# Packages the real artifact and launches it on every supported OS to catch
+# build/startup regressions release builds would miss.
+on:
+  workflow_dispatch:
+  # TEMPORARY: runs the 4-OS matrix on this PR for first-time verification.
+  # Remove this trigger before merging -- workflow_dispatch is the intended
+  # long-term entry point.
+  pull_request:
+    branches:
+      - main
+
+permissions: {}
+
+jobs:
+  smoke:
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        # Native arch per runner covers all four targets: macos-latest=Apple
+        # Silicon, macos-15-intel=Intel, windows-latest=x64, ubuntu-latest=Linux.
+        platform: [macos-latest, macos-15-intel, windows-latest, ubuntu-latest]
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          persist-credentials: false
+
+      - name: setup pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        with:
+          version: 11.5.2
+
+      - name: setup node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 24.11
+          cache: 'pnpm'
+
+      # postinstall downloads the k6 binary; the proxy binary is committed.
+      - name: install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # No signing credentials are set, so forge.config.ts ad-hoc signs on macOS
+      # (required for the arm64 app to launch) and skips notarization/Windows
+      # signing. `package` does not run makers, so no DMG/setuptools is needed.
+      - name: package app
+        env:
+          NODE_OPTIONS: '--max_old_space_size=8192'
+        run: pnpm package
+
+      # Linux runners are headless, so the app needs a virtual display.
+      - name: run smoke test (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a pnpm test:e2e
+
+      - name: run smoke test (macOS/Windows)
+        if: runner.os != 'Linux'
+        run: pnpm test:e2e

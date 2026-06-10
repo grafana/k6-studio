@@ -168,6 +168,15 @@
       "rules": {
         "no-restricted-imports": "off"
       }
+    },
+    {
+      "files": ["e2e/**"],
+      "rules": {
+        "no-restricted-imports": "off",
+        "no-empty-pattern": "off",
+        "react/rules-of-hooks": "off",
+        "react-hooks/rules-of-hooks": "off"
+      }
     }
   ]
 }
