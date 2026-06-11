@@ -6,8 +6,9 @@ import * as path from '@/utils/path'
 
 import { AppSettingsSchema } from '../schemas/settings'
 import { AppSettings } from '../types/settings'
+import { showOpenDialog } from '../utils/dialog'
 import { getPlatform } from '../utils/electron'
-import { exists, readFile, showOpenDialog, writeFile } from '../utils/fs'
+import { exists, readFile, writeFile } from '../utils/fs'
 import { safeJsonParse } from '../utils/json'
 import { getExecutableNameFromPlist } from '../utils/plist'
 

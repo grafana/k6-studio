@@ -18,10 +18,3 @@ export function saveGenerator(generator: GeneratorFileData, filePath: string) {
     filePath
   ) as Promise<void>
 }
-
-export function loadGenerator(filePath: string) {
-  return ipcRenderer.invoke(
-    GeneratorHandler.Open,
-    filePath
-  ) as Promise<GeneratorFileData>
-}

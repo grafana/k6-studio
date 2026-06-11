@@ -167,6 +167,7 @@ export class Page extends EventEmitter<PageEventMap> {
   /**
    * Convenience method to log page events for debugging purposes
    */
+  // oxlint-disable-next-line no-unused-private-class-members
   #trace() {
     const events: Array<keyof CdpPage.EventMap> = [
       'frameRequestedNavigation',

@@ -7,29 +7,26 @@ import {
 } from 'lucide-react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
-import { emitScript } from '@/codegen/browser'
 import { convertEventsToActions } from '@/codegen/browser/convertEventsToActions'
-import { convertEventsToTest } from '@/codegen/browser/test'
 import { RichDropdownMenuItem } from '@/components/RichDropdownMenuItem'
 import { useCreateBrowserTest } from '@/hooks/useCreateBrowserTest'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
-import { getRoutePath, getViewPath } from '@/routeMap'
+import { getRoutePath } from '@/routeMap'
 import { BrowserEvent } from '@/schemas/recording'
-import { useFeaturesStore } from '@/store/features'
-import { useToast } from '@/store/ui/useToast'
-import { StudioFile } from '@/types'
+import { ProxyData, StudioFile } from '@/types'
 
 interface RecordingPreviewControlsProps {
   file: StudioFile
+  requests: ProxyData[]
   browserEvents: BrowserEvent[]
 }
 
 export function RecordingPreviewControls({
   file,
+  requests,
   browserEvents,
 }: RecordingPreviewControlsProps) {
-  const showToast = useToast()
   const navigate = useNavigate()
   const createTestGenerator = useCreateGenerator()
 
@@ -40,9 +37,6 @@ export function RecordingPreviewControls({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const isDiscardable = Boolean(state?.discardable)
 
-  const isBrowserEditorEnabled = useFeaturesStore(
-    (state) => state.features['browser-test-editor']
-  )
   const createBrowserTest = useCreateBrowserTest()
 
   const handleCreateGenerator = () => createTestGenerator(file.path)
@@ -51,10 +45,6 @@ export function RecordingPreviewControls({
     const actions = convertEventsToActions(browserEvents)
     void createBrowserTest(actions)
   }
-
-  const browserTestDescription = isBrowserEditorEnabled
-    ? 'Create a browser test from recorded interactions'
-    : 'Export a k6 script simulating browser interactions'
 
   const handleDelete = useDeleteFile({
     file,
@@ -70,37 +60,6 @@ export function RecordingPreviewControls({
     handleDelete()
     navigate(getRoutePath('home'))
   }
-
-  const handleExportBrowserScript = async () => {
-    const test = convertEventsToTest({
-      browserEvents,
-    })
-
-    try {
-      const path = await window.studio.fs.showSaveAsDialog(
-        'my-browser-script.js'
-      )
-
-      if (path === undefined) {
-        return
-      }
-
-      const script = await emitScript(test)
-
-      await window.studio.script.saveScript(path, script)
-
-      navigate(getViewPath('script', path))
-    } catch (err) {
-      showToast({
-        title: 'Failed to export browser script.',
-        status: 'error',
-      })
-    }
-  }
-
-  const handleBrowserTest = isBrowserEditorEnabled
-    ? handleCreateBrowserTest
-    : handleExportBrowserScript
 
   return (
     <>
@@ -124,14 +83,15 @@ export function RecordingPreviewControls({
             icon={<ServerCogIcon />}
             label="HTTP test"
             description="Generate a k6 script from HTTP requests using rules"
-            onClick={handleCreateGenerator}
+            disabled={requests.length === 0}
+            onSelect={handleCreateGenerator}
           />
           <RichDropdownMenuItem
             icon={<MonitorIcon />}
             label="Browser test"
-            description={browserTestDescription}
+            description="Create a browser test from recorded interactions"
             disabled={browserEvents.length === 0}
-            onClick={handleBrowserTest}
+            onSelect={handleCreateBrowserTest}
           />
         </DropdownMenu.Content>
       </DropdownMenu.Root>
@@ -142,7 +102,10 @@ export function RecordingPreviewControls({
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DropdownMenu.Item color="red" onClick={handleDeleteRecordingConfirm}>
+          <DropdownMenu.Item
+            color="red"
+            onSelect={handleDeleteRecordingConfirm}
+          >
             Move to Trash
           </DropdownMenu.Item>
         </DropdownMenu.Content>

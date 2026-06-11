@@ -1,6 +1,13 @@
 import { BrowserEventTarget } from '@/schemas/recording'
 import { ElementRole, getElementRoles } from '@/utils/dom/aria'
 import { findAssociatedElement } from '@/utils/dom/dom'
+import {
+  isHTMLButtonElement,
+  isHTMLInputElement,
+  isHTMLLabelElement,
+  isHTMLSelectElement,
+  isHTMLTextAreaElement,
+} from '@/utils/dom/realm'
 import { getElementDetails } from '@/utils/dom/selectors'
 
 import { CheckAssertionData } from './assertions/types'
@@ -29,10 +36,10 @@ export function findAssociatedControl({
 }: TrackedElement): LabeledControl | null {
   // If the target is already a control, then we don't need to do a search.
   if (
-    element instanceof HTMLInputElement ||
-    element instanceof HTMLButtonElement ||
-    element instanceof HTMLSelectElement ||
-    element instanceof HTMLTextAreaElement
+    isHTMLInputElement(element) ||
+    isHTMLButtonElement(element) ||
+    isHTMLSelectElement(element) ||
+    isHTMLTextAreaElement(element)
   ) {
     return {
       element,
@@ -41,8 +48,8 @@ export function findAssociatedControl({
     }
   }
 
-  const label = [...getAncestors(element)].find(
-    (ancestor) => ancestor instanceof HTMLLabelElement
+  const label = [...getAncestors(element)].find((ancestor) =>
+    isHTMLLabelElement(ancestor)
   )
 
   if (label === undefined) {
@@ -65,7 +72,7 @@ export function findAssociatedControl({
 export function getCheckedState(
   element: Element
 ): CheckAssertionData['expected'] {
-  if (element instanceof HTMLInputElement) {
+  if (isHTMLInputElement(element)) {
     if (element.indeterminate) {
       return 'indeterminate'
     }
@@ -89,10 +96,7 @@ export function getCheckedState(
 }
 
 export function getTextBoxValue(element: Element): string {
-  if (
-    element instanceof HTMLInputElement ||
-    element instanceof HTMLTextAreaElement
-  ) {
+  if (isHTMLInputElement(element) || isHTMLTextAreaElement(element)) {
     return element.value
   }
 
@@ -106,7 +110,7 @@ export function isNative(role: ElementRole, element: Element) {
   // `.toHaveAttribute()`.
   if (
     role.role === 'switch' &&
-    element instanceof HTMLInputElement &&
+    isHTMLInputElement(element) &&
     element.type === 'checkbox'
   ) {
     return true

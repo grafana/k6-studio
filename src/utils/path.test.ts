@@ -1,11 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import * as path from './path'
-import type * as PathModule from './path'
 
 async function importPath(
   platform: 'win32' | 'linux' | 'darwin'
-): Promise<typeof PathModule> {
+): Promise<typeof path> {
   vi.resetModules()
   vi.stubGlobal('window', { studio: { platform } })
   vi.stubGlobal('process', { ...process, platform })

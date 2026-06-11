@@ -209,7 +209,7 @@ export function Recorder() {
         status: 'success',
       })
 
-      navigate(getViewPath('recording', fileName), {
+      navigate(getViewPath(fileName), {
         state: { discardable: true },
       })
     })

@@ -29,6 +29,7 @@ import { AnyBrowserAction } from '@/schemas/browserTest'
 
 import { EditableAction } from './EditableAction'
 import { EditableActionDragHandle } from './EditableActionDragHandle'
+import { useIsValidating } from './ValidationProvider'
 
 function noop() {}
 
@@ -46,7 +47,9 @@ export function SortableBrowserActionList({
   actions,
   onChange,
 }: SortableBrowserActionListProps) {
+  const isValidating = useIsValidating()
   const [active, setActive] = useState<AnyBrowserAction | null>(null)
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -86,7 +89,7 @@ export function SortableBrowserActionList({
   }
 
   return (
-    <Flex direction="column">
+    <Flex direction="column" inert={isValidating}>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}

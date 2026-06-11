@@ -3,8 +3,10 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
-import { defaultBrowserTestOptions } from '@/schemas/browserTest'
-import type { BrowserTestFile } from '@/schemas/browserTest'
+import {
+  defaultBrowserTestOptions,
+  type BrowserTestFile,
+} from '@/schemas/browserTest'
 import { createBrowserTestFile } from '@/test/factories/browserTest'
 import { getInitialStages } from '@/utils/generator'
 
@@ -144,7 +146,7 @@ describe('useBrowserTestState options round-trip', () => {
     )
   })
 
-  it('isDirty clears when saved options reload with reordered keys', () => {
+  it('isDirty clears when markAsSaved is called after options change', () => {
     const before: BrowserTestFile = {
       version: '1.0',
       actions: [],
@@ -153,10 +155,7 @@ describe('useBrowserTestState options round-trip', () => {
         loadProfile: { executor: 'shared-iterations' },
       },
     }
-    const { result, rerender } = renderHook(
-      ({ file }: { file: BrowserTestFile }) => useBrowserTestState(file),
-      { initialProps: { file: before } }
-    )
+    const { result } = renderHook(() => useBrowserTestState(before))
     act(() => {
       result.current.setTest((prev) => ({
         ...prev,
@@ -172,19 +171,13 @@ describe('useBrowserTestState options round-trip', () => {
     })
     expect(result.current.isDirty).toBe(true)
 
-    const after: BrowserTestFile = {
-      version: '1.0',
-      actions: [],
-      options: {
-        ...defaultBrowserTestOptions,
-        loadProfile: { executor: 'shared-iterations', vus: 5 },
-      },
-    }
-    rerender({ file: after })
+    act(() => {
+      result.current.markAsSaved()
+    })
     expect(result.current.isDirty).toBe(false)
   })
 
-  it('isDirty clears after reload strips ramping-only shadow fields from shared-iterations', () => {
+  it('isDirty clears after markAsSaved when switching executors and back', () => {
     const customStages = [
       { target: 10, duration: '2m' as const },
       { target: 30, duration: '4m' as const },
@@ -197,10 +190,7 @@ describe('useBrowserTestState options round-trip', () => {
         loadProfile: { executor: 'shared-iterations' },
       },
     }
-    const { result, rerender } = renderHook(
-      ({ file }: { file: BrowserTestFile }) => useBrowserTestState(file),
-      { initialProps: { file: before } }
-    )
+    const { result } = renderHook(() => useBrowserTestState(before))
 
     act(() => {
       result.current.setTest((prev) => ({
@@ -230,18 +220,9 @@ describe('useBrowserTestState options round-trip', () => {
     })
     expect(result.current.isDirty).toBe(true)
 
-    const after: BrowserTestFile = {
-      ...before,
-      options: {
-        ...defaultBrowserTestOptions,
-        loadProfile: {
-          executor: 'shared-iterations',
-          vus: 2,
-          iterations: 5,
-        },
-      },
-    }
-    rerender({ file: after })
+    act(() => {
+      result.current.markAsSaved()
+    })
     expect(result.current.isDirty).toBe(false)
   })
 

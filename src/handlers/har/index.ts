@@ -1,17 +1,16 @@
 import { ipcMain } from 'electron'
 
 import { RECORDINGS_PATH } from '@/constants/workspace'
-import { Recording, RecordingSchema } from '@/schemas/recording'
+import { Recording } from '@/schemas/recording'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
+import { showMessageBox, showOpenDialog, showSaveDialog } from '@/utils/dialog'
 import { browserWindowFromEvent } from '@/utils/electron'
 import {
   copyFile,
   createFileWithUniqueName,
-  readFile,
+  exists,
   writeFile,
-  showOpenDialog,
-  showSaveDialog,
 } from '@/utils/fs'
 import * as path from '@/utils/path'
 
@@ -35,24 +34,6 @@ export function initialize() {
       })
 
       return filePath
-    }
-  )
-
-  ipcMain.handle(
-    HarHandler.OpenFile,
-    async (_, filePath: string): Promise<Recording> => {
-      console.info(`${HarHandler.OpenFile} event received`)
-
-      const resolvedPath = path.isAbsolute(filePath)
-        ? filePath
-        : path.join(RECORDINGS_PATH, filePath)
-
-      const data = await readFile(resolvedPath, {
-        encoding: 'utf-8',
-        flag: 'r',
-      })
-
-      return RecordingSchema.parse(JSON.parse(data))
     }
   )
 
@@ -86,7 +67,7 @@ export function initialize() {
     const dialogResult = await showOpenDialog(browserWindow, {
       message: 'Import HAR file',
       properties: ['openFile'],
-      defaultPath: RECORDINGS_PATH,
+      buttonLabel: 'Import',
       filters: [{ name: 'HAR', extensions: ['har'] }],
     })
 
@@ -97,6 +78,20 @@ export function initialize() {
     }
 
     const destinationPath = path.join(RECORDINGS_PATH, path.basename(filePath))
+
+    if (await exists(destinationPath)) {
+      const { response } = await showMessageBox(browserWindow, {
+        type: 'warning',
+        buttons: ['Cancel', 'Overwrite'],
+        defaultId: 0,
+        cancelId: 0,
+        message: `"${path.basename(filePath)}" already exists. Do you want to overwrite it?`,
+      })
+
+      if (response === 0) {
+        return
+      }
+    }
 
     await copyFile(filePath, destinationPath)
 

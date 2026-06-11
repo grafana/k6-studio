@@ -10,38 +10,42 @@ import { TEMP_K6_ARCHIVE_PATH, TEMP_SCRIPT_SUFFIX } from '@/constants/workspace'
 import { ScriptHandler } from '@/handlers/script/types'
 import { getProxyArguments } from '@/main/proxy'
 import { ProxySettings } from '@/types/settings'
-import { createWriteStream, showOpenDialog } from '@/utils/fs'
+import { showOpenDialog } from '@/utils/dialog'
+import { createWriteStream } from '@/utils/fs'
 import { K6Client } from '@/utils/k6/client'
 import { createTrackingServer } from '@/utils/k6/tracking'
 import * as path from '@/utils/path'
 import { readResource } from '@/utils/resources'
 
 import {
-  instrumentScriptFromPath as instrumentScriptFromPath,
+  instrumentScriptFromPath,
   replaceModules,
 } from './runner/instrumentation'
 import { configureOptions, getDebugTarget } from './runner/utils'
 
 export type K6Process = ChildProcessWithoutNullStreams
 
+// Disable web security and site isolation so cross-origin (and nested) iframes
+// render in the same process, where the generated test's frameLocator chains can
+// reach them. The validator is authoring-only, so this matches the recorder.
+// K6_BROWSER_ARGS is split on every comma by k6, so each flag must be comma-free
+// (hence `disable-features=site-per-process` alone, not the recorder's
+// `IsolateOrigins,site-per-process`).
+const VALIDATOR_BROWSER_SECURITY_ARGS = [
+  'disable-web-security',
+  'disable-features=site-per-process',
+  'disable-site-isolation-trials',
+]
+
 const K6_TESTING_LIB_REGEX =
   /^https\/jslib\.k6\.io\/k6-testing\/\d+\.\d+\.\d+\/index\.js$/i
-
-const K6_TESTING_UNSUPPORTED_VERSIONS = new Set(
-  ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0', '0.6.0', '0.6.1'].map(
-    (version) => `https/jslib.k6.io/k6-testing/${version}/index.js`
-  )
-)
 
 function isSupportedTestingLibrary(path: string) {
   if (path === K6_TESTING_OVERRIDE.replace('://', '/')) {
     return true
   }
 
-  return (
-    K6_TESTING_LIB_REGEX.test(path) &&
-    !K6_TESTING_UNSUPPORTED_VERSIONS.has(path)
-  )
+  return K6_TESTING_LIB_REGEX.test(path)
 }
 
 const ArchiveManifestSchema = z.looseObject({
@@ -65,7 +69,7 @@ const ArchiveManifestSchema = z.looseObject({
 export const showScriptSelectDialog = async (browserWindow: BrowserWindow) => {
   const result = await showOpenDialog(browserWindow, {
     properties: ['openFile'],
-    filters: [{ name: 'k6 test script', extensions: ['js'] }],
+    filters: [{ name: 'k6 test script', extensions: ['js', 'ts'] }],
   })
 
   if (result.canceled) return
@@ -98,6 +102,7 @@ export const runScript = async ({
   const proxyArgs = await getProxyArguments(proxySettings, {
     prefix: '',
   })
+  const browserArgs = [...proxyArgs, ...VALIDATOR_BROWSER_SECURITY_ARGS]
 
   const trackingServer = await createTrackingServer()
 
@@ -129,7 +134,7 @@ export const runScript = async ({
       HTTPS_PROXY: `http://localhost:${proxySettings.port}`,
       NO_PROXY: 'jslib.k6.io',
       K6_TRACKING_SERVER_PORT: String(trackingServer?.port),
-      K6_BROWSER_ARGS: proxyArgs.join(','),
+      K6_BROWSER_ARGS: browserArgs.join(','),
       K6_TESTING_COLORIZE: 'false',
       ...(scenarioName ? { SCENARIO_NAME: scenarioName } : {}),
     },

@@ -4,24 +4,17 @@ import {
   ChokidarOptions,
   watch as chokidarWatch,
 } from 'chokidar'
-import {
-  BrowserWindow,
-  dialog,
-  OpenDialogOptions,
-  OpenDialogReturnValue,
-  SaveDialogOptions,
-  SaveDialogReturnValue,
-} from 'electron'
 import { PathLike } from 'fs'
 import { access, writeFile } from 'fs/promises'
 import * as fs from 'fs/promises'
 
+import { formatLocalDate } from './date'
 import { EventEmitter } from './events'
 import * as path from './path'
-import { normalize, toNativePath } from './path'
+import { normalize } from './path'
 import { isNodeJsErrnoException } from './typescript'
 
-export { createWriteStream } from 'fs'
+export { createWriteStream, readFileSync } from 'fs'
 export {
   copyFile,
   readFile,
@@ -78,7 +71,7 @@ export async function createFileWithUniqueName({
   prefix: string
   ext: string
 }): Promise<string> {
-  const timestamp = new Date().toISOString().split('T')[0] ?? ''
+  const timestamp = formatLocalDate(new Date())
   const template = `${prefix ? `${prefix} - ` : ''}${timestamp}${ext}`
 
   // Start from 2 as it follows the the OS behavior for duplicate files
@@ -150,50 +143,4 @@ export function watch(
   options?: ChokidarOptions
 ): FSWatcher {
   return new FSWatcher(paths, options)
-}
-
-type ExtendedOpenDialogOptions = OpenDialogOptions & {
-  useNativePaths?: boolean
-}
-
-export async function showOpenDialog(
-  browserWindow: BrowserWindow,
-  { useNativePaths = false, ...dialogOptions }: ExtendedOpenDialogOptions
-): Promise<OpenDialogReturnValue> {
-  const nativeOptions = {
-    ...dialogOptions,
-    ...(dialogOptions.defaultPath && {
-      defaultPath: toNativePath(dialogOptions.defaultPath),
-    }),
-  }
-
-  const result = await dialog.showOpenDialog(browserWindow, nativeOptions)
-
-  if (useNativePaths) {
-    return result
-  }
-
-  return {
-    ...result,
-    filePaths: result.filePaths.map(normalize),
-  }
-}
-
-export async function showSaveDialog(
-  browserWindow: BrowserWindow,
-  options: SaveDialogOptions
-): Promise<SaveDialogReturnValue> {
-  const nativeOptions = {
-    ...options,
-    ...(options.defaultPath && {
-      defaultPath: toNativePath(options.defaultPath),
-    }),
-  }
-
-  const result = await dialog.showSaveDialog(browserWindow, nativeOptions)
-
-  return {
-    ...result,
-    filePath: result.filePath ? normalize(result.filePath) : result.filePath,
-  }
 }

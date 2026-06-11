@@ -7,9 +7,7 @@ export function useListenBrowserEvent() {
 
   useEffect(() => {
     return window.studio.browser.onBrowserEvent((events: BrowserEvent[]) => {
-      console.log('Received browser events', events)
-
-      setEvents((prevEvents) => [...prevEvents, ...events])
+      setEvents(events)
     })
   }, [])
 

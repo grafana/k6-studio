@@ -26,7 +26,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
         traverse(node.key, visitor)
 
         node.decorators.forEach((node) => traverse(node, visitor))
-        node.typeAnnotation && traverse(node.typeAnnotation, visitor)
+        if (node.typeAnnotation) {
+          traverse(node.typeAnnotation, visitor)
+        }
 
         visitor[NodeType.AccessorProperty]?.(node)
       })
@@ -34,7 +36,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
     case NodeType.ArrayExpression:
       return visit(node, (node) => {
         node.elements.forEach((node) => {
-          node && traverse(node, visitor)
+          if (node) {
+            traverse(node, visitor)
+          }
         })
 
         visitor[NodeType.ArrayExpression]?.(node)
@@ -43,7 +47,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
     case NodeType.ArrayPattern:
       return visit(node, (node) => {
         node.elements.forEach((node) => {
-          node && traverse(node, visitor)
+          if (node) {
+            traverse(node, visitor)
+          }
         })
 
         node.decorators.forEach((node) => traverse(node, visitor))
@@ -57,8 +63,12 @@ export function traverse(node: ts.Node, visitor: Visitor) {
 
         traverse(node.body, visitor)
 
-        node.returnType && traverse(node.returnType, visitor)
-        node.typeParameters && traverse(node.typeParameters, visitor)
+        if (node.returnType) {
+          traverse(node.returnType, visitor)
+        }
+        if (node.typeParameters) {
+          traverse(node.typeParameters, visitor)
+        }
 
         visitor[NodeType.ArrowFunctionExpression]?.(node)
       })
@@ -77,7 +87,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
         traverse(node.right, visitor)
 
         node.decorators.forEach((node) => traverse(node, visitor))
-        node.typeAnnotation && traverse(node.typeAnnotation, visitor)
+        if (node.typeAnnotation) {
+          traverse(node.typeAnnotation, visitor)
+        }
 
         visitor[NodeType.AssignmentPattern]?.(node)
       })
@@ -114,14 +126,18 @@ export function traverse(node: ts.Node, visitor: Visitor) {
         traverse(node.callee, visitor)
         node.arguments.forEach((node) => traverse(node, visitor))
 
-        node.typeArguments && traverse(node.typeArguments, visitor)
+        if (node.typeArguments) {
+          traverse(node.typeArguments, visitor)
+        }
 
         visitor[NodeType.CallExpression]?.(node)
       })
 
     case NodeType.CatchClause:
       return visit(node, (node) => {
-        node.param && traverse(node.param, visitor)
+        if (node.param) {
+          traverse(node.param, visitor)
+        }
 
         traverse(node.body, visitor)
 
@@ -144,36 +160,54 @@ export function traverse(node: ts.Node, visitor: Visitor) {
 
     case NodeType.ClassDeclaration:
       return visit(node, (node) => {
-        node.id && traverse(node.id, visitor)
-        node.superClass && traverse(node.superClass, visitor)
+        if (node.id) {
+          traverse(node.id, visitor)
+        }
+        if (node.superClass) {
+          traverse(node.superClass, visitor)
+        }
 
         traverse(node.body, visitor)
 
         node.decorators.forEach((node) => traverse(node, visitor))
 
-        node.implements &&
+        if (node.implements) {
           node.implements.forEach((node) => traverse(node, visitor))
+        }
 
-        node.typeParameters && traverse(node.typeParameters, visitor)
-        node.superTypeArguments && traverse(node.superTypeArguments, visitor)
+        if (node.typeParameters) {
+          traverse(node.typeParameters, visitor)
+        }
+        if (node.superTypeArguments) {
+          traverse(node.superTypeArguments, visitor)
+        }
 
         visitor[NodeType.ClassDeclaration]?.(node)
       })
 
     case NodeType.ClassExpression:
       return visit(node, (node) => {
-        node.id && traverse(node.id, visitor)
-        node.superClass && traverse
+        if (node.id) {
+          traverse(node.id, visitor)
+        }
+        if (node.superClass) {
+          traverse(node.superClass, visitor)
+        }
 
         traverse(node.body, visitor)
 
         node.decorators.forEach((node) => traverse(node, visitor))
 
-        node.implements &&
+        if (node.implements) {
           node.implements.forEach((node) => traverse(node, visitor))
+        }
 
-        node.typeParameters && traverse(node.typeParameters, visitor)
-        node.superTypeArguments && traverse(node.superTypeArguments, visitor)
+        if (node.typeParameters) {
+          traverse(node.typeParameters, visitor)
+        }
+        if (node.superTypeArguments) {
+          traverse(node.superTypeArguments, visitor)
+        }
 
         visitor[NodeType.ClassExpression]?.(node)
       })
@@ -189,7 +223,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
 
     case NodeType.ContinueStatement:
       return visit(node, (node) => {
-        node.label && traverse(node.label, visitor)
+        if (node.label) {
+          traverse(node.label, visitor)
+        }
 
         visitor[NodeType.ContinueStatement]?.(node)
       })
@@ -220,7 +256,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         traverse(node.source, visitor)
 
-        node.exported && traverse(node.exported, visitor)
+        if (node.exported) {
+          traverse(node.exported, visitor)
+        }
 
         node.attributes.forEach((node) => traverse(node, visitor))
         node.assertions.forEach((node) => traverse(node, visitor))
@@ -237,8 +275,12 @@ export function traverse(node: ts.Node, visitor: Visitor) {
 
     case NodeType.ExportNamedDeclaration:
       return visit(node, (node) => {
-        node.source && traverse(node.source, visitor)
-        node.declaration && traverse(node.declaration, visitor)
+        if (node.source) {
+          traverse(node.source, visitor)
+        }
+        if (node.declaration) {
+          traverse(node.declaration, visitor)
+        }
         node.specifiers.forEach((node) => traverse(node, visitor))
 
         node.attributes.forEach((node) => traverse(node, visitor))
@@ -284,9 +326,15 @@ export function traverse(node: ts.Node, visitor: Visitor) {
 
     case NodeType.ForStatement:
       return visit(node, (node) => {
-        node.init && traverse(node.init, visitor)
-        node.test && traverse(node.test, visitor)
-        node.update && traverse(node.update, visitor)
+        if (node.init) {
+          traverse(node.init, visitor)
+        }
+        if (node.test) {
+          traverse(node.test, visitor)
+        }
+        if (node.update) {
+          traverse(node.update, visitor)
+        }
 
         traverse(node.body, visitor)
 
@@ -295,26 +343,38 @@ export function traverse(node: ts.Node, visitor: Visitor) {
 
     case NodeType.FunctionDeclaration:
       return visit(node, (node) => {
-        node.id && traverse(node.id, visitor)
+        if (node.id) {
+          traverse(node.id, visitor)
+        }
         node.params.forEach((node) => traverse(node, visitor))
 
         traverse(node.body, visitor)
 
-        node.returnType && traverse(node.returnType, visitor)
-        node.typeParameters && traverse(node.typeParameters, visitor)
+        if (node.returnType) {
+          traverse(node.returnType, visitor)
+        }
+        if (node.typeParameters) {
+          traverse(node.typeParameters, visitor)
+        }
 
         visitor[NodeType.FunctionDeclaration]?.(node)
       })
 
     case NodeType.FunctionExpression:
       return visit(node, (node) => {
-        node.id && traverse(node.id, visitor)
+        if (node.id) {
+          traverse(node.id, visitor)
+        }
         node.params.forEach((node) => traverse(node, visitor))
 
         traverse(node.body, visitor)
 
-        node.returnType && traverse(node.returnType, visitor)
-        node.typeParameters && traverse(node.typeParameters, visitor)
+        if (node.returnType) {
+          traverse(node.returnType, visitor)
+        }
+        if (node.typeParameters) {
+          traverse(node.typeParameters, visitor)
+        }
 
         visitor[NodeType.FunctionExpression]?.(node)
       })
@@ -328,7 +388,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         traverse(node.test, visitor)
         traverse(node.consequent, visitor)
-        node.alternate && traverse(node.alternate, visitor)
+        if (node.alternate) {
+          traverse(node.alternate, visitor)
+        }
 
         visitor[NodeType.IfStatement]?.(node)
       })
@@ -363,8 +425,12 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         traverse(node.source, visitor)
 
-        node.options && traverse(node.options, visitor)
-        node.attributes && traverse(node.attributes, visitor)
+        if (node.options) {
+          traverse(node.options, visitor)
+        }
+        if (node.attributes) {
+          traverse(node.attributes, visitor)
+        }
 
         visitor[NodeType.ImportExpression]?.(node)
       })
@@ -387,7 +453,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
     case NodeType.JSXAttribute:
       return visit(node, (node) => {
         traverse(node.name, visitor)
-        node.value && traverse(node.value, visitor)
+        if (node.value) {
+          traverse(node.value, visitor)
+        }
 
         visitor[NodeType.JSXAttribute]?.(node)
       })
@@ -410,7 +478,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
 
         node.children.forEach((node) => traverse(node, visitor))
 
-        node.closingElement && traverse(node.closingElement, visitor)
+        if (node.closingElement) {
+          traverse(node.closingElement, visitor)
+        }
 
         visitor[NodeType.JSXElement]?.(node)
       })
@@ -462,7 +532,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
 
         node.attributes.forEach((node) => traverse(node, visitor))
 
-        node.typeArguments && traverse(node.typeArguments, visitor)
+        if (node.typeArguments) {
+          traverse(node.typeArguments, visitor)
+        }
 
         visitor[NodeType.JSXOpeningElement]?.(node)
       })
@@ -542,7 +614,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
         traverse(node.callee, visitor)
 
         node.arguments.forEach((node) => traverse(node, visitor))
-        node.typeArguments && traverse(node.typeArguments, visitor)
+        if (node.typeArguments) {
+          traverse(node.typeArguments, visitor)
+        }
 
         visitor[NodeType.NewExpression]?.(node)
       })
@@ -559,7 +633,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
         node.properties.forEach((node) => traverse(node, visitor))
 
         node.decorators.forEach((node) => traverse(node, visitor))
-        node.typeAnnotation && traverse(node.typeAnnotation, visitor)
+        if (node.typeAnnotation) {
+          traverse(node.typeAnnotation, visitor)
+        }
 
         visitor[NodeType.ObjectPattern]?.(node)
       })
@@ -587,10 +663,14 @@ export function traverse(node: ts.Node, visitor: Visitor) {
     case NodeType.PropertyDefinition:
       return visit(node, (node) => {
         traverse(node.key, visitor)
-        node.value && traverse(node.value, visitor)
+        if (node.value) {
+          traverse(node.value, visitor)
+        }
 
         node.decorators.forEach((node) => traverse(node, visitor))
-        node.typeAnnotation && traverse(node.typeAnnotation, visitor)
+        if (node.typeAnnotation) {
+          traverse(node.typeAnnotation, visitor)
+        }
 
         visitor[NodeType.PropertyDefinition]?.(node)
       })
@@ -600,14 +680,18 @@ export function traverse(node: ts.Node, visitor: Visitor) {
         traverse(node.argument, visitor)
 
         node.decorators.forEach((node) => traverse(node, visitor))
-        node.typeAnnotation && traverse(node.typeAnnotation, visitor)
+        if (node.typeAnnotation) {
+          traverse(node.typeAnnotation, visitor)
+        }
 
         visitor[NodeType.RestElement]?.(node)
       })
 
     case NodeType.ReturnStatement:
       return visit(node, (node) => {
-        node.argument && traverse(node.argument, visitor)
+        if (node.argument) {
+          traverse(node.argument, visitor)
+        }
 
         visitor[NodeType.ReturnStatement]?.(node)
       })
@@ -640,7 +724,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
 
     case NodeType.SwitchCase:
       return visit(node, (node) => {
-        node.test && traverse(node.test, visitor)
+        if (node.test) {
+          traverse(node.test, visitor)
+        }
         node.consequent.forEach((node) => traverse(node, visitor))
 
         visitor[NodeType.SwitchCase]?.(node)
@@ -659,7 +745,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
         traverse(node.tag, visitor)
         traverse(node.quasi, visitor)
 
-        node.typeArguments && traverse(node.typeArguments, visitor)
+        if (node.typeArguments) {
+          traverse(node.typeArguments, visitor)
+        }
         visitor[NodeType.TaggedTemplateExpression]?.(node)
       })
 
@@ -692,8 +780,12 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         traverse(node.block, visitor)
 
-        node.handler && traverse(node.handler, visitor)
-        node.finalizer && traverse(node.finalizer, visitor)
+        if (node.handler) {
+          traverse(node.handler, visitor)
+        }
+        if (node.finalizer) {
+          traverse(node.finalizer, visitor)
+        }
 
         visitor[NodeType.TryStatement]?.(node)
       })
@@ -723,7 +815,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         traverse(node.id, visitor)
 
-        node.init && traverse(node.init, visitor)
+        if (node.init) {
+          traverse(node.init, visitor)
+        }
 
         visitor[NodeType.VariableDeclarator]?.(node)
       })
@@ -746,7 +840,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
 
     case NodeType.YieldExpression:
       return visit(node, (node) => {
-        node.argument && traverse(node.argument, visitor)
+        if (node.argument) {
+          traverse(node.argument, visitor)
+        }
 
         visitor[NodeType.YieldExpression]?.(node)
       })
@@ -756,7 +852,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
         traverse(node.key, visitor)
 
         node.decorators.forEach((node) => traverse(node, visitor))
-        node.typeAnnotation && traverse(node.typeAnnotation, visitor)
+        if (node.typeAnnotation) {
+          traverse(node.typeAnnotation, visitor)
+        }
 
         visitor[NodeType.TSAbstractAccessorProperty]?.(node)
       })
@@ -781,7 +879,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
         traverse(node.key, visitor)
 
         node.decorators.forEach((node) => traverse(node, visitor))
-        node.typeAnnotation && traverse(node.typeAnnotation, visitor)
+        if (node.typeAnnotation) {
+          traverse(node.typeAnnotation, visitor)
+        }
 
         visitor[NodeType.TSAbstractPropertyDefinition]?.(node)
       })
@@ -793,7 +893,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
 
     case NodeType.TSArrayType:
       return visit(node, (node) => {
-        node.elementType && traverse(node.elementType, visitor)
+        if (node.elementType) {
+          traverse(node.elementType, visitor)
+        }
 
         visitor[NodeType.TSArrayType]?.(node)
       })
@@ -825,8 +927,12 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         node.params.forEach((node) => traverse(node, visitor))
 
-        node.typeParameters && traverse(node.typeParameters, visitor)
-        node.returnType && traverse(node.returnType, visitor)
+        if (node.typeParameters) {
+          traverse(node.typeParameters, visitor)
+        }
+        if (node.returnType) {
+          traverse(node.returnType, visitor)
+        }
 
         visitor[NodeType.TSCallSignatureDeclaration]?.(node)
       })
@@ -835,7 +941,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         traverse(node.expression, visitor)
 
-        node.typeArguments && traverse(node.typeArguments, visitor)
+        if (node.typeArguments) {
+          traverse(node.typeArguments, visitor)
+        }
 
         visitor[NodeType.TSClassImplements]?.(node)
       })
@@ -854,8 +962,12 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         node.params.forEach((node) => traverse(node, visitor))
 
-        node.typeParameters && traverse(node.typeParameters, visitor)
-        node.returnType && traverse(node.returnType, visitor)
+        if (node.typeParameters) {
+          traverse(node.typeParameters, visitor)
+        }
+        if (node.returnType) {
+          traverse(node.returnType, visitor)
+        }
 
         visitor[NodeType.TSConstructorType]?.(node)
       })
@@ -864,19 +976,29 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         node.params.forEach((node) => traverse(node, visitor))
 
-        node.typeParameters && traverse(node.typeParameters, visitor)
-        node.returnType && traverse(node.returnType, visitor)
+        if (node.typeParameters) {
+          traverse(node.typeParameters, visitor)
+        }
+        if (node.returnType) {
+          traverse(node.returnType, visitor)
+        }
 
         visitor[NodeType.TSConstructSignatureDeclaration]?.(node)
       })
 
     case NodeType.TSDeclareFunction:
       return visit(node, (node) => {
-        node.id && traverse(node.id, visitor)
+        if (node.id) {
+          traverse(node.id, visitor)
+        }
         node.params.forEach((node) => traverse(node, visitor))
 
-        node.typeParameters && traverse(node.typeParameters, visitor)
-        node.returnType && traverse(node.returnType, visitor)
+        if (node.typeParameters) {
+          traverse(node.typeParameters, visitor)
+        }
+        if (node.returnType) {
+          traverse(node.returnType, visitor)
+        }
 
         visitor[NodeType.TSDeclareFunction]?.(node)
       })
@@ -890,8 +1012,12 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         node.params.forEach((node) => traverse(node, visitor))
 
-        node.typeParameters && traverse(node.typeParameters, visitor)
-        node.returnType && traverse(node.returnType, visitor)
+        if (node.typeParameters) {
+          traverse(node.typeParameters, visitor)
+        }
+        if (node.returnType) {
+          traverse(node.returnType, visitor)
+        }
 
         visitor[NodeType.TSEmptyBodyFunctionExpression]?.(node)
       })
@@ -915,7 +1041,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         traverse(node.id, visitor)
 
-        node.initializer && traverse(node.initializer, visitor)
+        if (node.initializer) {
+          traverse(node.initializer, visitor)
+        }
 
         visitor[NodeType.TSEnumMember]?.(node)
       })
@@ -943,8 +1071,12 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         node.params.forEach((node) => traverse(node, visitor))
 
-        node.typeParameters && traverse(node.typeParameters, visitor)
-        node.returnType && traverse(node.returnType, visitor)
+        if (node.typeParameters) {
+          traverse(node.typeParameters, visitor)
+        }
+        if (node.returnType) {
+          traverse(node.returnType, visitor)
+        }
 
         visitor[NodeType.TSFunctionType]?.(node)
       })
@@ -961,10 +1093,16 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         traverse(node.argument, visitor)
 
-        node.qualifier && traverse(node.qualifier, visitor)
+        if (node.qualifier) {
+          traverse(node.qualifier, visitor)
+        }
 
-        node.options && traverse(node.options, visitor)
-        node.typeArguments && traverse(node.typeArguments, visitor)
+        if (node.options) {
+          traverse(node.options, visitor)
+        }
+        if (node.typeArguments) {
+          traverse(node.typeArguments, visitor)
+        }
 
         visitor[NodeType.TSImportType]?.(node)
       })
@@ -981,7 +1119,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         node.parameters.forEach((node) => traverse(node, visitor))
 
-        node.typeAnnotation && traverse(node.typeAnnotation, visitor)
+        if (node.typeAnnotation) {
+          traverse(node.typeAnnotation, visitor)
+        }
 
         visitor[NodeType.TSIndexSignature]?.(node)
       })
@@ -997,7 +1137,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         traverse(node.expression, visitor)
 
-        node.typeArguments && traverse(node.typeArguments, visitor)
+        if (node.typeArguments) {
+          traverse(node.typeArguments, visitor)
+        }
 
         visitor[NodeType.TSInstantiationExpression]?.(node)
       })
@@ -1014,7 +1156,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
         traverse(node.id, visitor)
         traverse(node.body, visitor)
 
-        node.typeParameters && traverse(node.typeParameters, visitor)
+        if (node.typeParameters) {
+          traverse(node.typeParameters, visitor)
+        }
 
         visitor[NodeType.TSInterfaceDeclaration]?.(node)
       })
@@ -1023,7 +1167,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         traverse(node.expression, visitor)
 
-        node.typeArguments && traverse(node.typeArguments, visitor)
+        if (node.typeArguments) {
+          traverse(node.typeArguments, visitor)
+        }
 
         visitor[NodeType.TSInterfaceHeritage]?.(node)
       })
@@ -1052,8 +1198,12 @@ export function traverse(node: ts.Node, visitor: Visitor) {
         traverse(node.key, visitor)
         traverse(node.constraint, visitor)
 
-        node.nameType && traverse(node.nameType, visitor)
-        node.typeAnnotation && traverse(node.typeAnnotation, visitor)
+        if (node.nameType) {
+          traverse(node.nameType, visitor)
+        }
+        if (node.typeAnnotation) {
+          traverse(node.typeAnnotation, visitor)
+        }
 
         visitor[NodeType.TSMappedType]?.(node)
       })
@@ -1064,8 +1214,12 @@ export function traverse(node: ts.Node, visitor: Visitor) {
 
         node.params.forEach((node) => traverse(node, visitor))
 
-        node.typeParameters && traverse(node.typeParameters, visitor)
-        node.returnType && traverse(node.returnType, visitor)
+        if (node.typeParameters) {
+          traverse(node.typeParameters, visitor)
+        }
+        if (node.returnType) {
+          traverse(node.returnType, visitor)
+        }
 
         visitor[NodeType.TSMethodSignature]?.(node)
       })
@@ -1081,7 +1235,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         traverse(node.id, visitor)
 
-        node.body && traverse(node.body, visitor)
+        if (node.body) {
+          traverse(node.body, visitor)
+        }
 
         visitor[NodeType.TSModuleDeclaration]?.(node)
       })
@@ -1130,7 +1286,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
 
     case NodeType.TSOptionalType:
       return visit(node, (node) => {
-        node.typeAnnotation && traverse(node.typeAnnotation, visitor)
+        if (node.typeAnnotation) {
+          traverse(node.typeAnnotation, visitor)
+        }
 
         visitor[NodeType.TSOptionalType]?.(node)
       })
@@ -1153,7 +1311,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         traverse(node.key, visitor)
 
-        node.typeAnnotation && traverse(node.typeAnnotation, visitor)
+        if (node.typeAnnotation) {
+          traverse(node.typeAnnotation, visitor)
+        }
 
         visitor[NodeType.TSPropertySignature]?.(node)
       })
@@ -1235,7 +1395,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         traverse(node.id, visitor)
 
-        node.typeParameters && traverse(node.typeParameters, visitor)
+        if (node.typeParameters) {
+          traverse(node.typeParameters, visitor)
+        }
 
         traverse(node.typeAnnotation, visitor)
 
@@ -1266,7 +1428,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
 
     case NodeType.TSTypeOperator:
       return visit(node, (node) => {
-        node.typeAnnotation && traverse(node.typeAnnotation, visitor)
+        if (node.typeAnnotation) {
+          traverse(node.typeAnnotation, visitor)
+        }
 
         visitor[NodeType.TSTypeOperator]?.(node)
       })
@@ -1275,8 +1439,12 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         traverse(node.name, visitor)
 
-        node.constraint && traverse(node.constraint, visitor)
-        node.default && traverse(node.default, visitor)
+        if (node.constraint) {
+          traverse(node.constraint, visitor)
+        }
+        if (node.default) {
+          traverse(node.default, visitor)
+        }
 
         visitor[NodeType.TSTypeParameter]?.(node)
       })
@@ -1299,7 +1467,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         traverse(node.parameterName, visitor)
 
-        node.typeAnnotation && traverse(node.typeAnnotation, visitor)
+        if (node.typeAnnotation) {
+          traverse(node.typeAnnotation, visitor)
+        }
 
         visitor[NodeType.TSTypePredicate]?.(node)
       })
@@ -1308,7 +1478,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         traverse(node.exprName, visitor)
 
-        node.typeArguments && traverse(node.typeArguments, visitor)
+        if (node.typeArguments) {
+          traverse(node.typeArguments, visitor)
+        }
 
         visitor[NodeType.TSTypeQuery]?.(node)
       })
@@ -1317,7 +1489,9 @@ export function traverse(node: ts.Node, visitor: Visitor) {
       return visit(node, (node) => {
         traverse(node.typeName, visitor)
 
-        node.typeArguments && traverse(node.typeArguments, visitor)
+        if (node.typeArguments) {
+          traverse(node.typeArguments, visitor)
+        }
 
         visitor[NodeType.TSTypeReference]?.(node)
       })
@@ -1408,7 +1582,8 @@ export function getExports(node: ts.Node): Export[] {
         break
 
       default:
-        return exhaustive(pattern)
+        exhaustive(pattern)
+        break
     }
   }
 
@@ -1441,7 +1616,8 @@ export function getExports(node: ts.Node): Export[] {
         break
 
       default:
-        return exhaustive(node)
+        exhaustive(node)
+        break
     }
   }
 

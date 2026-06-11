@@ -1,9 +1,9 @@
 import { AnyBrowserAction, LocatorClickModifier } from '@/schemas/browserTest'
 import { BrowserEvent, ClickEvent } from '@/schemas/recording'
+import { toFrameOptions, toLocatorOptions } from '@/utils/locator'
 import { exhaustive } from '@/utils/typescript'
 
 import { convertAssertion } from './convertAssertion'
-import { toLocatorOptions } from './locator'
 import { isFollowedByImplicitNavigation } from './navigation'
 
 function buildClickOptions(event: ClickEvent, nextEvent?: BrowserEvent) {
@@ -30,20 +30,27 @@ function convertEvent(
   event: BrowserEvent,
   nextEvent?: BrowserEvent
 ): AnyBrowserAction | undefined {
+  // Page-level events have no element target and so no frame scope.
+  if (event.type === 'navigate-to-page') {
+    if (event.source === 'implicit') return undefined
+
+    return { id: crypto.randomUUID(), method: 'page.goto', url: event.url }
+  }
+
+  if (event.type === 'reload-page') {
+    return { id: crypto.randomUUID(), method: 'page.reload' }
+  }
+
+  // The remaining events all target an element, which may live inside iframes.
+  const frames = toFrameOptions(event.frames)
+
   switch (event.type) {
-    case 'navigate-to-page':
-      if (event.source === 'implicit') return undefined
-
-      return { id: crypto.randomUUID(), method: 'page.goto', url: event.url }
-
-    case 'reload-page':
-      return { id: crypto.randomUUID(), method: 'page.reload' }
-
     case 'click':
       return {
         id: crypto.randomUUID(),
         method: 'locator.click',
         locator: toLocatorOptions(event.target.selectors),
+        frames,
         options: buildClickOptions(event, nextEvent),
       }
 
@@ -52,6 +59,7 @@ function convertEvent(
         id: crypto.randomUUID(),
         method: 'locator.fill',
         locator: toLocatorOptions(event.target.selectors),
+        frames,
         value: event.value,
       }
 
@@ -60,6 +68,7 @@ function convertEvent(
         id: crypto.randomUUID(),
         method: event.checked ? 'locator.check' : 'locator.uncheck',
         locator: toLocatorOptions(event.target.selectors),
+        frames,
       }
 
     case 'radio-change':
@@ -67,6 +76,7 @@ function convertEvent(
         id: crypto.randomUUID(),
         method: 'locator.click',
         locator: toLocatorOptions(event.target.selectors),
+        frames,
       }
 
     case 'select-change':
@@ -74,6 +84,7 @@ function convertEvent(
         id: crypto.randomUUID(),
         method: 'locator.selectOption',
         locator: toLocatorOptions(event.target.selectors),
+        frames,
         values: event.selected.map((value) => ({ value })),
       }
 
@@ -82,6 +93,7 @@ function convertEvent(
         id: crypto.randomUUID(),
         method: 'locator.click',
         locator: toLocatorOptions(event.submitter.selectors),
+        frames,
         options: isFollowedByImplicitNavigation(event, nextEvent)
           ? { waitForNavigation: true }
           : undefined,
@@ -92,6 +104,7 @@ function convertEvent(
         id: crypto.randomUUID(),
         method: 'locator.waitFor',
         locator: toLocatorOptions(event.target.selectors),
+        frames,
         options: event.options,
       }
 

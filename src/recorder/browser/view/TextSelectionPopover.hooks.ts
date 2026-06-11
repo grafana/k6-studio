@@ -1,15 +1,26 @@
-import { useRef, useState, useEffect } from 'react'
+import { useCallback, useRef, useState, useEffect } from 'react'
 
-import { getElementBounds, toBounds } from '@/components/Browser/utils'
 import { useContainerElement } from '@/components/primitives/ContainerProvider'
+import {
+  collectLayoutShiftWindows,
+  observeWindowsForLayoutShift,
+} from '@/utils/dom/layout'
 
 import { toTrackedElement } from './ElementInspector/utils'
+import { toTopFrameBounds } from './frameGeometry'
+import { readSelection } from './inspection'
 import { TextSelection } from './TextSelectionPopover.types'
 
 function measureRange(range: Range) {
+  // The range may live inside an iframe; translate its rects into the top
+  // frame's coordinates so the highlights line up.
+  const frameWindow = range.startContainer.ownerDocument?.defaultView ?? null
+
   return {
-    highlights: Array.from(range.getClientRects()).map(toBounds),
-    bounds: getElementBounds(range),
+    highlights: Array.from(range.getClientRects()).map((rect) =>
+      toTopFrameBounds(rect, frameWindow)
+    ),
+    bounds: toTopFrameBounds(range.getBoundingClientRect(), frameWindow),
   }
 }
 
@@ -19,6 +30,18 @@ export function useTextSelection() {
   const container = useContainerElement()
 
   const [selection, setSelection] = useState<TextSelection | null>(null)
+
+  const buildSelection = useCallback(
+    (range: Range, commonAncestor: Element) => {
+      setSelection({
+        text: range.toString(),
+        element: toTrackedElement(commonAncestor),
+        range,
+        ...measureRange(range),
+      })
+    },
+    []
+  )
 
   useEffect(() => {
     const handleStart = (ev: Event) => {
@@ -52,37 +75,15 @@ export function useTextSelection() {
 
       isSelecting.current = false
 
-      const selection = document.getSelection()
+      const result = readSelection(document)
 
-      if (
-        selection === null ||
-        selection.rangeCount === 0 ||
-        selection.isCollapsed
-      ) {
+      if (result === null) {
         setSelection(null)
 
         return
       }
 
-      const range = selection.getRangeAt(0)
-
-      const commonAncestor =
-        range.commonAncestorContainer instanceof Element
-          ? range.commonAncestorContainer
-          : range.commonAncestorContainer.parentElement
-
-      if (commonAncestor === null) {
-        setSelection(null)
-
-        return
-      }
-
-      setSelection({
-        text: range.toString(),
-        element: toTrackedElement(commonAncestor),
-        range,
-        ...measureRange(range),
-      })
+      buildSelection(result.range, result.commonAncestor)
     }
 
     document.addEventListener('mouseup', handleMouseUp)
@@ -90,28 +91,42 @@ export function useTextSelection() {
     return () => {
       document.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [])
+  }, [buildSelection])
 
+  // Selections made inside iframes are detected in the child frames (see
+  // attachTextSelectionDetection) and reported here with the live range.
   useEffect(() => {
-    const observer = new ResizeObserver(() => {
-      setSelection((selection) => {
-        if (selection === null) {
-          return null
-        }
-
-        return {
-          ...selection,
-          ...measureRange(selection.range),
-        }
-      })
-    })
-
-    observer.observe(document.body)
+    window.__K6_STUDIO_TEXT_SELECTION__ = {
+      select: (range, commonAncestor) => buildSelection(range, commonAncestor),
+    }
 
     return () => {
-      observer.disconnect()
+      delete window.__K6_STUDIO_TEXT_SELECTION__
     }
-  }, [])
+  }, [buildSelection])
+
+  const selectionRange = selection?.range ?? null
+
+  useEffect(() => {
+    if (selectionRange === null) {
+      return
+    }
+
+    const recompute = () => {
+      setSelection((selection) =>
+        selection === null
+          ? null
+          : { ...selection, ...measureRange(selection.range) }
+      )
+    }
+
+    // The selected range may live inside an iframe that scrolls independently
+    // of the top document, so recompute on a shift in any frame on the path.
+    const frameWindow = selectionRange.startContainer.ownerDocument?.defaultView
+    const windows = collectLayoutShiftWindows(window, frameWindow)
+
+    return observeWindowsForLayoutShift(windows, recompute)
+  }, [selectionRange])
 
   useEffect(() => {
     if (selection !== null) {

@@ -39,7 +39,7 @@ export function getStudioFileFromPath(
     }
   }
 
-  if (parsedPath.ext === '.js') {
+  if (parsedPath.ext === '.js' || parsedPath.ext === '.ts') {
     return {
       type: 'script',
       ...file,

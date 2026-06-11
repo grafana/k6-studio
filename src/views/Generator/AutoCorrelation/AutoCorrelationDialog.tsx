@@ -1,12 +1,10 @@
 import { Box, Dialog, Flex, IconButton } from '@radix-ui/themes'
 import { XIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 import { UsageEventName } from '@/services/usageTracking/types'
 
 import { AutoCorrelation } from './AutoCorrelation'
-import { Status } from './Status'
-import { CorrelationStatus } from './types'
 
 interface AutoCorrelationDialogProps {
   open: boolean
@@ -17,9 +15,6 @@ export function AutoCorrelationDialog({
   open,
   onOpenChange,
 }: AutoCorrelationDialogProps) {
-  const [correlationStatus, setCorrelationStatus] =
-    useState<CorrelationStatus>('not-started')
-
   useEffect(() => {
     if (open) {
       window.studio.app.trackEvent({
@@ -27,6 +22,7 @@ export function AutoCorrelationDialog({
       })
     }
   }, [open])
+
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Content
@@ -36,16 +32,12 @@ export function AutoCorrelationDialog({
         asChild
         width="calc(100vw - 100px)"
         height="calc(100vh - 100px)"
-        // Prevent closing the dialog when clicking outside
         onInteractOutside={(e) => e.preventDefault()}
       >
         <Flex direction="column" height="100%">
           <Dialog.Title>
             <Flex justify="between">
-              <Flex gap="3">
-                <Flex align="center">Autocorrelation</Flex>
-                <Status correlationStatus={correlationStatus} />
-              </Flex>
+              <Flex align="center">Autocorrelation</Flex>
               <Flex gap="3" justify="end" align="center">
                 <Dialog.Close>
                   <IconButton
@@ -71,10 +63,7 @@ export function AutoCorrelationDialog({
               minHeight: 0,
             }}
           >
-            <AutoCorrelation
-              close={() => onOpenChange(false)}
-              onCorrelationStatusChange={setCorrelationStatus}
-            />
+            <AutoCorrelation close={() => onOpenChange(false)} />
           </Box>
         </Flex>
       </Dialog.Content>

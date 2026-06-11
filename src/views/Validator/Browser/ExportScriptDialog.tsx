@@ -8,23 +8,22 @@ import {
   Text,
 } from '@radix-ui/themes'
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
-import { generateScript } from '@/codegen'
-import { getViewPath } from '@/routeMap'
+import { useExportScript } from '@/hooks/useExportScript'
 import {
   extractUniqueHosts,
   groupHostsByParty,
 } from '@/store/generator/slices/recording.utils'
 import { useStudioUIStore } from '@/store/ui'
-import { useToast } from '@/store/ui/useToast'
 import { ProxyData } from '@/types'
-import { GeneratorFileData } from '@/types/generator'
 import { safeAtob } from '@/utils/format'
 import { createNewGeneratorFile } from '@/utils/generator'
-import { prettify } from '@/utils/prettify'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 import { Allowlist } from '@/views/Generator/Allowlist/Allowlist'
+import {
+  generateScriptPreview,
+  loadGeneratorFile,
+} from '@/views/Generator/Generator.utils'
 
 function parseContent<T extends { content: string | null } | undefined>(
   entry: T
@@ -64,9 +63,6 @@ export function ExportScriptDialog({
 }: ExportScriptDialogProps) {
   const generators = useStudioUIStore((s) => [...s.generators.values()])
 
-  const navigate = useNavigate()
-  const showToast = useToast()
-
   const [isExporting, setIsExporting] = useState(false)
 
   const [mode, setMode] = useState<ExportMode>(
@@ -86,14 +82,41 @@ export function ExportScriptDialog({
     generators[0]?.path ?? ''
   )
 
-  const handleExport = async (generator: GeneratorFileData) => {
-    try {
+  async function getGenerator() {
+    switch (mode) {
+      case 'allowlist':
+        if (allowlist.length === 0) {
+          return null
+        }
+
+        return {
+          ...createNewGeneratorFile(),
+          allowlist,
+          includeStaticAssets,
+        }
+
+      case 'generator': {
+        if (!selectedGeneratorPath) {
+          return null
+        }
+
+        const { data } = await loadGeneratorFile(selectedGeneratorPath)
+        return data
+      }
+    }
+  }
+
+  const exportScript = useExportScript({
+    enableMenuItem: false,
+    openOnSave: true,
+    fileName: 'my-script.js',
+    content: async (scriptPath) => {
       setIsExporting(true)
 
-      const scriptPath = await window.studio.fs.showSaveAsDialog('my-script.js')
+      const generator = await getGenerator()
 
-      if (!scriptPath) {
-        return
+      if (generator === null) {
+        throw new Error('Failed to get generator.')
       }
 
       const filteredRequests = filterRequests(
@@ -102,8 +125,10 @@ export function ExportScriptDialog({
         generator.includeStaticAssets
       )
 
-      const rawScript = generateScript({
-        recording: filteredRequests.map((request) => {
+      return await generateScriptPreview(
+        scriptPath,
+        generator,
+        filteredRequests.map((request) => {
           return {
             ...request,
             // Make sure that any base64 encoded content is decoded before the export,
@@ -111,55 +136,17 @@ export function ExportScriptDialog({
             request: parseContent(request.request),
             response: parseContent(request.response),
           }
-        }),
-        generator,
-        scriptPath,
-      })
-
-      const script = await prettify(rawScript)
-
-      await window.studio.script.saveScript(scriptPath, script)
-
-      onOpenChange(false)
-      navigate(getViewPath('script', scriptPath))
-    } catch {
-      showToast({ title: 'Failed to export script.', status: 'error' })
-    } finally {
-      setIsExporting(false)
-    }
-  }
-
-  const handleExportWithAllowlist = () => {
-    if (allowlist.length === 0) {
-      return
-    }
-
-    return handleExport({
-      ...createNewGeneratorFile(),
-      allowlist,
-      includeStaticAssets,
-    })
-  }
-
-  const handleExportWithGenerator = async () => {
-    if (!selectedGeneratorPath) {
-      return
-    }
-
-    try {
-      setIsExporting(true)
-
-      const generator = await window.studio.generator.loadGenerator(
-        selectedGeneratorPath
+        })
       )
-
-      return await handleExport(generator)
-    } catch {
-      showToast({ title: 'Failed to load generator.', status: 'error' })
-    } finally {
+    },
+    onSuccess: () => {
       setIsExporting(false)
-    }
-  }
+      onOpenChange(false)
+    },
+    onError: () => {
+      setIsExporting(false)
+    },
+  })
 
   const isDisabled =
     isExporting ||
@@ -240,14 +227,7 @@ export function ExportScriptDialog({
               Cancel
             </Button>
           </Dialog.Close>
-          <Button
-            disabled={isDisabled}
-            onClick={
-              mode === 'allowlist'
-                ? handleExportWithAllowlist
-                : handleExportWithGenerator
-            }
-          >
+          <Button disabled={isDisabled} onClick={() => exportScript()}>
             {isExporting && <Spinner />}
             Export
           </Button>

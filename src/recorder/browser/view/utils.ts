@@ -1,3 +1,4 @@
+import { isTopFrameToolActive } from './inspection'
 import { useInBrowserUIStore } from './store'
 
 export function isUsingTool(): boolean {
@@ -9,7 +10,7 @@ export function isUsingTool(): boolean {
 export function shouldSkipEvent(event: Event): boolean {
   const store = useInBrowserUIStore.getState()
 
-  if (store.tool !== null || store.isCaptureBlocked) {
+  if (store.tool !== null || store.isCaptureBlocked || isTopFrameToolActive()) {
     return true
   }
 

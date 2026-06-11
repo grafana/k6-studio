@@ -1,71 +1,62 @@
-import { Box, Button, Flex, ScrollArea, Text } from '@radix-ui/themes'
-import { useEffect, useState } from 'react'
+import { Box, Flex } from '@radix-ui/themes'
+import { useEffect } from 'react'
 
 import { useListenProxyData } from '@/hooks/useListenProxyData'
-import { useGeneratorStore } from '@/store/generator'
+import { selectFilteredRequests, useGeneratorStore } from '@/store/generator'
 
+import { ActionsLog } from './ActionsLog'
 import { ErrorMessage } from './ErrorMessage'
+import { FooterActions } from './FooterActions'
 import { IntroductionMessage } from './IntroductionMessage'
-import { SuggestedRules } from './SuggestedRules'
-import { ValidationResults } from './ValidationResults'
-import { CorrelationStatus } from './types'
+import { RulesCreated } from './RulesCreated'
 import { useGenerateRules } from './useGenerateRules'
 
-interface AutoCorrelationDialogProps {
+interface AutoCorrelationProps {
   close: () => void
-  onCorrelationStatusChange: (status: CorrelationStatus) => void
 }
 
-export function AutoCorrelation({
-  close,
-  onCorrelationStatusChange,
-}: AutoCorrelationDialogProps) {
+export function AutoCorrelation({ close }: AutoCorrelationProps) {
   const rules = useGeneratorStore((state) => state.rules)
   const saveRules = useGeneratorStore((state) => state.setRules)
-  const [checkedRuleIds, setCheckedRuleIds] = useState<string[]>([])
+  const recording = useGeneratorStore(selectFilteredRequests)
 
   const { proxyData: validationRequests, resetProxyData: clearValidation } =
     useListenProxyData()
 
   const {
     start,
-    suggestedRules,
+    ruleEntries,
+    actionsLog,
     isLoading,
     correlationStatus,
-    outcomeReason,
     error,
     stop,
     restart,
     reset,
-  } = useGenerateRules({
-    clearValidation: clearValidation,
-  })
+    removeRule,
+    updateValidationProgress,
+  } = useGenerateRules({ clearValidation })
 
-  // Abort streaming on unmount
   useEffect(() => {
     return () => {
-      void stop()
+      stop()
     }
   }, [stop])
 
   useEffect(() => {
-    onCorrelationStatusChange(correlationStatus)
-  }, [correlationStatus, onCorrelationStatusChange])
-
-  useEffect(() => {
-    // Suggested rules checked by default
-    setCheckedRuleIds(suggestedRules.map((rule) => rule.id))
-  }, [suggestedRules, setCheckedRuleIds])
+    if (correlationStatus === 'validating' && validationRequests.length > 0) {
+      updateValidationProgress(validationRequests.length, recording.length)
+    }
+  }, [
+    validationRequests.length,
+    correlationStatus,
+    recording.length,
+    updateValidationProgress,
+  ])
 
   const handleAccept = () => {
-    const checkedRules = suggestedRules.filter((rule) =>
-      checkedRuleIds.includes(rule.id)
-    )
-    saveRules([...rules, ...checkedRules])
-    close()
-  }
-
-  const handleDiscard = () => {
+    const acceptedRules = ruleEntries.map((entry) => entry.rule)
+    saveRules([...rules, ...acceptedRules])
     close()
   }
 
@@ -93,32 +84,16 @@ export function AutoCorrelation({
       direction="column"
     >
       <Flex css={{ flex: 1, minHeight: 0 }}>
-        <Box css={{ width: '50%', borderRight: '1px solid var(--gray-5)' }}>
-          <Flex direction="column" height="100%">
-            <Box css={{ flex: 1 }}>
-              <Flex direction="column" height="100%">
-                <ScrollArea css={{ flex: 1 }}>
-                  <SuggestedRules
-                    suggestedRules={suggestedRules}
-                    isLoading={isLoading}
-                    onCheckRules={setCheckedRuleIds}
-                    checkedRuleIds={checkedRuleIds}
-                  />
-                  {outcomeReason !== '' && (
-                    <Box px="3" pt="2">
-                      <Text color="gray" size="2">
-                        {outcomeReason}
-                      </Text>
-                    </Box>
-                  )}
-                </ScrollArea>
-              </Flex>
-            </Box>
-          </Flex>
+        <Box css={{ width: '60%', borderRight: '1px solid var(--gray-5)' }}>
+          <ActionsLog entries={actionsLog} />
         </Box>
-        <Flex css={{ flex: 1 }}>
-          <ValidationResults requests={validationRequests} />
-        </Flex>
+        <Box css={{ width: '40%', backgroundColor: 'var(--gray-2)' }}>
+          <RulesCreated
+            entries={ruleEntries}
+            isLoading={isLoading}
+            onRemoveRule={removeRule}
+          />
+        </Box>
       </Flex>
 
       <Flex
@@ -126,36 +101,15 @@ export function AutoCorrelation({
         justify="end"
         align="center"
         p="3"
-        css={{
-          borderTop: '1px solid var(--gray-5)',
-        }}
+        css={{ borderTop: '1px solid var(--gray-5)' }}
       >
-        <Flex gap="3">
-          <Button
-            variant="outline"
-            onClick={stop}
-            disabled={!isLoading}
-            size="2"
-            color="red"
-          >
-            Stop
-          </Button>
-          <Button
-            variant="outline"
-            onClick={handleDiscard}
-            disabled={isLoading}
-            size="2"
-          >
-            Discard
-          </Button>
-          <Button
-            onClick={handleAccept}
-            disabled={isLoading || checkedRuleIds.length === 0}
-            size="2"
-          >
-            Accept
-          </Button>
-        </Flex>
+        <FooterActions
+          isLoading={isLoading}
+          ruleCount={ruleEntries.length}
+          onStop={stop}
+          onDiscard={close}
+          onAccept={handleAccept}
+        />
       </Flex>
     </Flex>
   )

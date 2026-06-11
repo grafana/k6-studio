@@ -7,17 +7,18 @@ import { Overlay } from '@/components/Browser/Overlay'
 import { Tooltip } from '@/components/primitives/Tooltip'
 import { ElementRole } from '@/utils/dom/aria'
 
+import { getFramePathForElement, withFrames } from '../../frames'
 import { getTabId } from '../../utils'
 import { Anchor } from '../Anchor'
-import { useStudioClient } from '../StudioClientProvider'
 import { useEscape } from '../hooks/useEscape'
+import { useStudioClient } from '../StudioClientProvider'
 
+import { AssertionEditor } from './assertions/AssertionEditor'
+import { AssertionData } from './assertions/types'
 import { useInspectedElement } from './ElementInspector.hooks'
 import { toAssertion } from './ElementInspector.utils'
 import { ElementMenu } from './ElementMenu'
 import { ElementPopover } from './ElementPopover'
-import { AssertionEditor } from './assertions/AssertionEditor'
-import { AssertionData } from './assertions/types'
 import { useElementHighlight } from './hooks'
 import { WaitForData } from './waitConditions/types'
 
@@ -87,17 +88,22 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
   }
 
   const handleAssertionSubmit = (assertion: AssertionData) => {
+    const frames = element ? getFramePathForElement(element.element) : []
+
     client.send({
       type: 'record-events',
       events: [
-        {
-          type: 'assert',
-          eventId: nanoid(),
-          timestamp: Date.now(),
-          tab: getTabId(),
-          target: assertion.target,
-          assertion: toAssertion(assertion),
-        },
+        withFrames(
+          {
+            type: 'assert',
+            eventId: nanoid(),
+            timestamp: Date.now(),
+            tab: getTabId(),
+            target: assertion.target,
+            assertion: toAssertion(assertion),
+          },
+          frames
+        ),
       ],
     })
 
@@ -109,17 +115,22 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
   }
 
   const handleAddWaitFor = (data: WaitForData) => {
+    const frames = element ? getFramePathForElement(element.element) : []
+
     client.send({
       type: 'record-events',
       events: [
-        {
-          type: 'wait-for',
-          eventId: nanoid(),
-          timestamp: Date.now(),
-          tab: getTabId(),
-          target: data.target,
-          options: data.options,
-        },
+        withFrames(
+          {
+            type: 'wait-for',
+            eventId: nanoid(),
+            timestamp: Date.now(),
+            tab: getTabId(),
+            target: data.target,
+            options: data.options,
+          },
+          frames
+        ),
       ],
     })
 

@@ -4,22 +4,21 @@ import { useEffect, useState } from 'react'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
-import { useCurrentFile } from '@/hooks/useCurrentFile'
+import { ScriptContent } from '@/handlers/fs/types'
 import { useOpenExternalScript } from '@/hooks/useOpenExternalScript'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 
 import { Debugger } from './Debugger'
-import { useDebugSession, useScript } from './Validator.hooks'
+import { useDebugSession } from './Validator.hooks'
 import { ValidatorControls } from './ValidatorControls'
 
 interface ValidatorProps {
   file: StudioFile
+  content: ScriptContent
 }
 
-function Content({ file }: ValidatorProps) {
-  const { data, isLoading } = useScript(file.path)
-
+export function Validator({ file, content }: ValidatorProps) {
   const [showRunInCloudDialog, setShowRunInCloudDialog] = useState(false)
 
   const showToast = useToast()
@@ -32,8 +31,8 @@ function Content({ file }: ValidatorProps) {
 
   const isRunning = session?.state === 'running'
 
-  const scenarios = data?.options?.scenarios
-    ? Object.keys(data.options.scenarios)
+  const scenarios = content.options?.scenarios
+    ? Object.keys(content.options.scenarios)
     : ['default']
 
   async function handleDebugScript(scenarioName?: string) {
@@ -75,12 +74,12 @@ function Content({ file }: ValidatorProps) {
   return (
     <View
       title="Validator"
-      subTitle={<FileNameHeader file={file} canRename={!data?.isExternal} />}
+      subTitle={<FileNameHeader file={file} canRename={!content.isExternal} />}
       actions={
         <ValidatorControls
           file={file}
           isRunning={isRunning}
-          canDelete={data !== undefined && !data.isExternal}
+          canDelete={!content.isExternal}
           scenarios={scenarios}
           onRunScript={handleDebugScript}
           onRunInCloud={handleRunInCloud}
@@ -88,13 +87,12 @@ function Content({ file }: ValidatorProps) {
           onStopScript={handleStopScript}
         />
       }
-      loading={isLoading}
     >
       <Flex flexGrow="1" direction="column" align="stretch">
         <Debugger
           file={file}
-          script={data?.script ?? ''}
-          options={data?.options ?? {}}
+          script={content.data}
+          options={content.options}
           session={session}
           onDebugScript={handleDebugScript}
         />
@@ -106,10 +104,4 @@ function Content({ file }: ValidatorProps) {
       />
     </View>
   )
-}
-
-export function Validator() {
-  const file = useCurrentFile('script')
-
-  return <Content key={file.path} file={file} />
 }

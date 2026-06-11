@@ -12,6 +12,7 @@ import { initializeDeepLinks, replayPendingDeepLink } from './main/deepLinks'
 import * as mainState from './main/k6StudioState'
 import { initializeLogger } from './main/logger'
 import { configureApplicationMenu } from './main/menu'
+import { initOpenFile, replayPendingFileOpen } from './main/openFile'
 import {
   cleanUpProxies,
   launchProxyAndAttachEmitter,
@@ -60,6 +61,7 @@ initializeLogger()
 handlers.initialize()
 mainState.initialize()
 initializeDeepLinks()
+initOpenFile()
 
 const createWindow = async () => {
   const icon = getAppIcon(process.env.NODE_ENV === 'development')
@@ -83,7 +85,9 @@ const createWindow = async () => {
     minHeight: 600,
     show: false,
     icon,
-    title: 'Grafana k6 Studio',
+    title: DEV_GIT_BRANCH
+      ? `Grafana k6 Studio [${DEV_GIT_BRANCH}]`
+      : 'Grafana k6 Studio',
     backgroundColor: nativeTheme.themeSource === 'light' ? '#fff' : '#111110',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -120,6 +124,7 @@ const createWindow = async () => {
   }
 
   replayPendingDeepLink()
+  replayPendingFileOpen()
 
   if (process.env.NODE_ENV === 'development') {
     mainWindow.webContents.openDevTools()
@@ -133,10 +138,14 @@ const createWindow = async () => {
   mainWindow.on('resized', () => trackWindowState(mainWindow))
   mainWindow.on('close', (event) => {
     mainWindow.webContents.send('app:close')
-    if (
-      k6StudioState.currentClientRoute.startsWith('/generator') &&
-      !k6StudioState.wasAppClosedByClient
-    ) {
+
+    const isGeneratorRoute =
+      k6StudioState.currentClientRoute.startsWith('/file/') &&
+      decodeURIComponent(
+        k6StudioState.currentClientRoute.slice('/file/'.length)
+      ).endsWith('.k6g')
+
+    if (isGeneratorRoute && !k6StudioState.wasAppClosedByClient) {
       event.preventDefault()
     }
 

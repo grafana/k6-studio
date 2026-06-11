@@ -40,6 +40,7 @@ export function EventDescription({
           {event.checked ? 'Checked' : 'Unchecked'} checkbox{' '}
           <Selector
             selectors={event.target.selectors}
+            frames={event.frames}
             onHighlight={onHighlight}
           />
         </>
@@ -52,6 +53,7 @@ export function EventDescription({
           <code>{event.value}</code> from{' '}
           <Selector
             selectors={event.target.selectors}
+            frames={event.frames}
             onHighlight={onHighlight}
           />
         </>
@@ -66,6 +68,7 @@ export function EventDescription({
           Submitted form{' '}
           <Selector
             selectors={event.form.selectors}
+            frames={event.frames}
             onHighlight={onHighlight}
           />
         </>

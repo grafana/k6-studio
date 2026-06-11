@@ -1,13 +1,13 @@
 import { AnyBrowserAction } from '@/schemas/browserTest'
 import { AssertEvent } from '@/schemas/recording'
+import { toFrameOptions, toLocatorOptions } from '@/utils/locator'
 import { exhaustive } from '@/utils/typescript'
-
-import { toLocatorOptions } from './locator'
 
 export function convertAssertion(
   event: AssertEvent
 ): AnyBrowserAction | undefined {
   const locator = toLocatorOptions(event.target.selectors)
+  const frames = toFrameOptions(event.frames)
   const assertion = event.assertion
 
   switch (assertion.type) {
@@ -16,6 +16,7 @@ export function convertAssertion(
         id: crypto.randomUUID(),
         method: 'locator.toBeVisible',
         locator,
+        frames,
         visible: assertion.visible,
       }
 
@@ -24,6 +25,7 @@ export function convertAssertion(
         id: crypto.randomUUID(),
         method: 'locator.toContainText',
         locator,
+        frames,
         expected: assertion.operation.value,
       }
 
@@ -32,6 +34,7 @@ export function convertAssertion(
         id: crypto.randomUUID(),
         method: 'locator.toHaveValue',
         locator,
+        frames,
         expected: {
           current: 'single',
           values: { single: assertion.expected },
@@ -44,6 +47,7 @@ export function convertAssertion(
         id: crypto.randomUUID(),
         method: 'locator.toBeChecked',
         locator,
+        frames,
         checked: assertion.expected === 'checked',
         inputType: assertion.inputType,
       }

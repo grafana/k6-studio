@@ -1,64 +1,41 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import invariant from 'tiny-invariant'
-
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
-import { useCurrentFile } from '@/hooks/useCurrentFile'
+import { RecordingContent } from '@/handlers/fs/types'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
-import { BrowserEvent } from '@/schemas/recording'
-import { ProxyData } from '@/types'
-import { harToProxyData } from '@/utils/harToProxyData'
+import { StudioFile } from '@/types'
 
 import { RecordingInspector } from '../Recorder/RecordingInspector'
 
 import { RecordingPreviewControls } from './RecordingPreviewerControls'
 
-export function RecordingPreviewer() {
-  const [proxyData, setProxyData] = useState<ProxyData[]>([])
-  const [browserEvents, setBrowserEvents] = useState<BrowserEvent[]>([])
+interface RecordingPreviewerProps {
+  file: StudioFile
+  content: RecordingContent
+}
 
-  const [isLoading, setIsLoading] = useState(true)
-  const file = useCurrentFile('recording')
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    ;(async () => {
-      setIsLoading(true)
-      setProxyData([])
-      const har = await window.studio.har.openFile(file.path)
-      setIsLoading(false)
-
-      invariant(har, 'Failed to open file')
-
-      setProxyData(harToProxyData(har))
-      setBrowserEvents(har.log._browserEvents?.events ?? [])
-    })()
-
-    return () => {
-      setProxyData([])
-      setBrowserEvents([])
-    }
-  }, [file.path, navigate])
+export function RecordingPreviewer({ file, content }: RecordingPreviewerProps) {
+  const proxyData = content.data
+  const browserEvents = content.browserEvents
 
   const groups = useProxyDataGroups(proxyData)
 
   return (
     <View
       title="Recording"
-      subTitle={<FileNameHeader file={file} />}
-      loading={isLoading}
+      subTitle={<FileNameHeader file={file} canRename={!content.isExternal} />}
       actions={
-        <RecordingPreviewControls file={file} browserEvents={browserEvents} />
-      }
-    >
-      {!isLoading && (
-        <RecordingInspector
-          groups={groups}
+        <RecordingPreviewControls
+          file={file}
           requests={proxyData}
           browserEvents={browserEvents}
         />
-      )}
+      }
+    >
+      <RecordingInspector
+        groups={groups}
+        requests={proxyData}
+        browserEvents={browserEvents}
+      />
     </View>
   )
 }

@@ -54,7 +54,7 @@ export const tools = {
       query: z
         .string()
         .describe(
-          'Search query - can match against URL, method, path, host, status code. Examples: "login", "POST", "/api/users", "401"'
+          'Search query - can match against URL, method, path, host, status code, request/response header names and values, and request/response body content. Examples: "login", "POST", "/api/users", "401", "content-type", "csrf_token"'
         ),
       limit: z
         .number()
@@ -131,7 +131,6 @@ export const tools = {
         .describe(
           'Use success when all requests are correlated and validation is passing. Use partial-success when some requests are still failing but significant progress has been made. Use failure when no progress has been made and validation is still failing.'
         ),
-      reason: z.string().describe('A short explanation of the outcome.'),
     }),
   }),
 } satisfies ToolSet

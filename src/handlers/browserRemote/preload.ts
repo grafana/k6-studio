@@ -1,11 +1,14 @@
 import { ipcRenderer } from 'electron'
 
-import { ElementLocator } from '@/schemas/locator'
+import { ElementLocator, LocatorOptions } from '@/schemas/locator'
 
 import { BrowserRemoteHandlers } from './types'
 
-export function highlightElement(locator: ElementLocator | null) {
-  ipcRenderer.send(BrowserRemoteHandlers.HighlightElement, locator)
+export function highlightElement(
+  locator: ElementLocator | null,
+  frames?: LocatorOptions[]
+) {
+  ipcRenderer.send(BrowserRemoteHandlers.HighlightElement, locator, frames)
 }
 
 export function navigateTo(url: string) {

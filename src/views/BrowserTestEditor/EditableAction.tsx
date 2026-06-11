@@ -1,12 +1,15 @@
-import { css } from '@emotion/react'
+import { css, keyframes } from '@emotion/react'
 import { Flex, IconButton, Tooltip } from '@radix-ui/themes'
 import { Trash2Icon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
+import { BrowserDebuggerEvent } from '@/main/runner/schema'
 import { AnyBrowserAction } from '@/schemas/browserTest'
+import { ActionStatus, getStatusColor } from '@/utils/browserActionStatus'
 
-import { OptionsSummary } from './Actions/components/OptionsSummary'
 import { getActionEditorForAction } from './actionEditorRegistry'
+import { OptionsSummary } from './Actions/components/OptionsSummary'
+import { useBrowserActionState } from './ValidationProvider'
 
 interface EditableActionProps {
   dragHandle?: ReactNode
@@ -15,25 +18,76 @@ interface EditableActionProps {
   onRemove: (actionId: AnyBrowserAction) => void
 }
 
+const runningPulse = keyframes`
+  from { transform: translateY(-100%); }
+  to { transform: translateY(100%); }
+`
+
+function getActionStatus(
+  isValidating: boolean,
+  event: BrowserDebuggerEvent | undefined
+): ActionStatus | undefined {
+  if (event?.state === 'end') {
+    return event.result.type
+  }
+
+  if (!isValidating) {
+    return undefined
+  }
+
+  if (event?.state === 'begin') {
+    return 'running'
+  }
+
+  return 'pending'
+}
+
 export function EditableAction({
   action,
   dragHandle,
   onRemove,
   onChange,
 }: EditableActionProps) {
+  const { isValidating, state } = useBrowserActionState(action.id)
+
   const handleRemove = () => {
     onRemove(action)
   }
 
   const editor = getActionEditorForAction(action)
 
+  const status = getActionStatus(isValidating, state)
+  const color = status ? getStatusColor(status, 9) : 'transparent'
+  const opacity = status === 'pending' ? 0.7 : 1
+
   return (
     <Flex
       direction="column"
       gap="1"
       p="2"
+      pl="3"
       css={css`
         font-size: var(--font-size-1);
+        position: relative;
+        overflow: hidden;
+        opacity: ${opacity};
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 4px;
+          height: 100%;
+
+          background: ${color};
+
+          ${
+            status === 'running' &&
+            css`
+              animation: ${runningPulse} 2s linear infinite;
+            `
+          }
       `}
     >
       <Flex align="center" gap="2">

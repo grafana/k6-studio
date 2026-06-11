@@ -84,11 +84,21 @@ const basicSearchKeys: Array<FuseOptionKey<ProxyData>> = [
 ]
 
 const fullSearchKeys: Array<FuseOptionKey<ProxyData>> = [
-  'request.cookies',
-  'request.headers',
-  'request.query',
-  'response.cookies',
-  'response.headers',
+  // Headers, cookies and query params are arrays of [key, value] tuples. Fuse
+  // stringifies each tuple as "key,value", which would make the match value
+  // differ from the individual key/value cells rendered in the inspector.
+  // Flatten the tuples so each key and value is searched (and matched) on its own.
+  { name: 'request.cookies', getFn: (data) => data.request.cookies.flat() },
+  { name: 'request.headers', getFn: (data) => data.request.headers.flat() },
+  { name: 'request.query', getFn: (data) => data.request.query.flat() },
+  {
+    name: 'response.cookies',
+    getFn: (data) => data.response?.cookies.flat() ?? [],
+  },
+  {
+    name: 'response.headers',
+    getFn: (data) => data.response?.headers.flat() ?? [],
+  },
   {
     name: 'response.content',
     getFn: (data) => {

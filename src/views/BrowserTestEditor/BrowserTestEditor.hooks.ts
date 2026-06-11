@@ -1,5 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
-import log from 'electron-log/renderer'
+import { arrayMove } from '@dnd-kit/sortable'
 import { debounce, isEqual } from 'lodash-es'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -14,53 +13,14 @@ import {
   BrowserTestFile,
   BrowserTestOptions,
   defaultBrowserTestOptions,
+  BrowserThreshold,
 } from '@/schemas/browserTest'
-import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
-import { LoadProfileExecutorOptions } from '@/types/testOptions'
+import { LoadProfileExecutorOptions, LoadZoneData } from '@/types/testOptions'
 import { getInitialStages } from '@/utils/generator'
 import { stripUndefined } from '@/utils/object'
-import { queryClient } from '@/utils/query'
 
 import { useDebugSession } from '../Validator/Validator.hooks'
-
-export function useBrowserTest(filePath: string) {
-  return useQuery<BrowserTestFile>({
-    queryKey: ['browserTest', filePath],
-    queryFn: () => {
-      return window.studio.browserTest.open(filePath)
-    },
-  })
-}
-
-export function useSaveBrowserTest(filePath: string) {
-  const showToast = useToast()
-
-  return useMutation({
-    mutationFn: async (data: BrowserTestFile) => {
-      await window.studio.browserTest.save(filePath, data)
-      await queryClient.invalidateQueries({
-        queryKey: ['browserTest', filePath],
-      })
-    },
-
-    onSuccess: () => {
-      showToast({
-        title: 'Browser test saved',
-        status: 'success',
-      })
-    },
-
-    onError: (error) => {
-      showToast({
-        title: 'Failed to save browser test',
-        status: 'error',
-        description: error.message,
-      })
-      log.error(error)
-    },
-  })
-}
 
 export function useBrowserTestEditorLayout() {
   const [drawer, setDrawer] = usePanelCallbackRef()
@@ -85,7 +45,8 @@ export function useBrowserTestEditorLayout() {
 
 export function useBrowserScriptPreview(
   browserActions: AnyBrowserAction[],
-  options?: BrowserTestOptions
+  options?: BrowserTestOptions,
+  trace = false
 ) {
   const [preview, setPreview] = useState('')
 
@@ -94,12 +55,14 @@ export function useBrowserScriptPreview(
     debounce(
       async (
         actions: AnyBrowserAction[],
-        currentOptions: BrowserTestOptions | undefined
+        currentOptions: BrowserTestOptions | undefined,
+        trace: boolean
       ) => {
         try {
           const test = convertActionsToTest({
             browserActions: actions,
             options: currentOptions,
+            trace,
           })
 
           const script = await emitScript(test)
@@ -116,10 +79,10 @@ export function useBrowserScriptPreview(
   )
 
   useEffect(() => {
-    void generatePreview(browserActions, options)
+    void generatePreview(browserActions, options, trace)
 
     return () => generatePreview.cancel()
-  }, [browserActions, options, generatePreview])
+  }, [browserActions, options, trace, generatePreview])
 
   return preview
 }
@@ -152,7 +115,7 @@ export function useBrowserTestValidator({
     [actions, shutdownDelay]
   )
 
-  const script = useBrowserScriptPreview(actionsWithTimeout, options)
+  const script = useBrowserScriptPreview(actionsWithTimeout, options, true)
   const session = useDebugSession({
     type: 'raw',
     content: script,
@@ -187,33 +150,134 @@ export function useBrowserTestState(
   const { actions = [], options = defaultBrowserTestOptions } =
     browserTestFile ?? {}
 
+  const initialOptions: BrowserTestOptions = {
+    ...options,
+    loadProfile: withSeededStages(options.loadProfile),
+  }
+
   const [test, setTest] = useState(() => ({
     actions,
-    options: {
-      ...options,
-      loadProfile: withSeededStages(options.loadProfile),
-    },
+    options: initialOptions,
   }))
+
+  const [savedTest, setSavedTest] = useState(() => ({
+    actions,
+    options: initialOptions,
+  }))
+
+  const addAction = useCallback((action: AnyBrowserAction) => {
+    setTest((prev) => ({
+      ...prev,
+      actions: [...prev.actions, action],
+    }))
+  }, [])
+
+  const updateAction = useCallback((updatedAction: AnyBrowserAction) => {
+    setTest((prev) => ({
+      ...prev,
+      actions: prev.actions.map((action) =>
+        action.id === updatedAction.id ? updatedAction : action
+      ),
+    }))
+  }, [])
+
+  const removeAction = useCallback((id: string) => {
+    setTest((prev) => ({
+      ...prev,
+      actions: prev.actions.filter((action) => action.id !== id),
+    }))
+  }, [])
+
+  const reorderActions = useCallback((activeId: string, overId: string) => {
+    setTest((prev) => {
+      const oldIndex = prev.actions.findIndex(
+        (action) => action.id === activeId
+      )
+      const newIndex = prev.actions.findIndex((action) => action.id === overId)
+
+      if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
+        return prev
+      }
+
+      return {
+        ...prev,
+        actions: arrayMove(prev.actions, oldIndex, newIndex),
+      }
+    })
+  }, [])
+
+  const setLoadProfile = useCallback(
+    (loadProfile: LoadProfileExecutorOptions) => {
+      setTest((prev) => ({
+        ...prev,
+        options: {
+          ...prev.options,
+          loadProfile: {
+            ...prev.options.loadProfile,
+            ...loadProfile,
+          },
+        },
+      }))
+    },
+    []
+  )
+
+  const setThresholds = useCallback((thresholds: BrowserThreshold[]) => {
+    setTest((prev) => ({
+      ...prev,
+      options: {
+        ...prev.options,
+        thresholds,
+      },
+    }))
+  }, [])
+
+  const setLoadZones = useCallback((loadZones: LoadZoneData) => {
+    setTest((prev) => ({
+      ...prev,
+      options: {
+        ...prev.options,
+        cloud: {
+          ...prev.options.cloud,
+          loadZones,
+        },
+      },
+    }))
+  }, [])
+
+  const markAsSaved = useCallback(() => {
+    setSavedTest(test)
+  }, [test])
 
   const isDirty = useMemo(() => {
     // Baseline widens stages to match the in-memory state so seeded defaults
     // aren't seen as edits. Compare strips undefined keys (RHF emits cleared
     // inputs as `key: undefined`, while Zod parse drops them entirely) and
     // ignores key order (Zod can reorder after a save+reload roundtrip).
-    const baseline = {
-      ...options,
-      loadProfile: withSeededStages(options.loadProfile),
-    }
+    const baseline = savedTest
 
     return (
-      !isEqual(stripUndefined(test.actions), stripUndefined(actions)) ||
-      !isEqual(stripUndefined(test.options), stripUndefined(baseline))
+      !isEqual(
+        stripUndefined(test.actions),
+        stripUndefined(baseline.actions)
+      ) ||
+      !isEqual(stripUndefined(test.options), stripUndefined(baseline.options))
     )
-  }, [actions, options, test])
+  }, [savedTest, test.actions, test.options])
 
   return {
     test,
     setTest,
     isDirty,
+    actions: test.actions,
+    options: test.options,
+    markAsSaved,
+    addAction,
+    updateAction,
+    removeAction,
+    reorderActions,
+    setLoadProfile,
+    setThresholds,
+    setLoadZones,
   }
 }

@@ -1,62 +1,102 @@
-import { Allotment } from 'allotment'
 import log from 'electron-log/renderer'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
-import useKeyboardJs from 'react-use/lib/useKeyboardJs'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
+import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
-import { useCurrentFile } from '@/hooks/useCurrentFile'
+import { GeneratorContent } from '@/handlers/fs/types'
+import { useSaveFile } from '@/hooks/useSaveFile'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
-import { getRoutePath } from '@/routeMap'
+import { getViewPath } from '@/routeMap'
 import { useGeneratorStore, selectGeneratorData } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
-import { ProxyData } from '@/types'
+import { StudioFile, ProxyData } from '@/types'
+import { GeneratorFileData } from '@/types/generator'
 
 import {
+  useGeneratorLayout,
   useIsGeneratorDirty,
-  useLoadGeneratorFile,
   useLoadHarFile,
-  useSaveGeneratorFile,
 } from './Generator.hooks'
 import { GeneratorControls } from './GeneratorControls'
 import { GeneratorTabs } from './GeneratorTabs'
 import { TestRuleContainer } from './TestRuleContainer'
 import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 
-export function Generator() {
+interface GeneratorProps {
+  file: StudioFile
+  content: GeneratorContent
+}
+
+export function Generator({ file, content }: GeneratorProps) {
   const setGeneratorFile = useGeneratorStore((store) => store.setGeneratorFile)
+  const resetGeneratorFile = useGeneratorStore(
+    (store) => store.resetGeneratorFile
+  )
+
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
+  const [savedData, setSavedData] = useState<GeneratorFileData>(content.data)
+
+  const setRecordingPath = useGeneratorStore((store) => store.setRecordingPath)
+  const recordingPath = useGeneratorStore((store) => store.recordingPath)
+
+  const setRecording = useGeneratorStore((store) => store.setRecording)
+  const setRecordingError = useGeneratorStore(
+    (store) => store.setRecordingError
+  )
 
   const showToast = useToast()
   const navigate = useNavigate()
 
-  const file = useCurrentFile('generator')
-  const scriptPreview = useScriptPreview(file.path)
+  const filePath = file.path
+  const scriptPreview = useScriptPreview(filePath)
 
-  const {
-    data: generatorFileData,
-    isLoading: isLoadingGenerator,
-    error: generatorError,
-  } = useLoadGeneratorFile(file.path)
+  const { mainLayout, sidebarLayout, detailsLayout } = useGeneratorLayout()
 
   const {
     data: recording,
     isLoading: isLoadingRecording,
     error: harError,
-  } = useLoadHarFile(generatorFileData?.recordingPath)
+  } = useLoadHarFile(recordingPath)
 
-  const { mutateAsync: saveGenerator } = useSaveGeneratorFile(file.path)
+  const saveFile = useSaveFile({
+    menuItems: {
+      save: true,
+      saveAs: true,
+    },
+    location: { type: 'file', path: filePath },
+    content: () => ({
+      type: 'generator' as const,
+      data: selectGeneratorData(useGeneratorStore.getState()),
+      isExternal: false,
+    }),
+    filters: [{ name: 'Generator', extensions: ['k6g'] }],
+    onSave: (location) => {
+      if (location.path === filePath) {
+        setSavedData(selectGeneratorData(useGeneratorStore.getState()))
+      } else {
+        navigate(getViewPath(location.path), { replace: true })
+      }
+    },
+    onError: (error) => {
+      showToast({
+        title: 'Failed to save generator',
+        status: 'error',
+        description: error.message,
+      })
 
-  const isLoading = isLoadingGenerator || isLoadingRecording
+      log.error(error)
+    },
+  })
 
-  const isDirty = useIsGeneratorDirty(file.path)
+  const isLoading = isLoadingRecording
+
+  const isDirty = useIsGeneratorDirty(savedData)
   const isDirtyRef = useRef(isDirty)
 
   const [isAppClosing, setIsAppClosing] = useState(false)
-
-  const [, onSaveKeyPress] = useKeyboardJs(['command + s', 'ctrl + s'])
 
   const blocker = useBlocker(({ historyAction }) => {
     // Don't block navigation when redirecting home from invalid generator
@@ -66,20 +106,22 @@ export function Generator() {
   })
 
   useEffect(() => {
-    if (!generatorFileData) return
-    setGeneratorFile(generatorFileData, recording)
-  }, [setGeneratorFile, generatorFileData, recording])
+    return () => {
+      resetGeneratorFile()
+    }
+  }, [resetGeneratorFile])
 
   useEffect(() => {
-    if (generatorError) {
-      showToast({
-        title: 'Failed to load generator',
-        status: 'error',
-      })
-      log.error(generatorError)
-      navigate(getRoutePath('home'), { replace: true })
+    setGeneratorFile(content.data)
+  }, [content.data, setGeneratorFile])
+
+  useEffect(() => {
+    if (recording !== undefined) {
+      setRecording(recording)
     }
-  }, [generatorError, showToast, navigate])
+
+    setRecordingError(harError)
+  }, [harError, recording, setRecording, setRecordingError])
 
   useEffect(() => {
     if (harError) {
@@ -107,23 +149,27 @@ export function Generator() {
   }, [isDirty])
 
   const handleSaveGenerator = useCallback(() => {
-    const generator = selectGeneratorData(useGeneratorStore.getState())
-    return saveGenerator(generator)
-  }, [saveGenerator])
+    return saveFile({ saveAs: false })
+  }, [saveFile])
 
-  useEffect(() => {
-    ;(async () => {
-      if (onSaveKeyPress && isDirtyRef.current === true) {
-        await handleSaveGenerator()
-      }
-    })()
-  }, [handleSaveGenerator, onSaveKeyPress])
+  const handleChangeRecording = (newPath: string) => {
+    setSelectedRequest(null)
+    setRecordingPath(newPath)
+  }
 
   const handleSaveGeneratorDialog = async () => {
-    await handleSaveGenerator()
+    const location = await handleSaveGenerator()
+
+    if (location === undefined) {
+      setIsAppClosing(false)
+
+      return
+    }
+
     if (isAppClosing) {
       return window.studio.app.closeApplication()
     }
+
     blocker.proceed?.()
   }
 
@@ -131,6 +177,7 @@ export function Generator() {
     if (isAppClosing) {
       return window.studio.app.closeApplication()
     }
+
     blocker.proceed?.()
   }
 
@@ -138,15 +185,23 @@ export function Generator() {
     if (isAppClosing) {
       return window.studio.app.closeApplication()
     }
+
     blocker.reset?.()
   }
 
   return (
     <View
       title="Generator"
-      subTitle={<FileNameHeader file={file} isDirty={isDirty} />}
+      subTitle={
+        <FileNameHeader
+          file={file}
+          isDirty={isDirty}
+          canRename={!content.isExternal}
+        />
+      }
       actions={
         <GeneratorControls
+          file={file}
           onSave={handleSaveGenerator}
           isDirty={isDirty}
           script={scriptPreview}
@@ -154,29 +209,36 @@ export function Generator() {
       }
       loading={isLoading}
     >
-      <Allotment defaultSizes={[1, 1]}>
-        <Allotment.Pane minSize={580}>
-          <Allotment vertical>
-            <Allotment.Pane minSize={200}>
+      <Group {...sidebarLayout}>
+        <Panel id="main" minSize={580}>
+          <Group orientation="vertical" {...mainLayout}>
+            <Panel id="preview" minSize={200}>
               <GeneratorTabs
                 script={scriptPreview}
                 selectedRequest={selectedRequest}
                 onSelectRequest={setSelectedRequest}
+                onChangeRecording={handleChangeRecording}
               />
-            </Allotment.Pane>
-            <Allotment.Pane minSize={200}>
+            </Panel>
+            <Separator />
+            <Panel id="rules" minSize={200}>
               <TestRuleContainer />
-            </Allotment.Pane>
-          </Allotment>
-        </Allotment.Pane>
-
-        <Allotment.Pane minSize={300} visible={selectedRequest !== null}>
-          <HttpRequestDetails
-            selectedRequest={selectedRequest}
-            onSelectRequest={setSelectedRequest}
-          />
-        </Allotment.Pane>
-      </Allotment>
+            </Panel>
+          </Group>
+        </Panel>
+        {selectedRequest && (
+          <>
+            <Separator />
+            <Panel id="request-details" defaultSize="40%" minSize={300}>
+              <HttpRequestDetails
+                layout={detailsLayout}
+                selectedRequest={selectedRequest}
+                onSelectRequest={setSelectedRequest}
+              />
+            </Panel>
+          </>
+        )}
+      </Group>
       <UnsavedChangesDialog
         open={blocker.state === 'blocked' || (isAppClosing && isDirty)}
         onSave={handleSaveGeneratorDialog}
