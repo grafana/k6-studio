@@ -1,4 +1,3 @@
-import { arrayMove } from '@dnd-kit/sortable'
 import { debounce, isEqual } from 'lodash-es'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -13,10 +12,9 @@ import {
   BrowserTestFile,
   BrowserTestOptions,
   defaultBrowserTestOptions,
-  BrowserThreshold,
 } from '@/schemas/browserTest'
 import { StudioFile } from '@/types'
-import { LoadProfileExecutorOptions, LoadZoneData } from '@/types/testOptions'
+import { LoadProfileExecutorOptions } from '@/types/testOptions'
 import { getInitialStages } from '@/utils/generator'
 import { stripUndefined } from '@/utils/object'
 
@@ -165,86 +163,6 @@ export function useBrowserTestState(
     options: initialOptions,
   }))
 
-  const addAction = useCallback((action: AnyBrowserAction) => {
-    setTest((prev) => ({
-      ...prev,
-      actions: [...prev.actions, action],
-    }))
-  }, [])
-
-  const updateAction = useCallback((updatedAction: AnyBrowserAction) => {
-    setTest((prev) => ({
-      ...prev,
-      actions: prev.actions.map((action) =>
-        action.id === updatedAction.id ? updatedAction : action
-      ),
-    }))
-  }, [])
-
-  const removeAction = useCallback((id: string) => {
-    setTest((prev) => ({
-      ...prev,
-      actions: prev.actions.filter((action) => action.id !== id),
-    }))
-  }, [])
-
-  const reorderActions = useCallback((activeId: string, overId: string) => {
-    setTest((prev) => {
-      const oldIndex = prev.actions.findIndex(
-        (action) => action.id === activeId
-      )
-      const newIndex = prev.actions.findIndex((action) => action.id === overId)
-
-      if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
-        return prev
-      }
-
-      return {
-        ...prev,
-        actions: arrayMove(prev.actions, oldIndex, newIndex),
-      }
-    })
-  }, [])
-
-  const setLoadProfile = useCallback(
-    (loadProfile: LoadProfileExecutorOptions) => {
-      setTest((prev) => ({
-        ...prev,
-        options: {
-          ...prev.options,
-          loadProfile: {
-            ...prev.options.loadProfile,
-            ...loadProfile,
-          },
-        },
-      }))
-    },
-    []
-  )
-
-  const setThresholds = useCallback((thresholds: BrowserThreshold[]) => {
-    setTest((prev) => ({
-      ...prev,
-      options: {
-        ...prev.options,
-        thresholds,
-      },
-    }))
-  }, [])
-
-  const setLoadZones = useCallback((loadZones: LoadZoneData) => {
-    setTest((prev) => ({
-      ...prev,
-      options: {
-        ...prev.options,
-        cloud: {
-          ...prev.options.cloud,
-          loadZones,
-        },
-      },
-    }))
-  }, [])
-
   const markAsSaved = useCallback(() => {
     setSavedTest(test)
   }, [test])
@@ -267,17 +185,8 @@ export function useBrowserTestState(
 
   return {
     test,
-    setTest,
     isDirty,
-    actions: test.actions,
-    options: test.options,
+    setTest,
     markAsSaved,
-    addAction,
-    updateAction,
-    removeAction,
-    reorderActions,
-    setLoadProfile,
-    setThresholds,
-    setLoadZones,
   }
 }
