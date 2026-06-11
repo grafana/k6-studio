@@ -215,12 +215,7 @@ function BrowserEventsSection({ children }: BrowserEventsSectionProps) {
     <Flex direction="column" gap="1">
       <Text size="2" weight="medium">
         <Flex align="center" gap="1">
-          <span>
-            Browser Events{' '}
-            <Text size="1" weight="light">
-              (Preview)
-            </Text>
-          </span>
+          <span>Browser Events</span>
           <Tooltip
             content={
               <>
