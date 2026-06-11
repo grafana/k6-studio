@@ -1,6 +1,5 @@
-import { readFileSync } from 'fs'
-
 import react from '@vitejs/plugin-react'
+import { readFileSync } from 'fs'
 import { defineConfig, type ConfigEnv, type UserConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
