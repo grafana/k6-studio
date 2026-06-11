@@ -6,7 +6,7 @@ import { ContainerProvider } from '@/components/primitives/ContainerProvider'
 import { Theme } from '@/components/primitives/Theme'
 import { BrowserExtensionClient } from '@/recorder/browser/messaging'
 
-import { GlobalStyles } from './GlobalStyles'
+import { GlobalStyles, INTER_VARIABLE_FONT_FAMILY } from './GlobalStyles'
 import { InBrowserControls } from './InBrowserControls'
 import { SettingsProvider, SettingsStorage } from './SettingsProvider'
 import { StudioClientProvider } from './StudioClientProvider'
@@ -225,7 +225,11 @@ export function initializeView(
           <SettingsProvider storage={storage}>
             <ContainerProvider container={root}>
               <CacheProvider value={shadowCache}>
-                <Theme root={false} includeColors />
+                <Theme
+                  root={false}
+                  includeColors
+                  fontFamily={INTER_VARIABLE_FONT_FAMILY}
+                />
                 <InBrowserControls />
               </CacheProvider>
             </ContainerProvider>

@@ -163,7 +163,6 @@ const styles = css`
   }
 
   font-family: var(--studio-font-family);
-  background-color: var(--studio-background);
   color: var(--studio-foreground);
 
   & :focus-visible {
@@ -308,15 +307,27 @@ const styles = css`
   }
 `
 
-const getStyles = (root: boolean, includeColors: boolean) => {
+const getStyles = (
+  root: boolean,
+  includeColors: boolean,
+  fontFamily?: string
+) => {
   if (!root) {
     return css`
       :host {
+        all: revert;
+      }
+
+      :host [data-ksix-studio] {
+        background-color: transparent;
+
         ${includeColors ? getColors() : ''}
 
         ${styles};
 
         --studio-layer-0: 999999990;
+
+        ${fontFamily ? `--studio-font-family: ${fontFamily};` : ''}
       }
     `
   }
@@ -333,13 +344,18 @@ const getStyles = (root: boolean, includeColors: boolean) => {
 interface ThemeProps {
   root?: boolean
   includeColors?: boolean
+  fontFamily?: string
 }
 
-export function Theme({ root = true, includeColors = false }: ThemeProps) {
-  const styles = useMemo(
-    () => getStyles(root, includeColors),
-    [root, includeColors]
+export function Theme({
+  root = true,
+  includeColors = false,
+  fontFamily,
+}: ThemeProps) {
+  const themeStyles = useMemo(
+    () => getStyles(root, includeColors, fontFamily),
+    [root, includeColors, fontFamily]
   )
 
-  return <Global styles={styles} />
+  return <Global styles={themeStyles} />
 }
