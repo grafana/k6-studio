@@ -53,13 +53,14 @@ export function RecordingPreviewControls({
 
   const [isSelectPageOpen, setIsSelectPageOpen] = useState(false)
 
-  // Only offer pages that produce at least one browser action. Internal-only
-  // tabs (e.g. a `chrome://new-tab-page/` that never navigated anywhere) would
-  // otherwise show up in the picker and create an empty test.
+  // Only offer pages that start with a navigation, since a browser test needs a
+  // `page.goto` to land on before any interaction. This drops internal-only tabs
+  // (e.g. a `chrome://new-tab-page/`) and stray tabs that only captured a click,
+  // both of which would otherwise show up labelled by their raw tab id.
   const pages = useMemo(
     () =>
-      groupEventsByPage(browserEvents).filter(
-        (page) => toPageActions(page).length > 0
+      groupEventsByPage(browserEvents).filter((page) =>
+        toPageActions(page).some((action) => action.method === 'page.goto')
       ),
     [browserEvents]
   )
