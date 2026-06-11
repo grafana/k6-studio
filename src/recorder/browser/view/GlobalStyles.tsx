@@ -20,9 +20,6 @@ export function useGlobalClass(name: GlobalClass) {
   }, [name])
 }
 
-export const INTER_VARIABLE_FONT_FAMILY =
-  "'InterVariable', -apple-system, BlinkMacSystemFont, 'Segoe UI (Custom)', Roboto, 'Helvetica Neue', 'Open Sans (Custom)', system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji'"
-
 export function GlobalStyles() {
   return (
     <Global

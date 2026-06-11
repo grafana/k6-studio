@@ -75,10 +75,7 @@ function toStyles(colors: { [key: string]: string }) {
 const styles = css`
   --studio-color-scheme: light;
 
-  --studio-font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI (Custom)', Roboto,
-    'Helvetica Neue', 'Open Sans (Custom)', system-ui, sans-serif,
-    'Apple Color Emoji', 'Segoe UI Emoji';
+  --studio-font-family: InterVariable;
 
   --studio-foreground: var(--gray-12);
   --studio-background: white;
@@ -307,11 +304,7 @@ const styles = css`
   }
 `
 
-const getStyles = (
-  root: boolean,
-  includeColors: boolean,
-  fontFamily?: string
-) => {
+const getStyles = (root: boolean, includeColors: boolean) => {
   if (!root) {
     return css`
       :host {
@@ -326,8 +319,6 @@ const getStyles = (
         ${styles};
 
         --studio-layer-0: 999999990;
-
-        ${fontFamily ? `--studio-font-family: ${fontFamily};` : ''}
       }
     `
   }
@@ -344,17 +335,12 @@ const getStyles = (
 interface ThemeProps {
   root?: boolean
   includeColors?: boolean
-  fontFamily?: string
 }
 
-export function Theme({
-  root = true,
-  includeColors = false,
-  fontFamily,
-}: ThemeProps) {
+export function Theme({ root = true, includeColors = false }: ThemeProps) {
   const themeStyles = useMemo(
-    () => getStyles(root, includeColors, fontFamily),
-    [root, includeColors, fontFamily]
+    () => getStyles(root, includeColors),
+    [root, includeColors]
   )
 
   return <Global styles={themeStyles} />
