@@ -8,17 +8,13 @@ import {
 import { useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
-import { emitScript } from '@/codegen/browser'
 import { convertEventsToActions } from '@/codegen/browser/convertEventsToActions'
-import { convertEventsToTest } from '@/codegen/browser/test'
 import { RichDropdownMenuItem } from '@/components/RichDropdownMenuItem'
 import { useCreateBrowserTest } from '@/hooks/useCreateBrowserTest'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
-import { useExportScript } from '@/hooks/useExportScript'
 import { getRoutePath } from '@/routeMap'
 import { BrowserEvent } from '@/schemas/recording'
-import { useFeaturesStore } from '@/store/features'
 import { ProxyData, StudioFile } from '@/types'
 import {
   EventPage,
@@ -53,9 +49,6 @@ export function RecordingPreviewControls({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const isDiscardable = Boolean(state?.discardable)
 
-  const isBrowserEditorEnabled = useFeaturesStore(
-    (state) => state.features['browser-test-editor']
-  )
   const createBrowserTest = useCreateBrowserTest()
 
   const [isSelectPageOpen, setIsSelectPageOpen] = useState(false)
@@ -90,10 +83,6 @@ export function RecordingPreviewControls({
     void createBrowserTest(toPageActions(page))
   }
 
-  const browserTestDescription = isBrowserEditorEnabled
-    ? 'Create a browser test from recorded interactions'
-    : 'Export a k6 script simulating browser interactions'
-
   const handleDelete = useDeleteFile({
     file,
     navigateHomeOnDelete: false,
@@ -108,27 +97,6 @@ export function RecordingPreviewControls({
     handleDelete()
     navigate(getRoutePath('home'))
   }
-
-  const exportScript = useExportScript({
-    enableMenuItem: browserEvents.length > 0,
-    openOnSave: true,
-    fileName: 'my-browser-script.js',
-    content: async () => {
-      const test = convertEventsToTest({
-        browserEvents,
-      })
-
-      return await emitScript(test)
-    },
-  })
-
-  const handleExportBrowserScript = () => {
-    void exportScript()
-  }
-
-  const handleBrowserTest = isBrowserEditorEnabled
-    ? handleCreateBrowserTest
-    : handleExportBrowserScript
 
   return (
     <>
@@ -158,9 +126,9 @@ export function RecordingPreviewControls({
           <RichDropdownMenuItem
             icon={<MonitorIcon />}
             label="Browser test"
-            description={browserTestDescription}
+            description="Create a browser test from recorded interactions"
             disabled={pages.length === 0}
-            onSelect={handleBrowserTest}
+            onSelect={handleCreateBrowserTest}
           />
         </DropdownMenu.Content>
       </DropdownMenu.Root>

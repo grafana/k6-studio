@@ -89,6 +89,17 @@ export interface NewRoleLocatorExpression {
   options: Expression | null
 }
 
+export interface NewFrameLocatorExpression {
+  type: 'NewFrameLocatorExpression'
+  parent: Expression
+  selector: Expression
+}
+
+export interface ContentFrameExpression {
+  type: 'ContentFrameExpression'
+  target: Expression
+}
+
 export interface GotoExpression {
   type: 'GotoExpression'
   target: Expression
@@ -249,6 +260,8 @@ export type Expression =
   | NewAltTextLocatorExpression
   | NewCssLocatorExpression
   | NewTestIdLocatorExpression
+  | NewFrameLocatorExpression
+  | ContentFrameExpression
   | GotoExpression
   | ReloadExpression
   | ClearExpression
