@@ -66,8 +66,14 @@ export function normalizeEntryNavigation(
     return events
   }
 
-  // A click or form submission only triggers a navigation that immediately
-  // follows it, so only the directly preceding action can own this navigation.
+  // We model an implicit navigation as the result of the action directly before
+  // it (this mirrors how `isFollowedByImplicitNavigation` pairs a click with the
+  // navigation it causes). So if the preceding event is a click or form submit,
+  // the navigation is an in-page result and we leave it alone. Otherwise it is
+  // an orphan to promote. For example, a tab opened from another tab starts with
+  // [navigate(chrome://new-tab-page), navigate(https://app)]: nothing in this
+  // tab triggered the app navigation, so it is promoted. A same-tab
+  // [click, navigate(https://app)] is left as-is, since the click owns it.
   const previous = events[entryIndex - 1]
   const triggeredByPreviousAction =
     previous?.type === 'click' || previous?.type === 'submit-form'
