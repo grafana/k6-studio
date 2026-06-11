@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - release/*
 
 permissions: {}
 
@@ -15,6 +16,10 @@ jobs:
       id-token: write
 
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      sha: ${{ steps.release.outputs.sha }}
     steps:
       - name: Get GitHub App token
         id: get-github-app-token
@@ -22,6 +27,25 @@ jobs:
         with:
           github_app: k6-release-app
 
-      - uses: googleapis/release-please-action@16a9c90856f42705d54a6fda1823352bdc62cf38 # v4.4.0
+      - id: release
+        uses: googleapis/release-please-action@16a9c90856f42705d54a6fda1823352bdc62cf38 # v4.4.0
         with:
           token: ${{ steps.get-github-app-token.outputs.token }}
+
+  # The draft GitHub release that release-please creates does not push a git tag
+  # (GitHub only creates the tag when the draft is published), so the build runs
+  # against the SHA release-please reports rather than refs/tags/<tag_name>.
+  # publisher-github finds the existing draft by tag_name and uploads artifacts.
+  release:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    permissions:
+      contents: write
+      id-token: write
+    concurrency:
+      group: build-${{ needs.release-please.outputs.tag_name }}
+      cancel-in-progress: false
+    uses: ./.github/workflows/release-base.yml
+    with:
+      ref: ${{ needs.release-please.outputs.sha }}
+    secrets: inherit
