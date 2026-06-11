@@ -53,6 +53,8 @@ function isBrowserScenario(scenario: ir.Scenario) {
       case 'NewPlaceholderLocatorExpression':
       case 'NewTitleLocatorExpression':
       case 'NewTestIdLocatorExpression':
+      case 'NewFrameLocatorExpression':
+      case 'ContentFrameExpression':
       case 'ClearExpression':
       case 'ClickExpression':
       case 'ClickOptionsExpression':

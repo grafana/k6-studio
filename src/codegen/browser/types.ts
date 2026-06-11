@@ -27,6 +27,9 @@ export interface PageNode extends NodeBase {
 export interface LocatorNode extends NodeBase {
   type: 'locator'
   locator: ElementLocator
+  // Chain of iframe locators from the page down to the frame the element lives
+  // in, outermost first. Empty or absent means the top frame.
+  frames?: ElementLocator[]
   inputs: {
     page: NodeRef
   }

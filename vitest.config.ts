@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import viteTsconfigPaths from 'vite-tsconfig-paths'
 import { defineConfig, configDefaults } from 'vitest/config'
 
@@ -9,6 +10,11 @@ export default defineConfig({
     exclude: [...configDefaults.exclude, 'e2e/**'],
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+    alias: {
+      'k6/http': fileURLToPath(
+        new URL('./src/test/stubs/k6-http.ts', import.meta.url)
+      ),
+    },
   },
   define: {
     'import.meta.vitest': 'undefined',
