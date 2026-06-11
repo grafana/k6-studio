@@ -338,10 +338,10 @@ interface ThemeProps {
 }
 
 export function Theme({ root = true, includeColors = false }: ThemeProps) {
-  const themeStyles = useMemo(
+  const styles = useMemo(
     () => getStyles(root, includeColors),
     [root, includeColors]
   )
 
-  return <Global styles={themeStyles} />
+  return <Global styles={styles} />
 }
