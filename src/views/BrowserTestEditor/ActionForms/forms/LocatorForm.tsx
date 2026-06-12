@@ -8,7 +8,7 @@ import {
   Tooltip,
 } from '@radix-ui/themes'
 import { WholeWordIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { ReactElement, useEffect, useState } from 'react'
 
 import { LocatorIcon, LocatorText } from '@/components/Browser/Locator'
 import { FieldGroup } from '@/components/Form'
@@ -16,8 +16,10 @@ import { useHighlightLocator } from '@/components/HighlightLocatorProvider'
 import { ElementLocator, LocatorOptions } from '@/schemas/locator'
 import { exhaustive } from '@/utils/typescript'
 
+import { useFrameChain } from '../../FrameChainContext'
 import { ValuePopoverBadge } from '../components'
 
+import { FrameChainForm } from './FrameChainForm'
 import {
   GetByAltTextForm,
   GetByCssForm,
@@ -50,8 +52,9 @@ export function LocatorForm({
   state: { current, values },
   onChange,
   suggestedRoles,
-}: LocatorFormProps) {
+}: LocatorFormProps): ReactElement {
   const highlightSelector = useHighlightLocator()
+  const { frames, onChange: onChangeFrames } = useFrameChain()
 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 
@@ -72,13 +75,13 @@ export function LocatorForm({
     }
 
     const debounce = setTimeout(() => {
-      highlightSelector(currentLocator)
+      highlightSelector({ locator: currentLocator, frames })
     }, 100)
 
     return () => {
       clearTimeout(debounce)
     }
-  }, [isPopoverOpen, currentLocator, highlightSelector])
+  }, [isPopoverOpen, currentLocator, frames, highlightSelector])
 
   useEffect(() => {
     return () => {
@@ -87,7 +90,7 @@ export function LocatorForm({
   }, [highlightSelector])
 
   const handlePointerEnter = () => {
-    highlightSelector(currentLocator)
+    highlightSelector({ locator: currentLocator, frames })
   }
 
   const handlePointerLeave = () => {
@@ -162,34 +165,42 @@ export function LocatorForm({
         />
       </Popover.Trigger>
       <Popover.Content align="start" size="1" width="400px">
-        <Grid gap="3" columns="auto auto 1fr">
-          <FieldGroup name="locator-type" label="Get by" labelSize="1" mb="0">
-            <RadioGroup.Root
-              size="1"
-              name="locator-type"
-              value={current}
-              onValueChange={handleChangeCurrent}
-            >
-              {Object.entries(LOCATOR_TYPES)
-                // TODO: temporarily hide 'text' until codegen support is added
-                .filter(([type]) => type !== 'text')
-                .map(([type, label]) => (
-                  <RadioGroup.Item value={type} key={type}>
-                    {label}
-                  </RadioGroup.Item>
-                ))}
-            </RadioGroup.Root>
-          </FieldGroup>
+        <Flex direction="column" gap="3">
+          {onChangeFrames !== undefined && (
+            <>
+              <FrameChainForm frames={frames} onChange={onChangeFrames} />
+              <Separator size="4" decorative />
+            </>
+          )}
+          <Grid gap="3" columns="auto auto 1fr">
+            <FieldGroup name="locator-type" label="Get by" labelSize="1" mb="0">
+              <RadioGroup.Root
+                size="1"
+                name="locator-type"
+                value={current}
+                onValueChange={handleChangeCurrent}
+              >
+                {Object.entries(LOCATOR_TYPES)
+                  // TODO: temporarily hide 'text' until codegen support is added
+                  .filter(([type]) => type !== 'text')
+                  .map(([type, label]) => (
+                    <RadioGroup.Item value={type} key={type}>
+                      {label}
+                    </RadioGroup.Item>
+                  ))}
+              </RadioGroup.Root>
+            </FieldGroup>
 
-          <Separator orientation="vertical" size="4" decorative />
-          <LocatorFieldsForm
-            locator={currentLocator}
-            errors={validation.fieldErrors}
-            onChange={handleLocatorChange}
-            onBlur={handleFieldBlur}
-            suggestedRoles={suggestedRoles}
-          />
-        </Grid>
+            <Separator orientation="vertical" size="4" decorative />
+            <LocatorFieldsForm
+              locator={currentLocator}
+              errors={validation.fieldErrors}
+              onChange={handleLocatorChange}
+              onBlur={handleFieldBlur}
+              suggestedRoles={suggestedRoles}
+            />
+          </Grid>
+        </Flex>
       </Popover.Content>
     </Popover.Root>
   )
