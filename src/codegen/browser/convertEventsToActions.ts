@@ -1,5 +1,6 @@
 import { AnyBrowserAction, LocatorClickModifier } from '@/schemas/browserTest'
 import { BrowserEvent, ClickEvent } from '@/schemas/recording'
+import { isWebUrl } from '@/utils/browserEvents'
 import { toFrameOptions, toLocatorOptions } from '@/utils/locator'
 import { exhaustive } from '@/utils/typescript'
 
@@ -31,13 +32,19 @@ function convertEvent(
   nextEvent?: BrowserEvent
 ): AnyBrowserAction | undefined {
   // Page-level events have no element target and so no frame scope.
+  if (event.type === 'tab-opened') {
+    return undefined
+  }
+
   if (event.type === 'navigate-to-page') {
-    if (event.source === 'implicit') return undefined
+    if (event.source === 'implicit' || !isWebUrl(event.url)) return undefined
 
     return { id: crypto.randomUUID(), method: 'page.goto', url: event.url }
   }
 
   if (event.type === 'reload-page') {
+    if (!isWebUrl(event.url)) return undefined
+
     return { id: crypto.randomUUID(), method: 'page.reload' }
   }
 

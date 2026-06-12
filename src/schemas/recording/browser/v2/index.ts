@@ -39,6 +39,11 @@ const TargetedEventBaseSchema = BrowserEventBaseSchema.extend({
   frames: BrowserEventTargetSchema.array().optional(),
 })
 
+const TabOpenedEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('tab-opened'),
+  tab: z.string(),
+})
+
 const NavigateToPageEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('navigate-to-page'),
   tab: z.string(),
@@ -171,6 +176,7 @@ const WaitForEventSchema = TargetedEventBaseSchema.extend({
 })
 
 export const BrowserEventSchema = z.discriminatedUnion('type', [
+  TabOpenedEventSchema,
   NavigateToPageEventSchema,
   ReloadPageEventSchema,
   ClickEventSchema,
@@ -195,6 +201,7 @@ export type RoleElementSelector = z.infer<typeof RoleElementSelectorSchema>
 export type ElementSelector = z.infer<typeof ElementSelectorSchema>
 export type CheckState = z.infer<typeof CheckStateSchema>
 
+export type TabOpenedEvent = z.infer<typeof TabOpenedEventSchema>
 export type NavigateToPageEvent = z.infer<typeof NavigateToPageEventSchema>
 export type ReloadPageEvent = z.infer<typeof ReloadPageEventSchema>
 export type ClickEvent = z.infer<typeof ClickEventSchema>

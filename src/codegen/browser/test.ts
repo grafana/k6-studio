@@ -7,6 +7,7 @@ import {
   BrowserEvent,
   BrowserEventTarget,
 } from '@/schemas/recording'
+import { isWebUrl } from '@/utils/browserEvents'
 import { toClickButton, toClickModifiers } from '@/utils/clickOptions'
 import { getElementLocator, isLocatorEqual } from '@/utils/locator'
 import { exhaustive } from '@/utils/typescript'
@@ -201,8 +202,11 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
     nextEvent?: BrowserEvent
   ): TestNode | null {
     switch (event.type) {
+      case 'tab-opened':
+        return null
+
       case 'navigate-to-page':
-        if (event.source === 'implicit') {
+        if (event.source === 'implicit' || !isWebUrl(event.url)) {
           return null
         }
 
@@ -218,6 +222,10 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
         }
 
       case 'reload-page':
+        if (!isWebUrl(event.url)) {
+          return null
+        }
+
         return {
           type: 'reload',
           nodeId: event.eventId,

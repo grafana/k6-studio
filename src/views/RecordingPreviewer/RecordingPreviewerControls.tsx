@@ -5,6 +5,7 @@ import {
   MonitorIcon,
   ServerCogIcon,
 } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { convertEventsToActions } from '@/codegen/browser/convertEventsToActions'
@@ -15,6 +16,17 @@ import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { getRoutePath } from '@/routeMap'
 import { BrowserEvent } from '@/schemas/recording'
 import { ProxyData, StudioFile } from '@/types'
+import {
+  EventPage,
+  groupEventsByPage,
+  normalizeEntryNavigation,
+} from '@/utils/browserEvents'
+
+import { SelectPageDialog } from './SelectPageDialog'
+
+function toPageActions(page: EventPage) {
+  return convertEventsToActions(normalizeEntryNavigation(page.events))
+}
 
 interface RecordingPreviewControlsProps {
   file: StudioFile
@@ -39,11 +51,37 @@ export function RecordingPreviewControls({
 
   const createBrowserTest = useCreateBrowserTest()
 
+  const [isSelectPageOpen, setIsSelectPageOpen] = useState(false)
+
+  // Only offer pages that start with a navigation, since a browser test needs a
+  // `page.goto` to land on before any interaction. This drops internal-only tabs
+  // (e.g. a `chrome://new-tab-page/`) and stray tabs that only captured a click,
+  // both of which would otherwise show up labelled by their raw tab id.
+  const pages = useMemo(
+    () =>
+      groupEventsByPage(browserEvents).filter((page) =>
+        toPageActions(page).some((action) => action.method === 'page.goto')
+      ),
+    [browserEvents]
+  )
+
   const handleCreateGenerator = () => createTestGenerator(file.path)
 
   const handleCreateBrowserTest = () => {
-    const actions = convertEventsToActions(browserEvents)
-    void createBrowserTest(actions)
+    if (pages.length > 1) {
+      setIsSelectPageOpen(true)
+      return
+    }
+
+    const page = pages[0]
+    if (page) {
+      void createBrowserTest(toPageActions(page))
+    }
+  }
+
+  const handleSelectPage = (page: EventPage) => {
+    setIsSelectPageOpen(false)
+    void createBrowserTest(toPageActions(page))
   }
 
   const handleDelete = useDeleteFile({
@@ -90,7 +128,7 @@ export function RecordingPreviewControls({
             icon={<MonitorIcon />}
             label="Browser test"
             description="Create a browser test from recorded interactions"
-            disabled={browserEvents.length === 0}
+            disabled={pages.length === 0}
             onSelect={handleCreateBrowserTest}
           />
         </DropdownMenu.Content>
@@ -110,6 +148,12 @@ export function RecordingPreviewControls({
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
+      <SelectPageDialog
+        open={isSelectPageOpen}
+        onOpenChange={setIsSelectPageOpen}
+        pages={pages}
+        onSelectPage={handleSelectPage}
+      />
     </>
   )
 }
