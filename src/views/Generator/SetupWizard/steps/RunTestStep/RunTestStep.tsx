@@ -278,7 +278,10 @@ export function RunTestStep({
         <Button variant="ghost" color="gray" onClick={onComplete}>
           Go to generator
         </Button>
-        <Button disabled={!script.valid || isSaving} onClick={handleSaveAndRun}>
+        <Button
+          disabled={!script.valid || isSaving || isDialogOpen}
+          onClick={handleSaveAndRun}
+        >
           Save & Run <RocketIcon size={16} />
         </Button>
       </Flex>

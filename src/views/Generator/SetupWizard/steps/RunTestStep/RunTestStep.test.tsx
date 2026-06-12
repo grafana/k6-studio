@@ -147,6 +147,10 @@ describe('RunTestStep', () => {
     await waitFor(() =>
       expect(screen.getByTestId('run-in-cloud-dialog')).toBeDefined()
     )
+    expect(screen.getByRole('button', { name: /Save & Run/ })).toHaveProperty(
+      'disabled',
+      true
+    )
   })
 
   it('completes the wizard when the cloud run starts', async () => {
