@@ -8,41 +8,12 @@ import {
   Text,
   TextField,
 } from '@radix-ui/themes'
-import { EyeIcon, EyeOffIcon, LockIcon, XIcon } from 'lucide-react'
-import { useState } from 'react'
+import { LockIcon, XIcon } from 'lucide-react'
 
 import { useGeneratorStore } from '@/store/generator'
 import { ParameterizationRule } from '@/types/rules'
 
 import { ParamSuggestionMeta } from '../../state/types'
-
-function RecordedValue({
-  meta,
-}: {
-  meta: Pick<ParamSuggestionMeta, 'secret' | 'recordedValue'>
-}) {
-  const [isRevealed, setIsRevealed] = useState(false)
-
-  if (!meta.secret) {
-    return <Code size="2">{meta.recordedValue}</Code>
-  }
-
-  return (
-    <Flex gap="2" align="center">
-      <LockIcon size={14} color="var(--gray-9)" />
-      <Code size="2">{isRevealed ? meta.recordedValue : '••••••••'}</Code>
-      <IconButton
-        size="1"
-        variant="ghost"
-        color="gray"
-        aria-label={isRevealed ? 'Hide value' : 'Reveal value'}
-        onClick={() => setIsRevealed((previous) => !previous)}
-      >
-        {isRevealed ? <EyeOffIcon size={14} /> : <EyeIcon size={14} />}
-      </IconButton>
-    </Flex>
-  )
-}
 
 function VariableValueField({ variableName }: { variableName: string }) {
   const variables = useGeneratorStore((store) => store.variables)
@@ -70,6 +41,35 @@ function VariableValueField({ variableName }: { variableName: string }) {
   )
 }
 
+function LocationBadge({
+  location,
+}: {
+  location: ParamSuggestionMeta['location']
+}) {
+  return (
+    <Badge
+      color="gray"
+      variant="soft"
+      title={`${location.method} ${location.path}`}
+      css={{ minWidth: 0 }}
+    >
+      <Code
+        size="1"
+        variant="ghost"
+        css={{
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          maxWidth: 420,
+        }}
+      >
+        {location.method} {location.path}
+      </Code>
+      <Text css={{ whiteSpace: 'nowrap' }}>· in:{location.in}</Text>
+    </Badge>
+  )
+}
+
 interface ParamCardProps {
   meta: ParamSuggestionMeta
   rule: ParameterizationRule
@@ -85,19 +85,16 @@ export function ParamCard({ meta, rule }: ParamCardProps) {
   return (
     <Card size="2">
       <Flex direction="column" gap="3">
-        <Flex gap="2" align="center" wrap="wrap">
-          <Text size="2" weight="bold">
+        <Flex gap="2" align="center">
+          <Text size="2" weight="bold" css={{ whiteSpace: 'nowrap' }}>
             {meta.field}
           </Text>
-          <Badge color="gray" variant="soft">
-            <Code size="1" variant="ghost">
-              {meta.location.method} {meta.location.path}
-            </Code>
-            · in:{meta.location.in}
-          </Badge>
-          <Badge color={meta.confidence === 'high' ? 'green' : 'amber'}>
-            {meta.confidence} confidence
-          </Badge>
+          <LocationBadge location={meta.location} />
+          {meta.confidence === 'low' && (
+            <Badge color="amber" css={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
+              review suggested
+            </Badge>
+          )}
           <Flex flexGrow="1" />
           <Switch
             size="1"
@@ -115,26 +112,20 @@ export function ParamCard({ meta, rule }: ParamCardProps) {
             <XIcon size={14} />
           </IconButton>
         </Flex>
-        <Flex gap="6" align="end" wrap="wrap">
-          <Flex direction="column" gap="1">
-            <Text size="1" color="gray">
-              Recorded value
-            </Text>
-            <Flex css={{ minHeight: 'var(--space-6)' }} align="center">
-              <RecordedValue meta={meta} />
-            </Flex>
-          </Flex>
-          <Flex
-            direction="column"
-            gap="1"
-            flexGrow="1"
-            css={{ minWidth: 220, maxWidth: 420 }}
-          >
+        <Flex direction="column" gap="1" css={{ maxWidth: 460 }}>
+          <Flex gap="1" align="center">
             <Text size="1" color="gray">
               Replaced with variable <Code size="1">{variableName}</Code>
             </Text>
-            <VariableValueField variableName={variableName} />
+            {meta.secret && (
+              <LockIcon
+                size={12}
+                color="var(--gray-9)"
+                aria-label="Sensitive value"
+              />
+            )}
           </Flex>
+          <VariableValueField variableName={variableName} />
         </Flex>
       </Flex>
     </Card>

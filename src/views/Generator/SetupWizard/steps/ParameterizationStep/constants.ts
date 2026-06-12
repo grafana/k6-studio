@@ -16,7 +16,7 @@ export const parameterSchema = z.object({
   confidence: z
     .enum(['high', 'low'])
     .describe(
-      'high when the value clearly should be a variable, low when the user should double-check'
+      'high ONLY for values that must vary, like credentials and API keys. low for everything else - tunables, date ranges, page sizes, and any guess the user should double-check.'
     ),
   secret: z
     .boolean()

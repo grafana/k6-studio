@@ -45,30 +45,36 @@ beforeEach(() => {
 })
 
 describe('ParamCard', () => {
-  it('masks secret values until revealed', async () => {
-    renderCard()
-
-    expect(screen.queryByText('S3cret!')).toBeNull()
-
-    await userEvent.click(screen.getByRole('button', { name: 'Reveal value' }))
-
-    expect(screen.getByText('S3cret!')).toBeDefined()
-  })
-
-  it('shows the recorded value directly for non-secret parameters', () => {
-    renderCard({ secret: false })
-
-    expect(screen.getByText('S3cret!')).toBeDefined()
-    expect(screen.queryByRole('button', { name: 'Reveal value' })).toBeNull()
-  })
-
-  it('shows the variable the value is replaced with', () => {
+  it('shows the variable the value is replaced with, prefilled', () => {
     renderCard()
 
     expect(screen.getByText('password', { selector: 'code' })).toBeDefined()
     expect(
       screen.getByRole('textbox', { name: 'Value of password' })
     ).toHaveProperty('value', 'S3cret!')
+  })
+
+  it('marks sensitive values with a lock', () => {
+    renderCard()
+
+    expect(screen.getByLabelText('Sensitive value')).toBeDefined()
+  })
+
+  it('flags low-confidence suggestions and stays quiet for high ones', () => {
+    const { unmount } = renderCard({ confidence: 'low' })
+
+    expect(screen.getByText('review suggested')).toBeDefined()
+
+    unmount()
+    renderCard()
+
+    expect(screen.queryByText('review suggested')).toBeNull()
+  })
+
+  it('shows no lock for non-secret values', () => {
+    renderCard({ secret: false })
+
+    expect(screen.queryByLabelText('Sensitive value')).toBeNull()
   })
 
   it('edits the variable value in the store', async () => {
