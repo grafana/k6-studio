@@ -15,6 +15,21 @@ export interface ParameterizationProposal {
   meta: ParamSuggestionMeta
 }
 
+/**
+ * Rules apply JSON selectors with lodash get/set, which expects object paths
+ * like "user.email". Models often produce JSONPath ("$.user.email") instead,
+ * which lodash treats as a literal "$" key and never matches.
+ */
+function normalizeSelector(
+  selector: AiParameter['selector']
+): AiParameter['selector'] {
+  if (selector.type !== 'json') {
+    return selector
+  }
+
+  return { ...selector, path: selector.path.replace(/^\$\.?/, '') }
+}
+
 export function aiParameterToRule(
   parameter: AiParameter
 ): ParameterizationProposal {
@@ -23,7 +38,7 @@ export function aiParameterToRule(
     type: 'parameterization',
     enabled: true,
     filter: { path: parameter.location.path },
-    selector: parameter.selector,
+    selector: normalizeSelector(parameter.selector),
     value: { type: 'variable', variableName: parameter.variableName },
   }
 

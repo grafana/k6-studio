@@ -27,7 +27,7 @@ export const parameterSchema = z.object({
     .string()
     .describe('The value as it appears in the recording'),
   selector: ReplacerSelectorSchema.describe(
-    'How to locate the value inside the matched requests'
+    'How to locate the value inside the matched requests. A json selector path is a plain object path like "user.email" - never JSONPath, no "$." prefix.'
   ),
   variableName: z
     .string()
@@ -78,6 +78,7 @@ Do NOT parameterize values that are correlated session state (tokens or IDs extr
 
 - variableName must contain only letters, digits, and underscores (e.g. "username", "max_calories").
 - A "json" selector always has from: "body". For values in the URL or query string use a "regex" or "begin-end" selector with from: "url"; for header values use from: "headers".
+- A "json" selector path is a plain object path like "user.email" or "items[0].id". NEVER use JSONPath syntax - no "$." prefix.
 
 ## Process
 

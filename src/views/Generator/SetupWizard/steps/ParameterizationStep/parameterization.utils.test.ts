@@ -50,6 +50,40 @@ describe('aiParameterToRule', () => {
     })
   })
 
+  it.each([
+    ['$.user.email', 'user.email'],
+    ['$.items[0].id', 'items[0].id'],
+    ["$['user']['email']", "['user']['email']"],
+    ['user.email', 'user.email'],
+  ])(
+    'normalizes the JSONPath-style selector path %s to %s',
+    (path, expected) => {
+      const { rule } = aiParameterToRule({
+        ...parameter,
+        selector: { type: 'json', from: 'body', path },
+      })
+
+      expect(rule.selector).toEqual({
+        type: 'json',
+        from: 'body',
+        path: expected,
+      })
+    }
+  )
+
+  it('leaves non-json selector paths untouched', () => {
+    const { rule } = aiParameterToRule({
+      ...parameter,
+      selector: { type: 'regex', from: 'url', regex: '\\$\\.(\\d+)' },
+    })
+
+    expect(rule.selector).toEqual({
+      type: 'regex',
+      from: 'url',
+      regex: '\\$\\.(\\d+)',
+    })
+  })
+
   it('generates unique rule ids', () => {
     const first = aiParameterToRule(parameter)
     const second = aiParameterToRule(parameter)
