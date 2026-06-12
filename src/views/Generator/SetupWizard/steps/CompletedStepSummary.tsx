@@ -19,17 +19,25 @@ export function CompletedStepSummary({
 }: CompletedStepSummaryProps) {
   return (
     <Flex direction="column" gap="3">
-      <Flex gap="3" align="center">
-        <Box flexGrow="1">
-          <Callout.Root color="green">
-            <Callout.Icon>
-              <CheckIcon size={16} />
-            </Callout.Icon>
-            <Callout.Text>{summary}</Callout.Text>
-          </Callout.Root>
+      <Callout.Root
+        color="green"
+        css={{ position: 'relative', paddingRight: 'calc(var(--space-9) * 2)' }}
+      >
+        <Callout.Icon>
+          <CheckIcon size={16} />
+        </Callout.Icon>
+        <Callout.Text>{summary}</Callout.Text>
+        <Box
+          css={{
+            position: 'absolute',
+            top: '50%',
+            right: 'var(--space-3)',
+            transform: 'translateY(-50%)',
+          }}
+        >
+          <RerunButton onRerun={onRerun} />
         </Box>
-        <RerunButton onRerun={onRerun} />
-      </Flex>
+      </Callout.Root>
       <CollapsedLog entries={log} />
     </Flex>
   )
