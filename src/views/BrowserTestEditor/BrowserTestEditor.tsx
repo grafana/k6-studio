@@ -30,7 +30,7 @@ import { BrowserTestEditorControls } from './BrowserTestEditorControls'
 import { BrowserTestOptionsButton } from './BrowserTestOptionsButton'
 import { BrowserTestPreview } from './BrowserTestPreview'
 import { EditableBrowserActionList } from './EditableBrowserActionList'
-import { ContextMenuState } from './types'
+import { BrowserActionStates, ContextMenuState } from './types'
 import { ValidationProvider } from './ValidationProvider'
 
 interface BrowserTestEditorProps {
@@ -54,7 +54,8 @@ export function BrowserTestEditor({
 
   const [state, setState] = useState<ContextMenuState | null>(null)
 
-  const test = useBrowserTestState(initialData)
+  const { isDirty, markAsSaved, test, setTest } =
+    useBrowserTestState(initialData)
 
   const previewScript = useBrowserScriptPreview(test.actions, test.options)
 
@@ -70,12 +71,34 @@ export function BrowserTestEditor({
     options: test.options,
   })
 
-  const states = Object.groupBy(
-    session.browser.actions,
-    (action) => action.eventId
+  const states = session.browser.actions.reduce<BrowserActionStates>(
+    (acc, action) => {
+      const eventId = action.eventId
+
+      if (eventId === undefined) {
+        return acc
+      }
+
+      acc[eventId] = [...(acc[eventId] ?? []), action]
+
+      return acc
+    },
+    {}
   )
 
   const isValidating = session.state === 'running'
+
+  const handleOptionsChange = (options: BrowserTestFile['options']) => {
+    setTest((prev) => ({ ...prev, options }))
+  }
+
+  const handleActionsChange = (actions: BrowserTestFile['actions']) => {
+    setTest((prev) => ({ ...prev, actions }))
+  }
+
+  const handleAddAction = (action: BrowserTestFile['actions'][number]) => {
+    handleActionsChange([...test.actions, action])
+  }
 
   const saveFile = useSaveFile({
     menuItems: {
@@ -95,7 +118,7 @@ export function BrowserTestEditor({
     filters: [{ name: 'Browser Test', extensions: ['k6b'] }],
     onSave: (location) => {
       if (location.path === file.path) {
-        test.markAsSaved()
+        markAsSaved()
       } else {
         navigate(getViewPath(location.path), { replace: true })
       }
@@ -125,7 +148,7 @@ export function BrowserTestEditor({
               file={file}
               preview={previewScript}
               session={session}
-              isDirty={test.isDirty}
+              isDirty={isDirty}
               onStartDebugging={startDebugging}
               onStopDebugging={stopDebugging}
               onSave={handleSave}
@@ -163,7 +186,7 @@ export function BrowserTestEditor({
                           previewScript={previewScript}
                           shutdownDelay={shutdownDelay}
                           onStateChange={setState}
-                          onAddAction={test.addAction}
+                          onAddAction={handleAddAction}
                           onShutdownDelayChange={setShutdownDelay}
                         />
                       </Panel>
@@ -171,18 +194,13 @@ export function BrowserTestEditor({
                       <Panel id="actions" defaultSize="30%" minSize={400}>
                         <EditableBrowserActionList
                           actions={test.actions}
-                          onAddAction={test.addAction}
-                          onRemoveAction={test.removeAction}
-                          onChangeAction={test.updateAction}
-                          onReorderActions={test.reorderActions}
                           optionsButton={
                             <BrowserTestOptionsButton
                               options={test.options}
-                              onLoadProfileChange={test.setLoadProfile}
-                              onThresholdsChange={test.setThresholds}
-                              onLoadZonesChange={test.setLoadZones}
+                              onChange={handleOptionsChange}
                             />
                           }
+                          onChange={handleActionsChange}
                         />
                       </Panel>
                     </Group>
