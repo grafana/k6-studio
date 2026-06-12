@@ -1,33 +1,54 @@
 import { describe, expect, it } from 'vitest'
 
-import { createProxyData, createRequest } from '@/test/factories/proxyData'
+import {
+  createProxyData,
+  createRequest,
+  createResponse,
+} from '@/test/factories/proxyData'
 
 import { buildHostInventory, mergeHostSuggestions } from './hosts.utils'
 
-function requestsFor(hosts: Array<{ host: string; path?: string }>) {
-  return hosts.map(({ host, path }, index) =>
+function requestsFor(
+  hosts: Array<{ host: string; path?: string; contentType?: string }>
+) {
+  return hosts.map(({ host, path, contentType }, index) =>
     createProxyData({
       id: `req-${index}`,
       request: createRequest({ host, path: path ?? '/' }),
+      response: createResponse({
+        headers: [['content-type', contentType ?? 'application/json']],
+      }),
     })
   )
 }
 
 describe('buildHostInventory', () => {
-  it('groups requests by host with counts and sample paths', () => {
+  it('groups requests by host with counts, content types and sample paths', () => {
     const requests = requestsFor([
       { host: 'api.example.com', path: '/v1/users' },
       { host: 'api.example.com', path: '/v1/orders' },
-      { host: 'cdn.example.com', path: '/app.js' },
+      {
+        host: 'cdn.example.com',
+        path: '/app.js',
+        contentType: 'text/javascript; charset=utf-8',
+      },
     ])
 
     expect(buildHostInventory(requests)).toEqual([
       {
         host: 'api.example.com',
         requestCount: 2,
+        staticAssetCount: 0,
+        contentTypes: ['application/json'],
         samplePaths: ['/v1/users', '/v1/orders'],
       },
-      { host: 'cdn.example.com', requestCount: 1, samplePaths: ['/app.js'] },
+      {
+        host: 'cdn.example.com',
+        requestCount: 1,
+        staticAssetCount: 1,
+        contentTypes: ['text/javascript'],
+        samplePaths: ['/app.js'],
+      },
     ])
   })
 
@@ -55,11 +76,25 @@ describe('buildHostInventory', () => {
 
 describe('mergeHostSuggestions', () => {
   const inventory = [
-    { host: 'api.example.com', requestCount: 2, samplePaths: ['/v1/users'] },
-    { host: 'cdn.example.com', requestCount: 1, samplePaths: ['/app.js'] },
+    {
+      host: 'api.example.com',
+      requestCount: 2,
+      staticAssetCount: 0,
+      contentTypes: ['application/json'],
+      samplePaths: ['/v1/users'],
+    },
+    {
+      host: 'cdn.example.com',
+      requestCount: 1,
+      staticAssetCount: 1,
+      contentTypes: ['text/javascript'],
+      samplePaths: ['/app.js'],
+    },
     {
       host: 'fonts.gstatic.com',
       requestCount: 1,
+      staticAssetCount: 1,
+      contentTypes: ['font/woff2'],
       samplePaths: ['/font.woff2'],
     },
   ]

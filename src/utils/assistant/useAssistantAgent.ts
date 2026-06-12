@@ -31,8 +31,13 @@ export type AgentRunStatus =
 interface UseAssistantAgentOptions<TTools extends ToolSet> {
   tools: TTools
   /**
+   * The tool whose call ends the run (default: "finish"). Single-shot agents
+   * can make their result-submission tool terminal to save a model turn.
+   */
+  terminalTool?: keyof TTools & string
+  /**
    * Executes a tool call client-side and returns its output (or a promise
-   * of it). Calling the `finish` tool marks the run as completed.
+   * of it). Calling the terminal tool marks the run as completed.
    */
   onToolCall: (toolCall: StaticToolCall<TTools>) => unknown
   trackingEvents: {
@@ -44,6 +49,7 @@ interface UseAssistantAgentOptions<TTools extends ToolSet> {
 
 export function useAssistantAgent<TTools extends ToolSet>({
   tools,
+  terminalTool = 'finish',
   onToolCall,
   trackingEvents,
 }: UseAssistantAgentOptions<TTools>) {
@@ -70,7 +76,12 @@ export function useAssistantAgent<TTools extends ToolSet>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
-  const finishGuard = useMemo(() => createTerminalToolGuard('finish'), [])
+  const finishGuard = useMemo(
+    () => createTerminalToolGuard(terminalTool),
+    // The terminal tool is a static per-agent configuration.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  )
   const actionsLog = useActionsLog()
 
   const {
@@ -120,7 +131,7 @@ export function useAssistantAgent<TTools extends ToolSet>({
         }
       }
 
-      if (toolCall.toolName === 'finish' && !didToolFail) {
+      if (toolCall.toolName === terminalTool && !didToolFail) {
         setStatusAndRef('completed')
       }
 

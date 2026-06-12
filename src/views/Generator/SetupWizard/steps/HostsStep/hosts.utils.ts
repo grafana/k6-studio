@@ -1,26 +1,40 @@
 import { z } from 'zod'
 
 import { ProxyData } from '@/types'
+import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 
 import { HostSuggestion } from '../../state/types'
 
 import { hostSuggestionSchema } from './constants'
 
 const MAX_SAMPLE_PATHS = 5
+const MAX_CONTENT_TYPES = 3
 
 export interface HostInventoryEntry {
   host: string
   requestCount: number
+  staticAssetCount: number
+  contentTypes: string[]
   samplePaths: string[]
 }
 
 export type AiHostSuggestion = z.infer<typeof hostSuggestionSchema>
 
+function getContentType(proxyData: ProxyData): string | undefined {
+  const header = proxyData.response?.headers.find(
+    ([name]) => name.toLowerCase() === 'content-type'
+  )
+
+  return header?.[1]?.split(';')[0]?.trim()
+}
+
 export function buildHostInventory(
   requests: ProxyData[]
 ): HostInventoryEntry[] {
   const byHost = requests.reduce<Map<string, HostInventoryEntry>>(
-    (inventory, { request }) => {
+    (inventory, proxyData) => {
+      const { request } = proxyData
+
       if (!request.host) {
         return inventory
       }
@@ -28,10 +42,25 @@ export function buildHostInventory(
       const entry = inventory.get(request.host) ?? {
         host: request.host,
         requestCount: 0,
+        staticAssetCount: 0,
+        contentTypes: [],
         samplePaths: [],
       }
 
       entry.requestCount += 1
+
+      if (!isNonStaticAssetResponse(proxyData)) {
+        entry.staticAssetCount += 1
+      }
+
+      const contentType = getContentType(proxyData)
+      if (
+        contentType !== undefined &&
+        entry.contentTypes.length < MAX_CONTENT_TYPES &&
+        !entry.contentTypes.includes(contentType)
+      ) {
+        entry.contentTypes.push(contentType)
+      }
 
       if (
         entry.samplePaths.length < MAX_SAMPLE_PATHS &&
@@ -51,8 +80,21 @@ export function buildHostInventory(
 export function formatHostInventory(inventory: HostInventoryEntry[]): string {
   return inventory
     .map(
-      ({ host, requestCount, samplePaths }) =>
-        `- ${host} (${requestCount} request${requestCount === 1 ? '' : 's'}): ${samplePaths.join(', ')}`
+      ({ host, requestCount, staticAssetCount, contentTypes, samplePaths }) => {
+        const facts = [
+          `${requestCount} request${requestCount === 1 ? '' : 's'}`,
+          staticAssetCount > 0
+            ? `${staticAssetCount} static assets`
+            : undefined,
+          contentTypes.length > 0
+            ? `types: ${contentTypes.join(', ')}`
+            : undefined,
+        ]
+          .filter(Boolean)
+          .join('; ')
+
+        return `- ${host} (${facts}): ${samplePaths.join(', ')}`
+      }
     )
     .join('\n')
 }
