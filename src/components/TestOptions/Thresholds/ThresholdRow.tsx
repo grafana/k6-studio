@@ -6,7 +6,7 @@ import {
   IconButton,
   Flex,
 } from '@radix-ui/themes'
-import { SparklesIcon, Trash2Icon } from 'lucide-react'
+import { InfoIcon, Trash2Icon } from 'lucide-react'
 import { useEffect } from 'react'
 import {
   Controller,
@@ -73,7 +73,15 @@ export function ThresholdRow<M extends string>({
 
   return (
     <>
-      <Table.Row key={field.id}>
+      <Table.Row
+        key={field.id}
+        // The annotation row carries the pair's bottom separator instead.
+        css={
+          annotation !== undefined
+            ? { '--table-row-box-shadow': 'none' }
+            : undefined
+        }
+      >
         <Table.Cell>
           <FieldGroup
             errors={errors}
@@ -160,16 +168,28 @@ export function ThresholdRow<M extends string>({
           </Flex>
         </Table.Cell>
         <Table.Cell>
-          <IconButton onClick={() => remove(index)}>
-            <Trash2Icon />
+          <IconButton
+            variant="ghost"
+            color="gray"
+            aria-label="Remove threshold"
+            onClick={() => remove(index)}
+          >
+            <Trash2Icon size={16} />
           </IconButton>
         </Table.Cell>
       </Table.Row>
       {annotation !== undefined && (
         <Table.Row>
-          <Table.Cell colSpan={6} css={{ boxShadow: 'none', paddingTop: 0 }}>
+          <Table.Cell
+            colSpan={6}
+            css={{
+              height: 'auto',
+              paddingTop: 0,
+              paddingBottom: 'var(--space-2)',
+            }}
+          >
             <Flex gap="1" align="center">
-              <SparklesIcon size={12} color="var(--orange-9)" />
+              <InfoIcon size={12} color="var(--gray-9)" />
               <Text size="1" color="gray">
                 {annotation}
               </Text>

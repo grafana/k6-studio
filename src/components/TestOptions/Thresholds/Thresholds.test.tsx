@@ -137,4 +137,35 @@ describe('Thresholds (controlled)', () => {
 
     expect(screen.getAllByText('observed p95 611 ms')).toHaveLength(1)
   })
+
+  it('moves the row separator to the annotation row for annotated rows', () => {
+    const value = [
+      {
+        id: 'suggested-1',
+        metric: 'response_time' as const,
+        statistic: 'avg' as const,
+        condition: '<' as const,
+        value: 100,
+        stopTest: false,
+      },
+    ]
+    render(
+      <Theme>
+        <Thresholds
+          value={value}
+          onChange={vi.fn()}
+          metricsConfig={config}
+          getRowAnnotation={() => 'observed p95 611 ms'}
+        />
+      </Theme>
+    )
+
+    const annotationCell = screen.getByText('observed p95 611 ms').closest('td')
+    const dataRow = annotationCell?.closest('tr')?.previousElementSibling
+
+    expect(dataRow).not.toBeNull()
+    expect(
+      getComputedStyle(dataRow!).getPropertyValue('--table-row-box-shadow')
+    ).toBe('none')
+  })
 })
