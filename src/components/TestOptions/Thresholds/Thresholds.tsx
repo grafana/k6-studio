@@ -91,23 +91,23 @@ export function Thresholds<M extends string>({
         <Table.Root size="1" variant="surface" layout="fixed">
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeaderCell width="210px">
+              <Table.ColumnHeaderCell width="170px">
                 Metric
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="160px">
+              <Table.ColumnHeaderCell width="145px">
                 Statistic
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="100px">
+              <Table.ColumnHeaderCell width="90px">
                 Condition
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="145px">
+              <Table.ColumnHeaderCell width="125px">
                 Value
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="80px">
+              <Table.ColumnHeaderCell width="75px">
                 Stop Test
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="59px" />
-              <Table.ColumnHeaderCell width="59px" />
+              <Table.ColumnHeaderCell width="48px" />
+              <Table.ColumnHeaderCell width="48px" />
             </Table.Row>
           </Table.Header>
           <Table.Body>

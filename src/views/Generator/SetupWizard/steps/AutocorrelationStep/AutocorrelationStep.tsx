@@ -218,7 +218,7 @@ export function AutocorrelationStep() {
           />
         </Box>
       </Flex>
-      <div ref={setFooterHost} />
+      <Box ref={setFooterHost} />
     </Flex>
   )
 }
