@@ -17,7 +17,6 @@ interface AgentRunPanelProps {
   onRestart: () => void
   errorMessage: string
   runningLabel: string
-  isLastStep: boolean
   onBack: () => void
   onContinue: () => void
   onSkip: () => void
@@ -31,7 +30,6 @@ export function AgentRunPanel({
   onRestart,
   errorMessage,
   runningLabel,
-  isLastStep,
   onBack,
   onContinue,
   onSkip,
@@ -55,7 +53,6 @@ export function AgentRunPanel({
         </Flex>
       </StepFrame>
       <WizardFooter
-        isLastStep={isLastStep}
         canContinue={false}
         onBack={onBack}
         onContinue={onContinue}

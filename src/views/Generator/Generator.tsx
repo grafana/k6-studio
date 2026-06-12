@@ -239,7 +239,13 @@ export function Generator({ file, content }: GeneratorProps) {
   if (isSetupMode) {
     return (
       <>
-        <SetupWizard isLoading={isLoading} onExit={handleExitSetupMode} />
+        <SetupWizard
+          isLoading={isLoading}
+          script={scriptPreview}
+          scriptName={file.fileName}
+          onSaveGenerator={handleSaveGenerator}
+          onExit={handleExitSetupMode}
+        />
         {unsavedChangesDialog}
       </>
     )

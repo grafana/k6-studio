@@ -70,12 +70,7 @@ function CompletedParameterizationStep({ onRerun }: { onRerun: () => void }) {
           <ParamCardList suggestions={stepState.result.suggestions} />
         </Flex>
       </StepFrame>
-      <WizardFooter
-        isLastStep={false}
-        canContinue
-        onBack={goBack}
-        onContinue={goNext}
-      />
+      <WizardFooter canContinue onBack={goBack} onContinue={goNext} />
     </>
   )
 }
@@ -106,7 +101,6 @@ export function ParameterizationStep() {
       onRestart={restart}
       errorMessage="The Assistant could not analyze this recording for parameterization."
       runningLabel="Finding values to parameterize..."
-      isLastStep={false}
       onBack={goBack}
       onContinue={goNext}
       onSkip={handleSkip}

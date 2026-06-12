@@ -3,6 +3,8 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { View } from '@/components/Layout/View'
+import { FileLocation } from '@/handlers/fs/types'
+import { ScriptPreview } from '@/hooks/useScriptPreview'
 import { getRoutePath, getViewPath } from '@/routeMap'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { useGeneratorStore } from '@/store/generator'
@@ -17,6 +19,9 @@ export type SetupWizardOutcome = 'completed' | 'manual'
 
 interface SetupWizardProps {
   isLoading: boolean
+  script: ScriptPreview
+  scriptName: string
+  onSaveGenerator: () => Promise<FileLocation | undefined>
   onExit: (outcome: SetupWizardOutcome) => void
 }
 
@@ -42,7 +47,12 @@ function StepIndicator() {
   )
 }
 
-function SetupWizardBody({ onExit }: Pick<SetupWizardProps, 'onExit'>) {
+function SetupWizardBody({
+  script,
+  scriptName,
+  onSaveGenerator,
+  onExit,
+}: Omit<SetupWizardProps, 'isLoading'>) {
   const { state, dispatch } = useSetupWizard()
   const setShowAllowlistDialog = useGeneratorStore(
     (store) => store.setShowAllowlistDialog
@@ -74,10 +84,17 @@ function SetupWizardBody({ onExit }: Pick<SetupWizardProps, 'onExit'>) {
     )
   }
 
-  return <WizardShell onComplete={handleComplete} />
+  return (
+    <WizardShell
+      script={script}
+      scriptName={scriptName}
+      onSaveGenerator={onSaveGenerator}
+      onComplete={handleComplete}
+    />
+  )
 }
 
-function SetupWizardView({ isLoading, onExit }: SetupWizardProps) {
+function SetupWizardView({ isLoading, ...bodyProps }: SetupWizardProps) {
   const navigate = useNavigate()
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
 
@@ -114,7 +131,7 @@ function SetupWizardView({ isLoading, onExit }: SetupWizardProps) {
       }
       loading={isLoading}
     >
-      <SetupWizardBody onExit={onExit} />
+      <SetupWizardBody {...bodyProps} />
     </View>
   )
 }

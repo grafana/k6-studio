@@ -93,12 +93,7 @@ function CompletedStep() {
           ))}
         </Flex>
       </StepFrame>
-      <WizardFooter
-        isLastStep={false}
-        canContinue
-        onBack={goBack}
-        onContinue={goNext}
-      />
+      <WizardFooter canContinue onBack={goBack} onContinue={goNext} />
     </>
   )
 }
@@ -121,7 +116,6 @@ function ProxyOfflineStep({ onSkip }: { onSkip: () => void }) {
         </Callout.Root>
       </StepFrame>
       <WizardFooter
-        isLastStep={false}
         canContinue={false}
         onBack={goBack}
         onContinue={goNext}
@@ -240,7 +234,6 @@ export function AutocorrelationStep() {
               footerHost &&
               createPortal(
                 <WizardFooter
-                  isLastStep={false}
                   canContinue={false}
                   onBack={goBack}
                   onContinue={goNext}

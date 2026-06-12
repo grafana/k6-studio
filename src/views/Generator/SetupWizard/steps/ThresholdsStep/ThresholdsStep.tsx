@@ -14,22 +14,15 @@ import { useAutoStartAgent } from '../useAutoStartAgent'
 
 import { useThresholdsAgent } from './useThresholdsAgent'
 
-interface ThresholdsStepProps {
-  onComplete: () => void
-}
-
-interface CompletedThresholdsStepProps extends ThresholdsStepProps {
+interface CompletedThresholdsStepProps {
   onRerun: () => void
 }
 
-function CompletedThresholdsStep({
-  onComplete,
-  onRerun,
-}: CompletedThresholdsStepProps) {
+function CompletedThresholdsStep({ onRerun }: CompletedThresholdsStepProps) {
   const stepState = useStepState('thresholds')
   const thresholds = useGeneratorStore((store) => store.thresholds)
   const setThresholds = useGeneratorStore((store) => store.setThresholds)
-  const { goBack } = useWizardNavigation()
+  const { goBack, goNext } = useWizardNavigation()
 
   if (
     stepState.status !== 'completed' ||
@@ -58,19 +51,14 @@ function CompletedThresholdsStep({
           />
         </Flex>
       </StepFrame>
-      <WizardFooter
-        isLastStep
-        canContinue
-        onBack={goBack}
-        onContinue={onComplete}
-      />
+      <WizardFooter canContinue onBack={goBack} onContinue={goNext} />
     </>
   )
 }
 
-export function ThresholdsStep({ onComplete }: ThresholdsStepProps) {
+export function ThresholdsStep() {
   const stepState = useStepState('thresholds')
-  const { goBack } = useWizardNavigation()
+  const { goBack, goNext } = useWizardNavigation()
   const { start, restart, skip, stop, logEntries, status } =
     useThresholdsAgent()
 
@@ -78,11 +66,11 @@ export function ThresholdsStep({ onComplete }: ThresholdsStepProps) {
 
   const handleSkip = () => {
     skip()
-    onComplete()
+    goNext()
   }
 
   if (stepState.status === 'completed') {
-    return <CompletedThresholdsStep onComplete={onComplete} onRerun={restart} />
+    return <CompletedThresholdsStep onRerun={restart} />
   }
 
   return (
@@ -94,9 +82,8 @@ export function ThresholdsStep({ onComplete }: ThresholdsStepProps) {
       onRestart={restart}
       errorMessage="The Assistant could not suggest thresholds for this recording."
       runningLabel="Analyzing response times..."
-      isLastStep
       onBack={goBack}
-      onContinue={onComplete}
+      onContinue={goNext}
       onSkip={handleSkip}
     />
   )

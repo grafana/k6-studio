@@ -98,7 +98,6 @@ function CompletedHostsStep({ onRerun }: { onRerun: () => void }) {
         </Flex>
       </StepFrame>
       <WizardFooter
-        isLastStep={false}
         canContinue={allowlist.length > 0}
         onBack={goBack}
         onContinue={goNext}
@@ -134,7 +133,6 @@ export function HostsStep() {
       onRestart={restart}
       errorMessage="The Assistant could not analyze the hosts in this recording."
       runningLabel="Analyzing hosts..."
-      isLastStep={false}
       onBack={goBack}
       onContinue={goNext}
       onSkip={handleSkip}

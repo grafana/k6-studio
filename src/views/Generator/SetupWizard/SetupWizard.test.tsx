@@ -11,10 +11,22 @@ vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }))
 vi.mock('@/components/Assistant/AssistantAuthGate', () => ({
   AssistantAuthGate: ({ children }: { children: React.ReactNode }) => children,
 }))
+// Monaco does not load in jsdom.
+vi.mock('@/components/Monaco/ReadOnlyEditor', () => ({
+  ReadOnlyEditor: () => null,
+}))
 
 describe('SetupWizard', () => {
   const trackEvent = vi.fn()
   const onExit = vi.fn()
+
+  const defaultProps = {
+    isLoading: false,
+    script: { valid: true, preview: 'export default function () {}' } as const,
+    scriptName: 'test.k6g',
+    onSaveGenerator: vi.fn(),
+    onExit,
+  }
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -23,7 +35,7 @@ describe('SetupWizard', () => {
   })
 
   it('tracks when the wizard is opened', () => {
-    render(<SetupWizard isLoading={false} onExit={onExit} />)
+    render(<SetupWizard {...defaultProps} />)
 
     expect(trackEvent).toHaveBeenCalledWith({
       event: UsageEventName.TestSetupWizardOpened,
@@ -31,7 +43,7 @@ describe('SetupWizard', () => {
   })
 
   it('tracks dismissal and exits with the manual outcome', async () => {
-    render(<SetupWizard isLoading={false} onExit={onExit} />)
+    render(<SetupWizard {...defaultProps} />)
 
     await userEvent.click(
       screen.getByRole('button', { name: /Open generator/ })
@@ -44,12 +56,12 @@ describe('SetupWizard', () => {
   })
 
   it('enters the wizard from the choice screen', async () => {
-    render(<SetupWizard isLoading={false} onExit={onExit} />)
+    render(<SetupWizard {...defaultProps} />)
 
     await userEvent.click(
       screen.getByRole('button', { name: /Start guided setup/ })
     )
 
-    expect(screen.getByText('Step 1 of 4')).toBeDefined()
+    expect(screen.getByText('Step 1 of 5')).toBeDefined()
   })
 })

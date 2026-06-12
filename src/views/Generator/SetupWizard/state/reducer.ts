@@ -18,6 +18,7 @@ export const initialWizardState: WizardState = {
     autocorrelation: notStarted,
     parameterization: notStarted,
     thresholds: notStarted,
+    runTest: notStarted,
   },
 }
 

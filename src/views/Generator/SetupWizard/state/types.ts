@@ -6,6 +6,7 @@ export const STEP_ORDER = [
   'autocorrelation',
   'parameterization',
   'thresholds',
+  'runTest',
 ] as const
 
 export type StepId = (typeof STEP_ORDER)[number]

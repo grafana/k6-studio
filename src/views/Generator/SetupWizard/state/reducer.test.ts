@@ -53,7 +53,7 @@ describe('wizardReducer', () => {
     expect(next.activeStep).toBe('hosts')
   })
 
-  it('continue does nothing on the last step', () => {
+  it('continue from thresholds advances to the run test step', () => {
     const state: WizardState = {
       ...stateWithCompleted(
         'hosts',
@@ -65,6 +65,38 @@ describe('wizardReducer', () => {
     }
 
     const next = wizardReducer(state, { type: 'continue' })
+
+    expect(next.activeStep).toBe('runTest')
+  })
+
+  it('continue does nothing on the run test step', () => {
+    const state: WizardState = {
+      ...stateWithCompleted(
+        'hosts',
+        'autocorrelation',
+        'parameterization',
+        'thresholds'
+      ),
+      activeStep: 'runTest',
+    }
+
+    const next = wizardReducer(state, { type: 'continue' })
+
+    expect(next.activeStep).toBe('runTest')
+  })
+
+  it('back from the run test step returns to thresholds', () => {
+    const state: WizardState = {
+      ...stateWithCompleted(
+        'hosts',
+        'autocorrelation',
+        'parameterization',
+        'thresholds'
+      ),
+      activeStep: 'runTest',
+    }
+
+    const next = wizardReducer(state, { type: 'back' })
 
     expect(next.activeStep).toBe('thresholds')
   })
@@ -199,5 +231,18 @@ describe('isStepReachable', () => {
     expect(isStepReachable(state, 'autocorrelation')).toBe(true)
     expect(isStepReachable(state, 'parameterization')).toBe(true)
     expect(isStepReachable(state, 'thresholds')).toBe(false)
+  })
+
+  it('marks the run test step reachable only when all agent steps completed', () => {
+    const partial = stateWithCompleted('hosts', 'autocorrelation')
+    expect(isStepReachable(partial, 'runTest')).toBe(false)
+
+    const complete = stateWithCompleted(
+      'hosts',
+      'autocorrelation',
+      'parameterization',
+      'thresholds'
+    )
+    expect(isStepReachable(complete, 'runTest')).toBe(true)
   })
 })

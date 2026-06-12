@@ -1,9 +1,8 @@
 import { Button, Flex } from '@radix-ui/themes'
-import { ArrowLeftIcon, ArrowRightIcon, CheckIcon } from 'lucide-react'
+import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react'
 import { ReactNode } from 'react'
 
 interface WizardFooterProps {
-  isLastStep: boolean
   canContinue: boolean
   onBack: () => void
   onContinue: () => void
@@ -13,7 +12,6 @@ interface WizardFooterProps {
 }
 
 export function WizardFooter({
-  isLastStep,
   canContinue,
   onBack,
   onContinue,
@@ -43,31 +41,9 @@ export function WizardFooter({
           Skip step
         </Button>
       )}
-      <ContinueButton
-        isLastStep={isLastStep}
-        canContinue={canContinue}
-        onContinue={onContinue}
-      />
-    </Flex>
-  )
-}
-
-function ContinueButton({
-  isLastStep,
-  canContinue,
-  onContinue,
-}: Pick<WizardFooterProps, 'isLastStep' | 'canContinue' | 'onContinue'>) {
-  if (isLastStep) {
-    return (
       <Button disabled={!canContinue} onClick={onContinue}>
-        Complete setup <CheckIcon size={16} />
+        Continue <ArrowRightIcon size={16} />
       </Button>
-    )
-  }
-
-  return (
-    <Button disabled={!canContinue} onClick={onContinue}>
-      Continue <ArrowRightIcon size={16} />
-    </Button>
+    </Flex>
   )
 }

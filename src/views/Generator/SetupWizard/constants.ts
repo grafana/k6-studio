@@ -4,6 +4,7 @@ import {
   LinkIcon,
   LucideIcon,
   NetworkIcon,
+  RocketIcon,
 } from 'lucide-react'
 
 import { StepId } from './state/types'
@@ -48,5 +49,13 @@ export const STEP_CONFIG: Record<StepId, StepConfig> = {
     description:
       'Pass/fail criteria for your test. The Assistant tuned these to the latency it observed - edit any value inline.',
     icon: GaugeIcon,
+  },
+  runTest: {
+    label: 'Run test',
+    hint: 'Save and launch in the cloud',
+    title: 'Run test',
+    description:
+      'Review what your test will do, adjust the load if needed, then launch it in Grafana Cloud.',
+    icon: RocketIcon,
   },
 }
