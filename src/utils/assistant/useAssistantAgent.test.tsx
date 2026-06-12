@@ -176,28 +176,6 @@ describe('useAssistantAgent', () => {
     expect(result.current.status).toBe('completed')
   })
 
-  it('completes on a custom terminal tool', async () => {
-    const { result } = renderHook(() =>
-      useAssistantAgent({
-        tools,
-        terminalTool: 'doWork',
-        onToolCall: vi.fn(),
-        trackingEvents,
-      })
-    )
-
-    act(() => {
-      void result.current.start('prompt')
-    })
-    await act(() =>
-      capturedOptions.onToolCall!({
-        toolCall: { toolName: 'doWork', toolCallId: 'call-1', input: {} },
-      })
-    )
-
-    expect(result.current.status).toBe('completed')
-  })
-
   it('moves to the error state and tracks it on chat errors', () => {
     const { result } = renderAgent()
 

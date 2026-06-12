@@ -1,54 +1,33 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  createProxyData,
-  createRequest,
-  createResponse,
-} from '@/test/factories/proxyData'
+import { createProxyData, createRequest } from '@/test/factories/proxyData'
 
 import { buildHostInventory, mergeHostSuggestions } from './hosts.utils'
 
-function requestsFor(
-  hosts: Array<{ host: string; path?: string; contentType?: string }>
-) {
-  return hosts.map(({ host, path, contentType }, index) =>
+function requestsFor(hosts: Array<{ host: string; path?: string }>) {
+  return hosts.map(({ host, path }, index) =>
     createProxyData({
       id: `req-${index}`,
       request: createRequest({ host, path: path ?? '/' }),
-      response: createResponse({
-        headers: [['content-type', contentType ?? 'application/json']],
-      }),
     })
   )
 }
 
 describe('buildHostInventory', () => {
-  it('groups requests by host with counts, content types and sample paths', () => {
+  it('groups requests by host with counts and sample paths', () => {
     const requests = requestsFor([
       { host: 'api.example.com', path: '/v1/users' },
       { host: 'api.example.com', path: '/v1/orders' },
-      {
-        host: 'cdn.example.com',
-        path: '/app.js',
-        contentType: 'text/javascript; charset=utf-8',
-      },
+      { host: 'cdn.example.com', path: '/app.js' },
     ])
 
     expect(buildHostInventory(requests)).toEqual([
       {
         host: 'api.example.com',
         requestCount: 2,
-        staticAssetCount: 0,
-        contentTypes: ['application/json'],
         samplePaths: ['/v1/users', '/v1/orders'],
       },
-      {
-        host: 'cdn.example.com',
-        requestCount: 1,
-        staticAssetCount: 1,
-        contentTypes: ['text/javascript'],
-        samplePaths: ['/app.js'],
-      },
+      { host: 'cdn.example.com', requestCount: 1, samplePaths: ['/app.js'] },
     ])
   })
 
@@ -72,29 +51,39 @@ describe('buildHostInventory', () => {
 
     expect(buildHostInventory(requests)).toHaveLength(1)
   })
+
+  it('strips query strings and truncates long sample paths', () => {
+    const requests = requestsFor([
+      { host: 'api.example.com', path: '/time/current?cup2key=abc&hreq=def' },
+      { host: 'api.example.com', path: `/long/${'segment/'.repeat(20)}end` },
+    ])
+
+    const [entry] = buildHostInventory(requests)
+
+    expect(entry?.samplePaths[0]).toBe('/time/current')
+    expect(entry?.samplePaths[1]?.length).toBeLessThanOrEqual(80)
+  })
+
+  it('deduplicates paths that differ only by query string', () => {
+    const requests = requestsFor([
+      { host: 'api.example.com', path: '/collect?id=1' },
+      { host: 'api.example.com', path: '/collect?id=2' },
+    ])
+
+    const [entry] = buildHostInventory(requests)
+
+    expect(entry?.samplePaths).toEqual(['/collect'])
+    expect(entry?.requestCount).toBe(2)
+  })
 })
 
 describe('mergeHostSuggestions', () => {
   const inventory = [
-    {
-      host: 'api.example.com',
-      requestCount: 2,
-      staticAssetCount: 0,
-      contentTypes: ['application/json'],
-      samplePaths: ['/v1/users'],
-    },
-    {
-      host: 'cdn.example.com',
-      requestCount: 1,
-      staticAssetCount: 1,
-      contentTypes: ['text/javascript'],
-      samplePaths: ['/app.js'],
-    },
+    { host: 'api.example.com', requestCount: 2, samplePaths: ['/v1/users'] },
+    { host: 'cdn.example.com', requestCount: 1, samplePaths: ['/app.js'] },
     {
       host: 'fonts.gstatic.com',
       requestCount: 1,
-      staticAssetCount: 1,
-      contentTypes: ['font/woff2'],
       samplePaths: ['/font.woff2'],
     },
   ]

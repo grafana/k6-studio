@@ -1,40 +1,35 @@
 import { z } from 'zod'
 
 import { ProxyData } from '@/types'
-import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 
 import { HostSuggestion } from '../../state/types'
 
 import { hostSuggestionSchema } from './constants'
 
 const MAX_SAMPLE_PATHS = 5
-const MAX_CONTENT_TYPES = 3
+const MAX_SAMPLE_PATH_LENGTH = 80
+
+// Query strings and very long paths inflate the prompt (and time to first
+// token) without helping classification.
+function toSamplePath(path: string): string {
+  const withoutQuery = path.split('?')[0] ?? path
+
+  return withoutQuery.slice(0, MAX_SAMPLE_PATH_LENGTH)
+}
 
 export interface HostInventoryEntry {
   host: string
   requestCount: number
-  staticAssetCount: number
-  contentTypes: string[]
   samplePaths: string[]
 }
 
 export type AiHostSuggestion = z.infer<typeof hostSuggestionSchema>
 
-function getContentType(proxyData: ProxyData): string | undefined {
-  const header = proxyData.response?.headers.find(
-    ([name]) => name.toLowerCase() === 'content-type'
-  )
-
-  return header?.[1]?.split(';')[0]?.trim()
-}
-
 export function buildHostInventory(
   requests: ProxyData[]
 ): HostInventoryEntry[] {
   const byHost = requests.reduce<Map<string, HostInventoryEntry>>(
-    (inventory, proxyData) => {
-      const { request } = proxyData
-
+    (inventory, { request }) => {
       if (!request.host) {
         return inventory
       }
@@ -42,31 +37,18 @@ export function buildHostInventory(
       const entry = inventory.get(request.host) ?? {
         host: request.host,
         requestCount: 0,
-        staticAssetCount: 0,
-        contentTypes: [],
         samplePaths: [],
       }
 
       entry.requestCount += 1
 
-      if (!isNonStaticAssetResponse(proxyData)) {
-        entry.staticAssetCount += 1
-      }
-
-      const contentType = getContentType(proxyData)
-      if (
-        contentType !== undefined &&
-        entry.contentTypes.length < MAX_CONTENT_TYPES &&
-        !entry.contentTypes.includes(contentType)
-      ) {
-        entry.contentTypes.push(contentType)
-      }
+      const samplePath = toSamplePath(request.path)
 
       if (
         entry.samplePaths.length < MAX_SAMPLE_PATHS &&
-        !entry.samplePaths.includes(request.path)
+        !entry.samplePaths.includes(samplePath)
       ) {
-        entry.samplePaths.push(request.path)
+        entry.samplePaths.push(samplePath)
       }
 
       return inventory.set(request.host, entry)
@@ -80,21 +62,8 @@ export function buildHostInventory(
 export function formatHostInventory(inventory: HostInventoryEntry[]): string {
   return inventory
     .map(
-      ({ host, requestCount, staticAssetCount, contentTypes, samplePaths }) => {
-        const facts = [
-          `${requestCount} request${requestCount === 1 ? '' : 's'}`,
-          staticAssetCount > 0
-            ? `${staticAssetCount} static assets`
-            : undefined,
-          contentTypes.length > 0
-            ? `types: ${contentTypes.join(', ')}`
-            : undefined,
-        ]
-          .filter(Boolean)
-          .join('; ')
-
-        return `- ${host} (${facts}): ${samplePaths.join(', ')}`
-      }
+      ({ host, requestCount, samplePaths }) =>
+        `- ${host} (${requestCount} request${requestCount === 1 ? '' : 's'}): ${samplePaths.join(', ')}`
     )
     .join('\n')
 }

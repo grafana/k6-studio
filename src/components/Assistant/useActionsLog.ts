@@ -37,11 +37,11 @@ export function useActionsLog() {
 
     if (added.length === 0 && updated.length === 0) return
 
-    const newEntries = added.map(({ partKey, text }) => {
+    const newEntries = added.map(({ partKey, text, kind }) => {
       const entry: ActionLogEntry = {
         id: crypto.randomUUID(),
         timestamp: Date.now() - startTimeRef.current,
-        type: 'reasoning',
+        type: kind === 'thinking' ? 'thinking' : 'reasoning',
         text,
       }
       reasoningPartsRef.current.set(partKey, entry.id)

@@ -3,6 +3,7 @@ export interface ActionLogEntry {
   timestamp: number
   type:
     | 'reasoning'
+    | 'thinking'
     | 'found'
     | 'validation'
     | 'info'

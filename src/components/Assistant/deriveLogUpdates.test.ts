@@ -26,7 +26,7 @@ describe('deriveLogUpdates', () => {
     expect(result).toEqual({ added: [], updated: [] })
   })
 
-  it('skips non-text parts', () => {
+  it('skips tool and step parts', () => {
     const message = assistantMessage([
       { type: 'tool-runValidation' as Part['type'], toolCallId: 'tc-1' },
       { type: 'step-start' },
@@ -55,23 +55,36 @@ describe('deriveLogUpdates', () => {
     const result = deriveLogUpdates([message], new Map())
     expect(result).toEqual({
       added: [
-        { partKey: '1-0', text: 'Analyzing request' },
-        { partKey: '1-1', text: 'Found correlation' },
+        { partKey: '1-0', text: 'Analyzing request', kind: 'text' },
+        { partKey: '1-1', text: 'Found correlation', kind: 'text' },
       ],
       updated: [],
     })
   })
 
-  it('updates known text parts when partKey is in seen map', () => {
+  it('adds reasoning parts as thinking entries', () => {
     const message = assistantMessage([
-      { type: 'text', text: 'Updated analysis' },
+      { type: 'reasoning', text: 'Looking at the hosts' },
+      { type: 'text', text: 'Found the API host' },
+    ])
+
+    const result = deriveLogUpdates([message], new Map())
+    expect(result.added).toEqual([
+      { partKey: '1-0', text: 'Looking at the hosts', kind: 'thinking' },
+      { partKey: '1-1', text: 'Found the API host', kind: 'text' },
+    ])
+  })
+
+  it('updates known parts when partKey is in seen map', () => {
+    const message = assistantMessage([
+      { type: 'reasoning', text: 'Updated thought' },
     ])
     const seen = new Map([['1-0', 'log-entry-42']])
 
     const result = deriveLogUpdates([message], seen)
     expect(result).toEqual({
       added: [],
-      updated: [{ entryId: 'log-entry-42', text: 'Updated analysis' }],
+      updated: [{ entryId: 'log-entry-42', text: 'Updated thought' }],
     })
   })
 
@@ -85,7 +98,7 @@ describe('deriveLogUpdates', () => {
 
     const result = deriveLogUpdates([message], seen)
     expect(result).toEqual({
-      added: [{ partKey: '1-2', text: 'New part' }],
+      added: [{ partKey: '1-2', text: 'New part', kind: 'text' }],
       updated: [{ entryId: 'log-entry-1', text: 'Known part' }],
     })
   })
@@ -100,9 +113,9 @@ describe('deriveLogUpdates', () => {
     ]
 
     const result = deriveLogUpdates(messages, new Map())
-    expect(result.added).toEqual([
-      { partKey: 'msg-a-0', text: 'First message part' },
-      { partKey: 'msg-b-0', text: 'Second message part' },
+    expect(result.added.map((addition) => addition.partKey)).toEqual([
+      'msg-a-0',
+      'msg-b-0',
     ])
   })
 })

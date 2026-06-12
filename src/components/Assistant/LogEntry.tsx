@@ -23,7 +23,7 @@ const outcomeStyles: Partial<
   'outcome-failure': outcomeStyle('red'),
 }
 
-const GRAY_TYPES = new Set(['info', 'found'])
+const GRAY_TYPES = new Set(['info', 'found', 'thinking'])
 
 export const LogEntry = memo(function LogEntry({
   entry,
@@ -50,7 +50,11 @@ export const LogEntry = memo(function LogEntry({
         <Text
           size="2"
           color={GRAY_TYPES.has(entry.type) ? 'gray' : undefined}
-          css={{ wordBreak: 'break-word' }}
+          css={{
+            wordBreak: 'break-word',
+            fontStyle: entry.type === 'thinking' ? 'italic' : undefined,
+            opacity: entry.type === 'thinking' ? 0.8 : undefined,
+          }}
           as="div"
         >
           <SimpleMarkdown text={entry.text ?? ''} />
