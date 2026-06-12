@@ -1,23 +1,18 @@
-import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Badge,
-  Box,
   Card,
   Code,
   Flex,
   IconButton,
   Switch,
   Text,
+  TextField,
 } from '@radix-ui/themes'
 import { EyeIcon, EyeOffIcon, LockIcon, XIcon } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
-import { FormProvider, useForm } from 'react-hook-form'
-import type { z } from 'zod'
+import { useState } from 'react'
 
-import { ParameterizationRuleSchema } from '@/schemas/generator'
 import { useGeneratorStore } from '@/store/generator'
 import { ParameterizationRule } from '@/types/rules'
-import { ValueEditor } from '@/views/Generator/RuleEditor/ParameterizationEditor/ValueEditor'
 
 import { ParamSuggestionMeta } from '../../state/types'
 
@@ -49,40 +44,29 @@ function RecordedValue({
   )
 }
 
-function ReplacementEditor({ rule }: { rule: ParameterizationRule }) {
-  const updateRule = useGeneratorStore((state) => state.updateRule)
+function VariableValueField({ variableName }: { variableName: string }) {
+  const variables = useGeneratorStore((store) => store.variables)
+  const setVariables = useGeneratorStore((store) => store.setVariables)
 
-  const formMethods = useForm<
-    z.input<typeof ParameterizationRuleSchema>,
-    unknown,
-    ParameterizationRule
-  >({
-    resolver: zodResolver(ParameterizationRuleSchema),
-    defaultValues: rule,
-    shouldFocusError: false,
-  })
-
-  const { watch, handleSubmit } = formMethods
-
-  const onSubmit = useCallback(
-    (data: ParameterizationRule) => {
-      updateRule(data)
-    },
-    [updateRule]
+  const variable = variables.find(
+    (candidate) => candidate.name === variableName
   )
 
-  // Persist valid edits to the store as the user types.
-  useEffect(() => {
-    const subscription = watch(() => handleSubmit(onSubmit)())
-    return () => subscription.unsubscribe()
-  }, [watch, handleSubmit, onSubmit])
+  const handleChange = (value: string) => {
+    setVariables(
+      variables.map((candidate) =>
+        candidate.name === variableName ? { ...candidate, value } : candidate
+      )
+    )
+  }
 
   return (
-    <FormProvider {...formMethods}>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <ValueEditor />
-      </form>
-    </FormProvider>
+    <TextField.Root
+      size="2"
+      value={variable?.value ?? ''}
+      aria-label={`Value of ${variableName}`}
+      onChange={(event) => handleChange(event.target.value)}
+    />
   )
 }
 
@@ -94,6 +78,9 @@ interface ParamCardProps {
 export function ParamCard({ meta, rule }: ParamCardProps) {
   const toggleEnableRule = useGeneratorStore((state) => state.toggleEnableRule)
   const deleteRule = useGeneratorStore((state) => state.deleteRule)
+
+  const variableName =
+    rule.value.type === 'variable' ? rule.value.variableName : meta.field
 
   return (
     <Card size="2">
@@ -128,16 +115,26 @@ export function ParamCard({ meta, rule }: ParamCardProps) {
             <XIcon size={14} />
           </IconButton>
         </Flex>
-        <Flex gap="4" align="start">
-          <Flex direction="column" gap="1" width="40%">
+        <Flex gap="6" align="end" wrap="wrap">
+          <Flex direction="column" gap="1">
             <Text size="1" color="gray">
               Recorded value
             </Text>
-            <RecordedValue meta={meta} />
+            <Flex css={{ minHeight: 'var(--space-6)' }} align="center">
+              <RecordedValue meta={meta} />
+            </Flex>
           </Flex>
-          <Box flexGrow="1">
-            <ReplacementEditor rule={rule} />
-          </Box>
+          <Flex
+            direction="column"
+            gap="1"
+            flexGrow="1"
+            css={{ minWidth: 220, maxWidth: 420 }}
+          >
+            <Text size="1" color="gray">
+              Replaced with variable <Code size="1">{variableName}</Code>
+            </Text>
+            <VariableValueField variableName={variableName} />
+          </Flex>
         </Flex>
       </Flex>
     </Card>

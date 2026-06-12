@@ -11,11 +11,6 @@ vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }))
 vi.mock('@/components/Assistant/AssistantAuthGate', () => ({
   AssistantAuthGate: ({ children }: { children: React.ReactNode }) => children,
 }))
-// Monaco cannot load in jsdom; it is pulled in transitively via the
-// parameterization step's value editor.
-vi.mock('@/components/Monaco/ConstrainedCodeEditor', () => ({
-  ConstrainedCodeEditor: () => <div data-testid="code-editor" />,
-}))
 
 describe('SetupWizard', () => {
   const trackEvent = vi.fn()

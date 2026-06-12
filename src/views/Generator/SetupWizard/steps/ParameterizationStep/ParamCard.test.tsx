@@ -1,13 +1,7 @@
 import { Theme } from '@radix-ui/themes'
 import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-
-// Monaco cannot load in jsdom; the editor is only reachable for customCode
-// values, which these tests do not exercise.
-vi.mock('@/components/Monaco/ConstrainedCodeEditor', () => ({
-  ConstrainedCodeEditor: () => <div data-testid="code-editor" />,
-}))
+import { beforeEach, describe, expect, it } from 'vitest'
 
 import { useGeneratorStore } from '@/store/generator'
 import { ParameterizationRule } from '@/types/rules'
@@ -22,7 +16,7 @@ const rule: ParameterizationRule = {
   enabled: true,
   filter: { path: '/api/login' },
   selector: { type: 'json', from: 'body', path: 'password' },
-  value: { type: 'string', value: 'S3cret!' },
+  value: { type: 'variable', variableName: 'password' },
 }
 
 const meta: ParamSuggestionMeta = {
@@ -43,7 +37,11 @@ function renderCard(overrides: Partial<ParamSuggestionMeta> = {}) {
 }
 
 beforeEach(() => {
-  useGeneratorStore.setState({ rules: [rule], variables: [], files: [] })
+  useGeneratorStore.setState({
+    rules: [rule],
+    variables: [{ name: 'password', value: 'S3cret!' }],
+    files: [],
+  })
 })
 
 describe('ParamCard', () => {
@@ -62,6 +60,27 @@ describe('ParamCard', () => {
 
     expect(screen.getByText('S3cret!')).toBeDefined()
     expect(screen.queryByRole('button', { name: 'Reveal value' })).toBeNull()
+  })
+
+  it('shows the variable the value is replaced with', () => {
+    renderCard()
+
+    expect(screen.getByText('password', { selector: 'code' })).toBeDefined()
+    expect(
+      screen.getByRole('textbox', { name: 'Value of password' })
+    ).toHaveProperty('value', 'S3cret!')
+  })
+
+  it('edits the variable value in the store', async () => {
+    renderCard()
+
+    const input = screen.getByRole('textbox', { name: 'Value of password' })
+    await userEvent.clear(input)
+    await userEvent.type(input, 'hunter2')
+
+    expect(useGeneratorStore.getState().variables).toEqual([
+      { name: 'password', value: 'hunter2' },
+    ])
   })
 
   it('toggles the rule via the switch', async () => {
