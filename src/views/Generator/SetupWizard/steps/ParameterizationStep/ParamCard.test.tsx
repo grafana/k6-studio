@@ -101,13 +101,11 @@ describe('ParamCard', () => {
     })
   })
 
-  it('removes the rule from the store', async () => {
+  it('has no remove button; disabling is the only opt-out', () => {
     renderCard()
 
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Remove password rule' })
-    )
-
-    expect(useGeneratorStore.getState().rules).toHaveLength(0)
+    expect(
+      screen.queryByRole('button', { name: 'Remove password rule' })
+    ).toBeNull()
   })
 })

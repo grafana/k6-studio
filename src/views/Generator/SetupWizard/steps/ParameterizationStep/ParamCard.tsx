@@ -3,12 +3,11 @@ import {
   Card,
   Code,
   Flex,
-  IconButton,
   Switch,
   Text,
   TextField,
 } from '@radix-ui/themes'
-import { LockIcon, XIcon } from 'lucide-react'
+import { LockIcon } from 'lucide-react'
 
 import { useGeneratorStore } from '@/store/generator'
 import { ParameterizationRule } from '@/types/rules'
@@ -77,7 +76,6 @@ interface ParamCardProps {
 
 export function ParamCard({ meta, rule }: ParamCardProps) {
   const toggleEnableRule = useGeneratorStore((state) => state.toggleEnableRule)
-  const deleteRule = useGeneratorStore((state) => state.deleteRule)
 
   const variableName =
     rule.value.type === 'variable' ? rule.value.variableName : meta.field
@@ -102,15 +100,6 @@ export function ParamCard({ meta, rule }: ParamCardProps) {
             aria-label={`Enable ${meta.field} rule`}
             onCheckedChange={() => toggleEnableRule(rule.id)}
           />
-          <IconButton
-            size="1"
-            variant="ghost"
-            color="gray"
-            aria-label={`Remove ${meta.field} rule`}
-            onClick={() => deleteRule(rule.id)}
-          >
-            <XIcon size={14} />
-          </IconButton>
         </Flex>
         <Flex direction="column" gap="1" css={{ maxWidth: 460 }}>
           <Flex gap="1" align="center">
