@@ -8,7 +8,8 @@ import {
   Tooltip,
 } from '@radix-ui/themes'
 import {
-  FilePlusIcon,
+  FileQuestionIcon,
+  FolderOpenIcon,
   InfoIcon,
   PlusIcon,
   Trash2Icon,
@@ -17,7 +18,8 @@ import {
 
 import { PopoverTooltip } from '@/components/PopoverTooltip'
 import { Table } from '@/components/Table'
-import { useImportDataFile } from '@/hooks/useImportDataFile'
+import { useFileExists } from '@/hooks/useFileExists'
+import { useOpenDataFile } from '@/hooks/useOpenDataFile'
 import { useGeneratorStore } from '@/store/generator'
 import { useStudioUIStore } from '@/store/ui'
 import { DataFile } from '@/types/testData'
@@ -87,9 +89,7 @@ function DataFileRow({ file, onRemove }: DataFileRowProps) {
     )
   )
 
-  const isFileMissing = useStudioUIStore(
-    (store) => !store.dataFiles.has(path.key(file.name))
-  )
+  const fileState = useFileExists(file.name)
 
   return (
     <Table.Row
@@ -99,7 +99,17 @@ function DataFileRow({ file, onRemove }: DataFileRowProps) {
     >
       <Table.Cell>
         <Flex align="center" gap="1">
-          {isFileMissing && (
+          {fileState === 'error' && (
+            <Tooltip content="An error occurred while checking the file">
+              <FileQuestionIcon
+                css={css`
+                  color: var(--red-9);
+                `}
+                aria-label="An error occurred while checking the file"
+              />
+            </Tooltip>
+          )}
+          {fileState === 'missing' && (
             <Tooltip content="Data file is missing">
               <TriangleAlertIcon
                 css={css`
@@ -109,18 +119,20 @@ function DataFileRow({ file, onRemove }: DataFileRowProps) {
               />
             </Tooltip>
           )}
-          {path.basename(file.name)}
+          <Tooltip content={file.name}>
+            <span>{path.basename(file.name)}</span>
+          </Tooltip>
         </Flex>
       </Table.Cell>
       <Table.Cell>Unique item per iteration</Table.Cell>
       <Table.Cell>
         <Tooltip
           content="Data file is referenced in a rule"
-          hidden={!isFileInUse && !isFileMissing}
+          hidden={!isFileInUse && fileState === 'exists'}
         >
           <IconButton
             aria-label="Remove"
-            disabled={isFileInUse && !isFileMissing}
+            disabled={isFileInUse && fileState === 'exists'}
             onClick={onRemove}
           >
             <Trash2Icon />
@@ -141,15 +153,17 @@ function AddDataFileDropdown() {
   )
 
   const handleAdd = (fileName: string) => {
-    if (selectedFiles.find((file) => file.name === fileName)) return
+    if (selectedFiles.find((file) => file.name === fileName)) {
+      return
+    }
 
     setFiles([...selectedFiles, { name: fileName }])
   }
 
-  const importDataFile = useImportDataFile()
+  const openDataFile = useOpenDataFile()
 
   const handleImportDataFile = async () => {
-    const fileName = await importDataFile()
+    const fileName = await openDataFile()
 
     if (fileName) {
       handleAdd(fileName)
@@ -174,8 +188,8 @@ function AddDataFileDropdown() {
         ))}
         {options.length > 0 && <DropdownMenu.Separator />}
         <DropdownMenu.Item onClick={handleImportDataFile}>
-          <FilePlusIcon />
-          Import new data file
+          <FolderOpenIcon />
+          Open data file
         </DropdownMenu.Item>
       </DropdownMenu.Content>
     </DropdownMenu.Root>
