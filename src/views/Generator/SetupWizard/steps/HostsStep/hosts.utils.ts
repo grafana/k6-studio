@@ -111,19 +111,27 @@ export function formatHostInventory(inventory: HostInventoryEntry[]): string {
 }
 
 /**
- * Skipping the step includes every host: an empty allowlist would leave the
- * remaining steps without any requests to work with.
+ * Skipping the step mirrors the host selection dialog's default: only the
+ * first first-party host is selected, nothing is classified.
  */
 export function buildSkippedHostSuggestions(
-  inventory: HostInventoryEntry[]
+  inventory: HostInventoryEntry[],
+  selectedHost: string | undefined
 ): HostSuggestion[] {
-  return inventory.map(({ host, requestCount }) => ({
-    host,
-    category: 'other',
-    suggested: true,
-    reason: 'Included by default because the step was skipped.',
-    requestCount,
-  }))
+  return inventory
+    .map(
+      ({ host, requestCount }): HostSuggestion => ({
+        host,
+        category: 'other',
+        suggested: false,
+        reason: 'Not classified because the step was skipped.',
+        requestCount,
+      })
+    )
+    .sort(
+      (left, right) =>
+        Number(right.host === selectedHost) - Number(left.host === selectedHost)
+    )
 }
 
 /**

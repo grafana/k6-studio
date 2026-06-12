@@ -195,14 +195,17 @@ describe('mergeHostSuggestions', () => {
     ).toBeUndefined()
   })
 
-  it('builds all-included suggestions for skipped runs', () => {
-    const suggestions = buildSkippedHostSuggestions(inventory)
+  it('builds unclassified suggestions for skipped runs with the default selection first', () => {
+    const suggestions = buildSkippedHostSuggestions(
+      inventory,
+      'cdn.example.com'
+    )
 
     expect(suggestions).toHaveLength(3)
-    expect(suggestions.every((suggestion) => suggestion.suggested)).toBe(true)
+    expect(suggestions.every((suggestion) => !suggestion.suggested)).toBe(true)
     expect(suggestions[0]).toMatchObject({
-      host: 'api.example.com',
-      requestCount: 2,
+      host: 'cdn.example.com',
+      reason: 'Not classified because the step was skipped.',
     })
   })
 })

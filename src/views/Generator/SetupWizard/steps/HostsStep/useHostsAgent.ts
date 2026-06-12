@@ -3,6 +3,7 @@ import { useRef } from 'react'
 
 import { UsageEventName } from '@/services/usageTracking/types'
 import { useGeneratorStore } from '@/store/generator'
+import { groupHostsByParty } from '@/store/generator/slices/recording.utils'
 import {
   handleRecordingSearchToolCall,
   isRecordingSearchToolCall,
@@ -158,22 +159,26 @@ export function useHostsAgent() {
   function skip() {
     agent.stop()
 
-    const suggestions = buildSkippedHostSuggestions(
-      buildHostInventory(requests)
+    const inventory = buildHostInventory(requests)
+    // Mirror the host selection dialog's default selection.
+    const { firstParty } = groupHostsByParty(
+      inventory.map((entry) => entry.host)
     )
+    const selectedHost = firstParty[0]
+    const suggestions = buildSkippedHostSuggestions(inventory, selectedHost)
     suggestionsRef.current = suggestions
 
     window.studio.app.trackEvent({
       event: UsageEventName.TestSetupWizardStepSkipped,
       payload: { step: 'hosts' },
     })
-    setAllowlist(suggestions.map((suggestion) => suggestion.host))
+    setAllowlist(selectedHost !== undefined ? [selectedHost] : [])
     dispatch({
       type: 'stepRunCompleted',
       stepId: 'hosts',
       result: { step: 'hosts', suggestions },
       log: actionsLog.entries,
-      summary: 'Step skipped - all hosts included',
+      summary: 'Step skipped - review the selected hosts',
     })
   }
 
