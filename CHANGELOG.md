@@ -1,5 +1,120 @@
 # Changelog
 
+## [1.14.0](https://github.com/grafana/k6-studio/compare/v1.13.0...v1.14.0) (2026-06-12)
+
+
+### Features
+
+* **autocorrelation:** Redesign dialog with actions log and reasoning ([#1252](https://github.com/grafana/k6-studio/issues/1252)) ([af236f7](https://github.com/grafana/k6-studio/commit/af236f75ce5632e380592c161d34bd24441757c6))
+* **browser:** Convert recording assertions to browser test actions ([#1234](https://github.com/grafana/k6-studio/issues/1234)) ([f676292](https://github.com/grafana/k6-studio/commit/f676292ca24d19441c6dd76bc6e206ba2e11f613))
+* **delete:** Move files to Trash with undo ([#1240](https://github.com/grafana/k6-studio/issues/1240)) ([63d48e3](https://github.com/grafana/k6-studio/commit/63d48e36148f38d203e21bd87420061b141e0097))
+* Export network traffic from the browser debugger ([#1250](https://github.com/grafana/k6-studio/issues/1250)) ([9e6fbb6](https://github.com/grafana/k6-studio/commit/9e6fbb6c85fc887aad217d9eb3011a0ff6e66bcf))
+* Generate frameLocator code for iframe browser tests ([#1282](https://github.com/grafana/k6-studio/issues/1282)) ([47a0f2a](https://github.com/grafana/k6-studio/commit/47a0f2af6d871c19301509de0304736dcaf89674))
+* Improve Sidebar structure ([#1155](https://github.com/grafana/k6-studio/issues/1155)) ([c644a65](https://github.com/grafana/k6-studio/commit/c644a654b7e7af3c56d5605177afe8919b6e03eb))
+* List of recent URLs in recordings sidebar ([#1246](https://github.com/grafana/k6-studio/issues/1246)) ([5f5cc6c](https://github.com/grafana/k6-studio/commit/5f5cc6c3f72d62740026a930388eeeae3a6bacfe))
+* Native file menus for opening, saving and exporting files ([#1251](https://github.com/grafana/k6-studio/issues/1251)) ([53b9bc4](https://github.com/grafana/k6-studio/commit/53b9bc4862b5e8074b65fe0b3bf93fffb5dfec2c))
+* Open external recording in HTTP tests ([#1279](https://github.com/grafana/k6-studio/issues/1279)) ([3b4d159](https://github.com/grafana/k6-studio/commit/3b4d15977798cee405908b76f8cb19b884d0622e))
+* Pick which page to export from multi-tab recordings ([#1291](https://github.com/grafana/k6-studio/issues/1291)) ([03ecafb](https://github.com/grafana/k6-studio/commit/03ecafbbca229b957664ae4ecbf4d068ddcd87fc))
+* Record interactions inside iframes ([#1275](https://github.com/grafana/k6-studio/issues/1275)) ([a9d3284](https://github.com/grafana/k6-studio/commit/a9d328467751624f83e502dbfeda016706148113))
+* Scenario support in debugger ([#1239](https://github.com/grafana/k6-studio/issues/1239)) ([7b230a8](https://github.com/grafana/k6-studio/commit/7b230a80522eff778376f8a5778fe47a0726bd17))
+* Show sign-in state on profile button ([#1244](https://github.com/grafana/k6-studio/issues/1244)) ([fb0415e](https://github.com/grafana/k6-studio/commit/fb0415eefd490677b17f351a9c3eb164adf691a6))
+* Use native dialog when exporting script ([#1235](https://github.com/grafana/k6-studio/issues/1235)) ([d608569](https://github.com/grafana/k6-studio/commit/d6085695cf3cffb9df487184a6687cb291f61abd))
+
+
+### Bug Fixes
+
+* **autocorrelation:** Handle context window exceeded error ([#1228](https://github.com/grafana/k6-studio/issues/1228)) ([f86970d](https://github.com/grafana/k6-studio/commit/f86970d6ce1b6f329c1290f91a1408ba5fdedfa1))
+* **autocorrelation:** Sanitize tool-result outputs to prevent AI SDK validation error ([#1225](https://github.com/grafana/k6-studio/issues/1225)) ([958f51d](https://github.com/grafana/k6-studio/commit/958f51d59a42b1580b787fe795f082ad00510e0d))
+* **autocorrelation:** Search request and response headers and bodies ([#1270](https://github.com/grafana/k6-studio/issues/1270)) ([6583367](https://github.com/grafana/k6-studio/commit/6583367f6a3f6bb5514c88b59b41e6241c982b3c))
+* Encrypt Grafana Cloud API tokens ([#1257](https://github.com/grafana/k6-studio/issues/1257)) ([e2f3156](https://github.com/grafana/k6-studio/commit/e2f3156346d9dd901fa01ca884115c3648513d9a))
+* Escape template literals and single quotes in codegen output ([#1256](https://github.com/grafana/k6-studio/issues/1256)) ([148cd65](https://github.com/grafana/k6-studio/commit/148cd65ff4e4fcffb25cf0773568f25a80929ca4))
+* Fix two bugs in scenario support for debugger ([#1239](https://github.com/grafana/k6-studio/issues/1239)) ([#1242](https://github.com/grafana/k6-studio/issues/1242)) ([61e6374](https://github.com/grafana/k6-studio/commit/61e6374b9b38cf41ea17fe5fe19c801668926fa5))
+* Guard expect.use for k6-testing without plugin API and fix WebSocket transport disposal leak ([#1292](https://github.com/grafana/k6-studio/issues/1292)) ([7152cfc](https://github.com/grafana/k6-studio/commit/7152cfc8e4e9ed4aeac69940cb4a3319dddf7469))
+* Highlight header and cookie search matches in inspector ([#1272](https://github.com/grafana/k6-studio/issues/1272)) ([02aca94](https://github.com/grafana/k6-studio/commit/02aca94b757d886d848d8eff98b976e8b4d8c7a7))
+* Normalize data file paths to forward slashes in codegen ([#1237](https://github.com/grafana/k6-studio/issues/1237)) ([a9db285](https://github.com/grafana/k6-studio/commit/a9db285a7118866d5cc4910ec6f0aca4ab72a2ca))
+* Prevent debug script button from passing React event to IPC ([#1249](https://github.com/grafana/k6-studio/issues/1249)) ([627f5c3](https://github.com/grafana/k6-studio/commit/627f5c3624e87aefba788ee5593d321330098628))
+* **security/medium:** update dependency ws to v8.20.1 [security] ([#1262](https://github.com/grafana/k6-studio/issues/1262)) ([ffc893b](https://github.com/grafana/k6-studio/commit/ffc893bff54a28242de5311162954f3ae3ac4484))
+* Use local time zone for default file name date prefix ([#1278](https://github.com/grafana/k6-studio/issues/1278)) ([7fb020c](https://github.com/grafana/k6-studio/commit/7fb020ce3d9be5e42dd70d782a6d174d85e68ca9))
+* Validate URL protocol before calling shell.openExternal ([#1254](https://github.com/grafana/k6-studio/issues/1254)) ([996559d](https://github.com/grafana/k6-studio/commit/996559dbdd950579c348182bfcd92e41797939ed))
+* verify checksum before executing ([#1265](https://github.com/grafana/k6-studio/issues/1265)) ([df31d03](https://github.com/grafana/k6-studio/commit/df31d03de20cd266a9f983caf561a5633bf05baa))
+
+
+### Internal Changes
+
+* Add cross-OS E2E smoke tests ([#1290](https://github.com/grafana/k6-studio/issues/1290)) ([41d92a3](https://github.com/grafana/k6-studio/commit/41d92a320a80ec5fd988f271a796a06ca4e4b3b3))
+* Add iframe DOM utilities and relocate locator derivation ([#1274](https://github.com/grafana/k6-studio/issues/1274)) ([03bc635](https://github.com/grafana/k6-studio/commit/03bc6357e24874ef507b5c0d9ed13a599795adfc))
+* **autocorrelation:** Reduce tokens in validation result sent to Assistant ([#1289](https://github.com/grafana/k6-studio/issues/1289)) ([9667a75](https://github.com/grafana/k6-studio/commit/9667a75a4651ec6af8f0edc2829f96d81681038f))
+* **browser:** Add assertion to check value of input ([#1229](https://github.com/grafana/k6-studio/issues/1229)) ([2d6e2d0](https://github.com/grafana/k6-studio/commit/2d6e2d0379787c6bf1cde4df0bd26540c6b94c08))
+* **browser:** Add check/uncheck assertion to test editor ([#1223](https://github.com/grafana/k6-studio/issues/1223)) ([f90925e](https://github.com/grafana/k6-studio/commit/f90925ecc2661a3a6447c6781f0e74727c180eae))
+* **browser:** Add test settings to browser test editor ([#1207](https://github.com/grafana/k6-studio/issues/1207)) ([f8c2fe2](https://github.com/grafana/k6-studio/commit/f8c2fe21fca8719cafcab8d7c0ab942b90330914))
+* **browser:** Add toContainText assertion to browser test editor ([#1233](https://github.com/grafana/k6-studio/issues/1233)) ([d64249d](https://github.com/grafana/k6-studio/commit/d64249d53fe79a79c0880bf198c6225c5d27b768))
+* **browser:** Add visibility assertions to test editor ([#1224](https://github.com/grafana/k6-studio/issues/1224)) ([146cfca](https://github.com/grafana/k6-studio/commit/146cfca885af2dc182da043e75447495164778c1))
+* **browser:** Add wait for navigation option to click action ([#1199](https://github.com/grafana/k6-studio/issues/1199)) ([f6693fa](https://github.com/grafana/k6-studio/commit/f6693facd14c31ec862975700a51adea26aa761a))
+* **browser:** Click elements in preview to add actions ([#1215](https://github.com/grafana/k6-studio/issues/1215)) ([f220899](https://github.com/grafana/k6-studio/commit/f220899421c46a627721444091a66e2da10239c2))
+* **browser:** Create browser test from recording ([#1230](https://github.com/grafana/k6-studio/issues/1230)) ([caaf1e7](https://github.com/grafana/k6-studio/commit/caaf1e767d9be50a93b3520eb709d88de9a9a3ec))
+* **browser:** Explicitly create actions in `onAddAction` callback ([#1212](https://github.com/grafana/k6-studio/issues/1212)) ([f094286](https://github.com/grafana/k6-studio/commit/f0942868307281b38024b308f00f29957a9b9f99))
+* **browser:** Option to configure the shutdown delay in browser editor preview ([#1218](https://github.com/grafana/k6-studio/issues/1218)) ([d28821c](https://github.com/grafana/k6-studio/commit/d28821cd3cc5b0ade36419d4cf59f5595135d8de))
+* **browser:** Remove public preview notices and feature flags for browser functionality ([#1293](https://github.com/grafana/k6-studio/issues/1293)) ([5d014e3](https://github.com/grafana/k6-studio/commit/5d014e328a69e4f5bff6a7bfc65e54b3b3f51a5c))
+* **browser:** Separate debugger and browser test schemas ([#1214](https://github.com/grafana/k6-studio/issues/1214)) ([2f812bd](https://github.com/grafana/k6-studio/commit/2f812bde61c60c50082ddcb88173711813c244c6))
+* **browser:** Show status indicators in action list when validating ([#1283](https://github.com/grafana/k6-studio/issues/1283)) ([1bdc594](https://github.com/grafana/k6-studio/commit/1bdc59474b893f783d0f46669a43396791361c88))
+* **browser:** Stop validation run in browser test editor ([#1205](https://github.com/grafana/k6-studio/issues/1205)) ([368cd47](https://github.com/grafana/k6-studio/commit/368cd4736903d87e0939952631699a0c776e6984))
+* **browser:** Store all locator values on browser action when saving test ([#1222](https://github.com/grafana/k6-studio/issues/1222)) ([b997280](https://github.com/grafana/k6-studio/commit/b99728039d5f94f010dafca5c21a52cb42d98e25))
+* **browser:** Visualize assertions in debugger ([#1203](https://github.com/grafana/k6-studio/issues/1203)) ([fff663a](https://github.com/grafana/k6-studio/commit/fff663a7f8c9fc6b24de6fa567503416575857ff))
+* Show branch name in window title during development ([#1284](https://github.com/grafana/k6-studio/issues/1284)) ([79b25a3](https://github.com/grafana/k6-studio/commit/79b25a3fbed69299b0a17b41fbdf26d82f8e5421))
+
+
+### Miscellaneous Chores
+
+* **deps:** lock file maintenance ([#1208](https://github.com/grafana/k6-studio/issues/1208)) ([32a0a7c](https://github.com/grafana/k6-studio/commit/32a0a7c72f2d089e477e5138bab9a206c38ebd1b))
+* **deps:** lock file maintenance ([#1227](https://github.com/grafana/k6-studio/issues/1227)) ([32870f0](https://github.com/grafana/k6-studio/commit/32870f0f1c68a110d8924b52dd4ebb5575c1a35a))
+* **deps:** Upgrade electron-forge and electron to latest versions ([#1267](https://github.com/grafana/k6-studio/issues/1267)) ([382accc](https://github.com/grafana/k6-studio/commit/382accc72b022aa35dfc289a1a77af966f9e0657))
+* Migrate to zod v4 ([#1206](https://github.com/grafana/k6-studio/issues/1206)) ([7bd62cf](https://github.com/grafana/k6-studio/commit/7bd62cfb0f0cd00121b280a71ba3084acc14fb8e))
+* Switch from `npm` to `pnpm` ([#1216](https://github.com/grafana/k6-studio/issues/1216)) ([e48fb0a](https://github.com/grafana/k6-studio/commit/e48fb0a95c1da7a5ad0b0161a9138c82c87ccdaf))
+
+
+### Code Refactoring
+
+* Calculate relative paths to data files in code generation ([#1226](https://github.com/grafana/k6-studio/issues/1226)) ([9015b02](https://github.com/grafana/k6-studio/commit/9015b0256ed47a2e41e5ed17056f7415cb053a27))
+* Convert file references in generator to and from absolute paths ([#1217](https://github.com/grafana/k6-studio/issues/1217)) ([94d72e7](https://github.com/grafana/k6-studio/commit/94d72e782d1f139f58c8c94b84b329c80b882444))
+* Move JSON path indexing to setGenerator ([#1210](https://github.com/grafana/k6-studio/issues/1210)) ([c01d25d](https://github.com/grafana/k6-studio/commit/c01d25d83646879b3158fafaaf7ae93ba05abf49))
+* Move proxy data parsing to main process ([#1277](https://github.com/grafana/k6-studio/issues/1277)) ([3db6361](https://github.com/grafana/k6-studio/commit/3db63618a138603069e8c302833ba5d9586b1149))
+* Remove creation of temporary script file when debugging ([#1231](https://github.com/grafana/k6-studio/issues/1231)) ([a9c258f](https://github.com/grafana/k6-studio/commit/a9c258fd8383d2d11fe7e304532c3c49ab3b1758))
+* Remove duplicate locator implementation ([#1204](https://github.com/grafana/k6-studio/issues/1204)) ([011b57e](https://github.com/grafana/k6-studio/commit/011b57e27dc44aadea30a1973766a55451006c20))
+* Replace allotment with react-resizable-panels ([#1276](https://github.com/grafana/k6-studio/issues/1276)) ([6b02fe0](https://github.com/grafana/k6-studio/commit/6b02fe06780f34449d193e6e1fef7af9f4f789a4))
+* Replace allotment with react-resizable-panels in HTTP test editor ([#1271](https://github.com/grafana/k6-studio/issues/1271)) ([3e041c8](https://github.com/grafana/k6-studio/commit/3e041c834cd84f5e5cee334ae58c2700094c31cf))
+* Store paths to recording and data files as relative in HTTP tests ([#1238](https://github.com/grafana/k6-studio/issues/1238)) ([7411609](https://github.com/grafana/k6-studio/commit/7411609e1dcbac7be94673f98c2906b1835ca116))
+* Use a single route for loading files ([#1280](https://github.com/grafana/k6-studio/issues/1280)) ([4e57e8e](https://github.com/grafana/k6-studio/commit/4e57e8e525e4480df490e2dfabcffae40c2fef01))
+* Use absolute paths for file saving ([#1211](https://github.com/grafana/k6-studio/issues/1211)) ([03f1133](https://github.com/grafana/k6-studio/commit/03f11332e26eafc2d92d627c1ae799d1823319ef))
+* Use absolute paths for routing ([#1200](https://github.com/grafana/k6-studio/issues/1200)) ([4a6fd44](https://github.com/grafana/k6-studio/commit/4a6fd4405948e82edb82bbf7b68b1cae477e3705))
+* Use absolute paths when opening files ([#1213](https://github.com/grafana/k6-studio/issues/1213)) ([7fa45d8](https://github.com/grafana/k6-studio/commit/7fa45d82d22885c0b06650e44d4a49acb170777c))
+* Use posix paths as internal representation ([#1248](https://github.com/grafana/k6-studio/issues/1248)) ([78387e1](https://github.com/grafana/k6-studio/commit/78387e12b6998f13142af2e1d2f0205ae85edfb7))
+
+
+### Tests
+
+* Fix warnings during tests ([#1245](https://github.com/grafana/k6-studio/issues/1245)) ([159e340](https://github.com/grafana/k6-studio/commit/159e340e098c93bcd1faa8fe00ad544d5f727bed))
+
+
+### Build System
+
+* Allow newer versions of pnpm to be used ([#1281](https://github.com/grafana/k6-studio/issues/1281)) ([0e5b58a](https://github.com/grafana/k6-studio/commit/0e5b58a3ab7f591ddb8b944240bca4344ccd9a88))
+* disable automatic install-time lifecycle scripts ([#1236](https://github.com/grafana/k6-studio/issues/1236)) ([759af50](https://github.com/grafana/k6-studio/commit/759af5014b160c45cd8d09c3382928c925d68120))
+* Override @electron/node-gyp with vanilla node-gyp ([#1253](https://github.com/grafana/k6-studio/issues/1253)) ([ea5c1bd](https://github.com/grafana/k6-studio/commit/ea5c1bdab13f791692f479f8cf0b1e0086e03a1c))
+* Pin dependencies ([#1243](https://github.com/grafana/k6-studio/issues/1243)) ([f9155d4](https://github.com/grafana/k6-studio/commit/f9155d4a7cccdb6b8431da096e8223439d67778f))
+* Upgrade to typescript 7.0 (with 6.0 compat) ([#1260](https://github.com/grafana/k6-studio/issues/1260)) ([2c0d21d](https://github.com/grafana/k6-studio/commit/2c0d21d92c70abfdc8573f59af5659455462a644))
+
+
+### Continuous Integration
+
+* Bump grafana actions and migrate to lint-pr-title ([#1263](https://github.com/grafana/k6-studio/issues/1263)) ([e26320b](https://github.com/grafana/k6-studio/commit/e26320bae51651bad8d79db90b0a4621f9342986))
+* Fix windows release workflow failing due to broken pnpm action ([#1286](https://github.com/grafana/k6-studio/issues/1286)) ([372d9a6](https://github.com/grafana/k6-studio/commit/372d9a6556f0bdf7eaf78cb1f56f011f7f682b71))
+* Harden release workflow cleanup and input handling ([#1259](https://github.com/grafana/k6-studio/issues/1259)) ([1dd6225](https://github.com/grafana/k6-studio/commit/1dd622522646a355a79bc9066790b142035c14b0))
+* Install dependencies before signing secrets are materialized ([#1264](https://github.com/grafana/k6-studio/issues/1264)) ([1af23d9](https://github.com/grafana/k6-studio/commit/1af23d98c99beaab3651d5878f87dd9bf183e466))
+* Migrate from eslint to oxlint ([#1261](https://github.com/grafana/k6-studio/issues/1261)) ([9fcee69](https://github.com/grafana/k6-studio/commit/9fcee69c5e62bce87f63e59a8ae8a305cf5e03a1))
+* Restore Linux arm64 publish in release workflows ([#1241](https://github.com/grafana/k6-studio/issues/1241)) ([c9dcf9e](https://github.com/grafana/k6-studio/commit/c9dcf9eaf1bec6756fc987886c29056acf3f0f4f))
+* Update release-please workflow to use GATB ([#1247](https://github.com/grafana/k6-studio/issues/1247)) ([b6c4aff](https://github.com/grafana/k6-studio/commit/b6c4aff67d281467ce461fdcc952bb7537ac809b))
+* Use latest pnpm GitHub action in release workflows ([#1285](https://github.com/grafana/k6-studio/issues/1285)) ([dbc702b](https://github.com/grafana/k6-studio/commit/dbc702b6844efe842351b6c8109ccf70755d8bc6))
+
 ## [1.13.0](https://github.com/grafana/k6-studio/compare/v1.12.0...v1.13.0) (2026-04-28)
 
 ### Features
