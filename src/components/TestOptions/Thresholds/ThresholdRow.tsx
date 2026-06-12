@@ -31,7 +31,7 @@ interface ThresholdFormShape {
 type ThresholdRowProps<M extends string> = {
   index: number
   field: FieldArrayWithId<ThresholdFormShape, 'thresholds', 'id'>
-  remove: UseFieldArrayRemove
+  remove?: UseFieldArrayRemove
   metricsConfig: MetricsConfig<M>
   getRowAnnotation?: (id: string) => string | undefined
 }
@@ -185,21 +185,23 @@ export function ThresholdRow<M extends string>({
             />
           </Flex>
         </Table.Cell>
-        <Table.Cell>
-          <IconButton
-            variant="ghost"
-            color="gray"
-            aria-label="Remove threshold"
-            onClick={() => remove(index)}
-          >
-            <Trash2Icon size={16} />
-          </IconButton>
-        </Table.Cell>
+        {remove !== undefined && (
+          <Table.Cell>
+            <IconButton
+              variant="ghost"
+              color="gray"
+              aria-label="Remove threshold"
+              onClick={() => remove(index)}
+            >
+              <Trash2Icon size={16} />
+            </IconButton>
+          </Table.Cell>
+        )}
       </Table.Row>
       {annotation !== undefined && (
         <Table.Row>
           <Table.Cell
-            colSpan={7}
+            colSpan={remove !== undefined ? 7 : 6}
             css={{
               height: 'auto',
               paddingTop: 0,

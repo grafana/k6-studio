@@ -54,6 +54,7 @@ function CompletedThresholdsStep({
             onChange={setThresholds}
             metricsConfig={HTTP_METRICS_CONFIG}
             getRowAnnotation={(id) => rationaleById[id]}
+            hideRemove
           />
         </Flex>
       </StepFrame>

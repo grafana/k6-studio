@@ -173,6 +173,33 @@ describe('Thresholds (controlled)', () => {
     })
   })
 
+  it('hides the remove button when hideRemove is set', () => {
+    render(
+      <Theme>
+        <Thresholds
+          value={[
+            {
+              id: '1',
+              metric: 'response_time' as const,
+              statistic: 'avg' as const,
+              condition: '<' as const,
+              value: 100,
+              stopTest: false,
+              enabled: true,
+            },
+          ]}
+          onChange={vi.fn()}
+          metricsConfig={config}
+          hideRemove
+        />
+      </Theme>
+    )
+
+    expect(
+      screen.queryByRole('button', { name: 'Remove threshold' })
+    ).toBeNull()
+  })
+
   it('moves the row separator to the annotation row for annotated rows', () => {
     const value = [
       {

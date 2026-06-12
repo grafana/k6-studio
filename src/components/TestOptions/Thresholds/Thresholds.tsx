@@ -17,6 +17,8 @@ interface ThresholdsProps<M extends string> {
   metricsConfig: MetricsConfig<M>
   /** Returns an annotation rendered beneath the row with the given threshold id. */
   getRowAnnotation?: (id: string) => string | undefined
+  /** Hides the remove column; rows can only be toggled, not deleted. */
+  hideRemove?: boolean
   // Resolver is contravariant in TFieldValues so callers with narrower schemas
   // cannot assign to a concrete form type. Use any to accept all resolvers.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -28,8 +30,10 @@ export function Thresholds<M extends string>({
   onChange,
   metricsConfig,
   getRowAnnotation,
+  hideRemove = false,
   resolver,
 }: ThresholdsProps<M>) {
+  const columnCount = hideRemove ? 6 : 7
   type Row = ThresholdLikeRow & { metric: M }
   type FormShape = { thresholds: Row[] }
 
@@ -107,7 +111,7 @@ export function Thresholds<M extends string>({
                 Stop Test
               </Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell width="48px" />
-              <Table.ColumnHeaderCell width="48px" />
+              {!hideRemove && <Table.ColumnHeaderCell width="48px" />}
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -116,13 +120,13 @@ export function Thresholds<M extends string>({
                 key={field.id}
                 field={field}
                 index={index}
-                remove={remove}
+                remove={hideRemove ? undefined : remove}
                 metricsConfig={metricsConfig}
                 getRowAnnotation={getRowAnnotation}
               />
             ))}
             <Table.Row>
-              <Table.RowHeaderCell colSpan={7} justify="center">
+              <Table.RowHeaderCell colSpan={columnCount} justify="center">
                 <Button variant="ghost" onClick={handleAddThreshold}>
                   Add threshold
                 </Button>
