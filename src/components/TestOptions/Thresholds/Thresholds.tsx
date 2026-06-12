@@ -72,6 +72,7 @@ export function Thresholds<M extends string>({
       condition: '<',
       value: 0,
       stopTest: false,
+      enabled: true,
     }
     append(newRow)
   }
@@ -105,6 +106,7 @@ export function Thresholds<M extends string>({
               <Table.ColumnHeaderCell width="80px">
                 Stop Test
               </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="59px" />
               <Table.ColumnHeaderCell width="59px" />
             </Table.Row>
           </Table.Header>

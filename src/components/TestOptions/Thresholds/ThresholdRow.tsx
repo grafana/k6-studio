@@ -1,4 +1,5 @@
 import {
+  Switch,
   Table,
   Text,
   TextField,
@@ -75,12 +76,13 @@ export function ThresholdRow<M extends string>({
     <>
       <Table.Row
         key={field.id}
-        // The annotation row carries the pair's bottom separator instead.
-        css={
-          annotation !== undefined
+        css={{
+          // The annotation row carries the pair's bottom separator instead.
+          ...(annotation !== undefined
             ? { '--table-row-box-shadow': 'none' }
-            : undefined
-        }
+            : {}),
+          opacity: threshold?.enabled === false ? 0.6 : undefined,
+        }}
       >
         <Table.Cell>
           <FieldGroup
@@ -167,6 +169,22 @@ export function ThresholdRow<M extends string>({
             />
           </Flex>
         </Table.Cell>
+        <Table.Cell align="center" justify="center">
+          <Flex align="center" justify="center" height="100%">
+            <Controller
+              control={control}
+              name={`thresholds.${index}.enabled`}
+              render={({ field: enabledField }) => (
+                <Switch
+                  size="1"
+                  checked={enabledField.value}
+                  aria-label="Enable threshold"
+                  onCheckedChange={enabledField.onChange}
+                />
+              )}
+            />
+          </Flex>
+        </Table.Cell>
         <Table.Cell>
           <IconButton
             variant="ghost"
@@ -181,7 +199,7 @@ export function ThresholdRow<M extends string>({
       {annotation !== undefined && (
         <Table.Row>
           <Table.Cell
-            colSpan={6}
+            colSpan={7}
             css={{
               height: 'auto',
               paddingTop: 0,

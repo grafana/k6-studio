@@ -45,6 +45,7 @@ export const ThresholdSchema = z.object({
     .number({ message: 'Invalid value' })
     .min(0, { message: 'Invalid value' }),
   stopTest: z.boolean().default(false),
+  enabled: z.boolean().default(true),
 })
 
 export const ThresholdDataSchema = z.object({

@@ -69,6 +69,7 @@ export function useThresholdsAgent() {
             condition: suggestion.condition,
             value: suggestion.value,
             stopTest: suggestion.stopTest,
+            enabled: true,
           },
           rationale: suggestion.rationale,
         }))

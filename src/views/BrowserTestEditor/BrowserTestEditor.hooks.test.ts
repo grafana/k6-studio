@@ -51,6 +51,7 @@ describe('useBrowserTestState', () => {
         condition: '<' as const,
         value: 1000,
         stopTest: false,
+        enabled: true,
       },
     ]
     act(() => {
@@ -95,6 +96,7 @@ describe('useBrowserTestState options round-trip', () => {
       condition: '<' as const,
       value: 1500,
       stopTest: false,
+      enabled: true,
     }
     act(() => {
       result.current.setThresholds([newThreshold])

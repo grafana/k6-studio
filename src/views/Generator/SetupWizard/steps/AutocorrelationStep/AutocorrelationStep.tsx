@@ -1,5 +1,7 @@
-import { Callout, Flex } from '@radix-ui/themes'
+import { Box, Callout, Flex } from '@radix-ui/themes'
 import { UnplugIcon } from 'lucide-react'
+import { useState } from 'react'
+import { createPortal } from 'react-dom'
 
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { UsageEventName } from '@/services/usageTracking/types'
@@ -107,6 +109,7 @@ export function AutocorrelationStep() {
   const stepState = useStepState('autocorrelation')
   const { goBack, goNext } = useWizardNavigation()
   const proxyStatus = useProxyStatus()
+  const [footerHost, setFooterHost] = useState<HTMLDivElement | null>(null)
 
   const handleStatusChange = (status: CorrelationStatus) => {
     if (status === 'not-started' || stepState.status === 'running') {
@@ -168,23 +171,54 @@ export function AutocorrelationStep() {
       >
         <StepHeader stepId="autocorrelation" />
       </Flex>
-      <AutoCorrelation
-        skipIntroduction
-        close={goBack}
-        onStatusChange={handleStatusChange}
-        footer={(context) => (
-          <WizardFooter
-            isLastStep={false}
-            canContinue={
-              !context.isLoading &&
-              TERMINAL_STATUSES.includes(context.correlationStatus)
+      <Flex
+        direction="column"
+        flexGrow="1"
+        width="100%"
+        maxWidth="860px"
+        mx="auto"
+        px="5"
+        pb="3"
+        css={{ minHeight: 0 }}
+      >
+        <Box
+          css={{
+            display: 'flex',
+            flexDirection: 'column',
+            flexGrow: 1,
+            minHeight: 0,
+            border: '1px solid var(--gray-4)',
+            borderRadius: 'var(--radius-3)',
+            overflow: 'hidden',
+          }}
+        >
+          <AutoCorrelation
+            skipIntroduction
+            close={goBack}
+            onStatusChange={handleStatusChange}
+            // The footer renders through a portal so it spans the full step
+            // width like every other step, while the analysis panes stay in
+            // the shared 860px column.
+            footer={(context) =>
+              footerHost &&
+              createPortal(
+                <WizardFooter
+                  isLastStep={false}
+                  canContinue={
+                    !context.isLoading &&
+                    TERMINAL_STATUSES.includes(context.correlationStatus)
+                  }
+                  onBack={goBack}
+                  onContinue={handleContinue(context)}
+                  onSkip={handleSkip}
+                />,
+                footerHost
+              )
             }
-            onBack={goBack}
-            onContinue={handleContinue(context)}
-            onSkip={handleSkip}
           />
-        )}
-      />
+        </Box>
+      </Flex>
+      <div ref={setFooterHost} />
     </Flex>
   )
 }
