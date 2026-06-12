@@ -112,9 +112,14 @@ function CompletedHostsStep({ onRerun }: { onRerun: () => void }) {
 export function HostsStep() {
   const stepState = useStepState('hosts')
   const { goBack, goNext } = useWizardNavigation()
-  const { start, restart, stop, logEntries, status } = useHostsAgent()
+  const { start, restart, skip, stop, logEntries, status } = useHostsAgent()
 
   useAutoStartAgent(stepState.status, start, stop)
+
+  const handleSkip = () => {
+    skip()
+    goNext()
+  }
 
   if (stepState.status === 'completed') {
     return <CompletedHostsStep onRerun={restart} />
@@ -132,6 +137,7 @@ export function HostsStep() {
       isLastStep={false}
       onBack={goBack}
       onContinue={goNext}
+      onSkip={handleSkip}
     />
   )
 }

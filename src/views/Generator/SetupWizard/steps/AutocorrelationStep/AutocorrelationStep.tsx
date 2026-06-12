@@ -1,7 +1,8 @@
-import { Button, Callout, Flex } from '@radix-ui/themes'
+import { Callout, Flex } from '@radix-ui/themes'
 import { UnplugIcon } from 'lucide-react'
 
 import { useProxyStatus } from '@/hooks/useProxyStatus'
+import { UsageEventName } from '@/services/usageTracking/types'
 import { useGeneratorStore } from '@/store/generator'
 import {
   AutoCorrelation,
@@ -73,20 +74,8 @@ function CompletedStep() {
   )
 }
 
-function ProxyOfflineStep() {
-  const { dispatch } = useSetupWizard()
+function ProxyOfflineStep({ onSkip }: { onSkip: () => void }) {
   const { goBack, goNext } = useWizardNavigation()
-
-  const handleSkip = () => {
-    dispatch({
-      type: 'stepRunCompleted',
-      stepId: 'autocorrelation',
-      result: { step: 'autocorrelation', ruleIds: [] },
-      log: [],
-      summary: 'Skipped because the proxy was offline',
-    })
-    goNext()
-  }
 
   return (
     <>
@@ -101,17 +90,13 @@ function ProxyOfflineStep() {
             back online or skip this step.
           </Callout.Text>
         </Callout.Root>
-        <Flex mt="3">
-          <Button variant="outline" color="gray" onClick={handleSkip}>
-            Skip this step
-          </Button>
-        </Flex>
       </StepFrame>
       <WizardFooter
         isLastStep={false}
         canContinue={false}
         onBack={goBack}
         onContinue={goNext}
+        onSkip={onSkip}
       />
     </>
   )
@@ -131,6 +116,21 @@ export function AutocorrelationStep() {
     if (!TERMINAL_STATUSES.includes(status)) {
       dispatch({ type: 'stepRunStarted', stepId: 'autocorrelation' })
     }
+  }
+
+  const handleSkip = () => {
+    window.studio.app.trackEvent({
+      event: UsageEventName.TestSetupWizardStepSkipped,
+      payload: { step: 'autocorrelation' },
+    })
+    dispatch({
+      type: 'stepRunCompleted',
+      stepId: 'autocorrelation',
+      result: { step: 'autocorrelation', ruleIds: [] },
+      log: [],
+      summary: 'Step skipped - no correlation rules added',
+    })
+    goNext()
   }
 
   const handleContinue = (context: AutoCorrelationFooterContext) => () => {
@@ -153,7 +153,7 @@ export function AutocorrelationStep() {
   }
 
   if (proxyStatus !== 'online') {
-    return <ProxyOfflineStep />
+    return <ProxyOfflineStep onSkip={handleSkip} />
   }
 
   return (
@@ -181,6 +181,7 @@ export function AutocorrelationStep() {
             }
             onBack={goBack}
             onContinue={handleContinue(context)}
+            onSkip={handleSkip}
           />
         )}
       />

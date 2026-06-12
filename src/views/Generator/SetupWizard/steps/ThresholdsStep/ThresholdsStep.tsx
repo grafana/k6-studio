@@ -70,9 +70,15 @@ function CompletedThresholdsStep({
 export function ThresholdsStep({ onComplete }: ThresholdsStepProps) {
   const stepState = useStepState('thresholds')
   const { goBack } = useWizardNavigation()
-  const { start, restart, stop, logEntries, status } = useThresholdsAgent()
+  const { start, restart, skip, stop, logEntries, status } =
+    useThresholdsAgent()
 
   useAutoStartAgent(stepState.status, start, stop)
+
+  const handleSkip = () => {
+    skip()
+    onComplete()
+  }
 
   if (stepState.status === 'completed') {
     return <CompletedThresholdsStep onComplete={onComplete} onRerun={restart} />
@@ -90,6 +96,7 @@ export function ThresholdsStep({ onComplete }: ThresholdsStepProps) {
       isLastStep
       onBack={goBack}
       onContinue={onComplete}
+      onSkip={handleSkip}
     />
   )
 }

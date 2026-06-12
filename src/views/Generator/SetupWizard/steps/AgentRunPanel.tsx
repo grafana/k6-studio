@@ -20,6 +20,7 @@ interface AgentRunPanelProps {
   isLastStep: boolean
   onBack: () => void
   onContinue: () => void
+  onSkip: () => void
 }
 
 export function AgentRunPanel({
@@ -33,6 +34,7 @@ export function AgentRunPanel({
   isLastStep,
   onBack,
   onContinue,
+  onSkip,
 }: AgentRunPanelProps) {
   return (
     <>
@@ -57,6 +59,7 @@ export function AgentRunPanel({
         canContinue={false}
         onBack={onBack}
         onContinue={onContinue}
+        onSkip={onSkip}
       >
         <RunningLabel status={status} runningLabel={runningLabel} />
       </WizardFooter>

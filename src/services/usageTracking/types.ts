@@ -57,6 +57,7 @@ export enum UsageEventName {
   TestSetupWizardOpened = 'test_setup_wizard_opened',
   TestSetupWizardCompleted = 'test_setup_wizard_completed',
   TestSetupWizardDismissed = 'test_setup_wizard_dismissed',
+  TestSetupWizardStepSkipped = 'test_setup_wizard_step_skipped',
 }
 
 export interface UsageEventMetadata {
@@ -251,6 +252,13 @@ interface TestSetupWizardDismissedEvent {
   event: UsageEventName.TestSetupWizardDismissed
 }
 
+interface TestSetupWizardStepSkippedEvent {
+  event: UsageEventName.TestSetupWizardStepSkipped
+  payload: {
+    step: string
+  }
+}
+
 export type UsageEvent =
   | AppInstalledEvent
   | UserLoggedInEvent
@@ -292,5 +300,6 @@ export type UsageEvent =
   | TestSetupWizardOpenedEvent
   | TestSetupWizardCompletedEvent
   | TestSetupWizardDismissedEvent
+  | TestSetupWizardStepSkippedEvent
 
 export type UsageEventWithMetadata = UsageEvent & UsageEventMetadata

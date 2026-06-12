@@ -83,10 +83,15 @@ function CompletedParameterizationStep({ onRerun }: { onRerun: () => void }) {
 export function ParameterizationStep() {
   const stepState = useStepState('parameterization')
   const { goBack, goNext } = useWizardNavigation()
-  const { start, restart, stop, logEntries, status } =
+  const { start, restart, skip, stop, logEntries, status } =
     useParameterizationAgent()
 
   useAutoStartAgent(stepState.status, start, stop)
+
+  const handleSkip = () => {
+    skip()
+    goNext()
+  }
 
   if (stepState.status === 'completed') {
     return <CompletedParameterizationStep onRerun={restart} />
@@ -104,6 +109,7 @@ export function ParameterizationStep() {
       isLastStep={false}
       onBack={goBack}
       onContinue={goNext}
+      onSkip={handleSkip}
     />
   )
 }

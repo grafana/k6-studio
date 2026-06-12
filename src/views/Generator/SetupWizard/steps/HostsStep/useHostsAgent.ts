@@ -3,10 +3,6 @@ import { useRef } from 'react'
 
 import { UsageEventName } from '@/services/usageTracking/types'
 import { useGeneratorStore } from '@/store/generator'
-import {
-  handleRecordingSearchToolCall,
-  isRecordingSearchToolCall,
-} from '@/utils/assistant/handleRecordingSearchToolCall'
 import { useAssistantAgent } from '@/utils/assistant/useAssistantAgent'
 import { exhaustive } from '@/utils/typescript'
 
@@ -21,6 +17,7 @@ import {
 } from './constants'
 import {
   buildHostInventory,
+  buildSkippedHostSuggestions,
   formatHostInventory,
   HostInventoryEntry,
   mergeHostSuggestions,
@@ -46,6 +43,7 @@ export function useHostsAgent() {
 
   const agent = useAssistantAgent({
     tools: hostSelectionTools,
+    terminalTool: 'suggestHosts',
     trackingEvents: {
       started: { event: UsageEventName.HostSelectionStarted },
       errored: { event: UsageEventName.HostSelectionErrored },
@@ -57,14 +55,6 @@ export function useHostsAgent() {
   const { actionsLog, status } = agent
 
   function handleToolCall(toolCall: HostsToolCall): unknown {
-    if (isRecordingSearchToolCall(toolCall)) {
-      return handleRecordingSearchToolCall(
-        toolCall,
-        requests,
-        actionsLog.addEntry
-      )
-    }
-
     switch (toolCall.toolName) {
       case 'suggestHosts': {
         const { hosts } = suggestHostsInputSchema.parse(toolCall.input)
@@ -72,31 +62,22 @@ export function useHostsAgent() {
           inventoryRef.current,
           hosts
         )
-        actionsLog.addEntry({
-          type: 'found',
-          text: `Classified **${suggestionsRef.current.length} hosts**`,
-        })
-        return { classifiedHosts: suggestionsRef.current.length }
-      }
 
-      case 'finish': {
-        const isSuccess =
-          toolCall.input.outcome === 'success' &&
-          suggestionsRef.current.length > 0
-
+        const isSuccess = suggestionsRef.current.length > 0
         window.studio.app.trackEvent({
           event: isSuccess
             ? UsageEventName.HostSelectionSucceeded
             : UsageEventName.HostSelectionFailed,
         })
-        actionsLog.markLastReasoningAsOutcome(
-          isSuccess ? 'outcome-success' : 'outcome-failure'
-        )
-        return toolCall.input.outcome
+        actionsLog.addEntry({
+          type: isSuccess ? 'outcome-success' : 'outcome-failure',
+          text: `Classified **${suggestionsRef.current.length} hosts**`,
+        })
+        return { classifiedHosts: suggestionsRef.current.length }
       }
 
       default:
-        return exhaustive(toolCall)
+        return exhaustive(toolCall.toolName)
     }
   }
 
@@ -154,9 +135,32 @@ export function useHostsAgent() {
     start()
   }
 
+  function skip() {
+    agent.stop()
+
+    const suggestions = buildSkippedHostSuggestions(
+      buildHostInventory(requests)
+    )
+    suggestionsRef.current = suggestions
+
+    window.studio.app.trackEvent({
+      event: UsageEventName.TestSetupWizardStepSkipped,
+      payload: { step: 'hosts' },
+    })
+    setAllowlist(suggestions.map((suggestion) => suggestion.host))
+    dispatch({
+      type: 'stepRunCompleted',
+      stepId: 'hosts',
+      result: { step: 'hosts', suggestions },
+      log: actionsLog.entries,
+      summary: 'Step skipped - all hosts included',
+    })
+  }
+
   return {
     start,
     restart,
+    skip,
     stop: agent.stop,
     status: agent.status,
     error: agent.error,

@@ -174,9 +174,25 @@ export function useParameterizationAgent() {
     start()
   }
 
+  function skip() {
+    agent.stop()
+    window.studio.app.trackEvent({
+      event: UsageEventName.TestSetupWizardStepSkipped,
+      payload: { step: 'parameterization' },
+    })
+    dispatch({
+      type: 'stepRunCompleted',
+      stepId: 'parameterization',
+      result: { step: 'parameterization', suggestions: [] },
+      log: actionsLog.entries,
+      summary: 'Step skipped - no values parameterized',
+    })
+  }
+
   return {
     start,
     restart,
+    skip,
     stop: agent.stop,
     status: agent.status,
     error: agent.error,

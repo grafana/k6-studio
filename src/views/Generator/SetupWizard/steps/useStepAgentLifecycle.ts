@@ -26,9 +26,15 @@ export function useStepAgentLifecycle({
   onCompleted,
   failureMessage,
 }: UseStepAgentLifecycleOptions) {
-  const { dispatch } = useSetupWizard()
+  const { state, dispatch } = useSetupWizard()
 
   useEffect(() => {
+    // Skipping a step completes it while the agent is still shutting down;
+    // the trailing abort/error transition must not clobber that state.
+    if (state.steps[stepId].status !== 'running') {
+      return
+    }
+
     if (status === 'completed') {
       onCompleted()
       return

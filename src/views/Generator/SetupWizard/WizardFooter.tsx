@@ -7,6 +7,8 @@ interface WizardFooterProps {
   canContinue: boolean
   onBack: () => void
   onContinue: () => void
+  /** Completes the step with no assistant results and moves on. */
+  onSkip?: () => void
   children?: ReactNode
 }
 
@@ -15,6 +17,7 @@ export function WizardFooter({
   canContinue,
   onBack,
   onContinue,
+  onSkip,
   children,
 }: WizardFooterProps) {
   return (
@@ -35,6 +38,11 @@ export function WizardFooter({
       <Flex flexGrow="1" align="center" justify="center">
         {children}
       </Flex>
+      {onSkip && (
+        <Button variant="ghost" color="gray" onClick={onSkip}>
+          Skip step
+        </Button>
+      )}
       <ContinueButton
         isLastStep={isLastStep}
         canContinue={canContinue}

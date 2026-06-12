@@ -84,6 +84,7 @@ function renderStep(stepStates: Partial<WizardState['steps']> = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  vi.stubGlobal('studio', { app: { trackEvent: vi.fn() } })
   vi.mocked(useProxyStatus).mockReturnValue('online')
   footerContext.isLoading = false
   footerContext.correlationStatus = 'success'
@@ -98,9 +99,7 @@ describe('AutocorrelationStep', () => {
 
     expect(screen.queryByTestId('auto-correlation')).toBeNull()
 
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Skip this step' })
-    )
+    await userEvent.click(screen.getByRole('button', { name: 'Skip step' }))
 
     expect(screen.getByTestId('probe').textContent).toBe(
       'parameterization:completed'

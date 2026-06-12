@@ -180,9 +180,25 @@ export function useThresholdsAgent() {
     start()
   }
 
+  function skip() {
+    agent.stop()
+    window.studio.app.trackEvent({
+      event: UsageEventName.TestSetupWizardStepSkipped,
+      payload: { step: 'thresholds' },
+    })
+    dispatch({
+      type: 'stepRunCompleted',
+      stepId: 'thresholds',
+      result: { step: 'thresholds', rationaleById: {} },
+      log: actionsLog.entries,
+      summary: 'Step skipped - no thresholds suggested',
+    })
+  }
+
   return {
     start,
     restart,
+    skip,
     stop: agent.stop,
     status: agent.status,
     error: agent.error,
