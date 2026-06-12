@@ -1,10 +1,13 @@
+import { Theme } from '@radix-ui/themes'
 import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useProxyStatus } from '@/hooks/useProxyStatus'
+import { useGeneratorStore } from '@/store/generator'
 import { CorrelationRule } from '@/types/rules'
 import type { AutoCorrelationFooterContext } from '@/views/Generator/AutoCorrelation/AutoCorrelation'
+import type { SuggestedRuleEntry } from '@/views/Generator/AutoCorrelation/types'
 
 import { initialWizardState } from '../../state/reducer'
 import {
@@ -29,9 +32,18 @@ const footerContext: AutoCorrelationFooterContext = {
 vi.mock('@/views/Generator/AutoCorrelation/AutoCorrelation', () => ({
   AutoCorrelation: ({
     footer,
+    onSettled,
   }: {
     footer?: (context: AutoCorrelationFooterContext) => React.ReactNode
-  }) => <div data-testid="auto-correlation">{footer?.(footerContext)}</div>,
+    onSettled?: (context: AutoCorrelationFooterContext) => void
+  }) => (
+    <div data-testid="auto-correlation">
+      {footer?.(footerContext)}
+      <button type="button" onClick={() => onSettled?.(footerContext)}>
+        settle-run
+      </button>
+    </div>
+  ),
 }))
 
 const rule: CorrelationRule = {
@@ -42,6 +54,18 @@ const rule: CorrelationRule = {
     filter: { path: '' },
     selector: { type: 'begin-end', from: 'body', begin: 'a', end: 'b' },
     extractionMode: 'single',
+  },
+}
+
+const ruleEntry: SuggestedRuleEntry = {
+  rule,
+  correlationState: {
+    extractedValue: 'value',
+    count: 1,
+    matchedRequestIds: ['req-1'],
+    responsesExtracted: [],
+    requestsReplaced: [],
+    generatedUniqueId: undefined,
   },
 }
 
@@ -75,10 +99,12 @@ function renderStep(stepStates: Partial<WizardState['steps']> = {}) {
   }
 
   return render(
-    <SetupWizardProvider initialState={state}>
-      <AutocorrelationStep />
-      <StateProbe />
-    </SetupWizardProvider>
+    <Theme>
+      <SetupWizardProvider initialState={state}>
+        <AutocorrelationStep />
+        <StateProbe />
+      </SetupWizardProvider>
+    </Theme>
   )
 }
 
@@ -86,6 +112,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   vi.stubGlobal('studio', { app: { trackEvent: vi.fn() } })
   vi.mocked(useProxyStatus).mockReturnValue('online')
+  useGeneratorStore.setState({ rules: [] })
   footerContext.isLoading = false
   footerContext.correlationStatus = 'success'
   footerContext.ruleEntries = []
@@ -106,11 +133,11 @@ describe('AutocorrelationStep', () => {
     )
   })
 
-  it('shows the stored summary when revisiting a completed step', () => {
+  it('shows the stored summary and rule cards when revisiting a completed step', () => {
     renderStep({
       autocorrelation: {
         status: 'completed',
-        result: { step: 'autocorrelation', ruleIds: ['rule-1'] },
+        result: { step: 'autocorrelation', entries: [ruleEntry] },
         log: [],
         summary: '1 correlation rule added',
       },
@@ -118,6 +145,7 @@ describe('AutocorrelationStep', () => {
 
     expect(screen.queryByTestId('auto-correlation')).toBeNull()
     expect(screen.getByText('1 correlation rule added')).toBeDefined()
+    expect(screen.getByText('value')).toBeDefined()
     expect(screen.getByRole('button', { name: /Continue/ })).toHaveProperty(
       'disabled',
       false
@@ -136,28 +164,39 @@ describe('AutocorrelationStep', () => {
     )
   })
 
-  it('accepts rules and advances on Continue', async () => {
-    footerContext.ruleEntries = [
-      {
-        rule,
-        correlationState: {
-          extractedValue: 'value',
-          count: 1,
-          matchedRequestIds: ['req-1'],
-          responsesExtracted: [],
-          requestsReplaced: [],
-          generatedUniqueId: undefined,
-        },
-      },
-    ]
+  it('commits rules and switches to the completed view when the run settles', async () => {
+    footerContext.ruleEntries = [ruleEntry]
 
     renderStep()
 
-    await userEvent.click(screen.getByRole('button', { name: /Continue/ }))
+    await userEvent.click(screen.getByRole('button', { name: 'settle-run' }))
 
     expect(footerContext.accept).toHaveBeenCalledOnce()
     expect(screen.getByTestId('probe').textContent).toBe(
-      'parameterization:completed'
+      'autocorrelation:completed'
     )
+    expect(screen.getByText('1 correlation rule added')).toBeDefined()
+    expect(screen.getByText('value')).toBeDefined()
+  })
+
+  it('removes an accepted rule from the store and the completed view', async () => {
+    useGeneratorStore.setState({ rules: [rule] })
+
+    renderStep({
+      autocorrelation: {
+        status: 'completed',
+        result: { step: 'autocorrelation', entries: [ruleEntry] },
+        log: [],
+        summary: '1 correlation rule added',
+      },
+    })
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /Remove .* rule/ })
+    )
+
+    expect(useGeneratorStore.getState().rules).toEqual([])
+    expect(screen.queryByText('value')).toBeNull()
+    expect(screen.getByText('0 correlation rules added')).toBeDefined()
   })
 })

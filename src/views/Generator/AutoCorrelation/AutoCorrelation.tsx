@@ -28,13 +28,26 @@ interface AutoCorrelationProps {
   onStatusChange?: (status: CorrelationStatus) => void
   /** Replaces the default Stop/Discard/Accept footer. */
   footer?: (context: AutoCorrelationFooterContext) => ReactNode
+  /** Shows the actions log full-width without the rules pane. */
+  hideRules?: boolean
+  /** Called once when the analysis finishes (not on stop/abort). */
+  onSettled?: (context: AutoCorrelationFooterContext) => void
 }
+
+const SETTLED_STATUSES: CorrelationStatus[] = [
+  'success',
+  'partial-success',
+  'failure',
+  'correlation-not-needed',
+]
 
 export function AutoCorrelation({
   close,
   skipIntroduction = false,
   onStatusChange,
   footer,
+  hideRules = false,
+  onSettled,
 }: AutoCorrelationProps) {
   const rules = useGeneratorStore((state) => state.rules)
   const saveRules = useGeneratorStore((state) => state.setRules)
@@ -101,6 +114,32 @@ export function AutoCorrelation({
     close()
   }
 
+  const hasSettled = useRef(false)
+
+  useEffect(() => {
+    if (!SETTLED_STATUSES.includes(correlationStatus)) {
+      hasSettled.current = false
+      return
+    }
+
+    if (hasSettled.current) {
+      return
+    }
+
+    hasSettled.current = true
+    onSettled?.({
+      isLoading,
+      ruleEntries,
+      logEntries: actionsLog,
+      correlationStatus,
+      stop,
+      accept: acceptRules,
+    })
+    // The context callbacks are re-created on every render; the status guard
+    // makes this fire once per finished run.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [correlationStatus])
+
   if (correlationStatus === 'not-started' && !skipIntroduction) {
     return <IntroductionMessage onStart={start} />
   }
@@ -115,6 +154,8 @@ export function AutoCorrelation({
       />
     )
   }
+
+  const showRules = !hideRules
 
   const renderFooter = () => {
     if (footer) {
@@ -160,16 +201,23 @@ export function AutoCorrelation({
       direction="column"
     >
       <Flex css={{ flex: 1, minHeight: 0 }}>
-        <Box css={{ width: '60%', borderRight: '1px solid var(--gray-5)' }}>
+        <Box
+          css={{
+            width: showRules ? '60%' : '100%',
+            borderRight: showRules ? '1px solid var(--gray-5)' : 'none',
+          }}
+        >
           <ActionsLog entries={actionsLog} />
         </Box>
-        <Box css={{ width: '40%', backgroundColor: 'var(--gray-2)' }}>
-          <RulesCreated
-            entries={ruleEntries}
-            isLoading={isLoading}
-            onRemoveRule={removeRule}
-          />
-        </Box>
+        {showRules && (
+          <Box css={{ width: '40%', backgroundColor: 'var(--gray-2)' }}>
+            <RulesCreated
+              entries={ruleEntries}
+              isLoading={isLoading}
+              onRemoveRule={removeRule}
+            />
+          </Box>
+        )}
       </Flex>
 
       {renderFooter()}

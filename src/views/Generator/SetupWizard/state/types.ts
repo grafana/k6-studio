@@ -1,4 +1,5 @@
 import { ActionLogEntry } from '@/components/Assistant/types'
+import { SuggestedRuleEntry } from '@/views/Generator/AutoCorrelation/types'
 
 export const STEP_ORDER = [
   'hosts',
@@ -40,7 +41,7 @@ export interface ParamSuggestionMeta {
 
 export type StepResult =
   | { step: 'hosts'; suggestions: HostSuggestion[] }
-  | { step: 'autocorrelation'; ruleIds: string[] }
+  | { step: 'autocorrelation'; entries: SuggestedRuleEntry[] }
   | { step: 'parameterization'; suggestions: ParamSuggestionMeta[] }
   | { step: 'thresholds'; rationaleById: Record<string, string> }
 

@@ -4,7 +4,7 @@ import { initialWizardState, isStepReachable, wizardReducer } from './reducer'
 import { StepId, StepResult, WizardState } from './types'
 
 function completedStep(): WizardState['steps'][StepId] {
-  const result: StepResult = { step: 'autocorrelation', ruleIds: [] }
+  const result: StepResult = { step: 'autocorrelation', entries: [] }
 
   return { status: 'completed', result, log: [], summary: 'done' }
 }

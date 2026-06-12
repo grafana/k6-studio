@@ -145,6 +145,67 @@ describe('AutoCorrelation', () => {
     expect(close).not.toHaveBeenCalled()
   })
 
+  it('hides the rules pane when hideRules is set', () => {
+    mockGenerateRules({
+      correlationStatus: 'success',
+      ruleEntries: [ruleEntry],
+    })
+
+    renderWithTheme(
+      <AutoCorrelation close={vi.fn()} skipIntroduction hideRules />
+    )
+
+    expect(screen.queryByText('Rules created')).toBeNull()
+  })
+
+  it('keeps the rules pane visible by default', () => {
+    mockGenerateRules({ correlationStatus: 'analyzing', isLoading: true })
+
+    renderWithTheme(<AutoCorrelation close={vi.fn()} skipIntroduction />)
+
+    expect(
+      screen.getByText('Rules will appear here as they are created')
+    ).toBeDefined()
+  })
+
+  it('calls onSettled once when the run finishes', () => {
+    const onSettled = vi.fn()
+    mockGenerateRules({
+      correlationStatus: 'success',
+      ruleEntries: [ruleEntry],
+    })
+
+    const { rerender } = renderWithTheme(
+      <AutoCorrelation close={vi.fn()} skipIntroduction onSettled={onSettled} />
+    )
+    rerender(
+      <Theme>
+        <AutoCorrelation
+          close={vi.fn()}
+          skipIntroduction
+          onSettled={onSettled}
+        />
+      </Theme>
+    )
+
+    expect(onSettled).toHaveBeenCalledOnce()
+    expect(onSettled.mock.calls[0]![0]).toMatchObject({
+      correlationStatus: 'success',
+      ruleEntries: [ruleEntry],
+    })
+  })
+
+  it('does not call onSettled while running or after an abort', () => {
+    const onSettled = vi.fn()
+    mockGenerateRules({ correlationStatus: 'aborted' })
+
+    renderWithTheme(
+      <AutoCorrelation close={vi.fn()} skipIntroduction onSettled={onSettled} />
+    )
+
+    expect(onSettled).not.toHaveBeenCalled()
+  })
+
   it('reports status changes', () => {
     const onStatusChange = vi.fn()
     mockGenerateRules({ correlationStatus: 'analyzing', isLoading: true })
