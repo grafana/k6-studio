@@ -7,8 +7,9 @@ export interface FrameChain {
   // Used so element highlighting resolves into the right frame. Undefined means
   // the top frame.
   frames: LocatorOptions[] | undefined
-  // When set, the element locator renders an editable frame chain inline. Frame
-  // locators themselves leave this undefined so they don't nest a chain editor.
+  // When set, the element locator's popover renders the chain as editable
+  // pills. Contexts without frame support (e.g. the validator) leave this
+  // undefined and get no chain UI.
   onChange?: (frames: LocatorOptions[] | undefined) => void
 }
 
