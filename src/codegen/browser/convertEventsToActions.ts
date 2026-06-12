@@ -32,6 +32,10 @@ function convertEvent(
   nextEvent?: BrowserEvent
 ): AnyBrowserAction | undefined {
   // Page-level events have no element target and so no frame scope.
+  if (event.type === 'tab-opened') {
+    return undefined
+  }
+
   if (event.type === 'navigate-to-page') {
     if (event.source === 'implicit' || !isWebUrl(event.url)) return undefined
 

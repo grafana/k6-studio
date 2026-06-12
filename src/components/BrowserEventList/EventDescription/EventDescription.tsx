@@ -22,6 +22,9 @@ export function EventDescription({
   onHighlight,
 }: EventDescriptionProps) {
   switch (event.type) {
+    case 'tab-opened':
+      return <>Opened a new tab</>
+
     case 'navigate-to-page':
       return <PageNavigationDescription event={event} onNavigate={onNavigate} />
 

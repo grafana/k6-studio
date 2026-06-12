@@ -46,6 +46,18 @@ describe('convertEventsToActions', () => {
     expect(convertEventsToActions(events)).toEqual([])
   })
 
+  it('skips tab-opened events', () => {
+    const events: BrowserEvent[] = [
+      {
+        type: 'tab-opened',
+        eventId: '1',
+        timestamp: 0,
+        tab: 'tab1',
+      },
+    ]
+    expect(convertEventsToActions(events)).toEqual([])
+  })
+
   it('skips reload of a non-web url', () => {
     const events: BrowserEvent[] = [
       {
