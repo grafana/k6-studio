@@ -184,7 +184,7 @@ const config: ForgeConfig = {
         {
           // Entry doesn't really matter here.
           entry: 'src/recorder/browser/index.ts',
-          config: 'vite.browser.config.mts',
+          config: 'vite.browser.config.ts',
         },
         {
           // Entry doesn't really matter here.
