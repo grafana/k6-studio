@@ -1,7 +1,6 @@
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 import react from '@vitejs/plugin-react'
 import { defineConfig, type ConfigEnv, type UserConfig } from 'vite'
-import tsconfigPaths from 'vite-tsconfig-paths'
 
 import { version } from './package.json'
 import { getDotEnv, pluginExposeRenderer } from './vite.base.config'
@@ -28,17 +27,12 @@ export default defineConfig((env) => {
       // packages that use destructuring + rest (e.g. @radix-ui/react-select).
       target: 'esnext',
     },
-    optimizeDeps: {
-      esbuildOptions: {
-        target: 'esnext',
-      },
-    },
+
     plugins: [
       react({
         jsxImportSource: '@emotion/react',
       }),
       pluginExposeRenderer(name),
-      tsconfigPaths(),
       sentryVitePlugin({
         authToken: process.env.SENTRY_AUTH_TOKEN,
         org: process.env.SENTRY_ORG,
@@ -47,6 +41,7 @@ export default defineConfig((env) => {
     ],
     resolve: {
       preserveSymlinks: true,
+      tsconfigPaths: true,
     },
     define: {
       __APP_VERSION__: JSON.stringify(version),
