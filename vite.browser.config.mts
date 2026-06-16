@@ -1,6 +1,5 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig, type ConfigEnv, type UserConfig } from 'vite'
-import tsconfigPaths from 'vite-tsconfig-paths'
 
 // https://vitejs.dev/config
 export default defineConfig((env) => {
@@ -45,12 +44,12 @@ export default defineConfig((env) => {
       react({
         jsxImportSource: '@emotion/react',
       }),
-      tsconfigPaths(),
     ],
     resolve: {
       preserveSymlinks: true,
       // Force vite to use browser-specific package exports
       conditions: ['browser', 'import', 'module', 'default'],
+      tsConfigPaths: true,
     },
     clearScreen: false,
   } as UserConfig
