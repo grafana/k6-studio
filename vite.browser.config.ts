@@ -58,7 +58,7 @@ export default defineConfig((env) => {
       preserveSymlinks: true,
       // Force vite to use browser-specific package exports
       conditions: ['browser', 'import', 'module', 'default'],
-      tsConfigPaths: true,
+      tsconfigPaths: true,
     },
     clearScreen: false,
   } as UserConfig
