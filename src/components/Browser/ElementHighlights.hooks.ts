@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { ElementLocator } from '@/schemas/locator'
+import { isElement } from '@/utils/dom/realm'
 import { findElementsByLocator } from '@/utils/selectors'
 
 import { Bounds } from './types'
@@ -37,9 +38,7 @@ export function useHighlightedElements(
       }
     }
 
-    const { Element } = root.ownerDocument.defaultView ?? window
-
-    if (target instanceof Element) {
+    if (isElement(target)) {
       setHighlights([toHighlight(target)])
 
       return
