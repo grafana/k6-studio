@@ -316,7 +316,7 @@ importers:
         version: 8.59.2(@typescript/typescript6@6.0.1)
       '@vitejs/plugin-react':
         specifier: 4.7.0
-        version: 4.7.0(vite@6.4.2(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4))
+        version: 4.7.0(vite@6.4.3(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4))
       ai:
         specifier: 5.0.185
         version: 5.0.185(zod@4.4.3)
@@ -589,14 +589,14 @@ importers:
         specifier: npm:@typescript/typescript6@6.0.1
         version: '@typescript/typescript6@6.0.1'
       vite:
-        specifier: 6.4.2
-        version: 6.4.2(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4)
+        specifier: 6.4.3
+        version: 6.4.3(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4)
       vite-tsconfig-paths:
         specifier: 4.3.2
-        version: 4.3.2(@typescript/typescript6@6.0.1)(vite@6.4.2(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4))
+        version: 4.3.2(@typescript/typescript6@6.0.1)(vite@6.4.3(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4))
       vitest:
         specifier: 4.1.5
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(jsdom@25.0.1)(vite@6.4.2(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(jsdom@25.0.1)(vite@6.4.3(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4))
 
 packages:
 
@@ -6375,6 +6375,7 @@ packages:
   tsconfck@3.1.6:
     resolution: {integrity: sha512-ks6Vjr/jEw0P1gmOVwutM3B7fWxoWBL2KRDb1JfqGVawBmO5UsvmWOQFGHBPl5yxYz4eERr19E6L7NMv+Fej4w==}
     engines: {node: ^18 || >=20}
+    deprecated: unmaintained
     hasBin: true
     peerDependencies:
       typescript: ^5.0.0
@@ -6580,8 +6581,8 @@ packages:
       vite:
         optional: true
 
-  vite@6.4.2:
-    resolution: {integrity: sha512-2N/55r4JDJ4gdrCvGgINMy+HH3iRpNIz8K6SFwVsA+JbQScLiC+clmAxBgwiSPgcG9U15QmvqCGWzMbqda5zGQ==}
+  vite@6.4.3:
+    resolution: {integrity: sha512-NTKlcQjlAK7MlQoyb6LgaqHc8sso/pVyUJYWMws3jg21uTJw/LddqIFPcPqP6PzpgbIcZyKI85sFE4HBrQDA8A==}
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
     peerDependencies:
@@ -9805,7 +9806,7 @@ snapshots:
 
   '@vercel/oidc@3.1.0': {}
 
-  '@vitejs/plugin-react@4.7.0(vite@6.4.2(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4))':
+  '@vitejs/plugin-react@4.7.0(vite@6.4.3(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4))':
     dependencies:
       '@babel/core': 7.29.0
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.29.0)
@@ -9813,7 +9814,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.27
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-      vite: 6.4.2(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4)
+      vite: 6.4.3(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4)
     transitivePeerDependencies:
       - supports-color
 
@@ -9826,13 +9827,13 @@ snapshots:
       chai: 6.2.2
       tinyrainbow: 3.1.0
 
-  '@vitest/mocker@4.1.5(vite@6.4.2(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4))':
+  '@vitest/mocker@4.1.5(vite@6.4.3(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4))':
     dependencies:
       '@vitest/spy': 4.1.5
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 6.4.2(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4)
+      vite: 6.4.3(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4)
 
   '@vitest/pretty-format@4.1.5':
     dependencies:
@@ -13541,18 +13542,18 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
 
-  vite-tsconfig-paths@4.3.2(@typescript/typescript6@6.0.1)(vite@6.4.2(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4)):
+  vite-tsconfig-paths@4.3.2(@typescript/typescript6@6.0.1)(vite@6.4.3(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4)):
     dependencies:
       debug: 4.4.3
       globrex: 0.1.2
       tsconfck: 3.1.6(@typescript/typescript6@6.0.1)
     optionalDependencies:
-      vite: 6.4.2(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4)
+      vite: 6.4.3(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4)
     transitivePeerDependencies:
       - supports-color
       - typescript
 
-  vite@6.4.2(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4):
+  vite@6.4.3(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4):
     dependencies:
       esbuild: 0.27.7
       fdir: 6.5.0(picomatch@4.0.4)
@@ -13567,10 +13568,10 @@ snapshots:
       terser: 5.46.2
       yaml: 2.8.4
 
-  vitest@4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(jsdom@25.0.1)(vite@6.4.2(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4)):
+  vitest@4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(jsdom@25.0.1)(vite@6.4.3(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4)):
     dependencies:
       '@vitest/expect': 4.1.5
-      '@vitest/mocker': 4.1.5(vite@6.4.2(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4))
+      '@vitest/mocker': 4.1.5(vite@6.4.3(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4))
       '@vitest/pretty-format': 4.1.5
       '@vitest/runner': 4.1.5
       '@vitest/snapshot': 4.1.5
@@ -13587,7 +13588,7 @@ snapshots:
       tinyexec: 1.1.2
       tinyglobby: 0.2.16
       tinyrainbow: 3.1.0
-      vite: 6.4.2(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4)
+      vite: 6.4.3(@types/node@25.6.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@opentelemetry/api': 1.9.1
