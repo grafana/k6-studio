@@ -17,6 +17,7 @@ import { Page } from './types'
 import { Viewport } from './Viewport'
 
 const DEFAULT_PAGE: Page = {
+  pageId: 'default',
   href: 'about:blank',
   title: 'k6 Studio',
   // Same default size as k6/browser

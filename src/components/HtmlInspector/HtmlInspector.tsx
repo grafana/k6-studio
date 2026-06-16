@@ -6,39 +6,15 @@ import { Replayer, ReplayerEvents } from 'rrweb'
 
 import { useHighlightLocator } from '@/components/HighlightLocatorProvider'
 import { usePlayerContext } from '@/components/SessionPlayer/PlayerContext'
+import { safeParseReplayEvent } from '@/main/runner/rrweb'
 import { DebuggerState } from '@/views/Validator/types'
 
-interface SerializedNodeBase {
-  key: number
-  node: Node
-}
-
-interface SerializedText extends SerializedNodeBase {
-  type: typeof Node.TEXT_NODE
-  textContent: string
-  node: Text
-}
-
-interface SerializedComment extends SerializedNodeBase {
-  type: typeof Node.COMMENT_NODE
-  textContent: string
-  node: Comment
-}
-
-interface SerializedAttribute {
-  name: string
-  value: string
-}
-
-interface SerializedElement extends SerializedNodeBase {
-  type: typeof Node.ELEMENT_NODE
-  tagName: string
-  attributes: SerializedAttribute[]
-  children: SerializedNode[]
-  node: Element
-}
-
-type SerializedNode = SerializedText | SerializedComment | SerializedElement
+import {
+  serializeNode,
+  type SerializedAttribute,
+  type SerializedElement,
+  type SerializedNode,
+} from './HtmlInspector.utils'
 
 const VOID_ELEMENTS = new Set([
   'area',
@@ -56,92 +32,6 @@ const VOID_ELEMENTS = new Set([
   'track',
   'wbr',
 ])
-
-const RRWEB_ATTR_PREFIX = /^(rr-|rr_|rrweb)/
-
-function serializeNode(player: Replayer, node: Node): SerializedNode | null {
-  const key = player.getMirror().getId(node)
-
-  if (node.nodeType === Node.TEXT_NODE) {
-    const text = node.textContent?.trim() ?? ''
-
-    if (!text) {
-      return null
-    }
-
-    return {
-      key,
-      type: Node.TEXT_NODE,
-      node: node as Text,
-      textContent: text.length > 200 ? text.slice(0, 200) + '…' : text,
-    }
-  }
-
-  if (node.nodeType === Node.COMMENT_NODE) {
-    const text = node.textContent?.trim() ?? ''
-
-    if (!text) {
-      return null
-    }
-
-    return {
-      key,
-      type: Node.COMMENT_NODE,
-      node: node as Comment,
-      textContent: text.length > 200 ? text.slice(0, 200) + '…' : text,
-    }
-  }
-
-  if (node.nodeType !== Node.ELEMENT_NODE) {
-    return null
-  }
-
-  const element = node as Element
-
-  const tagName = element.tagName.toLowerCase()
-  const attributes = Array.from(element.attributes)
-    .filter((attr) => !RRWEB_ATTR_PREFIX.test(attr.name))
-    .flatMap((attr) => {
-      // rrweb adds the classes `rrweb-paused` when the recording is paused and `:hover` to simulate elements
-      // being hovered, s we want to hide these from the inspector. We don't want to do string manipulations
-      // on every class attribute in the DOM, so we check if these classes are present. By using `classList`
-      // we can (presumably) get constant time lookup instead of doing a linear string search.
-      if (
-        attr.name === 'class' &&
-        (element.classList.contains('rrweb-paused') ||
-          element.classList.contains(':hover'))
-      ) {
-        const value = attr.value
-          .split(/\s+/)
-          .filter((cls) => cls !== 'rrweb-paused' && cls !== ':hover')
-          .join(' ')
-
-        if (value === '') {
-          return []
-        }
-
-        return {
-          name: attr.name,
-          value,
-        }
-      }
-
-      return { name: attr.name, value: attr.value }
-    })
-
-  const children = Array.from(element.childNodes)
-    .map((child) => serializeNode(player, child))
-    .filter((n) => n !== null)
-
-  return {
-    key,
-    type: Node.ELEMENT_NODE,
-    node: element,
-    tagName,
-    attributes,
-    children,
-  }
-}
 
 const nodeLineStyle = css`
   display: flex;
@@ -254,8 +144,8 @@ function CloseTag({ tagName }: CloseTagProps) {
 interface DomNodeProps {
   node: SerializedNode
   depth: number
-  expandedKeys: Set<number>
-  onToggleExpand: (key: number) => void
+  expandedKeys: Set<string>
+  onToggleExpand: (key: string) => void
   onHoverNode: (node: SerializedElement | null) => void
 }
 
@@ -390,51 +280,63 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
   const { player } = usePlayerContext()
   const setHighlightedLocator = useHighlightLocator()
   const [domRoot, setDomRoot] = useState<SerializedNode | null>(null)
-  const [expandedKeys, setExpandedKeys] = useState<Set<number>>(new Set())
+  const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set())
   const updateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isFirstDom = useRef(true)
+  const currentPageIdRef = useRef<string | null>(null)
+  const shouldAutoExpandRef = useRef(false)
 
-  const serializeDom = useCallback((player: Replayer, autoExpand = false) => {
-    if (player === null) {
-      return
-    }
-
-    const documentElement = player.iframe.contentDocument?.documentElement
-
-    if (documentElement === undefined) {
-      return
-    }
-
-    const rootNode = serializeNode(player, documentElement)
-
-    setDomRoot(rootNode)
-
-    if (rootNode?.type !== Node.ELEMENT_NODE || !autoExpand) {
-      return
-    }
-
-    // If autoExpand is true, expand the html and body tags.
-    const bodyEl = rootNode.children.find(
-      (child) => child.type === Node.ELEMENT_NODE && child.tagName === 'body'
-    )
-
+  const expandDefaultNodes = useCallback((domRoot: SerializedNode) => {
     setExpandedKeys((prev) => {
       const next = new Set(prev)
 
-      next.add(rootNode.key)
+      if (domRoot.type === Node.ELEMENT_NODE) {
+        next.add(domRoot.key)
 
-      if (bodyEl !== undefined) {
-        next.add(bodyEl.key)
+        const bodyNode = domRoot.children.find(
+          (child) =>
+            child.type === Node.ELEMENT_NODE && child.tagName === 'body'
+        )
+
+        if (bodyNode !== undefined) {
+          next.add(bodyNode.key)
+        }
       }
 
       return next
     })
   }, [])
 
+  const serializeDom = useCallback(
+    (player: Replayer, autoExpand = false) => {
+      const pageId = currentPageIdRef.current
+
+      if (pageId === null) {
+        return
+      }
+
+      const documentElement = player.iframe.contentDocument?.documentElement
+
+      if (documentElement === undefined) {
+        return
+      }
+
+      const rootNode = serializeNode(player, documentElement, pageId)
+
+      setDomRoot(rootNode)
+
+      if (rootNode?.type === Node.ELEMENT_NODE && autoExpand) {
+        expandDefaultNodes(rootNode)
+      }
+    },
+    [expandDefaultNodes]
+  )
+
   useEffect(() => {
     if (!player) {
       setDomRoot(null)
       isFirstDom.current = true
+      currentPageIdRef.current = null
 
       return
     }
@@ -471,15 +373,29 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
       observer.disconnect()
 
       setTimeout(() => {
-        serializeDom(player)
+        const autoExpand = shouldAutoExpandRef.current
+        shouldAutoExpandRef.current = false
+        serializeDom(player, autoExpand)
         attachObserver()
       }, 0)
+    }
+
+    const handleCustomEvent = (event: unknown) => {
+      const { data } = safeParseReplayEvent(event)
+
+      if (data?.data.tag !== 'page-start') {
+        return
+      }
+
+      shouldAutoExpandRef.current = true
+      currentPageIdRef.current = data.data.payload.pageId
     }
 
     serializeDom(player, true)
     attachObserver()
 
     player.on(ReplayerEvents.FullsnapshotRebuilded, handleFullSnapshot)
+    player.on(ReplayerEvents.CustomEvent, handleCustomEvent)
 
     return () => {
       if (updateTimerRef.current !== null) {
@@ -489,10 +405,11 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
 
       observer.disconnect()
       player.off(ReplayerEvents.FullsnapshotRebuilded, handleFullSnapshot)
+      player.off(ReplayerEvents.CustomEvent, handleCustomEvent)
     }
   }, [player, serializeDom])
 
-  const handleToggleExpand = (key: number) => {
+  const handleToggleExpand = (key: string) => {
     setExpandedKeys((prev) => {
       const next = new Set(prev)
 

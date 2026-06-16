@@ -27,6 +27,7 @@ if (trackingServerUrl !== null && isTopLevelFrame()) {
       data: {
         tag: 'page-start',
         payload: {
+          pageId: crypto.randomUUID(),
           title: document.title,
           href: window.location.href,
           width: window.innerWidth,
