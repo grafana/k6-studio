@@ -3,8 +3,8 @@ name: 'Manual Release'
 on:
   workflow_dispatch:
     inputs:
-      tag:
-        description: 'Tag to build (e.g. v1.14.0). Fallback for re-runs.'
+      ref:
+        description: 'Tag, branch, or SHA to build (e.g. v1.14.0). Use for re-runs or recovery.'
         required: true
         type: string
 
