@@ -104,7 +104,7 @@ const createWindow = async () => {
   configureApplicationMenu()
   configureWatcher(mainWindow)
 
-  void workspaceIndex.build(PROJECT_PATH)
+  await workspaceIndex.build(PROJECT_PATH)
 
   k6StudioState.wasAppClosedByClient = false
 

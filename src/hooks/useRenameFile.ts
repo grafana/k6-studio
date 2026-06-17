@@ -98,7 +98,7 @@ export function useRenameFile(file: StudioFile) {
             title: `Updated ${updated} references. ${failed} failed. See logs for details.`,
             status: 'error',
           })
-        } else {
+        } else if (updated > 0) {
           showToast({
             title: `Updated references in ${updated} files`,
             status: 'success',

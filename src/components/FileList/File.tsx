@@ -163,7 +163,12 @@ function EditableFile({
           ref={inlineInputRef}
           value={file.displayName}
           onSave={handleSave}
-          onCancel={() => setEditMode(false)}
+          onCancel={() => {
+            if (pendingRename !== null) {
+              handleCancelDialog()
+            }
+            setEditMode(false)
+          }}
           style={fileStyle}
           disableClickAway={pendingRename !== null}
         />
