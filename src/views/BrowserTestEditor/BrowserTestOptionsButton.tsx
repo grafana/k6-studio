@@ -14,7 +14,9 @@ import { BROWSER_METRICS_CONFIG } from './browserThresholdMetrics'
 
 interface BrowserTestOptionsButtonProps {
   options: BrowserTestOptions
-  onChange: (options: BrowserTestOptions) => void
+  onChange: (
+    options: BrowserTestOptions | ((prev: BrowserTestOptions) => BrowserTestOptions)
+  ) => void
 }
 
 export function BrowserTestOptionsButton({
@@ -22,33 +24,33 @@ export function BrowserTestOptionsButton({
   onChange,
 }: BrowserTestOptionsButtonProps) {
   const handleLoadProfileChange = (loadProfile: LoadProfileExecutorOptions) => {
-    onChange({
-      ...options,
+    onChange((prev) => ({
+      ...prev,
       // Merge so inactive-branch fields (e.g. user's stages while
       // shared-iterations is active) survive an executor switch. Codegen
       // reads only the active branch, so shadow fields are inert.
       loadProfile: {
-        ...options.loadProfile,
+        ...prev.loadProfile,
         ...loadProfile,
       },
-    })
+    }))
   }
 
   const handleThresholdsChange = (thresholds: BrowserThreshold[]) => {
-    onChange({
-      ...options,
+    onChange((prev) => ({
+      ...prev,
       thresholds,
-    })
+    }))
   }
 
   const handleLoadZonesChange = (loadZones: LoadZoneData) => {
-    onChange({
-      ...options,
+    onChange((prev) => ({
+      ...prev,
       cloud: {
-        ...options.cloud,
+        ...prev.cloud,
         loadZones,
       },
-    })
+    }))
   }
 
   return (

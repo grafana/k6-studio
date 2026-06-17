@@ -88,8 +88,15 @@ export function BrowserTestEditor({
 
   const isValidating = session.state === 'running'
 
-  const handleOptionsChange = (options: BrowserTestFile['options']) => {
-    setTest((prev) => ({ ...prev, options }))
+  const handleOptionsChange = (
+    options:
+      | BrowserTestFile['options']
+      | ((prev: BrowserTestFile['options']) => BrowserTestFile['options'])
+  ) => {
+    setTest((prev) => ({
+      ...prev,
+      options: typeof options === 'function' ? options(prev.options) : options,
+    }))
   }
 
   const handleActionsChange = (actions: BrowserTestFile['actions']) => {
