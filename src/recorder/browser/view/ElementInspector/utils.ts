@@ -1,10 +1,11 @@
 import { nanoid } from 'nanoid'
 
 import { Bounds } from '@/components/Browser/types'
-import { getElementBounds } from '@/components/Browser/utils'
 import { BrowserEventTarget } from '@/schemas/recording'
 import { ElementRole, getElementRoles } from '@/utils/dom/aria'
 import { getElementDetails } from '@/utils/dom/selectors'
+
+import { getElementBoundsInTopFrame } from '../frameGeometry'
 
 export interface TrackedElement {
   id: string
@@ -22,6 +23,6 @@ export function toTrackedElement(element: Element): TrackedElement {
     roles: [...roles],
     target: getElementDetails(element),
     element: element,
-    bounds: getElementBounds(element),
+    bounds: getElementBoundsInTopFrame(element),
   }
 }

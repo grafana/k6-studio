@@ -120,6 +120,10 @@ resources/entrypoint.js
 resources/replay.js
 resources/k6-testing.js
 
+# Playwright e2e output
+test-results
+playwright-report
+
 # Local claude settings
 .claude/settings.local.json
 .claude/CLAUDE.local.md

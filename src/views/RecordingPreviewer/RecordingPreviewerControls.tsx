@@ -5,30 +5,38 @@ import {
   MonitorIcon,
   ServerCogIcon,
 } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
-import { emitScript } from '@/codegen/browser'
 import { convertEventsToActions } from '@/codegen/browser/convertEventsToActions'
-import { convertEventsToTest } from '@/codegen/browser/test'
 import { RichDropdownMenuItem } from '@/components/RichDropdownMenuItem'
 import { useCreateBrowserTest } from '@/hooks/useCreateBrowserTest'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
-import { useExportScript } from '@/hooks/useExportScript'
 import { getRoutePath } from '@/routeMap'
 import { BrowserEvent } from '@/schemas/recording'
-import { useFeaturesStore } from '@/store/features'
-import { StudioFile } from '@/types'
+import { ProxyData, StudioFile } from '@/types'
+import {
+  EventPage,
+  groupEventsByPage,
+  normalizeEntryNavigation,
+} from '@/utils/browserEvents'
+
+import { SelectPageDialog } from './SelectPageDialog'
+
+function toPageActions(page: EventPage) {
+  return convertEventsToActions(normalizeEntryNavigation(page.events))
+}
 
 interface RecordingPreviewControlsProps {
   file: StudioFile
-  isExternal: boolean
+  requests: ProxyData[]
   browserEvents: BrowserEvent[]
 }
 
 export function RecordingPreviewControls({
   file,
-  isExternal,
+  requests,
   browserEvents,
 }: RecordingPreviewControlsProps) {
   const navigate = useNavigate()
@@ -41,21 +49,40 @@ export function RecordingPreviewControls({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const isDiscardable = Boolean(state?.discardable)
 
-  const isBrowserEditorEnabled = useFeaturesStore(
-    (state) => state.features['browser-test-editor']
-  )
   const createBrowserTest = useCreateBrowserTest()
+
+  const [isSelectPageOpen, setIsSelectPageOpen] = useState(false)
+
+  // Only offer pages that start with a navigation, since a browser test needs a
+  // `page.goto` to land on before any interaction. This drops internal-only tabs
+  // (e.g. a `chrome://new-tab-page/`) and stray tabs that only captured a click,
+  // both of which would otherwise show up labelled by their raw tab id.
+  const pages = useMemo(
+    () =>
+      groupEventsByPage(browserEvents).filter((page) =>
+        toPageActions(page).some((action) => action.method === 'page.goto')
+      ),
+    [browserEvents]
+  )
 
   const handleCreateGenerator = () => createTestGenerator(file.path)
 
   const handleCreateBrowserTest = () => {
-    const actions = convertEventsToActions(browserEvents)
-    void createBrowserTest(actions)
+    if (pages.length > 1) {
+      setIsSelectPageOpen(true)
+      return
+    }
+
+    const page = pages[0]
+    if (page) {
+      void createBrowserTest(toPageActions(page))
+    }
   }
 
-  const browserTestDescription = isBrowserEditorEnabled
-    ? 'Create a browser test from recorded interactions'
-    : 'Export a k6 script simulating browser interactions'
+  const handleSelectPage = (page: EventPage) => {
+    setIsSelectPageOpen(false)
+    void createBrowserTest(toPageActions(page))
+  }
 
   const handleDelete = useDeleteFile({
     file,
@@ -71,27 +98,6 @@ export function RecordingPreviewControls({
     handleDelete()
     navigate(getRoutePath('home'))
   }
-
-  const exportScript = useExportScript({
-    enableMenuItem: browserEvents.length > 0,
-    openOnSave: true,
-    fileName: 'my-browser-script.js',
-    content: async () => {
-      const test = convertEventsToTest({
-        browserEvents,
-      })
-
-      return await emitScript(test)
-    },
-  })
-
-  const handleExportBrowserScript = () => {
-    void exportScript()
-  }
-
-  const handleBrowserTest = isBrowserEditorEnabled
-    ? handleCreateBrowserTest
-    : handleExportBrowserScript
 
   return (
     <>
@@ -115,15 +121,15 @@ export function RecordingPreviewControls({
             icon={<ServerCogIcon />}
             label="HTTP test"
             description="Generate a k6 script from HTTP requests using rules"
-            disabled={isExternal}
-            onClick={handleCreateGenerator}
+            disabled={requests.length === 0}
+            onSelect={handleCreateGenerator}
           />
           <RichDropdownMenuItem
             icon={<MonitorIcon />}
             label="Browser test"
-            description={browserTestDescription}
-            disabled={isExternal || browserEvents.length === 0}
-            onClick={handleBrowserTest}
+            description="Create a browser test from recorded interactions"
+            disabled={pages.length === 0}
+            onSelect={handleCreateBrowserTest}
           />
         </DropdownMenu.Content>
       </DropdownMenu.Root>
@@ -134,11 +140,20 @@ export function RecordingPreviewControls({
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DropdownMenu.Item color="red" onClick={handleDeleteRecordingConfirm}>
+          <DropdownMenu.Item
+            color="red"
+            onSelect={handleDeleteRecordingConfirm}
+          >
             Move to Trash
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
+      <SelectPageDialog
+        open={isSelectPageOpen}
+        onOpenChange={setIsSelectPageOpen}
+        pages={pages}
+        onSelectPage={handleSelectPage}
+      />
     </>
   )
 }

@@ -2,7 +2,8 @@ import { Page } from 'k6/browser'
 
 import { createSingleEntryGuard, ProxyOptions, trackLog } from '../utils'
 
-import { locatorProxy } from './locator'
+import { elementLocatorProxies } from './elementLocators'
+import { frameLocatorProxy } from './frameLocator'
 import { isLocatorMethod } from './utils'
 
 const shouldInstrument = createSingleEntryGuard()
@@ -106,61 +107,9 @@ export function pageProxy(target: Page): ProxyOptions<Page> {
       },
     },
     proxies: {
-      locator(target, selector: string) {
-        return locatorProxy(target, {
-          type: 'css',
-          selector,
-        })
-      },
-      getByRole(target, role, options) {
-        return locatorProxy(target, {
-          type: 'role',
-          role,
-          options: {
-            name: (options?.name ?? '').toString(),
-          },
-        })
-      },
-      getByAltText(target, text, options) {
-        return locatorProxy(target, {
-          type: 'alt',
-          text: text.toString(),
-          options,
-        })
-      },
-      getByLabel(target, label, options) {
-        return locatorProxy(target, {
-          type: 'label',
-          label: label.toString(),
-          options,
-        })
-      },
-      getByPlaceholder(target, placeholder, options) {
-        return locatorProxy(target, {
-          type: 'placeholder',
-          placeholder: placeholder.toString(),
-          options,
-        })
-      },
-      getByTitle(target, title, options) {
-        return locatorProxy(target, {
-          type: 'title',
-          title: title.toString(),
-          options,
-        })
-      },
-      getByText(target, text, options) {
-        return locatorProxy(target, {
-          type: 'text',
-          text: text.toString(),
-          options,
-        })
-      },
-      getByTestId(target, testId) {
-        return locatorProxy(target, {
-          type: 'testid',
-          testId: testId.toString(),
-        })
+      ...elementLocatorProxies(),
+      frameLocator(target) {
+        return frameLocatorProxy(target)
       },
     },
   }

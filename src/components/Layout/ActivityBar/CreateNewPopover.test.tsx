@@ -7,7 +7,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import { useCreateBrowserTest } from '@/hooks/useCreateBrowserTest'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
-import { useFeaturesStore } from '@/store/features'
 
 import { CreateNewPopover } from './CreateNewPopover'
 
@@ -16,17 +15,9 @@ vi.mock('@/hooks/useCreateGenerator', () => ({ useCreateGenerator: vi.fn() }))
 vi.mock('@/hooks/useCreateBrowserTest', () => ({
   useCreateBrowserTest: vi.fn(),
 }))
-vi.mock('@/store/features', () => ({ useFeaturesStore: vi.fn() }))
 
 function renderWithTheme(ui: ReactElement) {
   return render(<Theme>{ui}</Theme>)
-}
-
-function setupFeatureFlag(isBrowserEditorEnabled: boolean) {
-  const state = {
-    features: { 'browser-test-editor': isBrowserEditorEnabled },
-  } as unknown as Parameters<Parameters<typeof useFeaturesStore>[0]>[0]
-  vi.mocked(useFeaturesStore).mockImplementation((selector) => selector(state))
 }
 
 async function openMenu(user: ReturnType<typeof userEvent.setup>) {
@@ -47,29 +38,17 @@ describe('CreateNewPopover', () => {
     vi.mocked(useCreateBrowserTest).mockReturnValue(createBrowserTest)
   })
 
-  it('hides Browser test entry when feature flag is off', async () => {
-    setupFeatureFlag(false)
-    const user = userEvent.setup()
-    renderWithTheme(<CreateNewPopover />)
-
-    await openMenu(user)
-
-    expect(screen.queryByRole('menuitem', { name: /browser test/i })).toBeNull()
-    expect(screen.getByRole('menuitem', { name: /http test/i })).toBeTruthy()
-  })
-
-  it('shows Browser test entry when feature flag is on', async () => {
-    setupFeatureFlag(true)
+  it('shows Browser test entry', async () => {
     const user = userEvent.setup()
     renderWithTheme(<CreateNewPopover />)
 
     await openMenu(user)
 
     expect(screen.getByRole('menuitem', { name: /browser test/i })).toBeTruthy()
+    expect(screen.getByRole('menuitem', { name: /http test/i })).toBeTruthy()
   })
 
   it('navigates to recorder when Recording is clicked', async () => {
-    setupFeatureFlag(true)
     const user = userEvent.setup()
     renderWithTheme(<CreateNewPopover />)
 
@@ -80,7 +59,6 @@ describe('CreateNewPopover', () => {
   })
 
   it('calls useCreateGenerator when HTTP test is clicked', async () => {
-    setupFeatureFlag(true)
     const user = userEvent.setup()
     renderWithTheme(<CreateNewPopover />)
 
@@ -92,7 +70,6 @@ describe('CreateNewPopover', () => {
   })
 
   it('calls useCreateBrowserTest when Browser test is clicked', async () => {
-    setupFeatureFlag(true)
     const user = userEvent.setup()
     renderWithTheme(<CreateNewPopover />)
 

@@ -1,3 +1,4 @@
+import { BrowserDebuggerEvent } from '@/main/runner/schema'
 import { LocatorOptions } from '@/schemas/locator'
 import { AriaDetails } from '@/schemas/recording'
 
@@ -12,3 +13,7 @@ export interface ContextMenuState {
   aria: AriaDetails
   locator: LocatorOptions
 }
+
+export type BrowserActionStates = Partial<
+  Record<string, BrowserDebuggerEvent[]>
+>

@@ -549,6 +549,13 @@ it('should assert that element contains text', async ({ expect }) => {
           },
         },
         {
+          type: 'expect',
+          nodeId: 'expect',
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+        {
           type: 'assert',
           nodeId: 'assert-contains-text',
           operation: {
@@ -556,7 +563,7 @@ it('should assert that element contains text', async ({ expect }) => {
             value: 'Hello, World!',
           },
           inputs: {
-            locator: { nodeId: 'locator' },
+            expect: { nodeId: 'expect' },
           },
         },
       ],
@@ -586,6 +593,13 @@ it('should assert that element is visible', async ({ expect }) => {
           },
         },
         {
+          type: 'expect',
+          nodeId: 'expect',
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+        {
           type: 'assert',
           nodeId: 'assert-is-visible',
           operation: {
@@ -593,7 +607,7 @@ it('should assert that element is visible', async ({ expect }) => {
             visible: true,
           },
           inputs: {
-            locator: { nodeId: 'locator' },
+            expect: { nodeId: 'expect' },
           },
         },
       ],
@@ -623,6 +637,13 @@ it('should assert that element is hidden', async ({ expect }) => {
           },
         },
         {
+          type: 'expect',
+          nodeId: 'expect',
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+        {
           type: 'assert',
           nodeId: 'assert-is-hidden',
           operation: {
@@ -630,7 +651,7 @@ it('should assert that element is hidden', async ({ expect }) => {
             visible: false,
           },
           inputs: {
-            locator: { nodeId: 'locator' },
+            expect: { nodeId: 'expect' },
           },
         },
       ],
@@ -660,6 +681,13 @@ it('should assert that html input is checked', async ({ expect }) => {
           },
         },
         {
+          type: 'expect',
+          nodeId: 'expect',
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+        {
           type: 'assert',
           nodeId: 'assert-is-checked',
           operation: {
@@ -668,7 +696,7 @@ it('should assert that html input is checked', async ({ expect }) => {
             expected: 'checked',
           },
           inputs: {
-            locator: { nodeId: 'locator' },
+            expect: { nodeId: 'expect' },
           },
         },
       ],
@@ -698,6 +726,13 @@ it('should assert that html input is not checked', async ({ expect }) => {
           },
         },
         {
+          type: 'expect',
+          nodeId: 'expect',
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+        {
           type: 'assert',
           nodeId: 'assert-is-checked',
           operation: {
@@ -706,7 +741,7 @@ it('should assert that html input is not checked', async ({ expect }) => {
             expected: 'unchecked',
           },
           inputs: {
-            locator: { nodeId: 'locator' },
+            expect: { nodeId: 'expect' },
           },
         },
       ],
@@ -736,6 +771,13 @@ it('should assert that html input is indeterminate', async ({ expect }) => {
           },
         },
         {
+          type: 'expect',
+          nodeId: 'expect',
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+        {
           type: 'assert',
           nodeId: 'assert-is-checked',
           operation: {
@@ -744,7 +786,7 @@ it('should assert that html input is indeterminate', async ({ expect }) => {
             expected: 'indeterminate',
           },
           inputs: {
-            locator: { nodeId: 'locator' },
+            expect: { nodeId: 'expect' },
           },
         },
       ],
@@ -774,6 +816,13 @@ it('should assert that aria input is checked', async ({ expect }) => {
           },
         },
         {
+          type: 'expect',
+          nodeId: 'expect',
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+        {
           type: 'assert',
           nodeId: 'assert-is-checked',
           operation: {
@@ -782,7 +831,7 @@ it('should assert that aria input is checked', async ({ expect }) => {
             expected: 'checked',
           },
           inputs: {
-            locator: { nodeId: 'locator' },
+            expect: { nodeId: 'expect' },
           },
         },
       ],
@@ -812,6 +861,13 @@ it('should assert that aria input is not checked', async ({ expect }) => {
           },
         },
         {
+          type: 'expect',
+          nodeId: 'expect',
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+        {
           type: 'assert',
           nodeId: 'assert-is-checked',
           operation: {
@@ -820,7 +876,7 @@ it('should assert that aria input is not checked', async ({ expect }) => {
             expected: 'unchecked',
           },
           inputs: {
-            locator: { nodeId: 'locator' },
+            expect: { nodeId: 'expect' },
           },
         },
       ],
@@ -850,6 +906,13 @@ it('should assert that aria input is indeterminate', async ({ expect }) => {
           },
         },
         {
+          type: 'expect',
+          nodeId: 'expect',
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+        {
           type: 'assert',
           nodeId: 'assert-is-checked',
           operation: {
@@ -858,7 +921,7 @@ it('should assert that aria input is indeterminate', async ({ expect }) => {
             expected: 'indeterminate',
           },
           inputs: {
-            locator: { nodeId: 'locator' },
+            expect: { nodeId: 'expect' },
           },
         },
       ],
@@ -890,6 +953,13 @@ it('should assert that input has single value using toHaveValue', async ({
           },
         },
         {
+          type: 'expect',
+          nodeId: 'expect',
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+        {
           type: 'assert',
           nodeId: 'assert-has-value',
           operation: {
@@ -897,7 +967,7 @@ it('should assert that input has single value using toHaveValue', async ({
             expected: 'value1',
           },
           inputs: {
-            locator: { nodeId: 'locator' },
+            expect: { nodeId: 'expect' },
           },
         },
       ],
@@ -1469,5 +1539,116 @@ it('emits minimal options when options has empty thresholds and zones', async ({
 
   await expect(script).toMatchFileSnapshot(
     '__snapshots__/browser/browser-empty-settings.ts'
+  )
+})
+
+it('should emit a trace-call on pages and locators', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'trace',
+          nodeId: 'page-trace',
+          traceId: 'my-page',
+          inputs: { previous: { nodeId: 'page' } },
+        },
+        {
+          type: 'goto',
+          nodeId: 'goto',
+          url: 'https://example.com',
+          source: 'address-bar',
+          inputs: {
+            page: { nodeId: 'page-trace' },
+          },
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          locator: { type: 'css', selector: 'button' },
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'trace',
+          nodeId: 'locator-trace',
+          traceId: 'my-locator',
+          inputs: { previous: { nodeId: 'locator' } },
+        },
+        {
+          type: 'click',
+          nodeId: 'click',
+          button: 'left',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          inputs: {
+            locator: { nodeId: 'locator-trace' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/trace-calls-on-pages-and-locators.ts'
+  )
+})
+
+it('should emit a trace-call on an expect expression', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          locator: { type: 'css', selector: '#abc' },
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'expect',
+          nodeId: 'expect',
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+        {
+          type: 'trace',
+          nodeId: 'expect-trace',
+          traceId: '123',
+          inputs: { previous: { nodeId: 'expect' } },
+        },
+        {
+          type: 'assert',
+          nodeId: 'assert',
+          operation: {
+            type: 'is-visible',
+            visible: true,
+          },
+          inputs: {
+            expect: { nodeId: 'expect-trace' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/assertions/traced-expect.ts'
   )
 })

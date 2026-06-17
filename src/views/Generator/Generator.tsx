@@ -32,8 +32,20 @@ interface GeneratorProps {
 
 export function Generator({ file, content }: GeneratorProps) {
   const setGeneratorFile = useGeneratorStore((store) => store.setGeneratorFile)
+  const resetGeneratorFile = useGeneratorStore(
+    (store) => store.resetGeneratorFile
+  )
+
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const [savedData, setSavedData] = useState<GeneratorFileData>(content.data)
+
+  const setRecordingPath = useGeneratorStore((store) => store.setRecordingPath)
+  const recordingPath = useGeneratorStore((store) => store.recordingPath)
+
+  const setRecording = useGeneratorStore((store) => store.setRecording)
+  const setRecordingError = useGeneratorStore(
+    (store) => store.setRecordingError
+  )
 
   const showToast = useToast()
   const navigate = useNavigate()
@@ -47,7 +59,7 @@ export function Generator({ file, content }: GeneratorProps) {
     data: recording,
     isLoading: isLoadingRecording,
     error: harError,
-  } = useLoadHarFile(content.data.recordingPath)
+  } = useLoadHarFile(recordingPath)
 
   const saveFile = useSaveFile({
     menuItems: {
@@ -94,8 +106,22 @@ export function Generator({ file, content }: GeneratorProps) {
   })
 
   useEffect(() => {
-    setGeneratorFile(content.data, recording)
-  }, [setGeneratorFile, content.data, recording])
+    return () => {
+      resetGeneratorFile()
+    }
+  }, [resetGeneratorFile])
+
+  useEffect(() => {
+    setGeneratorFile(content.data)
+  }, [content.data, setGeneratorFile])
+
+  useEffect(() => {
+    if (recording !== undefined) {
+      setRecording(recording)
+    }
+
+    setRecordingError(harError)
+  }, [harError, recording, setRecording, setRecordingError])
 
   useEffect(() => {
     if (harError) {
@@ -125,6 +151,11 @@ export function Generator({ file, content }: GeneratorProps) {
   const handleSaveGenerator = useCallback(() => {
     return saveFile({ saveAs: false })
   }, [saveFile])
+
+  const handleChangeRecording = (newPath: string) => {
+    setSelectedRequest(null)
+    setRecordingPath(newPath)
+  }
 
   const handleSaveGeneratorDialog = async () => {
     const location = await handleSaveGenerator()
@@ -186,6 +217,7 @@ export function Generator({ file, content }: GeneratorProps) {
                 script={scriptPreview}
                 selectedRequest={selectedRequest}
                 onSelectRequest={setSelectedRequest}
+                onChangeRecording={handleChangeRecording}
               />
             </Panel>
             <Separator />

@@ -22,6 +22,9 @@ export function EventDescription({
   onHighlight,
 }: EventDescriptionProps) {
   switch (event.type) {
+    case 'tab-opened':
+      return <>Opened a new tab</>
+
     case 'navigate-to-page':
       return <PageNavigationDescription event={event} onNavigate={onNavigate} />
 
@@ -40,6 +43,7 @@ export function EventDescription({
           {event.checked ? 'Checked' : 'Unchecked'} checkbox{' '}
           <Selector
             selectors={event.target.selectors}
+            frames={event.frames}
             onHighlight={onHighlight}
           />
         </>
@@ -52,6 +56,7 @@ export function EventDescription({
           <code>{event.value}</code> from{' '}
           <Selector
             selectors={event.target.selectors}
+            frames={event.frames}
             onHighlight={onHighlight}
           />
         </>
@@ -66,6 +71,7 @@ export function EventDescription({
           Submitted form{' '}
           <Selector
             selectors={event.form.selectors}
+            frames={event.frames}
             onHighlight={onHighlight}
           />
         </>
