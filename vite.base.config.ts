@@ -103,7 +103,11 @@ export function getBuildDefine(env: ConfigEnv<'build'>) {
             ? JSON.stringify(process.env[VITE_DEV_SERVER_URL])
             : undefined,
         [VITE_NAME]: JSON.stringify(name),
-        [SENTRY_DSN]: JSON.stringify(process.env.SENTRY_DSN),
+        // Fall back to '' (not undefined) so the define is always emitted --
+        // vite drops defines whose value is undefined, which would leave the
+        // bare SENTRY_DSN identifier in the bundle and crash creds-free builds.
+        // An empty dsn simply disables Sentry.
+        [SENTRY_DSN]: JSON.stringify(process.env.SENTRY_DSN ?? ''),
       }
       return { ...acc, ...def }
     },

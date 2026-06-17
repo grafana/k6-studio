@@ -147,6 +147,19 @@ function substituteExpression(
         testId: substituteExpression(node.testId, substitutions),
       }
 
+    case 'NewFrameLocatorExpression':
+      return {
+        type: 'NewFrameLocatorExpression',
+        parent: substituteExpression(node.parent, substitutions),
+        selector: substituteExpression(node.selector, substitutions),
+      }
+
+    case 'ContentFrameExpression':
+      return {
+        type: 'ContentFrameExpression',
+        target: substituteExpression(node.target, substitutions),
+      }
+
     case 'GotoExpression':
       return {
         type: 'GotoExpression',

@@ -188,6 +188,28 @@ function emitNewTestIdLocatorExpression(
   return new ExpressionBuilder(page).member('getByTestId').call([testId]).done()
 }
 
+function emitNewFrameLocatorExpression(
+  context: ScenarioContext,
+  expression: ir.NewFrameLocatorExpression
+): ts.Expression {
+  const parent = emitExpression(context, expression.parent)
+  const selector = emitExpression(context, expression.selector)
+
+  return new ExpressionBuilder(parent)
+    .member('frameLocator')
+    .call([selector])
+    .done()
+}
+
+function emitContentFrameExpression(
+  context: ScenarioContext,
+  expression: ir.ContentFrameExpression
+): ts.Expression {
+  const target = emitExpression(context, expression.target)
+
+  return new ExpressionBuilder(target).member('contentFrame').call([]).done()
+}
+
 function emitGotoExpression(
   context: ScenarioContext,
   expression: ir.GotoExpression
@@ -561,6 +583,12 @@ function emitExpression(
 
     case 'NewTestIdLocatorExpression':
       return emitNewTestIdLocatorExpression(context, expression)
+
+    case 'NewFrameLocatorExpression':
+      return emitNewFrameLocatorExpression(context, expression)
+
+    case 'ContentFrameExpression':
+      return emitContentFrameExpression(context, expression)
 
     case 'GotoExpression':
       return emitGotoExpression(context, expression)

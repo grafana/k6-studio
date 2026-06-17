@@ -30,6 +30,7 @@ import {
   searchRequests,
 } from './utils/searchTools'
 import { prepareRequestsForAI } from './utils/stripRequestData'
+import { summarizeValidationForAI } from './utils/summarizeValidationForAI'
 import { validationMatchesRecording } from './utils/validationMatchesRecording'
 
 const outcomeEvents = {
@@ -241,10 +242,12 @@ export const useGenerateRules = ({
       false
     )
 
-    return validationMatchesRecording(
+    const comparison = validationMatchesRecording(
       prepareRequestsForAI(recording),
       prepareRequestsForAI(validationResult)
     )
+
+    return summarizeValidationForAI(comparison)
   }
 
   const removeRule = useCallback((ruleId: string) => {
@@ -270,10 +273,10 @@ export const useGenerateRules = ({
     actionsLog.setValidationEntryId(initialEntry.id)
 
     try {
-      const validationResult = await runValidation()
+      const validationSummary = await runValidation()
       actionsLog.completeValidationProgress()
 
-      if (validationResult.success) {
+      if (validationSummary.success) {
         setCorrelationStatusAndRef('correlation-not-needed')
         actionsLog.addEntry({
           type: 'info',
@@ -289,7 +292,7 @@ export const useGenerateRules = ({
       })
 
       return await sendMessage({
-        text: `${systemPrompt} \n\n Validation result: ${JSON.stringify(validationResult)}`,
+        text: `${systemPrompt} \n\n Validation result: ${JSON.stringify(validationSummary)}`,
       })
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {

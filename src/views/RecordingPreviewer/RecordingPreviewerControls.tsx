@@ -5,22 +5,29 @@ import {
   MonitorIcon,
   ServerCogIcon,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
-import { emitScript } from '@/codegen/browser'
 import { convertEventsToActions } from '@/codegen/browser/convertEventsToActions'
-import { convertEventsToTest } from '@/codegen/browser/test'
 import { FileInUseDialog } from '@/components/FileInUseDialog'
 import { RichDropdownMenuItem } from '@/components/RichDropdownMenuItem'
 import { useCreateBrowserTest } from '@/hooks/useCreateBrowserTest'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
-import { useExportScript } from '@/hooks/useExportScript'
 import { getRoutePath } from '@/routeMap'
 import { BrowserEvent } from '@/schemas/recording'
-import { useFeaturesStore } from '@/store/features'
 import { ProxyData, StudioFile } from '@/types'
+import {
+  EventPage,
+  groupEventsByPage,
+  normalizeEntryNavigation,
+} from '@/utils/browserEvents'
+
+import { SelectPageDialog } from './SelectPageDialog'
+
+function toPageActions(page: EventPage) {
+  return convertEventsToActions(normalizeEntryNavigation(page.events))
+}
 
 interface RecordingPreviewControlsProps {
   file: StudioFile
@@ -43,25 +50,43 @@ export function RecordingPreviewControls({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const isDiscardable = Boolean(state?.discardable)
 
-  const isBrowserEditorEnabled = useFeaturesStore(
-    (state) => state.features['browser-test-editor']
-  )
   const createBrowserTest = useCreateBrowserTest()
 
   const [referencesToConfirm, setReferencesToConfirm] = useState<
     string[] | null
   >(null)
+  const [isSelectPageOpen, setIsSelectPageOpen] = useState(false)
+
+  // Only offer pages that start with a navigation, since a browser test needs a
+  // `page.goto` to land on before any interaction. This drops internal-only tabs
+  // (e.g. a `chrome://new-tab-page/`) and stray tabs that only captured a click,
+  // both of which would otherwise show up labelled by their raw tab id.
+  const pages = useMemo(
+    () =>
+      groupEventsByPage(browserEvents).filter((page) =>
+        toPageActions(page).some((action) => action.method === 'page.goto')
+      ),
+    [browserEvents]
+  )
 
   const handleCreateGenerator = () => createTestGenerator(file.path)
 
   const handleCreateBrowserTest = () => {
-    const actions = convertEventsToActions(browserEvents)
-    void createBrowserTest(actions)
+    if (pages.length > 1) {
+      setIsSelectPageOpen(true)
+      return
+    }
+
+    const page = pages[0]
+    if (page) {
+      void createBrowserTest(toPageActions(page))
+    }
   }
 
-  const browserTestDescription = isBrowserEditorEnabled
-    ? 'Create a browser test from recorded interactions'
-    : 'Export a k6 script simulating browser interactions'
+  const handleSelectPage = (page: EventPage) => {
+    setIsSelectPageOpen(false)
+    void createBrowserTest(toPageActions(page))
+  }
 
   const deleteFile = useDeleteFile({
     file,
@@ -98,27 +123,6 @@ export function RecordingPreviewControls({
     setReferencesToConfirm(null)
   }
 
-  const exportScript = useExportScript({
-    enableMenuItem: browserEvents.length > 0,
-    openOnSave: true,
-    fileName: 'my-browser-script.js',
-    content: async () => {
-      const test = convertEventsToTest({
-        browserEvents,
-      })
-
-      return await emitScript(test)
-    },
-  })
-
-  const handleExportBrowserScript = () => {
-    void exportScript()
-  }
-
-  const handleBrowserTest = isBrowserEditorEnabled
-    ? handleCreateBrowserTest
-    : handleExportBrowserScript
-
   return (
     <>
       {isDiscardable ? (
@@ -147,9 +151,9 @@ export function RecordingPreviewControls({
           <RichDropdownMenuItem
             icon={<MonitorIcon />}
             label="Browser test"
-            description={browserTestDescription}
-            disabled={browserEvents.length === 0}
-            onSelect={handleBrowserTest}
+            description="Create a browser test from recorded interactions"
+            disabled={pages.length === 0}
+            onSelect={handleCreateBrowserTest}
           />
         </DropdownMenu.Content>
       </DropdownMenu.Root>
@@ -171,6 +175,12 @@ export function RecordingPreviewControls({
         references={referencesToConfirm ?? []}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
+      />
+      <SelectPageDialog
+        open={isSelectPageOpen}
+        onOpenChange={setIsSelectPageOpen}
+        pages={pages}
+        onSelectPage={handleSelectPage}
       />
     </>
   )

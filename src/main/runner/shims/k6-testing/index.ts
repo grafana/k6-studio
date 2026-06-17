@@ -278,7 +278,10 @@ function instrumentExpect(
   }
 
   expect.config = baseExpect.config
-  expect.use = baseExpect.use.bind(baseExpect)
+
+  if (('use' as string) in baseExpect) {
+    expect.use = baseExpect.use.bind(baseExpect)
+  }
 
   return expect
 }
