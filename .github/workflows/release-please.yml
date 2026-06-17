@@ -4,7 +4,9 @@ on:
   push:
     branches:
       - main
-      - release/*
+      # Patch/maintenance branches. Must be named release/<major>.<minor>.x
+      # (e.g. release/1.13.x). Create them with the "Create Patch Branch" workflow.
+      - 'release/[0-9]+.[0-9]+.x'
 
 permissions: {}
 

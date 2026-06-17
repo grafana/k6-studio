@@ -1,0 +1,68 @@
+name: "Create Patch Branch"
+
+# Creates a release/<major>.<minor>.x maintenance branch from an existing
+# release tag, so patch releases follow a consistent, enforced naming scheme.
+# release-please then manages the branch (it only triggers on branches matching
+# release/[0-9]+.[0-9]+.x, see release-please.yml).
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_tag:
+        description: "Release tag to branch from (e.g. v1.13.0)"
+        required: true
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: create-patch-branch-${{ inputs.base_tag }}
+  cancel-in-progress: false
+
+jobs:
+  create-branch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Derive branch name
+        id: derive
+        env:
+          BASE_TAG: ${{ inputs.base_tag }}
+        run: |
+          if [[ ! "$BASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::base_tag must look like v1.13.0 (got '$BASE_TAG')"
+            exit 1
+          fi
+          ver="${BASE_TAG#v}"
+          major="${ver%%.*}"
+          rest="${ver#*.}"
+          minor="${rest%%.*}"
+          branch="release/${major}.${minor}.x"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo "Derived branch name: $branch"
+
+      - name: Get GitHub App token
+        id: get-github-app-token
+        uses: grafana/shared-workflows/actions/create-github-app-token@259ba21cb3ff07724f331e26d926d655d24b317b # create-github-app-token/v0.2.3
+        with:
+          github_app: k6-release-app
+
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          ref: ${{ inputs.base_tag }}
+          token: ${{ steps.get-github-app-token.outputs.token }}
+
+      - name: Create and push patch branch
+        env:
+          BRANCH: ${{ steps.derive.outputs.branch }}
+          BASE_TAG: ${{ inputs.base_tag }}
+        run: |
+          if git ls-remote --exit-code --heads origin "refs/heads/$BRANCH" >/dev/null 2>&1; then
+            echo "::error::Branch $BRANCH already exists"
+            exit 1
+          fi
+          git switch -c "$BRANCH"
+          git push origin "$BRANCH"
+          echo "::notice::Created $BRANCH from $BASE_TAG"
