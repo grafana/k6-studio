@@ -1,7 +1,12 @@
 import { css, keyframes } from '@emotion/react'
 import * as Accordion from '@radix-ui/react-accordion'
 import { Flex, IconButton, Tooltip } from '@radix-ui/themes'
-import { ChevronDownIcon, PlusIcon, Trash2Icon } from 'lucide-react'
+import {
+  ChevronDownIcon,
+  CornerDownRightIcon,
+  PlusIcon,
+  Trash2Icon,
+} from 'lucide-react'
 import { ReactNode } from 'react'
 
 import {
@@ -94,12 +99,13 @@ export function LocatorChainList({
         value={toValue(expanded)}
         onValueChange={(value) => onExpandedChange(fromValue(value))}
       >
-        {frames.map((frame, index) => (
+        {frames.toReversed().map((frame, index) => (
           <ChainRow
             key={frame.key}
             target={frame}
             label={`iframe ${index + 1}`}
             isOpen={expanded === frame.key}
+            isNested={index > 0}
             divider
             onRemove={() => onRemoveFrame(frame.key)}
             onHoverTarget={onHoverTarget}
@@ -110,6 +116,7 @@ export function LocatorChainList({
           target={element}
           label="element"
           isOpen={expanded === 'element'}
+          isNested={frames.length > 0}
           onHoverTarget={onHoverTarget}
           renderEditor={renderEditor}
         />
@@ -122,6 +129,7 @@ interface ChainRowProps {
   target: LocatorTarget
   label: string
   isOpen: boolean
+  isNested?: boolean
   divider?: boolean
   onRemove?: () => void
   onHoverTarget: (target: LocatorTargetKey | null) => void
@@ -132,6 +140,7 @@ function ChainRow({
   target,
   label,
   isOpen,
+  isNested = false,
   divider = false,
   onRemove,
   onHoverTarget,
@@ -165,7 +174,7 @@ function ChainRow({
                 align-items: center;
                 gap: var(--space-1);
                 min-width: 0;
-                padding: var(--space-1) 0;
+                padding: var(--space-2) 0;
                 cursor: pointer;
                 font-size: var(--font-size-1);
                 color: ${target.error ? 'var(--red-11)' : 'inherit'};
@@ -181,6 +190,7 @@ function ChainRow({
                   }
                 `}
               />
+              {isNested && <CornerDownRightIcon size={16} />}
               <LocatorSummary locator={locator} emptyText="(empty)" />
             </button>
           </Accordion.Trigger>

@@ -53,7 +53,7 @@ export function LocatorEditor({
   onFieldBlur,
 }: LocatorEditorProps): ReactElement {
   return (
-    <Grid gap="3" columns="auto auto 1fr">
+    <Grid gap="3" flexGrow="1" columns="auto auto 1fr">
       <FieldGroup name="locator-type" label="Get by" labelSize="1" mb="0">
         <RadioGroup.Root
           size="1"
