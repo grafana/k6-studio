@@ -317,6 +317,7 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
       const documentElement = player.iframe.contentDocument?.documentElement
 
       if (documentElement === undefined) {
+        setDomRoot(null)
         return
       }
 
@@ -353,6 +354,7 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
 
     const handleFullSnapshot = () => {
       observer.disconnect()
+      setHighlightedLocator(null)
 
       snapshotTimeout = setTimeout(() => {
         const autoExpand = shouldAutoExpandRef.current
