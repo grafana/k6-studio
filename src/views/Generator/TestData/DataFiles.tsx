@@ -128,7 +128,7 @@ function DataFileRow({ file, onRemove }: DataFileRowProps) {
       <Table.Cell>
         <Tooltip
           content="Data file is referenced in a rule"
-          hidden={!isFileInUse && fileState === 'exists'}
+          hidden={!isFileInUse}
         >
           <IconButton
             aria-label="Remove"
