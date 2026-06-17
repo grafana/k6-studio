@@ -118,7 +118,9 @@ function EditableFile({
     const result = await renameFile({ newName: newFileName })
 
     if (result.renamed) {
+      setPendingRename(null)
       setEditMode(false)
+
       return
     }
 
@@ -163,7 +165,10 @@ function EditableFile({
           ref={inlineInputRef}
           value={file.displayName}
           onSave={handleSave}
-          onCancel={() => setEditMode(false)}
+          onCancel={() => {
+            setPendingRename(null)
+            setEditMode(false)
+          }}
           style={fileStyle}
           disableClickAway={pendingRename !== null}
         />
