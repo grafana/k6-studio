@@ -65,10 +65,11 @@ export function SortableBrowserActionList({
       const newIndex = actions.findIndex((action) => action.id === over.id)
 
       if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
+        setActive(null)
         return
       }
 
-      return onChange(arrayMove(actions, oldIndex, newIndex))
+      onChange(arrayMove(actions, oldIndex, newIndex))
     }
 
     setActive(null)
