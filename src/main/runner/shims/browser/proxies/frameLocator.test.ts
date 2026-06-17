@@ -34,6 +34,10 @@ function fakePage() {
     locator: vi.fn(() => fakeLocator()),
     frameLocator: vi.fn(() => fakeFrameLocator()),
     getByTitle: vi.fn(() => fakeLocator()),
+    goto: vi.fn(async () => {}),
+    close: vi.fn(async () => {}),
+    reload: vi.fn(async () => {}),
+    evaluate: vi.fn(async () => {}),
   }
 }
 
