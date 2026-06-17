@@ -16,6 +16,10 @@ import {
   type SerializedNode,
 } from './HtmlInspector.utils'
 
+// The `clearTimeout` type is more permissive than `setTimeout`'s return type and
+// the sole reason to store a timeout handle is to be able to clear it.
+type TimeoutHandle = Parameters<typeof clearTimeout>[0]
+
 const VOID_ELEMENTS = new Set([
   'area',
   'base',
@@ -283,8 +287,6 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
   const setHighlightedLocator = useHighlightLocator()
   const [domRoot, setDomRoot] = useState<SerializedNode | null>(null)
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set())
-  const updateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const isFirstDom = useRef(true)
   const currentPageIdRef = useRef<string>(NULL_PAGE_ID)
   const shouldAutoExpandRef = useRef(false)
 
@@ -333,23 +335,31 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
     if (!player) {
       setDomRoot(null)
 
-      isFirstDom.current = true
       currentPageIdRef.current = NULL_PAGE_ID
 
       return
     }
 
-    isFirstDom.current = false
+    let snapshotTimeout: TimeoutHandle
+    let updateTimer: TimeoutHandle
 
     const scheduleUpdate = () => {
-      if (updateTimerRef.current !== null) {
-        clearTimeout(updateTimerRef.current)
-      }
+      clearTimeout(updateTimer)
 
-      updateTimerRef.current = setTimeout(() => {
-        updateTimerRef.current = null
+      updateTimer = setTimeout(() => {
         serializeDom(player)
       }, 150)
+    }
+
+    const handleFullSnapshot = () => {
+      observer.disconnect()
+
+      snapshotTimeout = setTimeout(() => {
+        const autoExpand = shouldAutoExpandRef.current
+        shouldAutoExpandRef.current = false
+        serializeDom(player, autoExpand)
+        attachObserver()
+      }, 0)
     }
 
     const observer = new MutationObserver(scheduleUpdate)
@@ -365,17 +375,6 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
           characterData: true,
         })
       }
-    }
-
-    const handleFullSnapshot = () => {
-      observer.disconnect()
-
-      setTimeout(() => {
-        const autoExpand = shouldAutoExpandRef.current
-        shouldAutoExpandRef.current = false
-        serializeDom(player, autoExpand)
-        attachObserver()
-      }, 0)
     }
 
     const handleCustomEvent = (event: unknown) => {
@@ -396,10 +395,8 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
     player.on(ReplayerEvents.CustomEvent, handleCustomEvent)
 
     return () => {
-      if (updateTimerRef.current !== null) {
-        clearTimeout(updateTimerRef.current)
-        updateTimerRef.current = null
-      }
+      clearTimeout(updateTimer)
+      clearTimeout(snapshotTimeout)
 
       observer.disconnect()
       player.off(ReplayerEvents.FullsnapshotRebuilded, handleFullSnapshot)
