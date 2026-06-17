@@ -33,6 +33,8 @@ const VOID_ELEMENTS = new Set([
   'wbr',
 ])
 
+const NULL_PAGE_ID = 'NO_PAGE_ID'
+
 const nodeLineStyle = css`
   display: flex;
   align-items: baseline;
@@ -283,7 +285,7 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set())
   const updateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isFirstDom = useRef(true)
-  const currentPageIdRef = useRef<string | null>(null)
+  const currentPageIdRef = useRef<string>(NULL_PAGE_ID)
   const shouldAutoExpandRef = useRef(false)
 
   const expandDefaultNodes = useCallback((domRoot: SerializedNode) => {
@@ -310,11 +312,6 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
   const serializeDom = useCallback(
     (player: Replayer, autoExpand = false) => {
       const pageId = currentPageIdRef.current
-
-      if (pageId === null) {
-        return
-      }
-
       const documentElement = player.iframe.contentDocument?.documentElement
 
       if (documentElement === undefined) {
@@ -335,8 +332,9 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
   useEffect(() => {
     if (!player) {
       setDomRoot(null)
+
       isFirstDom.current = true
-      currentPageIdRef.current = null
+      currentPageIdRef.current = NULL_PAGE_ID
 
       return
     }

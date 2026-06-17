@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
 import * as SliderPrimitive from '@radix-ui/react-slider'
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 
 import { useTheme } from '@/hooks/useTheme'
 import { BrowserDebuggerEvent } from '@/main/runner/schema'
@@ -49,6 +49,8 @@ export function TimelineSlider({
 }: TimelineSliderProps) {
   const theme = useTheme()
 
+  const latestValueRef = useRef(0)
+
   const handleSeek = useCallback(
     (newTime: number, commit = true) => {
       onSeek(newTime - time.start, commit)
@@ -62,18 +64,9 @@ export function TimelineSlider({
         return
       }
 
+      latestValueRef.current = value
+
       handleSeek(value, false)
-    },
-    [handleSeek]
-  )
-
-  const handleValueCommit = useCallback(
-    ([value]: number[]) => {
-      if (value === undefined) {
-        return
-      }
-
-      handleSeek(value, true)
     },
     [handleSeek]
   )
@@ -103,7 +96,11 @@ export function TimelineSlider({
       step={0.001}
       disabled={disabled}
       onValueChange={handleValueChange}
-      onValueCommit={handleValueCommit}
+      onLostPointerCapture={() => {
+        // We can't use onValueCommit because of a 3+ years old bug in Radix UI
+        // that causes it not to fire when the mouse is released outside the slider.
+        handleSeek(latestValueRef.current, true)
+      }}
     >
       <div>
         <SliderPrimitive.Track

@@ -42,7 +42,13 @@ export function serializeNode(
   node: Node,
   pageId: string
 ): SerializedNode | null {
-  const key = `${pageId}:${player.getMirror().getId(node)}`
+  const nodeId = player.getMirror().getId(node)
+
+  if (nodeId === -1) {
+    return null
+  }
+
+  const key = `${pageId}:${nodeId}`
 
   if (node.nodeType === Node.TEXT_NODE) {
     const text = node.textContent?.trim() ?? ''
