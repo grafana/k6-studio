@@ -49,7 +49,7 @@ export function TimelineSlider({
 }: TimelineSliderProps) {
   const theme = useTheme()
 
-  const latestValueRef = useRef(0)
+  const latestValueRef = useRef(time.start + time.current)
 
   const handleSeek = useCallback(
     (newTime: number, commit = true) => {
@@ -70,6 +70,8 @@ export function TimelineSlider({
     },
     [handleSeek]
   )
+
+  latestValueRef.current = time.start + time.current
 
   return (
     <SliderPrimitive.Root

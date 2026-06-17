@@ -11,7 +11,7 @@ const RecordingEndEventSchema = z.object({
 const PageStartEventSchema = z.object({
   tag: z.literal('page-start'),
   payload: z.object({
-    pageId: z.string(),
+    pageId: z.string().optional(),
     title: z.string(),
     href: z.string(),
     width: z.number(),

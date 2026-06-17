@@ -284,6 +284,9 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
   const [domRoot, setDomRoot] = useState<SerializedNode | null>(null)
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set())
   const updateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const fullSnapshotTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  )
   const isFirstDom = useRef(true)
   const currentPageIdRef = useRef<string>(NULL_PAGE_ID)
   const shouldAutoExpandRef = useRef(false)
@@ -370,7 +373,12 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
     const handleFullSnapshot = () => {
       observer.disconnect()
 
-      setTimeout(() => {
+      if (fullSnapshotTimerRef.current !== null) {
+        clearTimeout(fullSnapshotTimerRef.current)
+      }
+
+      fullSnapshotTimerRef.current = setTimeout(() => {
+        fullSnapshotTimerRef.current = null
         const autoExpand = shouldAutoExpandRef.current
         shouldAutoExpandRef.current = false
         serializeDom(player, autoExpand)
@@ -386,7 +394,7 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
       }
 
       shouldAutoExpandRef.current = true
-      currentPageIdRef.current = data.data.payload.pageId
+      currentPageIdRef.current = data.data.payload.pageId ?? NULL_PAGE_ID
     }
 
     serializeDom(player, true)
@@ -399,6 +407,11 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
       if (updateTimerRef.current !== null) {
         clearTimeout(updateTimerRef.current)
         updateTimerRef.current = null
+      }
+
+      if (fullSnapshotTimerRef.current !== null) {
+        clearTimeout(fullSnapshotTimerRef.current)
+        fullSnapshotTimerRef.current = null
       }
 
       observer.disconnect()
