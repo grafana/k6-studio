@@ -242,9 +242,9 @@ export function LocatorForm({
   const handleAddFrame = () => {
     const key = nextKey.current++
 
-    setFrameKeys((prev) => [...prev, key])
+    setFrameKeys((prev) => [key, ...prev])
     setExpandedTarget(key)
-    onChangeFrames?.([...chain, cssLocatorOptions('')])
+    onChangeFrames?.([cssLocatorOptions(''), ...chain])
   }
 
   const handleRemoveFrame = (key: number) => {

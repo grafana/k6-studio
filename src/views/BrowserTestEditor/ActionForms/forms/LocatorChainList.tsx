@@ -99,7 +99,7 @@ export function LocatorChainList({
         value={toValue(expanded)}
         onValueChange={(value) => onExpandedChange(fromValue(value))}
       >
-        {frames.toReversed().map((frame, index) => (
+        {frames.map((frame, index) => (
           <ChainRow
             key={frame.key}
             target={frame}
