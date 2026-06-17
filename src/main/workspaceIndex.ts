@@ -135,6 +135,7 @@ async function add(filePath: string) {
     log.warn(`workspace: failed to index ${filePath}`, err)
 
     addToIndex(filePath, [])
+    throw err
   }
 }
 
