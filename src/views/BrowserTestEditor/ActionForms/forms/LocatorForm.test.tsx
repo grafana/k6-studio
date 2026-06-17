@@ -185,10 +185,10 @@ describe('LocatorForm chain accordion', () => {
     fireEvent.click(screen.getByRole('button', { name: /add iframe/i }))
 
     expect(onFramesChange).toHaveBeenCalledWith([
-      cssLocatorOptions('#outer'),
       cssLocatorOptions(''),
+      cssLocatorOptions('#outer'),
     ])
-    expect(expanded(/^iframe 2/)).toBe('true')
+    expect(expanded(/^iframe 1/)).toBe('true')
     expect(selectorField().value).toBe('')
   })
 
