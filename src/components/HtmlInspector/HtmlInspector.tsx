@@ -404,7 +404,7 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
       player.off(ReplayerEvents.FullsnapshotRebuilded, handleFullSnapshot)
       player.off(ReplayerEvents.CustomEvent, handleCustomEvent)
     }
-  }, [player, serializeDom])
+  }, [player, serializeDom, setHighlightedLocator])
 
   const handleToggleExpand = (key: string) => {
     setExpandedKeys((prev) => {
