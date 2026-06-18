@@ -1,13 +1,21 @@
 import { Locator } from '@/components/Browser/Locator'
-import { ElementLocator } from '@/schemas/locator'
+import {
+  ElementLocator,
+  getCurrentLocator,
+  LocatorOptions,
+} from '@/schemas/locator'
 
 import { useHighlightLocator } from '../../../components/HighlightLocatorProvider'
 
 interface BrowserElementLocatorProps {
   locator: ElementLocator
+  frames?: LocatorOptions[]
 }
 
-export function BrowserElementLocator({ locator }: BrowserElementLocatorProps) {
+export function BrowserElementLocator({
+  locator,
+  frames,
+}: BrowserElementLocatorProps) {
   const setHighlightedLocator = useHighlightLocator()
 
   const handleHighlightChange = (highlighted: boolean) => {
@@ -17,8 +25,16 @@ export function BrowserElementLocator({ locator }: BrowserElementLocatorProps) {
       return
     }
 
-    setHighlightedLocator(locator)
+    setHighlightedLocator({ locator, frames })
   }
 
-  return <Locator locator={locator} onHighlightChange={handleHighlightChange} />
+  const frameLocators = frames?.map(getCurrentLocator) ?? []
+
+  return (
+    <Locator
+      locator={locator}
+      frames={frameLocators}
+      onHighlightChange={handleHighlightChange}
+    />
+  )
 }

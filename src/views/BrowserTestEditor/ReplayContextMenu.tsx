@@ -18,6 +18,7 @@ import {
   createWaitForAction,
 } from './actionFactories'
 import {
+  applyFrames,
   getTextInputValue,
   isCheckbox,
   isRadio,
@@ -30,6 +31,7 @@ interface ReplayContextMenuProps {
   position: { x: number; y: number }
   aria: AriaDetails
   locator: LocatorOptions
+  frames?: LocatorOptions[]
   onClose: () => void
   onAddAction: (action: AnyBrowserAction) => void
 }
@@ -39,9 +41,16 @@ export function ReplayContextMenu({
   position,
   aria,
   locator,
+  frames,
   onClose,
-  onAddAction,
+  onAddAction: addRawAction,
 }: ReplayContextMenuProps) {
+  // Attach the frame chain to every action created from this element so it
+  // targets the right iframe.
+  const onAddAction = (action: AnyBrowserAction) => {
+    addRawAction(applyFrames(action, frames))
+  }
+
   const isGeneric =
     !isTextInput(target, aria.roles) &&
     !isCheckbox(target, aria.roles) &&

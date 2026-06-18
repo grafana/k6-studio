@@ -2,17 +2,17 @@ import { css } from '@emotion/react'
 import { Box, Flex } from '@radix-ui/themes'
 import { useEffect, useState } from 'react'
 
+import { HighlightedLocator } from '@/components/HighlightLocatorProvider'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { PersistentTabs } from '@/components/primitives/PersistentTabs'
 import { SessionPlayer } from '@/components/SessionPlayer/SessionPlayer'
-import { ElementLocator } from '@/schemas/locator'
 
 import { DebugSession } from '../types'
 
 interface BrowserOverviewPanelProps {
   script: string
   session: DebugSession
-  highlightedLocator: ElementLocator | null
+  highlightedLocator: HighlightedLocator | null
 }
 
 export function BrowserOverviewPanel({

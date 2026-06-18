@@ -5,6 +5,11 @@ import { parseReplayEvent } from '@/main/runner/rrweb'
 import { BrowserReplayEvent } from '@/main/runner/schema'
 import { DebugSession } from '@/views/Validator/types'
 
+import {
+  attachInteractionListeners,
+  collectReplayDocuments,
+  getReplayClickPosition,
+} from './SessionPlayer.interaction'
 import { Page, PlaybackState } from './types'
 
 function useEventSync(player: Replayer | null, events: BrowserReplayEvent[]) {
@@ -167,70 +172,59 @@ export function usePlayer({
 
     player.enableInteract()
 
-    const addListeners = () => {
-      const target = player.iframe?.contentDocument?.documentElement
+    // Capture the non-null player so it stays narrowed inside the hoisted
+    // addListeners declaration below.
+    const activePlayer = player
 
-      if (!target) {
-        return () => {}
-      }
+    let cleanupListeners: () => void = () => {}
 
-      const preventInteraction = (e: Event) => {
-        e.preventDefault()
-      }
-
-      const handleClick = (ev: PointerEvent) => {
-        ev.preventDefault()
-
-        const iframe = player.iframe
-
-        if (!iframe) {
-          return
-        }
-
-        const rect = iframe.getBoundingClientRect()
-
-        const x = rect.left + (ev.clientX / iframe.offsetWidth) * rect.width
-        const y = rect.top + (ev.clientY / iframe.offsetHeight) * rect.height
-
-        onClickRef.current?.({
-          x,
-          y,
-          target: ev.target as HTMLElement,
-        })
-      }
-
-      const blockedEvents = ['submit', 'keydown', 'keypress', 'contextmenu']
-
-      // Enabling interaction in rrweb's player allows the user to e.g. click links causing page navigations. We don't
-      // want that so we need to block these interactions ourself.
-      for (const ev of blockedEvents) {
-        target.addEventListener(ev, preventInteraction, true)
-      }
-
-      // Clicks events are handled separately since we want to trigger callbacks when these events happen.
-      target.addEventListener('click', handleClick, true)
-
-      return () => {
-        for (const ev of blockedEvents) {
-          target.removeEventListener(ev, preventInteraction, true)
-        }
-
-        target.removeEventListener('click', handleClick, true)
-      }
-    }
-
-    const handleSnapshotRebuilt = () => {
+    // rrweb rebuilds nested iframe content asynchronously, after the snapshot is
+    // rebuilt, and that does not re-fire FullsnapshotRebuilded. Re-attaching on
+    // each iframe load lets interaction listeners reach documents that appear
+    // later, so clicks inside a replayed iframe still register.
+    const reattach = () => {
       cleanupListeners()
       cleanupListeners = addListeners()
     }
 
-    let cleanupListeners = addListeners()
+    function addListeners() {
+      const rootDocument = activePlayer.iframe?.contentDocument
 
-    player.on(ReplayerEvents.FullsnapshotRebuilded, handleSnapshotRebuilt)
+      if (!rootDocument) {
+        return () => {}
+      }
+
+      const documents = collectReplayDocuments(rootDocument)
+
+      return attachInteractionListeners(documents, {
+        onClick: (event) => {
+          const iframe = activePlayer.iframe
+
+          if (!iframe) {
+            return
+          }
+
+          const target = event.target as HTMLElement
+          const { x, y } = getReplayClickPosition(
+            target,
+            iframe,
+            event.clientX,
+            event.clientY
+          )
+
+          onClickRef.current?.({ x, y, target })
+        },
+        onReload: reattach,
+      })
+    }
+
+    cleanupListeners = addListeners()
+
+    player.on(ReplayerEvents.FullsnapshotRebuilded, reattach)
 
     return () => {
       player.disableInteract()
-      player.off(ReplayerEvents.FullsnapshotRebuilded, handleSnapshotRebuilt)
+      player.off(ReplayerEvents.FullsnapshotRebuilded, reattach)
 
       cleanupListeners()
     }

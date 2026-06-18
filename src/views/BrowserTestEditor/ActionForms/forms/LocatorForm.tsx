@@ -1,44 +1,30 @@
-import { css } from '@emotion/react'
-import {
-  Flex,
-  Grid,
-  Popover,
-  RadioGroup,
-  Separator,
-  Tooltip,
-} from '@radix-ui/themes'
-import { WholeWordIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Flex, Popover } from '@radix-ui/themes'
+import { ReactElement, ReactNode, useEffect, useRef, useState } from 'react'
 
-import { LocatorIcon, LocatorText } from '@/components/Browser/Locator'
-import { FieldGroup } from '@/components/Form'
-import { useHighlightLocator } from '@/components/HighlightLocatorProvider'
-import { ElementLocator, LocatorOptions } from '@/schemas/locator'
+import { LocatorSummary } from '@/components/Browser/Locator'
+import {
+  HighlightedLocator,
+  useHighlightLocator,
+} from '@/components/HighlightLocatorProvider'
+import {
+  cssLocatorOptions,
+  ElementLocator,
+  getCurrentLocator,
+  initializeLocatorValues,
+  LocatorOptions,
+} from '@/schemas/locator'
+import { emptyToUndefined } from '@/utils/list'
 import { exhaustive } from '@/utils/typescript'
 
+import { useFrameChain } from '../../FrameChainContext'
 import { ValuePopoverBadge } from '../components'
 
 import {
-  GetByAltTextForm,
-  GetByCssForm,
-  GetByLabelForm,
-  GetByPlaceholderForm,
-  GetByRoleForm,
-  GetByTestIdForm,
-  GetByTextForm,
-  GetByTitleForm,
-} from './locators'
-
-const LOCATOR_TYPES: Record<ElementLocator['type'], string> = {
-  role: 'ARIA Role',
-  label: 'Form label',
-  alt: 'Alt text',
-  placeholder: 'Placeholder',
-  testid: 'Test ID',
-  text: 'Text content',
-  title: 'Title',
-  css: 'CSS selector',
-}
+  LocatorChainList,
+  LocatorTarget,
+  LocatorTargetKey,
+} from './LocatorChainList'
+import { LocatorEditor } from './LocatorEditor'
 
 interface LocatorFormProps {
   state: LocatorOptions
@@ -50,19 +36,88 @@ export function LocatorForm({
   state: { current, values },
   onChange,
   suggestedRoles,
-}: LocatorFormProps) {
+}: LocatorFormProps): ReactElement {
   const highlightSelector = useHighlightLocator()
+  const { frames, onChange: onChangeFrames } = useFrameChain()
+
+  const chain = frames ?? []
+  const elementOptions: LocatorOptions = { current, values }
 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 
-  const [touchedTypes, setTouchedTypes] = useState(
-    new Set<ElementLocator['type']>()
+  // Stable key per frame. Index keys would shift when a non-last frame is
+  // removed, reassigning expansion and validation state to a different frame.
+  // The keys are maintained alongside add/remove, which are the only ways the
+  // chain length changes while the popover is open.
+  const nextKey = useRef(chain.length)
+  const [frameKeys, setFrameKeys] = useState<number[]>(() =>
+    chain.map((_, index) => index)
   )
-  const [dirtyTypes, setDirtyTypes] = useState(
-    new Set<ElementLocator['type']>()
+  const frameKeyAt = (index: number) => frameKeys[index] ?? index
+
+  // Which accordion row is open (null = all collapsed). The open row is the one
+  // being edited; frames are addressed by their stable key.
+  const [expandedTarget, setExpandedTarget] = useState<LocatorTargetKey | null>(
+    'element'
+  )
+  const [hoveredTarget, setHoveredTarget] = useState<LocatorTargetKey | null>(
+    null
   )
 
-  const currentLocator = values[current] ?? initializeLocatorValues(current)
+  const [touchedTypes, setTouchedTypes] = useState(
+    new Map<LocatorTargetKey, Set<ElementLocator['type']>>()
+  )
+  const [dirtyTypes, setDirtyTypes] = useState(
+    new Map<LocatorTargetKey, Set<ElementLocator['type']>>()
+  )
+
+  const optionsFor = (key: LocatorTargetKey): LocatorOptions => {
+    if (key === 'element') {
+      return elementOptions
+    }
+
+    return chain[frameKeys.indexOf(key)] ?? elementOptions
+  }
+
+  const getTargetValidation = (
+    key: LocatorTargetKey,
+    options: LocatorOptions
+  ) => {
+    if (!touchedTypes.get(key)?.has(options.current)) {
+      return { isValid: true as const }
+    }
+
+    return validateLocator(getCurrentLocator(options))
+  }
+
+  const toTarget = <Key extends LocatorTargetKey>(
+    key: Key,
+    options: LocatorOptions
+  ): LocatorTarget<Key> => {
+    const validation = getTargetValidation(key, options)
+
+    return {
+      key,
+      options,
+      error: validation.isValid ? null : (validation.message ?? null),
+    }
+  }
+
+  const frameTargets = chain.map((frame, index) =>
+    toTarget(frameKeyAt(index), frame)
+  )
+  const elementTarget = toTarget('element', elementOptions)
+
+  // The badge surfaces the first problem anywhere in the chain: the element
+  // first, then frames outermost-first (prefixed so the tooltip says which).
+  const badgeError =
+    elementTarget.error ??
+    frameTargets
+      .map((target, index) =>
+        target.error !== null ? `iframe ${index + 1}: ${target.error}` : null
+      )
+      .find((message) => message !== null) ??
+    null
 
   useEffect(() => {
     if (!isPopoverOpen) {
@@ -72,13 +127,29 @@ export function LocatorForm({
     }
 
     const debounce = setTimeout(() => {
-      highlightSelector(currentLocator)
+      highlightSelector(
+        resolveHighlight(
+          hoveredTarget ?? expandedTarget ?? 'element',
+          frameKeys,
+          frames,
+          { current, values }
+        )
+      )
     }, 100)
 
     return () => {
       clearTimeout(debounce)
     }
-  }, [isPopoverOpen, currentLocator, highlightSelector])
+  }, [
+    isPopoverOpen,
+    hoveredTarget,
+    expandedTarget,
+    current,
+    values,
+    frames,
+    frameKeys,
+    highlightSelector,
+  ])
 
   useEffect(() => {
     return () => {
@@ -87,7 +158,9 @@ export function LocatorForm({
   }, [highlightSelector])
 
   const handlePointerEnter = () => {
-    highlightSelector(currentLocator)
+    highlightSelector(
+      resolveHighlight('element', frameKeys, frames, elementOptions)
+    )
   }
 
   const handlePointerLeave = () => {
@@ -98,57 +171,134 @@ export function LocatorForm({
     highlightSelector(null)
   }
 
-  const handleChangeCurrent = (type: LocatorOptions['current']) => {
-    if (dirtyTypes.has(current)) {
-      setTouchedTypes((prev) => {
-        if (prev.has(current)) {
-          return prev
-        }
-        const next = new Set(prev)
-        next.add(current)
-        return next
-      })
+  const updateTarget = (key: LocatorTargetKey, value: LocatorOptions) => {
+    if (key === 'element') {
+      onChange(value)
+
+      return
     }
 
-    const nextValues = values[type]
-      ? values
-      : { ...values, [type]: initializeLocatorValues(type) }
+    const index = frameKeys.indexOf(key)
 
-    onChange({ current: type, values: nextValues })
+    onChangeFrames?.(
+      chain.map((frame, position) => (position === index ? value : frame))
+    )
   }
 
-  const handleLocatorChange = (locator: ElementLocator) => {
-    setDirtyTypes((prev) => {
-      return addIfAbsent(prev, current)
-    })
-    onChange({
-      current,
-      values: { ...values, [current]: locator },
+  // Editing a type and moving on (switching type, collapsing, or closing) marks
+  // it touched so validation only surfaces for fields the user actually
+  // visited.
+  const promoteDirtyToTouched = (key: LocatorTargetKey) => {
+    const options = optionsFor(key)
+
+    if (dirtyTypes.get(key)?.has(options.current)) {
+      setTouchedTypes((prev) => addTypeToMap(prev, key, options.current))
+    }
+  }
+
+  const handleTypeChange = (
+    target: LocatorTarget,
+    type: LocatorOptions['current']
+  ) => {
+    promoteDirtyToTouched(target.key)
+
+    const nextValues = target.options.values[type]
+      ? target.options.values
+      : { ...target.options.values, [type]: initializeLocatorValues(type) }
+
+    updateTarget(target.key, { current: type, values: nextValues })
+  }
+
+  const handleLocatorChange = (
+    target: LocatorTarget,
+    locator: ElementLocator
+  ) => {
+    setDirtyTypes((prev) =>
+      addTypeToMap(prev, target.key, target.options.current)
+    )
+    updateTarget(target.key, {
+      current: target.options.current,
+      values: {
+        ...target.options.values,
+        [target.options.current]: locator,
+      },
     })
   }
 
-  const handleFieldBlur = () => {
-    setTouchedTypes((prev) => {
-      return addIfAbsent(prev, current)
-    })
+  const handleFieldBlur = (target: LocatorTarget) => {
+    setTouchedTypes((prev) =>
+      addTypeToMap(prev, target.key, target.options.current)
+    )
+  }
+
+  const handleExpandedChange = (next: LocatorTargetKey | null) => {
+    if (expandedTarget !== null) {
+      promoteDirtyToTouched(expandedTarget)
+    }
+
+    setExpandedTarget(next)
+  }
+
+  const handleAddFrame = () => {
+    const key = nextKey.current++
+
+    setFrameKeys((prev) => [key, ...prev])
+    setExpandedTarget(key)
+    onChangeFrames?.([cssLocatorOptions(''), ...chain])
+  }
+
+  const handleRemoveFrame = (key: number) => {
+    const index = frameKeys.indexOf(key)
+
+    setFrameKeys((prev) => prev.filter((existing) => existing !== key))
+    setTouchedTypes((prev) => deleteFromMap(prev, key))
+    setDirtyTypes((prev) => deleteFromMap(prev, key))
+
+    if (expandedTarget === key) {
+      setExpandedTarget('element')
+    }
+
+    onChangeFrames?.(
+      emptyToUndefined(chain.filter((_, position) => position !== index))
+    )
   }
 
   const handlePopoverOpenChange = (open: boolean) => {
     setIsPopoverOpen(open)
+
     if (open) {
+      setExpandedTarget('element')
+      setHoveredTarget(null)
+
       return
     }
 
+    // Closing is the last chance to surface problems, so mark the current type
+    // of every target (element and frames) touched — including never-visited
+    // frames, whose errors then show on the badge.
     setTouchedTypes((prev) => {
-      return addIfAbsent(prev, current)
+      return chain.reduce(
+        (next, frame, index) =>
+          addTypeToMap(next, frameKeyAt(index), frame.current),
+        addTypeToMap(prev, 'element', current)
+      )
     })
   }
 
-  const validation = touchedTypes.has(current)
-    ? validateLocator(currentLocator)
-    : { isValid: true }
+  const renderEditor = (target: LocatorTarget): ReactNode => {
+    const validation = getTargetValidation(target.key, target.options)
 
-  const error = validation.isValid ? null : validation.message
+    return (
+      <LocatorEditor
+        state={target.options}
+        fieldErrors={validation.isValid ? undefined : validation.fieldErrors}
+        suggestedRoles={target.key === 'element' ? suggestedRoles : undefined}
+        onTypeChange={(type) => handleTypeChange(target, type)}
+        onLocatorChange={(locator) => handleLocatorChange(target, locator)}
+        onFieldBlur={() => handleFieldBlur(target)}
+      />
+    )
+  }
 
   return (
     <Popover.Root open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
@@ -157,136 +307,60 @@ export function LocatorForm({
         onPointerLeave={handlePointerLeave}
       >
         <ValuePopoverBadge
-          displayValue={<DisplayValue state={{ current, values }} />}
-          error={error}
+          displayValue={<DisplayValue state={elementOptions} />}
+          error={badgeError}
         />
       </Popover.Trigger>
-      <Popover.Content align="start" size="1" width="400px">
-        <Grid gap="3" columns="auto auto 1fr">
-          <FieldGroup name="locator-type" label="Get by" labelSize="1" mb="0">
-            <RadioGroup.Root
-              size="1"
-              name="locator-type"
-              value={current}
-              onValueChange={handleChangeCurrent}
-            >
-              {Object.entries(LOCATOR_TYPES)
-                // TODO: temporarily hide 'text' until codegen support is added
-                .filter(([type]) => type !== 'text')
-                .map(([type, label]) => (
-                  <RadioGroup.Item value={type} key={type}>
-                    {label}
-                  </RadioGroup.Item>
-                ))}
-            </RadioGroup.Root>
-          </FieldGroup>
-
-          <Separator orientation="vertical" size="4" decorative />
-          <LocatorFieldsForm
-            locator={currentLocator}
-            errors={validation.fieldErrors}
-            onChange={handleLocatorChange}
-            onBlur={handleFieldBlur}
-            suggestedRoles={suggestedRoles}
+      <Popover.Content
+        align="start"
+        size="1"
+        width="400px"
+        // Don't auto-focus the first control (the add-iframe button), which
+        // would pop its tooltip open the moment the popover appears.
+        onOpenAutoFocus={(event) => event.preventDefault()}
+      >
+        {onChangeFrames === undefined ? (
+          renderEditor(elementTarget)
+        ) : (
+          <LocatorChainList
+            frames={frameTargets}
+            element={elementTarget}
+            expanded={expandedTarget}
+            onExpandedChange={handleExpandedChange}
+            onHoverTarget={setHoveredTarget}
+            onAddFrame={handleAddFrame}
+            onRemoveFrame={handleRemoveFrame}
+            renderEditor={renderEditor}
           />
-        </Grid>
+        )}
       </Popover.Content>
     </Popover.Root>
   )
 }
 
-interface LocatorFieldsFormProps {
-  locator: ElementLocator
-  errors?: Record<string, string>
-  onChange: (locator: ElementLocator) => void
-  onBlur?: () => void
-  suggestedRoles?: string[]
-}
+// What hovering or editing `target` should highlight: a frame within the
+// frames before it, the element within the full chain.
+function resolveHighlight(
+  target: LocatorTargetKey,
+  frameKeys: number[],
+  frames: LocatorOptions[] | undefined,
+  element: LocatorOptions
+): HighlightedLocator {
+  const chain = frames ?? []
 
-function LocatorFieldsForm({
-  locator,
-  errors,
-  onChange,
-  onBlur,
-  suggestedRoles,
-}: LocatorFieldsFormProps) {
-  switch (locator.type) {
-    case 'role':
-      return (
-        <GetByRoleForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
-          onBlur={onBlur}
-          suggestedRoles={suggestedRoles}
-        />
-      )
-    case 'css':
-      return (
-        <GetByCssForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
-          onBlur={onBlur}
-        />
-      )
-    case 'testid':
-      return (
-        <GetByTestIdForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
-          onBlur={onBlur}
-        />
-      )
-    case 'label':
-      return (
-        <GetByLabelForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
-          onBlur={onBlur}
-        />
-      )
-    case 'placeholder':
-      return (
-        <GetByPlaceholderForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
-          onBlur={onBlur}
-        />
-      )
-    case 'title':
-      return (
-        <GetByTitleForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
-          onBlur={onBlur}
-        />
-      )
-    case 'alt':
-      return (
-        <GetByAltTextForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
-          onBlur={onBlur}
-        />
-      )
-    case 'text':
-      return (
-        <GetByTextForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
-          onBlur={onBlur}
-        />
-      )
-    default:
-      return exhaustive(locator)
+  if (target !== 'element') {
+    const index = frameKeys.indexOf(target)
+    const frame = chain[index]
+
+    if (frame !== undefined) {
+      return {
+        locator: getCurrentLocator(frame),
+        frames: chain.slice(0, index),
+      }
+    }
   }
+
+  return { locator: getCurrentLocator(element), frames }
 }
 
 function validateLocator(locator: ElementLocator) {
@@ -330,91 +404,44 @@ function validateLocator(locator: ElementLocator) {
   const message = Object.values(fieldErrors)[0]
 
   if (!message) {
-    return { isValid: true }
+    return { isValid: true as const }
   }
 
-  return { isValid: false, message, fieldErrors }
+  return { isValid: false as const, message, fieldErrors }
 }
 
-function DisplayValue({
-  state: { current, values },
-}: {
-  state: LocatorOptions
-}) {
-  const locator = values[current]!
+function DisplayValue({ state }: { state: LocatorOptions }) {
   return (
     <Flex gap="1" align="center" overflow="hidden">
-      <LocatorIcon
-        locator={locator}
-        css={css`
-          && {
-            width: 12px;
-            height: 12px;
-            min-width: 12px;
-            min-height: 12px;
-          }
-        `}
-      />
-      <span
-        css={css`
-          overflow: hidden;
-          white-space: nowrap;
-          text-overflow: ellipsis;
-        `}
-      >
-        <LocatorText locator={locator} />
-      </span>
-      <ExactMatchIndicator locator={locator} />
+      <LocatorSummary locator={getCurrentLocator(state)} />
     </Flex>
   )
 }
 
-function ExactMatchIndicator({ locator }: { locator: ElementLocator }) {
-  if (locator.type === 'testid' || locator.type === 'css') {
-    return null
+function addTypeToMap(
+  map: Map<LocatorTargetKey, Set<ElementLocator['type']>>,
+  key: LocatorTargetKey,
+  type: ElementLocator['type']
+) {
+  const existing = map.get(key)
+
+  if (existing?.has(type)) {
+    return map
   }
 
-  const exact = locator.options?.exact
-  if (exact) {
-    return (
-      <Tooltip content="Exact match">
-        <WholeWordIcon aria-label="Exact match" />
-      </Tooltip>
-    )
-  }
-
-  return null
+  return new Map(map).set(key, new Set(existing).add(type))
 }
 
-function initializeLocatorValues(type: ElementLocator['type']): ElementLocator {
-  switch (type) {
-    case 'css':
-      return { type, selector: '' }
-
-    case 'testid':
-      return { type, testId: '' }
-
-    case 'label':
-      return { type, label: '', options: { exact: false } }
-
-    case 'placeholder':
-      return { type, placeholder: '', options: { exact: false } }
-
-    case 'title':
-      return { type, title: '', options: { exact: false } }
-
-    case 'alt':
-    case 'text':
-      return { type, text: '', options: { exact: false } }
-
-    case 'role':
-      return { type, role: '', options: { exact: false } }
-
-    default:
-      return exhaustive(type)
+function deleteFromMap(
+  map: Map<LocatorTargetKey, Set<ElementLocator['type']>>,
+  key: LocatorTargetKey
+) {
+  if (!map.has(key)) {
+    return map
   }
-}
 
-function addIfAbsent<T>(set: Set<T>, value: T) {
-  return set.has(value) ? set : new Set(set).add(value)
+  const next = new Map(map)
+  next.delete(key)
+
+  return next
 }

@@ -1,4 +1,5 @@
 import { css } from '@emotion/react'
+import { Tooltip } from '@radix-ui/themes'
 import {
   BracesIcon,
   CaptionsIcon,
@@ -90,6 +91,94 @@ export function LocatorText({ locator }: LocatorComponentProps) {
     default:
       return exhaustive(locator)
   }
+}
+
+// Unquoted counterpart of LocatorText, for places that need a plain string
+// (accessible labels, empty-value checks). Kept beside it so the per-type
+// field choices can't drift apart.
+export function getLocatorPlainText(locator: ElementLocator): string {
+  switch (locator.type) {
+    case 'css':
+      return locator.selector
+
+    case 'testid':
+      return locator.testId
+
+    case 'label':
+      return locator.label
+
+    case 'placeholder':
+      return locator.placeholder
+
+    case 'title':
+      return locator.title
+
+    case 'alt':
+    case 'text':
+      return locator.text
+
+    case 'role':
+      return [locator.role, locator.options?.name]
+        .filter((part) => Boolean(part))
+        .join(' ')
+
+    default:
+      return exhaustive(locator)
+  }
+}
+
+const summaryTextStyles = css`
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+`
+
+interface LocatorSummaryProps {
+  locator: ElementLocator
+  emptyText?: string
+}
+
+/**
+ * Compact icon + text reading of a locator, for badges and chain rows. Renders
+ * `emptyText` muted when the locator has no value yet, and an exact-match icon
+ * when the locator pins an exact name.
+ */
+export function LocatorSummary({ locator, emptyText }: LocatorSummaryProps) {
+  return (
+    <>
+      <LocatorIcon locator={locator} css={iconStyles} />
+      <LocatorSummaryText locator={locator} emptyText={emptyText} />
+      <ExactMatchIndicator locator={locator} />
+    </>
+  )
+}
+
+export function ExactMatchIndicator({ locator }: LocatorComponentProps) {
+  if (locator.type === 'testid' || locator.type === 'css') {
+    return null
+  }
+
+  if (!locator.options?.exact) {
+    return null
+  }
+
+  return (
+    <Tooltip content="Exact match">
+      <WholeWordIcon aria-label="Exact match" css={iconStyles} />
+    </Tooltip>
+  )
+}
+
+function LocatorSummaryText({ locator, emptyText }: LocatorSummaryProps) {
+  if (emptyText !== undefined && getLocatorPlainText(locator) === '') {
+    return <span css={{ color: 'var(--gray-9)' }}>{emptyText}</span>
+  }
+
+  return (
+    <span css={summaryTextStyles}>
+      <LocatorText locator={locator} />
+    </span>
+  )
 }
 
 const iconStyles = css`
