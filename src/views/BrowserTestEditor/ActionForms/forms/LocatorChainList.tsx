@@ -2,7 +2,7 @@ import { css, keyframes } from '@emotion/react'
 import * as Accordion from '@radix-ui/react-accordion'
 import { Flex, IconButton, Tooltip } from '@radix-ui/themes'
 import {
-  ChevronDownIcon,
+  ChevronRightIcon,
   CornerDownRightIcon,
   PlusIcon,
   Trash2Icon,
@@ -84,7 +84,9 @@ export function LocatorChainList({
     return (
       <Flex direction="column" gap="2">
         {addButton}
-        {renderEditor(element)}
+        <Flex px="2" pb="3">
+          {renderEditor(element)}
+        </Flex>
       </Flex>
     )
   }
@@ -106,7 +108,6 @@ export function LocatorChainList({
             label={`iframe ${index + 1}`}
             isOpen={expanded === frame.key}
             isNested={index > 0}
-            divider
             onRemove={() => onRemoveFrame(frame.key)}
             onHoverTarget={onHoverTarget}
             renderEditor={renderEditor}
@@ -130,7 +131,6 @@ interface ChainRowProps {
   label: string
   isOpen: boolean
   isNested?: boolean
-  divider?: boolean
   onRemove?: () => void
   onHoverTarget: (target: LocatorTargetKey | null) => void
   renderEditor: (target: LocatorTarget) => ReactNode
@@ -141,7 +141,6 @@ function ChainRow({
   label,
   isOpen,
   isNested = false,
-  divider = false,
   onRemove,
   onHoverTarget,
   renderEditor,
@@ -149,15 +148,17 @@ function ChainRow({
   const locator = getCurrentLocator(target.options)
 
   return (
-    <Accordion.Item value={toValue(target.key)}>
+    <Accordion.Item
+      value={toValue(target.key)}
+      css={css`
+        border-bottom: 1px solid var(--gray-a4);
+        &:last-of-type {
+          border-bottom: none;
+        }
+      `}
+    >
       <Accordion.Header asChild>
-        <Flex
-          align="center"
-          gap="1"
-          css={
-            divider ? { borderBottom: '1px solid var(--gray-a4)' } : undefined
-          }
-        >
+        <Flex align="center" gap="1">
           <Accordion.Trigger asChild>
             <button
               type="button"
@@ -174,19 +175,19 @@ function ChainRow({
                 align-items: center;
                 gap: var(--space-1);
                 min-width: 0;
-                padding: var(--space-2) 0;
+                padding: var(--space-3) 0;
                 cursor: pointer;
                 font-size: var(--font-size-1);
                 color: ${target.error ? 'var(--red-11)' : 'inherit'};
               `}
             >
-              <ChevronDownIcon
+              <ChevronRightIcon
                 size={16}
                 css={css`
                   flex-shrink: 0;
                   transition: transform 150ms ease;
                   button[data-state='open'] & {
-                    transform: rotate(180deg);
+                    transform: rotate(90deg);
                   }
                 `}
               />
@@ -220,7 +221,7 @@ function ChainRow({
           }
         `}
       >
-        <Flex pt="2" pb="1">
+        <Flex px="2" pb="3">
           {isOpen ? renderEditor(target) : null}
         </Flex>
       </Accordion.Content>
