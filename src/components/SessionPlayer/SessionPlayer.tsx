@@ -3,8 +3,8 @@ import { css } from '@emotion/react'
 import { Flex, Box } from '@radix-ui/themes'
 import { ReactNode, useState } from 'react'
 
+import { HighlightedLocator } from '@/components/HighlightLocatorProvider'
 import { isBrowserAssertion } from '@/main/runner/schema'
-import { ElementLocator } from '@/schemas/locator'
 import { DebugSession } from '@/views/Validator/types'
 
 import { AddressBar } from './AddressBar'
@@ -29,7 +29,7 @@ interface SessionPlayerProps {
   initialPage?: Page
   initialContent?: ReactNode
   controls?: ReactNode
-  highlightedElement: ElementLocator | Element | null
+  highlightedElement: HighlightedLocator | Element | null
   interactive?: boolean
   onClick?: (ev: PlayerMouseEvent) => void
 }

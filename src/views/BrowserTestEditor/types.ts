@@ -12,6 +12,8 @@ export interface ContextMenuState {
   }
   aria: AriaDetails
   locator: LocatorOptions
+  // Chain of iframe locators (outermost first) the clicked element lives in.
+  frames?: LocatorOptions[]
 }
 
 export type BrowserActionStates = Partial<
