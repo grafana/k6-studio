@@ -23,7 +23,6 @@ const meta: ParamSuggestionMeta = {
   ruleId: 'param-rule-1',
   field: 'password',
   location: { method: 'POST', path: '/api/login', in: 'body' },
-  secret: true,
   recordedValue: 'S3cret!',
 }
 
@@ -51,18 +50,6 @@ describe('ParamCard', () => {
     expect(
       screen.getByRole('textbox', { name: 'Value of password' })
     ).toHaveProperty('value', 'S3cret!')
-  })
-
-  it('marks sensitive values with a lock', () => {
-    renderCard()
-
-    expect(screen.getByLabelText('Sensitive value')).toBeDefined()
-  })
-
-  it('shows no lock for non-secret values', () => {
-    renderCard({ secret: false })
-
-    expect(screen.queryByLabelText('Sensitive value')).toBeNull()
   })
 
   it('edits the variable value in the store', async () => {

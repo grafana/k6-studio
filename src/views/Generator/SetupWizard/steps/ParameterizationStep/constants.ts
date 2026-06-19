@@ -13,11 +13,6 @@ export const parameterSchema = z.object({
     path: z.string(),
     in: z.enum(['body', 'query', 'headers', 'url']),
   }),
-  secret: z
-    .boolean()
-    .describe(
-      'True for passwords, API keys, and tokens - the value is masked in the UI'
-    ),
   recordedValue: z
     .string()
     .describe('The value as it appears in the recording'),
@@ -79,6 +74,5 @@ Do NOT parameterize values that are correlated session state (tokens or IDs extr
 
 1. Use getRequestsMetadata and searchRequests to find candidate requests, then getRequestDetails to inspect them.
 2. Call addParameter once per value. Use a selector that matches only the intended value. Each call creates a variable initialized with the recorded value and a rule that references it.
-3. Mark credentials and keys as secret.
-4. Call finish with the outcome.
+3. Call finish with the outcome.
 `

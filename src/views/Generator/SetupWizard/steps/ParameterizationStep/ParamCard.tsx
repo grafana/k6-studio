@@ -7,7 +7,6 @@ import {
   Text,
   TextField,
 } from '@radix-ui/themes'
-import { LockIcon } from 'lucide-react'
 
 import { useGeneratorStore } from '@/store/generator'
 import { ParameterizationRule } from '@/types/rules'
@@ -97,18 +96,9 @@ export function ParamCard({ meta, rule }: ParamCardProps) {
           />
         </Flex>
         <Flex direction="column" gap="1" css={{ maxWidth: 460 }}>
-          <Flex gap="1" align="center">
-            <Text size="1" color="gray">
-              Replaced with variable <Code size="1">{variableName}</Code>
-            </Text>
-            {meta.secret && (
-              <LockIcon
-                size={12}
-                color="var(--gray-9)"
-                aria-label="Sensitive value"
-              />
-            )}
-          </Flex>
+          <Text size="1" color="gray">
+            Replaced with variable <Code size="1">{variableName}</Code>
+          </Text>
           <VariableValueField variableName={variableName} />
         </Flex>
       </Flex>
