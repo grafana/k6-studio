@@ -55,6 +55,18 @@ describe('SetupWizard', () => {
     expect(onExit).toHaveBeenCalledWith('manual')
   })
 
+  it('titles a fresh run "New HTTP test"', () => {
+    render(<SetupWizard {...defaultProps} />)
+
+    expect(screen.getByText('New HTTP test')).toBeDefined()
+  })
+
+  it('titles a generator relaunch "Configure HTTP test"', () => {
+    render(<SetupWizard {...defaultProps} startInGuidedSetup />)
+
+    expect(screen.getByText('Configure HTTP test')).toBeDefined()
+  })
+
   it('exits to the generator when cancelled', async () => {
     render(<SetupWizard {...defaultProps} />)
 

@@ -38,7 +38,12 @@ export function SetupWizard({
           : undefined
       }
     >
-      <SetupWizardView {...props} />
+      <SetupWizardView
+        // Entering from the generator (guided) reconfigures an existing test;
+        // entering from a recording sets up a new one.
+        title={startInGuidedSetup ? 'Configure HTTP test' : 'New HTTP test'}
+        {...props}
+      />
     </SetupWizardProvider>
   )
 }
@@ -104,9 +109,15 @@ function SetupWizardBody({
   )
 }
 
-type SetupWizardViewProps = Omit<SetupWizardProps, 'startInGuidedSetup'>
+type SetupWizardViewProps = Omit<SetupWizardProps, 'startInGuidedSetup'> & {
+  title: string
+}
 
-function SetupWizardView({ isLoading, ...bodyProps }: SetupWizardViewProps) {
+function SetupWizardView({
+  isLoading,
+  title,
+  ...bodyProps
+}: SetupWizardViewProps) {
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
 
   useEffect(() => {
@@ -121,7 +132,7 @@ function SetupWizardView({ isLoading, ...bodyProps }: SetupWizardViewProps) {
 
   return (
     <View
-      title="New HTTP test"
+      title={title}
       subTitle={
         <Text size="1" color="gray">
           {basename(recordingPath)}
