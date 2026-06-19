@@ -324,6 +324,47 @@ describe('Code generation - utils', () => {
         },
       ])
     })
+
+    it('does not drop checks from non-final hops when they are in affectedRequestIds', () => {
+      const redirectWithCheck = {
+        ...createRedirectSnippet('1', 'http://a.com', 'http://b.com'),
+        checks: [
+          {
+            description: 'status equals 302',
+            expression: '(r) => r.status === 302',
+          },
+        ],
+      }
+      const middleWithCheck = {
+        ...createRedirectSnippet('2', 'http://b.com', 'http://c.com'),
+        checks: [
+          {
+            description: 'body contains token',
+            expression: "(r) => r.body.includes('token')",
+          },
+        ],
+      }
+      const finalSnippet = createFinalSnippet('3', 'http://c.com')
+
+      const result = processRedirectChains(
+        [redirectWithCheck, middleWithCheck, finalSnippet],
+        new Set(['1'])
+      )
+
+      expect(result.length).toBe(3)
+      expect(result[0]?.checks).toEqual([
+        {
+          description: 'status equals 302',
+          expression: '(r) => r.status === 302',
+        },
+      ])
+      expect(result[1]?.checks).toEqual([
+        {
+          description: 'body contains token',
+          expression: "(r) => r.body.includes('token')",
+        },
+      ])
+    })
   })
 
   describe('shouldIncludeHeaderInScript', () => {
