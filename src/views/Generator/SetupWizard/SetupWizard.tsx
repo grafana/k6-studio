@@ -11,6 +11,7 @@ import { useGeneratorStore } from '@/store/generator'
 import { basename } from '@/utils/path'
 
 import { ChoiceScreen } from './ChoiceScreen'
+import { initialWizardState } from './state/reducer'
 import { useSetupWizard, SetupWizardProvider } from './state/SetupWizardContext'
 import { STEP_ORDER } from './state/types'
 import { WizardShell } from './WizardShell'
@@ -19,15 +20,26 @@ export type SetupWizardOutcome = 'completed' | 'manual'
 
 interface SetupWizardProps {
   isLoading: boolean
+  /** Skip the choice screen and open directly on the first guided step. */
+  startInGuidedSetup: boolean
   script: ScriptPreview
   scriptName: string
   onSaveGenerator: () => Promise<FileLocation | undefined>
   onExit: (outcome: SetupWizardOutcome) => void
 }
 
-export function SetupWizard(props: SetupWizardProps) {
+export function SetupWizard({
+  startInGuidedSetup,
+  ...props
+}: SetupWizardProps) {
   return (
-    <SetupWizardProvider>
+    <SetupWizardProvider
+      initialState={
+        startInGuidedSetup
+          ? { ...initialWizardState, screen: 'wizard', activeStep: 'hosts' }
+          : undefined
+      }
+    >
       <SetupWizardView {...props} />
     </SetupWizardProvider>
   )
@@ -52,7 +64,7 @@ function SetupWizardBody({
   scriptName,
   onSaveGenerator,
   onExit,
-}: Omit<SetupWizardProps, 'isLoading'>) {
+}: Omit<SetupWizardProps, 'isLoading' | 'startInGuidedSetup'>) {
   const { state, dispatch } = useSetupWizard()
   const setShowAllowlistDialog = useGeneratorStore(
     (store) => store.setShowAllowlistDialog
@@ -94,7 +106,9 @@ function SetupWizardBody({
   )
 }
 
-function SetupWizardView({ isLoading, ...bodyProps }: SetupWizardProps) {
+type SetupWizardViewProps = Omit<SetupWizardProps, 'startInGuidedSetup'>
+
+function SetupWizardView({ isLoading, ...bodyProps }: SetupWizardViewProps) {
   const navigate = useNavigate()
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
 

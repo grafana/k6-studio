@@ -22,6 +22,7 @@ describe('SetupWizard', () => {
 
   const defaultProps = {
     isLoading: false,
+    startInGuidedSetup: false,
     script: { valid: true, preview: 'export default function () {}' } as const,
     scriptName: 'test.k6g',
     onSaveGenerator: vi.fn(),

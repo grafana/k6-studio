@@ -76,7 +76,9 @@ export function Generator({ file, content }: GeneratorProps) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const isSetupMode = searchParams.get('mode') === 'setup'
+  const wizardMode = searchParams.get('mode')
+  const isSetupMode = wizardMode === 'setup' || wizardMode === 'guided'
+  const startInGuidedSetup = wizardMode === 'guided'
 
   const filePath = file.path
   const scriptPreview = useScriptPreview(filePath)
@@ -227,6 +229,12 @@ export function Generator({ file, content }: GeneratorProps) {
     setSearchParams({}, { replace: true })
   }
 
+  // `replace` avoids the dirty blocker; the wizard opens straight in guided
+  // setup when re-entered from the generator.
+  const handleConfigureWithAssistant = () => {
+    setSearchParams({ mode: 'guided' }, { replace: true })
+  }
+
   const unsavedChangesDialog = (
     <UnsavedChangesDialog
       open={blocker.state === 'blocked' || (isAppClosing && isDirty)}
@@ -241,6 +249,7 @@ export function Generator({ file, content }: GeneratorProps) {
       <>
         <SetupWizard
           isLoading={isLoading}
+          startInGuidedSetup={startInGuidedSetup}
           script={scriptPreview}
           scriptName={file.fileName}
           onSaveGenerator={handleSaveGenerator}
@@ -265,6 +274,7 @@ export function Generator({ file, content }: GeneratorProps) {
         <GeneratorControls
           file={file}
           onSave={handleSaveGenerator}
+          onConfigureWithAssistant={handleConfigureWithAssistant}
           isDirty={isDirty}
           script={scriptPreview}
         />
