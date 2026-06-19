@@ -1,5 +1,6 @@
 import {
   Badge,
+  Box,
   Card,
   Code,
   Flex,
@@ -80,8 +81,12 @@ export function ParamCard({ meta, rule }: ParamCardProps) {
     rule.value.type === 'variable' ? rule.value.variableName : meta.field
 
   return (
-    <Card size="2">
-      <Flex direction="column" gap="3">
+    <Card size="1">
+      <Flex
+        direction="column"
+        gap="2"
+        css={{ opacity: rule.enabled ? 1 : 0.6 }}
+      >
         <Flex gap="2" align="center">
           <Text size="2" weight="bold" css={{ whiteSpace: 'nowrap' }}>
             {meta.field}
@@ -95,11 +100,13 @@ export function ParamCard({ meta, rule }: ParamCardProps) {
             onCheckedChange={() => toggleEnableRule(rule.id)}
           />
         </Flex>
-        <Flex direction="column" gap="1" css={{ maxWidth: 460 }}>
-          <Text size="1" color="gray">
-            Replaced with variable <Code size="1">{variableName}</Code>
+        <Flex gap="2" align="center" wrap="wrap">
+          <Text size="1" color="gray" css={{ whiteSpace: 'nowrap' }}>
+            Variable <Code size="1">{variableName}</Code>
           </Text>
-          <VariableValueField variableName={variableName} />
+          <Box css={{ width: '100%', maxWidth: 260 }}>
+            <VariableValueField variableName={variableName} />
+          </Box>
         </Flex>
       </Flex>
     </Card>
