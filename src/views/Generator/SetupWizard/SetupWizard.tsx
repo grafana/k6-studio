@@ -1,11 +1,9 @@
 import { Button, Text } from '@radix-ui/themes'
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import { View } from '@/components/Layout/View'
 import { FileLocation } from '@/handlers/fs/types'
 import { ScriptPreview } from '@/hooks/useScriptPreview'
-import { getRoutePath, getViewPath } from '@/routeMap'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { useGeneratorStore } from '@/store/generator'
 import { basename } from '@/utils/path'
@@ -109,7 +107,6 @@ function SetupWizardBody({
 type SetupWizardViewProps = Omit<SetupWizardProps, 'startInGuidedSetup'>
 
 function SetupWizardView({ isLoading, ...bodyProps }: SetupWizardViewProps) {
-  const navigate = useNavigate()
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
 
   useEffect(() => {
@@ -118,14 +115,9 @@ function SetupWizardView({ isLoading, ...bodyProps }: SetupWizardViewProps) {
     })
   }, [])
 
-  const handleCancel = () => {
-    if (recordingPath === '') {
-      navigate(getRoutePath('home'))
-      return
-    }
-
-    navigate(getViewPath(recordingPath))
-  }
+  // Cancelling drops the wizard search param, landing on the generator the
+  // wizard was configuring.
+  const handleCancel = () => bodyProps.onExit('manual')
 
   return (
     <View

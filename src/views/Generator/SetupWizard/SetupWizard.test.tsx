@@ -7,7 +7,6 @@ import { useGeneratorStore } from '@/store/generator'
 
 import { SetupWizard } from './SetupWizard'
 
-vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }))
 vi.mock('@/components/Assistant/AssistantAuthGate', () => ({
   AssistantAuthGate: ({ children }: { children: React.ReactNode }) => children,
 }))
@@ -53,6 +52,14 @@ describe('SetupWizard', () => {
     expect(trackEvent).toHaveBeenCalledWith({
       event: UsageEventName.TestSetupWizardDismissed,
     })
+    expect(onExit).toHaveBeenCalledWith('manual')
+  })
+
+  it('exits to the generator when cancelled', async () => {
+    render(<SetupWizard {...defaultProps} />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+
     expect(onExit).toHaveBeenCalledWith('manual')
   })
 
