@@ -9,8 +9,6 @@ import {
 } from 'lucide-react'
 import { ReactNode } from 'react'
 
-import { AssistantAuthGate } from '@/components/Assistant/AssistantAuthGate'
-
 interface ChoiceCardProps {
   icon: LucideIcon
   accent?: boolean
@@ -143,15 +141,13 @@ export function ChoiceScreen({
             'Recommends thresholds from real latency',
           ]}
           action={
-            <AssistantAuthGate>
-              <Button
-                size="3"
-                css={{ width: '100%' }}
-                onClick={onStartGuidedSetup}
-              >
-                Start guided setup <ArrowRightIcon size={17} />
-              </Button>
-            </AssistantAuthGate>
+            <Button
+              size="3"
+              css={{ width: '100%' }}
+              onClick={onStartGuidedSetup}
+            >
+              Start guided setup <ArrowRightIcon size={17} />
+            </Button>
           }
         />
         <ChoiceCard

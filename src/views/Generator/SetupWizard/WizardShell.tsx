@@ -1,5 +1,6 @@
 import { Flex } from '@radix-ui/themes'
 
+import { AssistantAuthGate } from '@/components/Assistant/AssistantAuthGate'
 import { FileLocation } from '@/handlers/fs/types'
 import { ScriptPreview } from '@/hooks/useScriptPreview'
 
@@ -55,11 +56,21 @@ interface WizardShellProps {
 export function WizardShell(props: WizardShellProps) {
   const { state } = useSetupWizard()
 
+  const step = <ActiveStep stepId={state.activeStep} {...props} />
+
   return (
     <Flex flexGrow="1" css={{ minHeight: 0 }}>
       <Stepper />
       <Flex direction="column" flexGrow="1" css={{ minWidth: 0, minHeight: 0 }}>
-        <ActiveStep stepId={state.activeStep} {...props} />
+        {/* The agent steps need the assistant; the gate (cloud sign-in,
+            assistant connection, stack health) runs here so it is only hit
+            after the user commits to guided setup. The run-test step talks to
+            the cloud directly and does not need it. */}
+        {state.activeStep === 'runTest' ? (
+          step
+        ) : (
+          <AssistantAuthGate>{step}</AssistantAuthGate>
+        )}
       </Flex>
     </Flex>
   )
