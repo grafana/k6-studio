@@ -207,7 +207,7 @@ export function AutoCorrelation({
             borderRight: showRules ? '1px solid var(--gray-5)' : 'none',
           }}
         >
-          <ActionsLog entries={actionsLog} />
+          <ActionsLog entries={actionsLog} pending={isLoading} />
         </Box>
         {showRules && (
           <Box css={{ width: '40%', backgroundColor: 'var(--gray-2)' }}>

@@ -48,7 +48,7 @@ export function AgentRunPanel({
               flexGrow: 1,
             }}
           >
-            <ActionsLog entries={logEntries} />
+            <ActionsLog entries={logEntries} pending={status === 'running'} />
           </Box>
         </Flex>
       </StepFrame>
