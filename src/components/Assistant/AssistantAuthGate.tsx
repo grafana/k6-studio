@@ -1,6 +1,6 @@
 import { Button, Callout, Flex, Spinner, Text } from '@radix-ui/themes'
-import { AlertTriangleIcon, LinkIcon } from 'lucide-react'
-import { ReactNode, useState } from 'react'
+import { AlertTriangleIcon, LinkIcon, WandSparklesIcon } from 'lucide-react'
+import { PropsWithChildren, ReactNode, useState } from 'react'
 
 import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
 import { GrafanaCloudSignIn } from '@/components/Profile/GrafanaCloudSignIn'
@@ -31,48 +31,50 @@ export function AssistantAuthGate({ children }: AssistantAuthGateProps) {
 
   if (isLoading) {
     return (
-      <Flex align="center" gap="2">
-        <Spinner />
-        <Text size="2" color="gray">
-          Loading...
-        </Text>
-      </Flex>
+      <GateLayout>
+        <GateSpinner label="Loading..." />
+      </GateLayout>
     )
   }
 
   if (!isSignedIn && isCloudSigningIn) {
     return (
-      <GrafanaCloudSignIn
-        onSignIn={() => {
-          setIsCloudSigningIn(false)
-          void invalidateAssistantAuthStatus()
-        }}
-        onAbort={() => setIsCloudSigningIn(false)}
-      />
+      <GateLayout>
+        <GrafanaCloudSignIn
+          onSignIn={() => {
+            setIsCloudSigningIn(false)
+            void invalidateAssistantAuthStatus()
+          }}
+          onAbort={() => setIsCloudSigningIn(false)}
+        />
+      </GateLayout>
     )
   }
 
   if (!isSignedIn) {
     return (
-      <Flex direction="column" gap="2" width="100%">
-        <Button size="3" onClick={() => setIsCloudSigningIn(true)}>
+      <GateLayout>
+        <GateIcon />
+        <GateHeading
+          title="Sign in to continue"
+          description="Guided setup uses the Grafana Assistant, which needs a Grafana Cloud account."
+        />
+        <Button
+          size="3"
+          css={{ width: '100%' }}
+          onClick={() => setIsCloudSigningIn(true)}
+        >
           <GrafanaIcon />
           Sign in to Grafana Cloud
         </Button>
-        <Text size="1" color="gray">
-          The Assistant requires a Grafana Cloud account.
-        </Text>
-      </Flex>
+      </GateLayout>
     )
   }
 
   if (isAwaitingApproval) {
     return (
-      <Flex direction="column" gap="2" width="100%" align="center">
-        <Flex align="center" gap="2">
-          <Spinner />
-          <Text size="2">Waiting for approval</Text>
-        </Flex>
+      <GateLayout>
+        <GateSpinner label="Waiting for approval" />
         {signIn.verificationCode !== null && (
           <Text size="2" color="gray">
             Verification code{' '}
@@ -82,14 +84,23 @@ export function AssistantAuthGate({ children }: AssistantAuthGateProps) {
         <Button variant="ghost" onClick={signIn.cancel}>
           Cancel
         </Button>
-      </Flex>
+      </GateLayout>
     )
   }
 
   if (!isAuthenticated) {
     return (
-      <Flex direction="column" gap="2" width="100%">
-        <Button size="3" onClick={() => signIn.mutate()}>
+      <GateLayout>
+        <GateIcon />
+        <GateHeading
+          title="Connect to Grafana Assistant"
+          description="Approve the connection so the Assistant can analyze your recording."
+        />
+        <Button
+          size="3"
+          css={{ width: '100%' }}
+          onClick={() => signIn.mutate()}
+        >
           <LinkIcon />
           Connect to Grafana Assistant
         </Button>
@@ -101,7 +112,7 @@ export function AssistantAuthGate({ children }: AssistantAuthGateProps) {
             <Callout.Text>{signIn.error.message}</Callout.Text>
           </Callout.Root>
         )}
-      </Flex>
+      </GateLayout>
     )
   }
 
@@ -113,14 +124,81 @@ function StackHealthGate({ children }: AssistantAuthGateProps) {
 
   if (!isStackReady) {
     return (
-      <Flex align="center" gap="2">
-        <Spinner />
-        <Text size="2" color="gray">
-          Your Grafana instance is loading...
-        </Text>
-      </Flex>
+      <GateLayout>
+        <GateSpinner label="Your Grafana instance is loading..." />
+      </GateLayout>
     )
   }
 
   return children
+}
+
+/** Centers the gating message in the available space. */
+function GateLayout({ children }: PropsWithChildren) {
+  return (
+    <Flex
+      flexGrow="1"
+      align="center"
+      justify="center"
+      p="6"
+      css={{ minHeight: 0 }}
+    >
+      <Flex
+        direction="column"
+        align="center"
+        gap="4"
+        css={{ width: '100%', maxWidth: 360, textAlign: 'center' }}
+      >
+        {children}
+      </Flex>
+    </Flex>
+  )
+}
+
+function GateIcon() {
+  return (
+    <Flex
+      align="center"
+      justify="center"
+      css={{
+        width: 48,
+        height: 48,
+        borderRadius: 'var(--radius-3)',
+        backgroundColor: 'var(--orange-3)',
+        color: 'var(--orange-11)',
+      }}
+    >
+      <WandSparklesIcon size={24} />
+    </Flex>
+  )
+}
+
+function GateHeading({
+  title,
+  description,
+}: {
+  title: string
+  description: string
+}) {
+  return (
+    <Flex direction="column" gap="1">
+      <Text size="3" weight="bold">
+        {title}
+      </Text>
+      <Text size="2" color="gray">
+        {description}
+      </Text>
+    </Flex>
+  )
+}
+
+function GateSpinner({ label }: { label: string }) {
+  return (
+    <Flex align="center" gap="2">
+      <Spinner />
+      <Text size="2" color="gray">
+        {label}
+      </Text>
+    </Flex>
+  )
 }
