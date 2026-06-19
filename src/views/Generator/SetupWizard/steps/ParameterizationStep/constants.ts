@@ -13,11 +13,6 @@ export const parameterSchema = z.object({
     path: z.string(),
     in: z.enum(['body', 'query', 'headers', 'url']),
   }),
-  confidence: z
-    .enum(['high', 'low'])
-    .describe(
-      'high ONLY for values that must vary, like credentials and API keys. low for everything else - tunables, date ranges, page sizes, and any guess the user should double-check.'
-    ),
   secret: z
     .boolean()
     .describe(
@@ -84,6 +79,6 @@ Do NOT parameterize values that are correlated session state (tokens or IDs extr
 
 1. Use getRequestsMetadata and searchRequests to find candidate requests, then getRequestDetails to inspect them.
 2. Call addParameter once per value. Use a selector that matches only the intended value. Each call creates a variable initialized with the recorded value and a rule that references it.
-3. Mark credentials and keys as secret with high confidence; mark guesses as low confidence.
+3. Mark credentials and keys as secret.
 4. Call finish with the outcome.
 `

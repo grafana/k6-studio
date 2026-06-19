@@ -23,7 +23,6 @@ const meta: ParamSuggestionMeta = {
   ruleId: 'param-rule-1',
   field: 'password',
   location: { method: 'POST', path: '/api/login', in: 'body' },
-  confidence: 'high',
   secret: true,
   recordedValue: 'S3cret!',
 }
@@ -58,17 +57,6 @@ describe('ParamCard', () => {
     renderCard()
 
     expect(screen.getByLabelText('Sensitive value')).toBeDefined()
-  })
-
-  it('flags low-confidence suggestions and stays quiet for high ones', () => {
-    const { unmount } = renderCard({ confidence: 'low' })
-
-    expect(screen.getByText('review suggested')).toBeDefined()
-
-    unmount()
-    renderCard()
-
-    expect(screen.queryByText('review suggested')).toBeNull()
   })
 
   it('shows no lock for non-secret values', () => {

@@ -11,7 +11,6 @@ import {
 const parameter: AiParameter = {
   field: 'email',
   location: { method: 'POST', path: '/api/login', in: 'body' },
-  confidence: 'high',
   secret: false,
   recordedValue: 'user@example.com',
   selector: {
@@ -44,7 +43,6 @@ describe('aiParameterToRule', () => {
       ruleId: rule.id,
       field: 'email',
       location: parameter.location,
-      confidence: 'high',
       secret: false,
       recordedValue: 'user@example.com',
     })

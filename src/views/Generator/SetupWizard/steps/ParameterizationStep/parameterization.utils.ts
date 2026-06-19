@@ -49,7 +49,6 @@ export function aiParameterToRule(
       ruleId: rule.id,
       field: parameter.field,
       location: parameter.location,
-      confidence: parameter.confidence,
       secret: parameter.secret,
       recordedValue: parameter.recordedValue,
     },

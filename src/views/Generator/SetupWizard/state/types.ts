@@ -35,7 +35,6 @@ export interface ParamSuggestionMeta {
     path: string
     in: 'body' | 'query' | 'headers' | 'url'
   }
-  confidence: 'high' | 'low'
   secret: boolean
   recordedValue: string
 }

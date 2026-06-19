@@ -88,11 +88,6 @@ export function ParamCard({ meta, rule }: ParamCardProps) {
             {meta.field}
           </Text>
           <LocationBadge location={meta.location} />
-          {meta.confidence === 'low' && (
-            <Badge color="amber" css={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
-              review suggested
-            </Badge>
-          )}
           <Flex flexGrow="1" />
           <Switch
             size="1"
