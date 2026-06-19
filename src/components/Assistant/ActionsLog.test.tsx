@@ -1,6 +1,6 @@
 import { Theme } from '@radix-ui/themes'
-import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { act, render, screen } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ActionsLog } from './ActionsLog'
 import { ActionLogEntry } from './types'
@@ -17,15 +17,34 @@ function renderLog(pending: boolean) {
   )
 }
 
+beforeEach(() => {
+  vi.useFakeTimers()
+})
+
+afterEach(() => {
+  vi.useRealTimers()
+})
+
 describe('ActionsLog', () => {
-  it('shows the typing dots while pending', () => {
+  it('shows the typing dots after a pause while pending', () => {
     renderLog(true)
+
+    // Hidden during the initial streaming window.
+    expect(screen.queryByLabelText('Working')).toBeNull()
+
+    act(() => {
+      vi.advanceTimersByTime(500)
+    })
 
     expect(screen.getByLabelText('Working')).toBeDefined()
   })
 
-  it('hides the typing dots when not pending', () => {
+  it('never shows the typing dots when not pending', () => {
     renderLog(false)
+
+    act(() => {
+      vi.advanceTimersByTime(1000)
+    })
 
     expect(screen.queryByLabelText('Working')).toBeNull()
   })
