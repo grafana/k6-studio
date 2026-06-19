@@ -40,35 +40,6 @@ function VariableValueField({ variableName }: { variableName: string }) {
   )
 }
 
-function LocationBadge({
-  location,
-}: {
-  location: ParamSuggestionMeta['location']
-}) {
-  return (
-    <Badge
-      color="gray"
-      variant="soft"
-      title={`${location.method} ${location.path}`}
-      css={{ minWidth: 0 }}
-    >
-      <Code
-        size="1"
-        variant="ghost"
-        css={{
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          maxWidth: 420,
-        }}
-      >
-        {location.method} {location.path}
-      </Code>
-      <Text css={{ whiteSpace: 'nowrap' }}>· in:{location.in}</Text>
-    </Badge>
-  )
-}
-
 interface ParamCardProps {
   meta: ParamSuggestionMeta
   rule: ParameterizationRule
@@ -91,7 +62,9 @@ export function ParamCard({ meta, rule }: ParamCardProps) {
           <Text size="2" weight="bold" css={{ whiteSpace: 'nowrap' }}>
             {meta.field}
           </Text>
-          <LocationBadge location={meta.location} />
+          <Badge color="gray" variant="soft">
+            in:{meta.location.in}
+          </Badge>
           <Flex flexGrow="1" />
           <Switch
             size="1"

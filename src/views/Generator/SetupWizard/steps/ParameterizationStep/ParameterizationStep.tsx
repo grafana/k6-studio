@@ -1,6 +1,7 @@
-import { Flex, Text } from '@radix-ui/themes'
+import { Code, Flex, Text } from '@radix-ui/themes'
 
 import { useGeneratorStore } from '@/store/generator'
+import { ParameterizationRule } from '@/types/rules'
 
 import { useStepState } from '../../state/SetupWizardContext'
 import { ParamSuggestionMeta } from '../../state/types'
@@ -14,6 +15,37 @@ import { useAutoStartAgent } from '../useAutoStartAgent'
 import { ParamCard } from './ParamCard'
 import { useParameterizationAgent } from './useParameterizationAgent'
 
+interface ResolvedParam {
+  meta: ParamSuggestionMeta
+  rule: ParameterizationRule
+}
+
+interface EndpointGroup {
+  method: string
+  path: string
+  params: ResolvedParam[]
+}
+
+/** Groups parameters by endpoint, preserving the order they were suggested. */
+function groupByEndpoint(params: ResolvedParam[]): EndpointGroup[] {
+  const groups: EndpointGroup[] = []
+
+  for (const param of params) {
+    const { method, path } = param.meta.location
+    const group = groups.find(
+      (candidate) => candidate.method === method && candidate.path === path
+    )
+
+    if (group === undefined) {
+      groups.push({ method, path, params: [param] })
+    } else {
+      group.params.push(param)
+    }
+  }
+
+  return groups
+}
+
 function ParamCardList({
   suggestions,
 }: {
@@ -21,7 +53,7 @@ function ParamCardList({
 }) {
   const rules = useGeneratorStore((store) => store.rules)
 
-  const cards = suggestions.flatMap((meta) => {
+  const resolved = suggestions.flatMap<ResolvedParam>((meta) => {
     const rule = rules.find((candidate) => candidate.id === meta.ruleId)
 
     // Removed rules drop out of the list; the store is the source of truth.
@@ -29,10 +61,10 @@ function ParamCardList({
       return []
     }
 
-    return [<ParamCard key={meta.ruleId} meta={meta} rule={rule} />]
+    return [{ meta, rule }]
   })
 
-  if (cards.length === 0) {
+  if (resolved.length === 0) {
     return (
       <Text size="2" color="gray">
         No parameterization rules left. Continue to the next step.
@@ -41,8 +73,22 @@ function ParamCardList({
   }
 
   return (
-    <Flex direction="column" gap="3">
-      {cards}
+    <Flex direction="column" gap="4">
+      {groupByEndpoint(resolved).map((group) => (
+        <Flex key={`${group.method} ${group.path}`} direction="column" gap="2">
+          <Flex gap="2" align="center" px="1">
+            <Text size="1" weight="bold" color="gray">
+              {group.method}
+            </Text>
+            <Code size="1" variant="ghost" color="gray">
+              {group.path}
+            </Code>
+          </Flex>
+          {group.params.map(({ meta, rule }) => (
+            <ParamCard key={meta.ruleId} meta={meta} rule={rule} />
+          ))}
+        </Flex>
+      ))}
     </Flex>
   )
 }
