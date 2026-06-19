@@ -133,7 +133,7 @@ function WhatWillRun() {
         <Flex gap="2" align="start">
           <GaugeIcon size={16} css={{ flexShrink: 0, marginTop: 2 }} />
           <Text size="2" weight="medium">
-            Pass/fail: {thresholdsLine}
+            {thresholdsLine}
           </Text>
         </Flex>
       )}

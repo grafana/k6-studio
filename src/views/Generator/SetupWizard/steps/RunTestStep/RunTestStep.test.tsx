@@ -122,7 +122,7 @@ describe('RunTestStep', () => {
     expect(screen.getByText('2 requests across 1 host')).toBeDefined()
     expect(screen.getByText('example.com')).toBeDefined()
     expect(screen.getByText('Up to 20 virtual users for ~5m 30s')).toBeDefined()
-    expect(screen.getByText('Pass/fail: p95 < 300ms')).toBeDefined()
+    expect(screen.getByText('p95 < 300ms')).toBeDefined()
     expect(screen.getByText('3 correlation rules added')).toBeDefined()
     expect(screen.getByText(/mystack/)).toBeDefined()
   })
