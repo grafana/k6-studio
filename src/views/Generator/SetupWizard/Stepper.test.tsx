@@ -25,13 +25,14 @@ function renderStepper(state?: Partial<WizardState>) {
 }
 
 describe('Stepper', () => {
-  it('renders all four steps', () => {
+  it('renders all steps', () => {
     renderStepper()
 
     expect(screen.getByText('Select hosts')).toBeDefined()
     expect(screen.getByText('Autocorrelation')).toBeDefined()
     expect(screen.getByText('Parameterization')).toBeDefined()
     expect(screen.getByText('Thresholds')).toBeDefined()
+    expect(screen.getByText('Run test')).toBeDefined()
   })
 
   it('marks the active step with aria-current', () => {

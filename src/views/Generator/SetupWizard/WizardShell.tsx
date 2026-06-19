@@ -59,7 +59,7 @@ export function WizardShell(props: WizardShellProps) {
   const step = <ActiveStep stepId={state.activeStep} {...props} />
 
   return (
-    <Flex flexGrow="1" css={{ minHeight: 0 }}>
+    <Flex direction="column" flexGrow="1" css={{ minHeight: 0 }}>
       <Stepper />
       <Flex direction="column" flexGrow="1" css={{ minWidth: 0, minHeight: 0 }}>
         {/* The agent steps need the assistant; the gate (cloud sign-in,

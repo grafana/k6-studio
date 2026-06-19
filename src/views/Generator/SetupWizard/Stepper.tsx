@@ -1,5 +1,6 @@
 import { Flex, Text } from '@radix-ui/themes'
 import { CheckIcon } from 'lucide-react'
+import { Fragment } from 'react'
 
 import { STEP_CONFIG } from './constants'
 import { isStepReachable } from './state/reducer'
@@ -68,25 +69,16 @@ export function Stepper() {
 
   return (
     <Flex
-      direction="column"
       flexShrink="0"
+      align="center"
       css={{
-        width: 248,
-        borderRight: '1px solid var(--gray-4)',
+        height: 64,
+        borderBottom: '1px solid var(--gray-4)',
         backgroundColor: 'var(--gray-2)',
-        padding: '28px 20px',
+        padding: '0 24px',
       }}
     >
-      <Text
-        size="1"
-        weight="bold"
-        color="gray"
-        mb="4"
-        css={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}
-      >
-        Guided setup
-      </Text>
-      <Flex direction="column" role="list">
+      <Flex align="center" width="100%" maxWidth="860px" mx="auto">
         {STEP_ORDER.map((stepId, index) => {
           const config = STEP_CONFIG[stepId]
           const isCompleted = state.steps[stepId].status === 'completed'
@@ -99,55 +91,46 @@ export function Stepper() {
           const isLast = index === STEP_ORDER.length - 1
 
           return (
-            <Flex key={stepId} gap="3" role="listitem">
-              <Flex direction="column" align="center">
-                <button
-                  type="button"
-                  aria-label={`Step ${index + 1}: ${config.label}`}
-                  aria-current={
-                    stepId === state.activeStep ? 'step' : undefined
-                  }
-                  disabled={!isClickable}
-                  onClick={() => dispatch({ type: 'goToStep', stepId })}
-                  css={{
-                    all: 'unset',
-                    cursor: isClickable ? 'pointer' : 'default',
-                  }}
-                >
-                  <StepCircle displayState={displayState} number={index + 1} />
-                </button>
-                {!isLast && (
-                  <Flex
-                    flexGrow="1"
-                    css={{
-                      width: 2,
-                      minHeight: 28,
-                      margin: '4px 0',
-                      backgroundColor: isCompleted
-                        ? 'var(--orange-8)'
-                        : 'var(--gray-5)',
-                    }}
-                  />
-                )}
-              </Flex>
-              <Flex
-                direction="column"
-                pt="1"
-                pb={isLast ? '0' : '4'}
-                css={{ minWidth: 0 }}
+            <Fragment key={stepId}>
+              <button
+                type="button"
+                aria-label={`Step ${index + 1}: ${config.label}`}
+                aria-current={stepId === state.activeStep ? 'step' : undefined}
+                disabled={!isClickable}
+                onClick={() => dispatch({ type: 'goToStep', stepId })}
+                css={{
+                  all: 'unset',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 9,
+                  flexShrink: 0,
+                  cursor: isClickable ? 'pointer' : 'default',
+                }}
               >
+                <StepCircle displayState={displayState} number={index + 1} />
                 <Text
                   size="1"
                   weight={stepId === state.activeStep ? 'bold' : 'medium'}
                   color={displayState === 'todo' ? 'gray' : undefined}
+                  css={{ whiteSpace: 'nowrap' }}
                 >
                   {config.label}
                 </Text>
-                <Text size="1" color="gray">
-                  {config.hint}
-                </Text>
-              </Flex>
-            </Flex>
+              </button>
+              {!isLast && (
+                <Flex
+                  flexGrow="1"
+                  css={{
+                    height: 2,
+                    minWidth: 24,
+                    margin: '0 14px',
+                    backgroundColor: isCompleted
+                      ? 'var(--orange-8)'
+                      : 'var(--gray-5)',
+                  }}
+                />
+              )}
+            </Fragment>
           )
         })}
       </Flex>
