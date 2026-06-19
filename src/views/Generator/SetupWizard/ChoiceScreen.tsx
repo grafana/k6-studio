@@ -110,9 +110,6 @@ export function ChoiceScreen({
       overflowY="auto"
     >
       <Flex direction="column" align="center" gap="2" mb="6" maxWidth="560px">
-        <Badge color="orange">
-          <SparklesIcon size={12} /> Feature preview
-        </Badge>
         <Heading size="6" align="center">
           How do you want to configure this test?
         </Heading>
@@ -178,8 +175,7 @@ export function ChoiceScreen({
           color="gray"
           css={{ display: 'flex', alignItems: 'center', gap: 6 }}
         >
-          <SparklesIcon size={13} /> Assistant is powered by Grafana Cloud · in
-          public preview
+          <SparklesIcon size={13} /> Assistant is powered by Grafana Cloud
         </Text>
       </Flex>
     </Flex>
