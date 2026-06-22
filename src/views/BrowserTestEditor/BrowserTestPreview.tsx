@@ -122,6 +122,7 @@ export function BrowserTestPreview({
               position={state.position}
               aria={state.aria}
               locator={state.locator}
+              frames={state.frames}
               onClose={() => onStateChange(null)}
               onAddAction={onAddAction}
             />

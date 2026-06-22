@@ -1,11 +1,9 @@
 import { ConfigEnv, defineConfig, mergeConfig, UserConfig } from 'vite'
-import tsconfigPaths from 'vite-tsconfig-paths'
 
 import { getBuildConfig } from './vite.base.config'
 
 export default defineConfig((env) => {
   return mergeConfig(getBuildConfig(env as ConfigEnv<'build'>), {
-    plugins: [tsconfigPaths()],
     mode: env.mode,
     build: {
       sourcemap: false,
@@ -26,6 +24,9 @@ export default defineConfig((env) => {
           '__K6_TESTING_EXPECT_PATH__',
         ],
       },
+    },
+    resolve: {
+      tsconfigPaths: true,
     },
   } satisfies UserConfig)
 })
