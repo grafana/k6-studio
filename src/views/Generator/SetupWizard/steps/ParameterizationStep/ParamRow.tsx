@@ -181,17 +181,30 @@ export function ParamRow({ meta, rule, isLast }: ParamRowProps) {
         {meta.field}
       </Text>
 
-      <Flex flexGrow="1" align="center" css={{ minWidth: 0 }}>
-        <ValueColumn
-          isEditing={isEditing}
-          variableName={variableName}
-          field={meta.field}
-          value={variable?.value ?? ''}
-          onEdit={() => setIsEditing(true)}
-          onCommit={handleCommit}
-          onCancel={() => setIsEditing(false)}
-        />
-      </Flex>
+      <Text
+        css={{
+          flex: 1,
+          minWidth: 0,
+          fontFamily: MONO,
+          fontSize: 12,
+          color: 'var(--gray-10)',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}
+      >
+        {`${meta.location.in}.${meta.field}`}
+      </Text>
+
+      <ValueColumn
+        isEditing={isEditing}
+        variableName={variableName}
+        field={meta.field}
+        value={variable?.value ?? ''}
+        onEdit={() => setIsEditing(true)}
+        onCommit={handleCommit}
+        onCancel={() => setIsEditing(false)}
+      />
 
       <Switch
         size="1"
