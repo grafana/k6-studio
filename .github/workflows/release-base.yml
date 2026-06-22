@@ -9,6 +9,12 @@ on:
         required: false
         default: ""
 
+      msi:
+        description: "Whether to build the MSI installer (default: false)"
+        required: false
+        type: boolean
+        default: false
+
 permissions: {}
 
 jobs:
@@ -167,6 +173,8 @@ jobs:
           # sentry vite plugin integration during build
           SENTRY_ORG: ${{ vars.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+          # Whether the build should include the MSI installer
+          BUILD_MSI_INSTALLER: ${{ inputs.msi }}
         run: pnpm run publish
 
       - name: publish Linux

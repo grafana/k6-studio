@@ -1,14 +1,20 @@
-name: 'Manual Release Test Version'
+name: "Manual Release Test Version"
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Specify a version suffix for the test release (limit to 20
-          characters or windows build will fail)'
+        description: "Specify a version suffix for the test release (limit to 20
+          characters or windows build will fail)"
         required: true
         type: string
-        default: 'test-version'
+        default: "test-version"
+
+      msi:
+        description: "Whether to build the MSI installer (default: false)"
+        required: false
+        type: boolean
+        default: false
 
 permissions: {}
 
@@ -33,4 +39,5 @@ jobs:
     uses: ./.github/workflows/release-base.yml
     with:
       version-suffix: ${{ inputs.version }}
+      msi: ${{ inputs.msi }}
     secrets: inherit

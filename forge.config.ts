@@ -153,26 +153,27 @@ const config: ForgeConfig = {
       iconUrl:
         'https://raw.githubusercontent.com/grafana/k6-studio/refs/heads/main/resources/icons/logo.ico',
     }),
-    new MakerWix({
-      manufacturer: 'Grafana Labs',
-      icon: './resources/icons/logo.ico',
-      features: {
-        autoUpdate: false,
-        autoLaunch: false,
-      },
-      ui: {
-        chooseDirectory: true,
-      },
-      // Use custom WiX template that points shortcuts directly to the real exe
-      // in the versioned subfolder, bypassing the broken stub launcher
-      // (see https://github.com/electron-userland/electron-wix-msi/issues/161)
-      beforeCreate: async (creator) => {
-        creator.wixTemplate = fs.readFileSync(
-          path.join(__dirname, 'resources', 'wix-template.xml'),
-          'utf-8'
-        )
-      },
-    }),
+    process.env.BUILD_MSI_INSTALLER === 'true' &&
+      new MakerWix({
+        manufacturer: 'Grafana Labs',
+        icon: './resources/icons/logo.ico',
+        features: {
+          autoUpdate: false,
+          autoLaunch: false,
+        },
+        ui: {
+          chooseDirectory: true,
+        },
+        // Use custom WiX template that points shortcuts directly to the real exe
+        // in the versioned subfolder, bypassing the broken stub launcher
+        // (see https://github.com/electron-userland/electron-wix-msi/issues/161)
+        beforeCreate: (creator) => {
+          creator.wixTemplate = fs.readFileSync(
+            path.join(__dirname, 'resources', 'wix-template.xml'),
+            'utf-8'
+          )
+        },
+      }),
     new MakerZIP({}, ['darwin']),
     new MakerDMG(
       {
@@ -187,7 +188,7 @@ const config: ForgeConfig = {
         mimeType: [`x-scheme-handler/${CUSTOM_APP_PROTOCOL}`],
       },
     }),
-  ],
+  ].filter((value) => value !== false),
   plugins: [
     new VitePlugin({
       // `build` can specify multiple entry builds, which can be Main process, Preload scripts, Worker process, etc.
