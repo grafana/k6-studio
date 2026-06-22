@@ -182,6 +182,7 @@ const config: ForgeConfig = {
     }),
     process.env.BUILD_MSI_INSTALLER === 'true' &&
       new MakerWix({
+        name: 'k6 Studio',
         manufacturer: 'Grafana Labs',
         icon: './resources/icons/logo.ico',
         features: {
