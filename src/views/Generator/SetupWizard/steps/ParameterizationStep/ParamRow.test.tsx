@@ -8,7 +8,7 @@ import { ParameterizationRule } from '@/types/rules'
 
 import { ParamSuggestionMeta } from '../../state/types'
 
-import { ParamCard } from './ParamCard'
+import { ParamRow } from './ParamRow'
 
 const rule: ParameterizationRule = {
   id: 'param-rule-1',
@@ -26,10 +26,10 @@ const meta: ParamSuggestionMeta = {
   recordedValue: 'S3cret!',
 }
 
-function renderCard(overrides: Partial<ParamSuggestionMeta> = {}) {
+function renderRow() {
   return render(
     <Theme>
-      <ParamCard meta={{ ...meta, ...overrides }} rule={rule} />
+      <ParamRow meta={meta} rule={rule} isLast />
     </Theme>
   )
 }
@@ -42,30 +42,48 @@ beforeEach(() => {
   })
 })
 
-describe('ParamCard', () => {
-  it('shows the variable the value is replaced with, prefilled', () => {
-    renderCard()
+describe('ParamRow', () => {
+  it('shows the field name and replacement value as plain text', () => {
+    renderRow()
 
-    expect(screen.getByText('password', { selector: 'code' })).toBeDefined()
-    expect(
-      screen.getByRole('textbox', { name: 'Value of password' })
-    ).toHaveProperty('value', 'S3cret!')
+    expect(screen.getByText('password')).toBeDefined()
+    expect(screen.getByText('S3cret!')).toBeDefined()
+    // Read state has no input chrome until you edit.
+    expect(screen.queryByRole('textbox')).toBeNull()
   })
 
-  it('edits the variable value in the store', async () => {
-    renderCard()
+  it('edits the value inline after clicking the pencil', async () => {
+    renderRow()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Edit password' }))
 
     const input = screen.getByRole('textbox', { name: 'Value of password' })
     await userEvent.clear(input)
-    await userEvent.type(input, 'hunter2')
+    await userEvent.type(input, 'hunter2{Enter}')
 
     expect(useGeneratorStore.getState().variables).toEqual([
       { name: 'password', value: 'hunter2' },
     ])
+    expect(screen.queryByRole('textbox')).toBeNull()
+  })
+
+  it('cancels the edit on Escape without writing the store', async () => {
+    renderRow()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Edit password' }))
+
+    const input = screen.getByRole('textbox', { name: 'Value of password' })
+    await userEvent.clear(input)
+    await userEvent.type(input, 'discarded{Escape}')
+
+    expect(useGeneratorStore.getState().variables).toEqual([
+      { name: 'password', value: 'S3cret!' },
+    ])
+    expect(screen.getByText('S3cret!')).toBeDefined()
   })
 
   it('toggles the rule via the switch', async () => {
-    renderCard()
+    renderRow()
 
     await userEvent.click(
       screen.getByRole('switch', { name: 'Enable password rule' })
@@ -77,7 +95,7 @@ describe('ParamCard', () => {
   })
 
   it('has no remove button; disabling is the only opt-out', () => {
-    renderCard()
+    renderRow()
 
     expect(
       screen.queryByRole('button', { name: 'Remove password rule' })

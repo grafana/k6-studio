@@ -1,4 +1,4 @@
-import { Code, Flex, Text } from '@radix-ui/themes'
+import { Box, Code, Flex, Text } from '@radix-ui/themes'
 
 import { useGeneratorStore } from '@/store/generator'
 import { ParameterizationRule } from '@/types/rules'
@@ -12,7 +12,7 @@ import { AgentRunPanel } from '../AgentRunPanel'
 import { CompletedStepSummary } from '../CompletedStepSummary'
 import { useAutoStartAgent } from '../useAutoStartAgent'
 
-import { ParamCard } from './ParamCard'
+import { ParamRow } from './ParamRow'
 import { useParameterizationAgent } from './useParameterizationAgent'
 
 interface ResolvedParam {
@@ -73,22 +73,58 @@ function ParamCardList({
   }
 
   return (
-    <Flex direction="column" gap="4">
+    <Flex direction="column" gap="6">
       {groupByEndpoint(resolved).map((group) => (
-        <Flex key={`${group.method} ${group.path}`} direction="column" gap="2">
-          <Flex gap="2" align="center" px="1">
-            <Text size="1" weight="bold" color="gray">
-              {group.method}
-            </Text>
-            <Code size="1" variant="ghost" color="gray">
-              {group.path}
-            </Code>
-          </Flex>
-          {group.params.map(({ meta, rule }) => (
-            <ParamCard key={meta.ruleId} meta={meta} rule={rule} />
-          ))}
-        </Flex>
+        <EndpointGroupSection
+          key={`${group.method} ${group.path}`}
+          group={group}
+        />
       ))}
+    </Flex>
+  )
+}
+
+function EndpointGroupSection({ group }: { group: EndpointGroup }) {
+  const ruleCount = group.params.length
+
+  return (
+    <Flex direction="column" gap="2">
+      <Flex gap="2" align="center" css={{ padding: '0 4px' }}>
+        <Text
+          weight="bold"
+          css={{
+            fontFamily: 'var(--code-font-family)',
+            fontSize: 11,
+            color: 'var(--orange-11)',
+          }}
+        >
+          {group.method}
+        </Text>
+        <Code size="1" variant="ghost" color="gray">
+          {group.path}
+        </Code>
+        <Text size="1" color="gray" css={{ marginLeft: 'auto' }}>
+          {ruleCount} {ruleCount === 1 ? 'rule' : 'rules'}
+        </Text>
+      </Flex>
+      <Box
+        css={{
+          background: 'var(--color-panel-solid)',
+          border: '1px solid var(--gray-4)',
+          borderRadius: 10,
+          overflow: 'hidden',
+          boxShadow: 'var(--shadow-2)',
+        }}
+      >
+        {group.params.map(({ meta, rule }, index) => (
+          <ParamRow
+            key={meta.ruleId}
+            meta={meta}
+            rule={rule}
+            isLast={index === group.params.length - 1}
+          />
+        ))}
+      </Box>
     </Flex>
   )
 }
