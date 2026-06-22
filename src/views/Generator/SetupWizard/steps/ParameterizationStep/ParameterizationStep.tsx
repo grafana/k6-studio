@@ -109,11 +109,9 @@ function EndpointGroupSection({ group }: { group: EndpointGroup }) {
       </Flex>
       <Box
         css={{
-          background: 'var(--color-panel-solid)',
           border: '1px solid var(--gray-4)',
-          borderRadius: 10,
+          borderRadius: 'var(--radius-3)',
           overflow: 'hidden',
-          boxShadow: 'var(--shadow-2)',
         }}
       >
         {group.params.map(({ meta, rule }, index) => (

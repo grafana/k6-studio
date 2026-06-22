@@ -159,7 +159,6 @@ export function ParamRow({ meta, rule, isLast }: ParamRowProps) {
           flex: '0 0 200px',
           fontFamily: MONO,
           fontSize: 13,
-          fontWeight: 600,
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
