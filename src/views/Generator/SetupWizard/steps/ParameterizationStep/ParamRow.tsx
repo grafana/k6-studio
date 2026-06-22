@@ -9,7 +9,7 @@ import { ParamSuggestionMeta } from '../../state/types'
 
 const MONO = 'var(--code-font-family)'
 const FIELD_HEIGHT = 'var(--space-6)'
-const FIELD_WIDTH = 300
+const FIELD_WIDTH = 280
 
 function ValueChip({
   value,
@@ -92,7 +92,12 @@ function ValueEditor({
           onCancel()
         }
       }}
-      css={{ width: FIELD_WIDTH, height: FIELD_HEIGHT, fontFamily: MONO }}
+      css={{
+        flexShrink: 0,
+        width: FIELD_WIDTH,
+        height: FIELD_HEIGHT,
+        fontFamily: MONO,
+      }}
     />
   )
 }
@@ -159,7 +164,7 @@ export function ParamRow({ meta, rule, isLast }: ParamRowProps) {
   return (
     <Flex
       align="center"
-      gap="4"
+      gap="3"
       css={{
         padding: '10px 16px',
         borderBottom: isLast ? 'none' : '1px solid var(--gray-3)',
@@ -183,7 +188,7 @@ export function ParamRow({ meta, rule, isLast }: ParamRowProps) {
 
       <Text
         css={{
-          flex: 1,
+          flex: '0 1 auto',
           minWidth: 0,
           fontFamily: MONO,
           fontSize: 12,
@@ -211,6 +216,7 @@ export function ParamRow({ meta, rule, isLast }: ParamRowProps) {
         checked={rule.enabled}
         aria-label={`Enable ${meta.field} rule`}
         onCheckedChange={() => toggleEnableRule(rule.id)}
+        css={{ marginLeft: 'auto' }}
       />
     </Flex>
   )
