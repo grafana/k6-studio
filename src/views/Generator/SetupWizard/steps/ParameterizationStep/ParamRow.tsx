@@ -159,6 +159,7 @@ export function ParamRow({ meta, rule, isLast }: ParamRowProps) {
           flex: '0 0 200px',
           fontFamily: MONO,
           fontSize: 13,
+          fontWeight: 600,
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
@@ -167,7 +168,12 @@ export function ParamRow({ meta, rule, isLast }: ParamRowProps) {
         {meta.field}
       </Text>
 
-      <Flex flexGrow="1" align="center" gap="2" css={{ minWidth: 0 }}>
+      <Flex
+        flexGrow="1"
+        align="center"
+        gap="2"
+        css={{ minWidth: 0, height: 'var(--space-5)' }}
+      >
         <ValueColumn
           isEditing={isEditing}
           variableName={variableName}
