@@ -19,6 +19,7 @@ describe('useDeleteFile', () => {
   const navigate = vi.fn()
   const showToast = vi.fn<(payload: AddToastPayload) => void>()
   const trashFile = vi.fn()
+  const getFileReferences = vi.fn()
   const file: StudioFile = {
     type: 'recording',
     fileName: 'file-name.har',
@@ -32,7 +33,11 @@ describe('useDeleteFile', () => {
     vi.mocked(useToast).mockReturnValue(showToast)
     vi.mocked(getRoutePath).mockReturnValue('/home')
     trashFile.mockResolvedValue(undefined)
-    vi.stubGlobal('studio', { ui: { trashFile } })
+    getFileReferences.mockResolvedValue({ references: [], referencedBy: [] })
+    vi.stubGlobal('studio', {
+      ui: { trashFile },
+      workspace: { getFileReferences },
+    })
     usePendingDeletesStore.setState({ paths: new Set() })
   })
 
@@ -40,13 +45,13 @@ describe('useDeleteFile', () => {
     return showToast.mock.calls.at(-1)![0]
   }
 
-  it('marks the file as pending and shows "Moved to Trash" with Undo', () => {
+  it('marks the file as pending and shows "Moved to Trash" with Undo', async () => {
     const { result } = renderHook(() =>
       useDeleteFile({ file, navigateHomeOnDelete: false })
     )
 
-    act(() => {
-      result.current()
+    await act(async () => {
+      await result.current()
     })
 
     expect(usePendingDeletesStore.getState().paths.has(file.path)).toBe(true)
@@ -57,13 +62,13 @@ describe('useDeleteFile', () => {
     expect(isValidElement(lastToast().action)).toBe(true)
   })
 
-  it('navigates home when navigateHomeOnDelete is true', () => {
+  it('navigates home when navigateHomeOnDelete is true', async () => {
     const { result } = renderHook(() =>
       useDeleteFile({ file, navigateHomeOnDelete: true })
     )
 
-    act(() => {
-      result.current()
+    await act(async () => {
+      await result.current()
     })
 
     expect(navigate).toHaveBeenCalledWith('/home')
@@ -74,8 +79,8 @@ describe('useDeleteFile', () => {
       useDeleteFile({ file, navigateHomeOnDelete: false })
     )
 
-    act(() => {
-      result.current()
+    await act(async () => {
+      await result.current()
     })
 
     const action = lastToast().action
@@ -100,8 +105,8 @@ describe('useDeleteFile', () => {
       useDeleteFile({ file, navigateHomeOnDelete: false })
     )
 
-    act(() => {
-      result.current()
+    await act(async () => {
+      await result.current()
     })
 
     const onDismiss = lastToast().onDismiss
@@ -119,8 +124,8 @@ describe('useDeleteFile', () => {
       useDeleteFile({ file, navigateHomeOnDelete: false })
     )
 
-    act(() => {
-      result.current()
+    await act(async () => {
+      await result.current()
     })
 
     const onDismiss = lastToast().onDismiss
@@ -136,16 +141,61 @@ describe('useDeleteFile', () => {
     expect(usePendingDeletesStore.getState().paths.has(file.path)).toBe(false)
   })
 
-  it('double-click on the same file is deduped', () => {
+  it('second delete while file is already pending is a no-op', async () => {
     const { result } = renderHook(() =>
       useDeleteFile({ file, navigateHomeOnDelete: false })
     )
 
-    act(() => {
-      result.current()
-      result.current()
+    await act(async () => {
+      await result.current()
+    })
+
+    await act(async () => {
+      await result.current()
     })
 
     expect(showToast).toHaveBeenCalledTimes(1)
+  })
+
+  it('returns references without deleting when file is in use', async () => {
+    getFileReferences.mockResolvedValue({
+      references: [],
+      referencedBy: ['/generators/foo.k6g'],
+    })
+
+    const { result } = renderHook(() =>
+      useDeleteFile({ file, navigateHomeOnDelete: false })
+    )
+
+    let deleteResult
+    await act(async () => {
+      deleteResult = await result.current()
+    })
+
+    expect(deleteResult).toEqual({
+      deleted: false,
+      references: ['/generators/foo.k6g'],
+    })
+    expect(showToast).not.toHaveBeenCalled()
+  })
+
+  it('force:true bypasses the reference check and deletes immediately', async () => {
+    getFileReferences.mockResolvedValue({
+      references: [],
+      referencedBy: ['/generators/foo.k6g'],
+    })
+
+    const { result } = renderHook(() =>
+      useDeleteFile({ file, navigateHomeOnDelete: false })
+    )
+
+    await act(async () => {
+      await result.current({ force: true })
+    })
+
+    expect(getFileReferences).not.toHaveBeenCalled()
+    expect(showToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Moved to Trash' })
+    )
   })
 })

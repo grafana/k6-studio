@@ -9,6 +9,7 @@ import { useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { convertEventsToActions } from '@/codegen/browser/convertEventsToActions'
+import { FileInUseDialog } from '@/components/FileInUseDialog'
 import { RichDropdownMenuItem } from '@/components/RichDropdownMenuItem'
 import { useCreateBrowserTest } from '@/hooks/useCreateBrowserTest'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
@@ -51,6 +52,9 @@ export function RecordingPreviewControls({
 
   const createBrowserTest = useCreateBrowserTest()
 
+  const [referencesToConfirm, setReferencesToConfirm] = useState<
+    string[] | null
+  >(null)
   const [isSelectPageOpen, setIsSelectPageOpen] = useState(false)
 
   // Only offer pages that start with a navigation, since a browser test needs a
@@ -84,19 +88,39 @@ export function RecordingPreviewControls({
     void createBrowserTest(toPageActions(page))
   }
 
-  const handleDelete = useDeleteFile({
+  const deleteFile = useDeleteFile({
     file,
     navigateHomeOnDelete: false,
   })
 
   const handleDiscardConfirm = () => {
-    handleDelete()
+    void deleteFile({ force: true })
+
     navigate(getRoutePath('recorder'))
   }
 
-  const handleDeleteRecordingConfirm = () => {
-    handleDelete()
+  const handleDelete = async () => {
+    const result = await deleteFile()
+
+    if (result.deleted) {
+      navigate(getRoutePath('home'))
+
+      return
+    }
+
+    setReferencesToConfirm(result.references)
+  }
+
+  const handleConfirmDelete = () => {
+    void deleteFile({ force: true })
+
     navigate(getRoutePath('home'))
+
+    setReferencesToConfirm(null)
+  }
+
+  const handleCancelDelete = () => {
+    setReferencesToConfirm(null)
   }
 
   return (
@@ -140,14 +164,18 @@ export function RecordingPreviewControls({
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DropdownMenu.Item
-            color="red"
-            onSelect={handleDeleteRecordingConfirm}
-          >
-            Move to Trash
+          <DropdownMenu.Item color="red" onSelect={handleDelete}>
+            Move to trash
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
+      <FileInUseDialog
+        open={referencesToConfirm !== null}
+        filePath={file.path}
+        references={referencesToConfirm ?? []}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
       <SelectPageDialog
         open={isSelectPageOpen}
         onOpenChange={setIsSelectPageOpen}

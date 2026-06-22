@@ -1,20 +1,29 @@
 import { Interpolation, Theme } from '@emotion/react'
 import { Box, Reset } from '@radix-ui/themes'
-import { useRef, useState, useEffect } from 'react'
+import { useState, useEffect, Ref, useRef } from 'react'
 import { useClickAway, useKeyPressEvent } from 'react-use'
 
-export function InlineEditor({
-  value,
-  onCancel,
-  onSave,
-  style,
-}: {
+import { mergeRefs } from '@/utils/react'
+
+interface InlineEditorProps {
+  ref: Ref<HTMLInputElement | null>
   value: string
   onCancel: () => void
   onSave: (value: string) => void
   style?: Interpolation<Theme>
-}) {
-  const inputRef = useRef<HTMLInputElement>(null)
+  disableClickAway?: boolean
+}
+
+export function InlineEditor({
+  ref,
+  value,
+  onCancel,
+  onSave,
+  style,
+  disableClickAway = false,
+}: InlineEditorProps) {
+  const inputRef = useRef<HTMLInputElement | null>(null)
+
   const [localValue, setValue] = useState(value)
 
   useEffect(() => {
@@ -25,7 +34,9 @@ export function InlineEditor({
   }, [])
 
   useClickAway(inputRef, () => {
-    onCancel()
+    if (!disableClickAway) {
+      onCancel()
+    }
   })
 
   useKeyPressEvent('Escape', () => {
@@ -35,6 +46,7 @@ export function InlineEditor({
   useKeyPressEvent('Enter', () => {
     if (localValue === value || localValue.trim() === '') {
       onCancel()
+
       return
     }
 
@@ -45,12 +57,12 @@ export function InlineEditor({
     <Box css={style}>
       <Reset>
         <input
+          ref={mergeRefs(inputRef, ref)}
           value={localValue}
           onChange={(e) => setValue(e.target.value)}
           css={{
             outline: '1px solid var(--focus-8)',
           }}
-          ref={inputRef}
         />
       </Reset>
     </Box>
