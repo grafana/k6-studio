@@ -9,6 +9,7 @@ import { ParamSuggestionMeta } from '../../state/types'
 
 const MONO = 'var(--code-font-family)'
 const FIELD_HEIGHT = 'var(--space-6)'
+const FIELD_WIDTH = 300
 
 function ValueChip({
   value,
@@ -24,8 +25,8 @@ function ValueChip({
       align="center"
       gap="2"
       css={{
-        flex: 1,
-        minWidth: 0,
+        flexShrink: 0,
+        width: FIELD_WIDTH,
         height: FIELD_HEIGHT,
         paddingLeft: 'var(--space-3)',
         paddingRight: 'var(--space-1)',
@@ -56,7 +57,7 @@ function ValueChip({
         onClick={onEdit}
         css={{ flexShrink: 0 }}
       >
-        <PencilIcon size={14} />
+        <PencilIcon size={12} />
       </IconButton>
     </Flex>
   )
@@ -91,7 +92,7 @@ function ValueEditor({
           onCancel()
         }
       }}
-      css={{ flex: 1, height: FIELD_HEIGHT, fontFamily: MONO }}
+      css={{ width: FIELD_WIDTH, height: FIELD_HEIGHT, fontFamily: MONO }}
     />
   )
 }
