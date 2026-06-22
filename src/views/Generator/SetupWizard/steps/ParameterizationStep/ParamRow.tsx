@@ -8,8 +8,9 @@ import { ParameterizationRule } from '@/types/rules'
 import { ParamSuggestionMeta } from '../../state/types'
 
 const MONO = 'var(--code-font-family)'
+const FIELD_HEIGHT = 'var(--space-6)'
 
-function ValueDisplay({
+function ValueChip({
   value,
   field,
   onEdit,
@@ -19,9 +20,24 @@ function ValueDisplay({
   onEdit: () => void
 }) {
   return (
-    <>
+    <Flex
+      align="center"
+      gap="2"
+      css={{
+        flex: 1,
+        minWidth: 0,
+        height: FIELD_HEIGHT,
+        paddingLeft: 'var(--space-3)',
+        paddingRight: 'var(--space-1)',
+        borderRadius: 'var(--radius-3)',
+        background: 'var(--gray-2)',
+        border: '1px solid var(--gray-4)',
+      }}
+    >
       <Text
         css={{
+          flex: 1,
+          minWidth: 0,
           fontFamily: MONO,
           fontSize: 13,
           color: value ? 'var(--gray-12)' : 'var(--gray-9)',
@@ -33,7 +49,6 @@ function ValueDisplay({
         {value || 'empty'}
       </Text>
       <IconButton
-        className="param-edit"
         size="1"
         variant="ghost"
         color="gray"
@@ -43,7 +58,7 @@ function ValueDisplay({
       >
         <PencilIcon size={14} />
       </IconButton>
-    </>
+    </Flex>
   )
 }
 
@@ -63,7 +78,7 @@ function ValueEditor({
   return (
     <TextField.Root
       autoFocus
-      size="1"
+      size="2"
       value={draft}
       aria-label={`Value of ${variableName}`}
       onChange={(event) => setDraft(event.target.value)}
@@ -76,7 +91,7 @@ function ValueEditor({
           onCancel()
         }
       }}
-      css={{ flex: 1, fontFamily: MONO }}
+      css={{ flex: 1, height: FIELD_HEIGHT, fontFamily: MONO }}
     />
   )
 }
@@ -109,7 +124,7 @@ function ValueColumn({
     )
   }
 
-  return <ValueDisplay value={value} field={field} onEdit={onEdit} />
+  return <ValueChip value={value} field={field} onEdit={onEdit} />
 }
 
 interface ParamRowProps {
@@ -145,13 +160,10 @@ export function ParamRow({ meta, rule, isLast }: ParamRowProps) {
       align="center"
       gap="4"
       css={{
-        padding: '13px 16px',
+        padding: '10px 16px',
         borderBottom: isLast ? 'none' : '1px solid var(--gray-3)',
         opacity: rule.enabled ? 1 : 0.45,
-        transition: 'opacity .15s, background .12s',
-        '&:hover': { background: 'var(--gray-1)' },
-        '& .param-edit': { opacity: 0, transition: 'opacity .12s' },
-        '&:hover .param-edit, &:focus-within .param-edit': { opacity: 1 },
+        transition: 'opacity .15s',
       }}
     >
       <Text
@@ -168,12 +180,7 @@ export function ParamRow({ meta, rule, isLast }: ParamRowProps) {
         {meta.field}
       </Text>
 
-      <Flex
-        flexGrow="1"
-        align="center"
-        gap="2"
-        css={{ minWidth: 0, height: 'var(--space-5)' }}
-      >
+      <Flex flexGrow="1" align="center" css={{ minWidth: 0 }}>
         <ValueColumn
           isEditing={isEditing}
           variableName={variableName}
