@@ -4,8 +4,9 @@ import { Flex, Box } from '@radix-ui/themes'
 import { ReactNode, useEffect, useState } from 'react'
 
 import { isBrowserAssertion } from '@/main/runner/schema'
-import { ElementLocator } from '@/schemas/locator'
 import { DebugSession } from '@/views/Validator/types'
+
+import { HighlightTarget } from '../HighlightLocatorProvider'
 
 import { AddressBar } from './AddressBar'
 import { LocatorHighlights } from './LocatorHighlights'
@@ -31,7 +32,7 @@ interface SessionPlayerProps {
   initialPage?: Page
   initialContent?: ReactNode
   controls?: ReactNode
-  highlightedElement: ElementLocator | Element | null
+  highlightedElement: HighlightTarget
   interactive?: boolean
   onClick?: (ev: PlayerMouseEvent) => void
 }

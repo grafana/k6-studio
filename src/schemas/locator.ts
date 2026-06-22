@@ -1,5 +1,7 @@
 import { z } from 'zod/v4'
 
+import { exhaustive } from '@/utils/typescript'
+
 const CssLocatorSchema = z.object({
   type: z.literal('css'),
   selector: z.string(),
@@ -107,4 +109,43 @@ export type LocatorOptions = z.infer<typeof LocatorOptionsSchema>
 /** Locator options for a plain CSS selector. */
 export function cssLocatorOptions(selector: string): LocatorOptions {
   return { current: 'css', values: { css: { type: 'css', selector } } }
+}
+
+/** An empty locator value of the given type. */
+export function initializeLocatorValues(
+  type: ElementLocator['type']
+): ElementLocator {
+  switch (type) {
+    case 'css':
+      return { type, selector: '' }
+
+    case 'testid':
+      return { type, testId: '' }
+
+    case 'label':
+      return { type, label: '', options: { exact: false } }
+
+    case 'placeholder':
+      return { type, placeholder: '', options: { exact: false } }
+
+    case 'title':
+      return { type, title: '', options: { exact: false } }
+
+    case 'alt':
+    case 'text':
+      return { type, text: '', options: { exact: false } }
+
+    case 'role':
+      return { type, role: '', options: { exact: false } }
+
+    default:
+      return exhaustive(type)
+  }
+}
+
+/** The locator value selected by `current`, defaulting to an empty one. */
+export function getCurrentLocator(options: LocatorOptions): ElementLocator {
+  return (
+    options.values[options.current] ?? initializeLocatorValues(options.current)
+  )
 }

@@ -6,7 +6,6 @@ import {
   type ConfigEnv,
   type UserConfig,
 } from 'vite'
-import tsconfigPaths from 'vite-tsconfig-paths'
 
 import {
   getBuildConfig,
@@ -62,7 +61,6 @@ export default defineConfig((env) => {
       sourcemap: true,
     },
     plugins: [
-      tsconfigPaths(),
       pluginHotRestart('restart'),
       sentryVitePlugin({
         authToken: process.env.SENTRY_AUTH_TOKEN,
@@ -74,6 +72,7 @@ export default defineConfig((env) => {
     resolve: {
       // Load the Node.js entry.
       mainFields: ['module', 'jsnext:main', 'jsnext'],
+      tsconfigPaths: true,
     },
   }
 
