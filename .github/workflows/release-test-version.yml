@@ -11,7 +11,7 @@ on:
         default: "test-version"
 
       msi:
-        description: "Whether to build the MSI installer (default: false)"
+        description: "Build the MSI installer"
         required: false
         type: boolean
         default: false

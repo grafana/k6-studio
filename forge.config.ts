@@ -92,7 +92,34 @@ function getPostMakeHook() {
       .map((filePath) => spawnSignFile(filePath))
 
     await Promise.all(signingPromises)
-    return makeResults
+
+    return await Promise.all(
+      makeResults.map(async (result) => {
+        const artifacts = await Promise.all(
+          result.artifacts.map(async (artifact) => {
+            const parsed = path.parse(artifact)
+
+            if (parsed.ext.toLowerCase() !== '.msi') {
+              return artifact
+            }
+
+            // Rename the MSI file to follow pattern of other artifacts
+            // oxlint-disable-next-line typescript/no-unsafe-member-access
+            const newArtifact = `k6.Studio-${result.packageJSON.version}-${result.arch}.msi`
+            const newArtifactPath = path.join(parsed.dir, newArtifact)
+
+            await fs.promises.rename(artifact, newArtifactPath)
+
+            return newArtifactPath
+          })
+        )
+
+        return {
+          ...result,
+          artifacts,
+        }
+      })
+    )
   }
 }
 
