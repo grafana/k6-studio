@@ -63,7 +63,7 @@
         <Shortcut Id="ApplicationStartMenuShortcut"
                   Name="{{ShortcutName}}"
                   Description="{{ApplicationDescription}}"
-                  Target="[APPLICATIONROOTDIRECTORY]app-{{SemanticVersion}}\{{ApplicationBinary}}.exe"
+                  Target="[APPLICATIONROOTDIRECTORY]app-{{SemanticVersion}}\k6-studio.exe"
                   WorkingDirectory="APPLICATIONROOTDIRECTORY">
 <!-- {{ShortcutProperties}} -->
         </Shortcut>
@@ -83,7 +83,7 @@
           <Shortcut Id="MyDesktopShortcut"
                     Name="{{ShortcutName}}"
                     Description="{{ApplicationDescription}}"
-                    Target="[APPLICATIONROOTDIRECTORY]app-{{SemanticVersion}}\{{ApplicationBinary}}.exe"
+                    Target="[APPLICATIONROOTDIRECTORY]app-{{SemanticVersion}}\k6-studio.exe"
                     WorkingDirectory="APPLICATIONROOTDIRECTORY"/>
           <RegistryValue Root="HKCU"
                     Key="Software\Microsoft\{{ApplicationShortName}}"
