@@ -136,7 +136,7 @@ export function ChoiceScreen({
         />
         <ChoiceCard
           visual={
-            <SettingsIcon css={{ fontSize: 64, color: 'var(--gray-10)' }} />
+            <SettingsIcon css={{ fontSize: 54, color: 'var(--gray-10)' }} />
           }
           title="Configure manually"
           description="Jump straight into the generator and build your rules, parameters and options by hand."
