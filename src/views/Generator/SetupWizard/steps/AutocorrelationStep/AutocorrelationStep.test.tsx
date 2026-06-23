@@ -179,7 +179,7 @@ describe('AutocorrelationStep', () => {
     expect(screen.getByText('a...b')).toBeDefined()
   })
 
-  it('removes an accepted rule from the store and the completed view', async () => {
+  it('disables an accepted rule via the toggle without removing it', async () => {
     useGeneratorStore.setState({ rules: [rule] })
 
     renderStep({
@@ -192,11 +192,13 @@ describe('AutocorrelationStep', () => {
     })
 
     await userEvent.click(
-      screen.getByRole('button', { name: /Remove .* rule/ })
+      screen.getByRole('switch', { name: /Enable .* rule/ })
     )
 
-    expect(useGeneratorStore.getState().rules).toEqual([])
-    expect(screen.queryByText('a...b')).toBeNull()
-    expect(screen.getByText('0 correlation rules added')).toBeDefined()
+    // The rule stays in the store; disabling is the opt-out, not removal.
+    expect(useGeneratorStore.getState().rules).toMatchObject([
+      { id: 'rule-1', enabled: false },
+    ])
+    expect(screen.getByText('a...b')).toBeDefined()
   })
 })

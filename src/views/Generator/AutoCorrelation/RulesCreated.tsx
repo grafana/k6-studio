@@ -55,8 +55,11 @@ export function RulesCreated({
               <RuleCard
                 key={entry.rule.id}
                 entry={entry}
-                onRemove={onRemoveRule}
-                disabled={isLoading}
+                action={{
+                  type: 'remove',
+                  onRemove: onRemoveRule,
+                  disabled: isLoading,
+                }}
                 isLast={index === entries.length - 1}
               />
             ))}

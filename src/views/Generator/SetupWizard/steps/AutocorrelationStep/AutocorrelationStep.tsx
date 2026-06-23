@@ -45,6 +45,7 @@ function CompletedStep() {
   const { goBack, goNext } = useWizardNavigation()
   const rules = useGeneratorStore((store) => store.rules)
   const setRules = useGeneratorStore((store) => store.setRules)
+  const toggleEnableRule = useGeneratorStore((store) => store.toggleEnableRule)
 
   if (
     stepState.status !== 'completed' ||
@@ -63,18 +64,6 @@ function CompletedStep() {
     dispatch({ type: 'stepRunReset', stepId: 'autocorrelation' })
   }
 
-  const handleRemoveRule = (ruleId: string) => {
-    const remaining = entries.filter((entry) => entry.rule.id !== ruleId)
-    setRules(rules.filter((rule) => rule.id !== ruleId))
-    dispatch({
-      type: 'stepRunCompleted',
-      stepId: 'autocorrelation',
-      result: { step: 'autocorrelation', entries: remaining },
-      log: stepState.log,
-      summary: getSummary('success', remaining.length),
-    })
-  }
-
   return (
     <>
       <StepFrame stepId="autocorrelation">
@@ -89,8 +78,13 @@ function CompletedStep() {
               <RuleCard
                 key={entry.rule.id}
                 entry={entry}
-                onRemove={handleRemoveRule}
-                disabled={false}
+                action={{
+                  type: 'toggle',
+                  enabled:
+                    rules.find((rule) => rule.id === entry.rule.id)?.enabled ??
+                    true,
+                  onToggle: toggleEnableRule,
+                }}
                 isLast={index === entries.length - 1}
               />
             ))}
