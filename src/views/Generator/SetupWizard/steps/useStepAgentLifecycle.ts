@@ -14,6 +14,12 @@ interface UseStepAgentLifecycleOptions {
    */
   onCompleted: () => void
   failureMessage: string
+  /**
+   * Set when the step deliberately terminated itself (e.g. skip) in the same
+   * commit that unmounts it, where the status ref cannot resync. Suppresses the
+   * unmount abort so a just-completed step is not clobbered back to `aborted`.
+   */
+  terminatedRef?: { current: boolean }
 }
 
 /**
@@ -25,6 +31,7 @@ export function useStepAgentLifecycle({
   status,
   onCompleted,
   failureMessage,
+  terminatedRef,
 }: UseStepAgentLifecycleOptions) {
   const { state, dispatch } = useSetupWizard()
 
@@ -63,9 +70,13 @@ export function useStepAgentLifecycle({
   // return. Reconcile here so the step comes back as 'aborted' (re-runnable).
   useEffect(() => {
     return () => {
-      if (stepStatusRef.current === 'running') {
+      // Reading the latest ref values at unmount is the intent here, not a
+      // stale-capture bug: stepStatusRef holds the live status and terminatedRef
+      // flags a deliberate skip in the same commit.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      if (stepStatusRef.current === 'running' && !terminatedRef?.current) {
         dispatch({ type: 'stepRunAborted', stepId })
       }
     }
-  }, [dispatch, stepId])
+  }, [dispatch, stepId, terminatedRef])
 }

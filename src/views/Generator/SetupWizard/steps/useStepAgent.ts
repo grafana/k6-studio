@@ -1,4 +1,5 @@
 import { StaticToolCall, ToolSet } from 'ai'
+import { useRef } from 'react'
 
 import { UsageEvent, UsageEventName } from '@/services/usageTracking/types'
 import { useAssistantAgent } from '@/utils/assistant/useAssistantAgent'
@@ -62,6 +63,10 @@ export function useStepAgent<TTools extends ToolSet>({
 }: UseStepAgentConfig<TTools>) {
   const { dispatch } = useSetupWizard()
 
+  // Marks a deliberate self-termination (skip) so the unmount cleanup does not
+  // re-abort a step that just completed in the same commit. Re-armed per run.
+  const terminatedRef = useRef(false)
+
   const agent = useAssistantAgent({
     tools,
     terminalTool,
@@ -74,9 +79,11 @@ export function useStepAgent<TTools extends ToolSet>({
     status: agent.status,
     onCompleted,
     failureMessage,
+    terminatedRef,
   })
 
   function start() {
+    terminatedRef.current = false
     dispatch({ type: 'stepRunStarted', stepId })
     // agent.start resets the log timer, so the opening entry goes in afterwards.
     beginRun(agent)
@@ -89,6 +96,10 @@ export function useStepAgent<TTools extends ToolSet>({
   }
 
   function runSkip() {
+    // The step terminates itself here; suppress the unmount abort that follows
+    // when the caller navigates away in the same handler.
+    terminatedRef.current = true
+
     if (typeof skip === 'function') {
       skip(agent)
       return
