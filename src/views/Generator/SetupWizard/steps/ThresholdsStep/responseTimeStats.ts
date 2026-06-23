@@ -54,8 +54,10 @@ export function computeResponseTimeStats(
     .filter((duration) => duration > 0)
     .sort((left, right) => left - right)
 
+  // A request that never received a response (timeout, connection reset) is a
+  // failure too, so it counts even though there is no status code to inspect.
   const failedCount = requests.filter(
-    ({ response }) => response !== undefined && response.statusCode >= 400
+    ({ response }) => response === undefined || response.statusCode >= 400
   ).length
 
   const sum = durations.reduce((total, duration) => total + duration, 0)

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   createProxyData,
+  createProxyDataWithoutResponse,
   createRequest,
   createResponse,
 } from '@/test/factories/proxyData'
@@ -48,6 +49,15 @@ describe('computeResponseTimeStats', () => {
       requestWithTiming({ durationSeconds: 0.1, statusCode: 500 }),
       requestWithTiming({ durationSeconds: 0.1, statusCode: 404 }),
       requestWithTiming({ durationSeconds: 0.1 }),
+    ]
+
+    expect(computeResponseTimeStats(requests).failureRate).toBe(0.5)
+  })
+
+  it('counts requests without a response as failures', () => {
+    const requests = [
+      requestWithTiming({ durationSeconds: 0.1 }),
+      createProxyDataWithoutResponse(),
     ]
 
     expect(computeResponseTimeStats(requests).failureRate).toBe(0.5)
