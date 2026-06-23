@@ -33,7 +33,7 @@ describe('ActionsLog', () => {
     expect(screen.queryByLabelText('Working')).toBeNull()
 
     act(() => {
-      vi.advanceTimersByTime(500)
+      vi.advanceTimersByTime(1000)
     })
 
     expect(screen.getByLabelText('Working')).toBeDefined()

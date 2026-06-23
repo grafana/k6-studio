@@ -8,7 +8,7 @@ import { ActionLogEntry } from './types'
 import { TypingDots } from './TypingDots'
 
 /** Delay before the dots appear, so they only show during a streaming pause. */
-const DOTS_DELAY_MS = 500
+const DOTS_DELAY_MS = 1000
 
 interface ActionsLogProps {
   entries: ActionLogEntry[]
