@@ -118,7 +118,22 @@ export const useGenerateRules = ({
       }
 
       setCorrelationStatusAndRef(toolCallToStep(toolCallWithType))
-      const toolResult = await handleToolCall(toolCallWithType)
+
+      // A handler failure (e.g. the model sent malformed tool input) must still
+      // produce a tool output: throwing here leaves the tool call unanswered
+      // and wedges the AI SDK stream. Returning the error lets the model retry.
+      let toolResult: unknown
+      try {
+        toolResult = await handleToolCall(toolCallWithType)
+      } catch (toolError) {
+        console.error(toolError)
+        toolResult = {
+          error:
+            toolError instanceof Error
+              ? toolError.message
+              : 'Tool execution failed',
+        }
+      }
 
       void addToolOutput({
         tool: toolCall.toolName,
