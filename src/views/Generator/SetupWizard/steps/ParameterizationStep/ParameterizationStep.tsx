@@ -1,5 +1,6 @@
-import { Box, Code, Flex, Text } from '@radix-ui/themes'
+import { Flex, Text } from '@radix-ui/themes'
 
+import { SuggestionListPanel } from '@/components/SuggestionList/SuggestionListPanel'
 import { useGeneratorStore } from '@/store/generator'
 import { ParameterizationRule } from '@/types/rules'
 
@@ -18,32 +19,6 @@ import { useParameterizationAgent } from './useParameterizationAgent'
 interface ResolvedParam {
   meta: ParamSuggestionMeta
   rule: ParameterizationRule
-}
-
-interface EndpointGroup {
-  method: string
-  path: string
-  params: ResolvedParam[]
-}
-
-/** Groups parameters by endpoint, preserving the order they were suggested. */
-function groupByEndpoint(params: ResolvedParam[]): EndpointGroup[] {
-  const groups: EndpointGroup[] = []
-
-  for (const param of params) {
-    const { method, path } = param.meta.location
-    const group = groups.find(
-      (candidate) => candidate.method === method && candidate.path === path
-    )
-
-    if (group === undefined) {
-      groups.push({ method, path, params: [param] })
-    } else {
-      group.params.push(param)
-    }
-  }
-
-  return groups
 }
 
 function ParamCardList({
@@ -67,63 +42,22 @@ function ParamCardList({
   if (resolved.length === 0) {
     return (
       <Text size="2" color="gray">
-        No parameterization rules left. Continue to the next step.
+        No parameterization values found. Continue to the next step.
       </Text>
     )
   }
 
   return (
-    <Flex direction="column" gap="6">
-      {groupByEndpoint(resolved).map((group) => (
-        <EndpointGroupSection
-          key={`${group.method} ${group.path}`}
-          group={group}
+    <SuggestionListPanel>
+      {resolved.map(({ meta, rule }, index) => (
+        <ParamRow
+          key={meta.ruleId}
+          meta={meta}
+          rule={rule}
+          isLast={index === resolved.length - 1}
         />
       ))}
-    </Flex>
-  )
-}
-
-function EndpointGroupSection({ group }: { group: EndpointGroup }) {
-  const ruleCount = group.params.length
-
-  return (
-    <Flex direction="column" gap="2">
-      <Flex gap="2" align="center" css={{ padding: '0 4px' }}>
-        <Text
-          weight="bold"
-          css={{
-            fontFamily: 'var(--code-font-family)',
-            fontSize: 11,
-            color: 'var(--orange-11)',
-          }}
-        >
-          {group.method}
-        </Text>
-        <Code size="1" variant="ghost" color="gray">
-          {group.path}
-        </Code>
-        <Text size="1" color="gray" css={{ marginLeft: 'auto' }}>
-          {ruleCount} {ruleCount === 1 ? 'rule' : 'rules'}
-        </Text>
-      </Flex>
-      <Box
-        css={{
-          border: '1px solid var(--gray-4)',
-          borderRadius: 'var(--radius-3)',
-          overflow: 'hidden',
-        }}
-      >
-        {group.params.map(({ meta, rule }, index) => (
-          <ParamRow
-            key={meta.ruleId}
-            meta={meta}
-            rule={rule}
-            isLast={index === group.params.length - 1}
-          />
-        ))}
-      </Box>
-    </Flex>
+    </SuggestionListPanel>
   )
 }
 

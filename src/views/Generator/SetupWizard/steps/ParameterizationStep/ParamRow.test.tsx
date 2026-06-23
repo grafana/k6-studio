@@ -43,11 +43,12 @@ beforeEach(() => {
 })
 
 describe('ParamRow', () => {
-  it('shows the field name, target path, and replacement value', () => {
+  it('shows the field name, endpoint, and replacement value', () => {
     renderRow()
 
     expect(screen.getByText('password')).toBeDefined()
-    expect(screen.getByText('body.password')).toBeDefined()
+    expect(screen.getByText('POST')).toBeDefined()
+    expect(screen.getByText('/api/login')).toBeDefined()
     expect(screen.getByText('S3cret!')).toBeDefined()
     // Read state has no input chrome until you edit.
     expect(screen.queryByRole('textbox')).toBeNull()

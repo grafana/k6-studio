@@ -1,20 +1,19 @@
 import { Box, Flex, IconButton, Text, Tooltip } from '@radix-ui/themes'
 import {
   BracesIcon,
-  ChevronDownIcon,
   CookieIcon,
   FileTextIcon,
   LinkIcon,
   LucideIcon,
   XIcon,
 } from 'lucide-react'
-import { memo, ReactNode, useCallback, useState } from 'react'
+import { memo, ReactNode, useCallback } from 'react'
 
 import { MethodBadge } from '@/components/MethodBadge'
+import { SuggestionRow } from '@/components/SuggestionList/SuggestionRow'
 import { TextWithTooltip } from '@/components/TextWithTooltip'
 import { Method } from '@/types'
 import { ExtractorSelector } from '@/types/rules'
-import { fadeIn } from '@/utils/animations'
 
 import { SuggestedRuleEntry } from './types'
 
@@ -34,16 +33,17 @@ interface RuleCardProps {
   entry: SuggestedRuleEntry
   onRemove: (ruleId: string) => void
   disabled: boolean
+  isLast?: boolean
 }
 
 export const RuleCard = memo(function RuleCard({
   entry,
   onRemove,
   disabled,
+  isLast = false,
 }: RuleCardProps) {
   const ruleId = entry.rule.id
   const handleRemove = useCallback(() => onRemove(ruleId), [onRemove, ruleId])
-  const [expanded, setExpanded] = useState(true)
   const ruleName = getRuleName(entry)
   const source = getSource(entry)
   const reusedIn = getReusedIn(entry)
@@ -53,37 +53,27 @@ export const RuleCard = memo(function RuleCard({
   const extractedValue = entry.correlationState.extractedValue
 
   return (
-    <Box
-      p="4"
-      css={{
-        backgroundColor: 'var(--color-background)',
-        border: '1px solid var(--gray-4)',
-        borderRadius: 'var(--radius-3)',
-        animation: fadeIn,
-      }}
-    >
-      <Flex justify="between" align="center">
-        <Flex
-          align="center"
-          gap="2"
-          css={{ cursor: 'pointer', flex: 1, minWidth: 0 }}
-          onClick={() => setExpanded((prev) => !prev)}
-        >
-          <ChevronDownIcon
-            size={14}
-            css={{
-              transition: 'transform 150ms',
-              transform: expanded ? undefined : 'rotate(-90deg)',
-              flexShrink: 0,
-            }}
-          />
-          <Text color="orange" asChild>
-            {icon}
-          </Text>
-          <Text weight="bold" size="2" truncate>
-            {ruleName}
-          </Text>
-        </Flex>
+    <SuggestionRow
+      isLast={isLast}
+      icon={icon}
+      name={ruleName}
+      secondary={
+        source && (
+          <>
+            <MethodBadge method={source.method}>{source.method}</MethodBadge>
+            <Text
+              css={{
+                minWidth: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {source.path}
+            </Text>
+          </>
+        )
+      }
+      controls={
         <IconButton
           variant="ghost"
           size="1"
@@ -94,9 +84,8 @@ export const RuleCard = memo(function RuleCard({
         >
           <XIcon size={12} />
         </IconButton>
-      </Flex>
-
-      {expanded && (
+      }
+      expandableContent={
         <RuleCardDetails
           extractedValue={extractedValue}
           source={source}
@@ -104,8 +93,8 @@ export const RuleCard = memo(function RuleCard({
           reusedIn={reusedIn}
           overflowCount={overflowCount}
         />
-      )}
-    </Box>
+      }
+    />
   )
 })
 

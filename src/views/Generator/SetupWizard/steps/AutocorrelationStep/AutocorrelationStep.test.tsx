@@ -145,7 +145,7 @@ describe('AutocorrelationStep', () => {
 
     expect(screen.queryByTestId('auto-correlation')).toBeNull()
     expect(screen.getByText('1 correlation rule added')).toBeDefined()
-    expect(screen.getByText('value')).toBeDefined()
+    expect(screen.getByText('a...b')).toBeDefined()
     expect(screen.getByRole('button', { name: /Continue/ })).toHaveProperty(
       'disabled',
       false
@@ -176,7 +176,7 @@ describe('AutocorrelationStep', () => {
       'autocorrelation:completed'
     )
     expect(screen.getByText('1 correlation rule added')).toBeDefined()
-    expect(screen.getByText('value')).toBeDefined()
+    expect(screen.getByText('a...b')).toBeDefined()
   })
 
   it('removes an accepted rule from the store and the completed view', async () => {
@@ -196,7 +196,7 @@ describe('AutocorrelationStep', () => {
     )
 
     expect(useGeneratorStore.getState().rules).toEqual([])
-    expect(screen.queryByText('value')).toBeNull()
+    expect(screen.queryByText('a...b')).toBeNull()
     expect(screen.getByText('0 correlation rules added')).toBeDefined()
   })
 })

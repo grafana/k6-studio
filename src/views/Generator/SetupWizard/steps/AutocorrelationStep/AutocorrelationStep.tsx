@@ -3,6 +3,7 @@ import { UnplugIcon } from 'lucide-react'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 
+import { SuggestionListPanel } from '@/components/SuggestionList/SuggestionListPanel'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { useGeneratorStore } from '@/store/generator'
@@ -83,14 +84,17 @@ function CompletedStep() {
             log={stepState.log}
             onRerun={handleRerun}
           />
-          {entries.map((entry) => (
-            <RuleCard
-              key={entry.rule.id}
-              entry={entry}
-              onRemove={handleRemoveRule}
-              disabled={false}
-            />
-          ))}
+          <SuggestionListPanel>
+            {entries.map((entry, index) => (
+              <RuleCard
+                key={entry.rule.id}
+                entry={entry}
+                onRemove={handleRemoveRule}
+                disabled={false}
+                isLast={index === entries.length - 1}
+              />
+            ))}
+          </SuggestionListPanel>
         </Flex>
       </StepFrame>
       <WizardFooter canContinue onBack={goBack} onContinue={goNext} />

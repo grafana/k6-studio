@@ -1,5 +1,7 @@
 import { Flex, ScrollArea, Text } from '@radix-ui/themes'
 
+import { SuggestionListPanel } from '@/components/SuggestionList/SuggestionListPanel'
+
 import { RuleCard } from './RuleCard'
 import { SuggestedRuleEntry } from './types'
 
@@ -47,15 +49,18 @@ export function RulesCreated({
       </Flex>
 
       <ScrollArea css={{ flex: 1 }}>
-        <Flex direction="column" gap="3" p="3">
-          {entries.map((entry) => (
-            <RuleCard
-              key={entry.rule.id}
-              entry={entry}
-              onRemove={onRemoveRule}
-              disabled={isLoading}
-            />
-          ))}
+        <Flex direction="column" p="3">
+          <SuggestionListPanel>
+            {entries.map((entry, index) => (
+              <RuleCard
+                key={entry.rule.id}
+                entry={entry}
+                onRemove={onRemoveRule}
+                disabled={isLoading}
+                isLast={index === entries.length - 1}
+              />
+            ))}
+          </SuggestionListPanel>
         </Flex>
       </ScrollArea>
     </Flex>

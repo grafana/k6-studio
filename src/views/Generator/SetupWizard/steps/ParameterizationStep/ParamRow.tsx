@@ -1,7 +1,15 @@
 import { Flex, IconButton, Switch, Text, TextField } from '@radix-ui/themes'
-import { PencilIcon } from 'lucide-react'
+import {
+  BracesIcon,
+  FileTextIcon,
+  LinkIcon,
+  LucideIcon,
+  PencilIcon,
+} from 'lucide-react'
 import { useState } from 'react'
 
+import { MethodBadge } from '@/components/MethodBadge'
+import { SuggestionRow } from '@/components/SuggestionList/SuggestionRow'
 import { useGeneratorStore } from '@/store/generator'
 import { ParameterizationRule } from '@/types/rules'
 
@@ -10,6 +18,20 @@ import { ParamSuggestionMeta } from '../../state/types'
 const MONO = 'var(--code-font-family)'
 const FIELD_HEIGHT = 'var(--space-6)'
 const FIELD_WIDTH = 280
+
+function getLocationIcon(
+  location: ParamSuggestionMeta['location']
+): LucideIcon {
+  switch (location.in) {
+    case 'body':
+      return BracesIcon
+    case 'headers':
+      return FileTextIcon
+    case 'query':
+    case 'url':
+      return LinkIcon
+  }
+}
 
 function ValueChip({
   value,
@@ -161,63 +183,49 @@ export function ParamRow({ meta, rule, isLast }: ParamRowProps) {
     setIsEditing(false)
   }
 
+  const Icon = getLocationIcon(meta.location)
+
   return (
-    <Flex
-      align="center"
-      gap="3"
-      css={{
-        padding: '10px 16px',
-        borderBottom: isLast ? 'none' : '1px solid var(--gray-3)',
-        opacity: rule.enabled ? 1 : 0.45,
-        transition: 'opacity .15s',
-      }}
-    >
-      <Text
-        css={{
-          flex: '0 0 200px',
-          fontFamily: MONO,
-          fontSize: 13,
-          fontWeight: 600,
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        {meta.field}
-      </Text>
-
-      <Text
-        css={{
-          flex: '0 1 auto',
-          minWidth: 0,
-          fontFamily: MONO,
-          fontSize: 12,
-          color: 'var(--gray-10)',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        {`${meta.location.in}.${meta.field}`}
-      </Text>
-
-      <ValueColumn
-        isEditing={isEditing}
-        variableName={variableName}
-        field={meta.field}
-        value={variable?.value ?? ''}
-        onEdit={() => setIsEditing(true)}
-        onCommit={handleCommit}
-        onCancel={() => setIsEditing(false)}
-      />
-
-      <Switch
-        size="1"
-        checked={rule.enabled}
-        aria-label={`Enable ${meta.field} rule`}
-        onCheckedChange={() => toggleEnableRule(rule.id)}
-        css={{ marginLeft: 'auto' }}
-      />
-    </Flex>
+    <SuggestionRow
+      isLast={isLast}
+      dimmed={!rule.enabled}
+      icon={<Icon size={14} />}
+      name={meta.field}
+      secondary={
+        <>
+          <MethodBadge method={meta.location.method}>
+            {meta.location.method}
+          </MethodBadge>
+          <Text
+            css={{
+              minWidth: 0,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {meta.location.path}
+          </Text>
+        </>
+      }
+      controls={
+        <>
+          <ValueColumn
+            isEditing={isEditing}
+            variableName={variableName}
+            field={meta.field}
+            value={variable?.value ?? ''}
+            onEdit={() => setIsEditing(true)}
+            onCommit={handleCommit}
+            onCancel={() => setIsEditing(false)}
+          />
+          <Switch
+            size="1"
+            checked={rule.enabled}
+            aria-label={`Enable ${meta.field} rule`}
+            onCheckedChange={() => toggleEnableRule(rule.id)}
+          />
+        </>
+      }
+    />
   )
 }
