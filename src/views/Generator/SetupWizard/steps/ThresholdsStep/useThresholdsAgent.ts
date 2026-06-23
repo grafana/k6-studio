@@ -8,11 +8,10 @@ import {
   handleRecordingSearchToolCall,
   isRecordingSearchToolCall,
 } from '@/utils/assistant/handleRecordingSearchToolCall'
-import { useAssistantAgent } from '@/utils/assistant/useAssistantAgent'
 import { exhaustive } from '@/utils/typescript'
 
 import { useSetupWizard, useStepState } from '../../state/SetupWizardContext'
-import { useStepAgentLifecycle } from '../useStepAgentLifecycle'
+import { useStepAgent } from '../useStepAgent'
 
 import {
   suggestThresholdsInputSchema,
@@ -35,7 +34,8 @@ export function useThresholdsAgent() {
 
   const proposalsRef = useRef<ThresholdProposal[]>([])
 
-  const agent = useAssistantAgent({
+  const agent = useStepAgent({
+    stepId: 'thresholds',
     tools: thresholdsTools,
     trackingEvents: {
       started: { event: UsageEventName.ThresholdSuggestionStarted },
@@ -43,16 +43,32 @@ export function useThresholdsAgent() {
       aborted: { event: UsageEventName.ThresholdSuggestionAborted },
     },
     onToolCall: handleToolCall,
-  })
+    onCompleted: dispatchCompletion,
+    beginRun: (run) => {
+      proposalsRef.current = []
+      const stats = computeResponseTimeStats(requests)
 
-  const { actionsLog, status } = agent
+      void run.start(
+        `${systemPrompt}\n\nObserved statistics:\n${JSON.stringify(stats)}`
+      )
+      run.actionsLog.addEntry({
+        type: 'info',
+        text: `Analyzing response times across **${stats.requestCount} requests**`,
+      })
+    },
+    cleanup: cleanupCommittedThresholds,
+    skip: {
+      result: { step: 'thresholds', rationaleById: {} },
+      summary: 'Step skipped - no thresholds suggested',
+    },
+  })
 
   function handleToolCall(toolCall: ThresholdsToolCall): unknown {
     if (isRecordingSearchToolCall(toolCall)) {
       return handleRecordingSearchToolCall(
         toolCall,
         requests,
-        actionsLog.addEntry
+        agent.actionsLog.addEntry
       )
     }
 
@@ -73,7 +89,7 @@ export function useThresholdsAgent() {
           },
           rationale: suggestion.rationale,
         }))
-        actionsLog.addEntry({
+        agent.actionsLog.addEntry({
           type: 'found',
           text: `Suggested **${thresholds.length} thresholds**`,
         })
@@ -90,7 +106,7 @@ export function useThresholdsAgent() {
             ? UsageEventName.ThresholdSuggestionSucceeded
             : UsageEventName.ThresholdSuggestionFailed,
         })
-        actionsLog.markLastReasoningAsOutcome(
+        agent.actionsLog.markLastReasoningAsOutcome(
           isSuccess ? 'outcome-success' : 'outcome-failure'
         )
         return toolCall.input.outcome
@@ -101,7 +117,7 @@ export function useThresholdsAgent() {
     }
   }
 
-  const dispatchCompletion = () => {
+  function dispatchCompletion() {
     const proposals = proposalsRef.current
 
     if (proposals.length === 0) {
@@ -131,30 +147,8 @@ export function useThresholdsAgent() {
           ])
         ),
       },
-      log: actionsLog.entries,
+      log: agent.actionsLog.entries,
       summary: `Suggested ${proposals.length} threshold${proposals.length === 1 ? '' : 's'} tuned to the observed latency`,
-    })
-  }
-
-  useStepAgentLifecycle({
-    stepId: 'thresholds',
-    status,
-    onCompleted: dispatchCompletion,
-    failureMessage: 'The Assistant run failed. Try again.',
-  })
-
-  function start() {
-    proposalsRef.current = []
-    const stats = computeResponseTimeStats(requests)
-
-    dispatch({ type: 'stepRunStarted', stepId: 'thresholds' })
-    // agent.start resets the log timer, so the entry goes in afterwards.
-    void agent.start(
-      `${systemPrompt}\n\nObserved statistics:\n${JSON.stringify(stats)}`
-    )
-    actionsLog.addEntry({
-      type: 'info',
-      text: `Analyzing response times across **${stats.requestCount} requests**`,
     })
   }
 
@@ -175,34 +169,5 @@ export function useThresholdsAgent() {
     )
   }
 
-  function restart() {
-    cleanupCommittedThresholds()
-    agent.reset()
-    start()
-  }
-
-  function skip() {
-    agent.stop()
-    window.studio.app.trackEvent({
-      event: UsageEventName.TestSetupWizardStepSkipped,
-      payload: { step: 'thresholds' },
-    })
-    dispatch({
-      type: 'stepRunCompleted',
-      stepId: 'thresholds',
-      result: { step: 'thresholds', rationaleById: {} },
-      log: actionsLog.entries,
-      summary: 'Step skipped - no thresholds suggested',
-    })
-  }
-
-  return {
-    start,
-    restart,
-    skip,
-    stop: agent.stop,
-    status: agent.status,
-    error: agent.error,
-    logEntries: actionsLog.entries,
-  }
+  return agent
 }

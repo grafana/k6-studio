@@ -4,12 +4,11 @@ import { useRef } from 'react'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { useGeneratorStore } from '@/store/generator'
 import { groupHostsByParty } from '@/store/generator/slices/recording.utils'
-import { useAssistantAgent } from '@/utils/assistant/useAssistantAgent'
 import { exhaustive } from '@/utils/typescript'
 
 import { useSetupWizard } from '../../state/SetupWizardContext'
 import { HostSuggestion } from '../../state/types'
-import { useStepAgentLifecycle } from '../useStepAgentLifecycle'
+import { useStepAgent } from '../useStepAgent'
 
 import {
   hostSelectionTools,
@@ -42,7 +41,8 @@ export function useHostsAgent() {
   const inventoryRef = useRef<HostInventoryEntry[]>([])
   const suggestionsRef = useRef<HostSuggestion[]>([])
 
-  const agent = useAssistantAgent({
+  const agent = useStepAgent({
+    stepId: 'hosts',
     tools: hostSelectionTools,
     // The full host inventory is in the prompt, so the agent classifies in a
     // single suggestHosts call that also ends the run.
@@ -53,9 +53,47 @@ export function useHostsAgent() {
       aborted: { event: UsageEventName.HostSelectionAborted },
     },
     onToolCall: handleToolCall,
-  })
+    onCompleted: dispatchCompletion,
+    beginRun: (run) => {
+      const inventory = buildHostInventory(requests)
+      inventoryRef.current = inventory
+      suggestionsRef.current = []
 
-  const { actionsLog, status } = agent
+      void run.start(
+        `${systemPrompt}\n\nHost inventory:\n${formatHostInventory(inventory)}`
+      )
+      run.actionsLog.addEntry({
+        type: 'info',
+        text: `Reading **${requests.length} requests** across **${inventory.length} hosts**`,
+      })
+    },
+    // Skipping mirrors the host selection dialog's default: select only the
+    // first first-party host and leave the rest unclassified.
+    skip: (run) => {
+      run.stop()
+
+      const inventory = buildHostInventory(requests)
+      const { firstParty } = groupHostsByParty(
+        inventory.map((entry) => entry.host)
+      )
+      const selectedHost = firstParty[0]
+      const suggestions = buildSkippedHostSuggestions(inventory, selectedHost)
+      suggestionsRef.current = suggestions
+
+      window.studio.app.trackEvent({
+        event: UsageEventName.TestSetupWizardStepSkipped,
+        payload: { step: 'hosts' },
+      })
+      setAllowlist(selectedHost !== undefined ? [selectedHost] : [])
+      dispatch({
+        type: 'stepRunCompleted',
+        stepId: 'hosts',
+        result: { step: 'hosts', suggestions },
+        log: run.actionsLog.entries,
+        summary: 'Step skipped - review the selected hosts',
+      })
+    },
+  })
 
   function handleToolCall(toolCall: HostsToolCall): unknown {
     switch (toolCall.toolName) {
@@ -72,11 +110,11 @@ export function useHostsAgent() {
             ? UsageEventName.HostSelectionSucceeded
             : UsageEventName.HostSelectionFailed,
         })
-        actionsLog.addEntry({
+        agent.actionsLog.addEntry({
           type: 'found',
           text: `Classified **${suggestionsRef.current.length} hosts**`,
         })
-        actionsLog.markLastReasoningAsOutcome(
+        agent.actionsLog.markLastReasoningAsOutcome(
           isSuccess ? 'outcome-success' : 'outcome-failure'
         )
         return { classifiedHosts: suggestionsRef.current.length }
@@ -87,7 +125,7 @@ export function useHostsAgent() {
     }
   }
 
-  const dispatchCompletion = () => {
+  function dispatchCompletion() {
     const suggestions = suggestionsRef.current
 
     if (suggestions.length === 0) {
@@ -108,72 +146,10 @@ export function useHostsAgent() {
       type: 'stepRunCompleted',
       stepId: 'hosts',
       result: { step: 'hosts', suggestions },
-      log: actionsLog.entries,
+      log: agent.actionsLog.entries,
       summary: buildSummary(suggestions),
     })
   }
 
-  useStepAgentLifecycle({
-    stepId: 'hosts',
-    status,
-    onCompleted: dispatchCompletion,
-    failureMessage: 'The Assistant run failed. Try again.',
-  })
-
-  function start() {
-    const inventory = buildHostInventory(requests)
-    inventoryRef.current = inventory
-    suggestionsRef.current = []
-
-    dispatch({ type: 'stepRunStarted', stepId: 'hosts' })
-    // agent.start resets the log timer, so the entry goes in afterwards.
-    void agent.start(
-      `${systemPrompt}\n\nHost inventory:\n${formatHostInventory(inventory)}`
-    )
-    actionsLog.addEntry({
-      type: 'info',
-      text: `Reading **${requests.length} requests** across **${inventory.length} hosts**`,
-    })
-  }
-
-  function restart() {
-    agent.reset()
-    start()
-  }
-
-  function skip() {
-    agent.stop()
-
-    const inventory = buildHostInventory(requests)
-    // Mirror the host selection dialog's default selection.
-    const { firstParty } = groupHostsByParty(
-      inventory.map((entry) => entry.host)
-    )
-    const selectedHost = firstParty[0]
-    const suggestions = buildSkippedHostSuggestions(inventory, selectedHost)
-    suggestionsRef.current = suggestions
-
-    window.studio.app.trackEvent({
-      event: UsageEventName.TestSetupWizardStepSkipped,
-      payload: { step: 'hosts' },
-    })
-    setAllowlist(selectedHost !== undefined ? [selectedHost] : [])
-    dispatch({
-      type: 'stepRunCompleted',
-      stepId: 'hosts',
-      result: { step: 'hosts', suggestions },
-      log: actionsLog.entries,
-      summary: 'Step skipped - review the selected hosts',
-    })
-  }
-
-  return {
-    start,
-    restart,
-    skip,
-    stop: agent.stop,
-    status: agent.status,
-    error: agent.error,
-    logEntries: actionsLog.entries,
-  }
+  return agent
 }

@@ -7,11 +7,10 @@ import {
   handleRecordingSearchToolCall,
   isRecordingSearchToolCall,
 } from '@/utils/assistant/handleRecordingSearchToolCall'
-import { useAssistantAgent } from '@/utils/assistant/useAssistantAgent'
 import { exhaustive } from '@/utils/typescript'
 
 import { useSetupWizard, useStepState } from '../../state/SetupWizardContext'
-import { useStepAgentLifecycle } from '../useStepAgentLifecycle'
+import { useStepAgent } from '../useStepAgent'
 
 import {
   addParameterInputSchema,
@@ -39,7 +38,8 @@ export function useParameterizationAgent() {
 
   const proposalsRef = useRef<ParameterizationProposal[]>([])
 
-  const agent = useAssistantAgent({
+  const agent = useStepAgent({
+    stepId: 'parameterization',
     tools: parameterizationTools,
     trackingEvents: {
       started: { event: UsageEventName.ParameterizationStarted },
@@ -47,16 +47,33 @@ export function useParameterizationAgent() {
       aborted: { event: UsageEventName.ParameterizationAborted },
     },
     onToolCall: handleToolCall,
-  })
+    onCompleted: dispatchCompletion,
+    beginRun: (run) => {
+      proposalsRef.current = []
 
-  const { actionsLog, status } = agent
+      void run.start(systemPrompt)
+      run.actionsLog.addEntry({
+        type: 'info',
+        text: 'Scanning request bodies and query strings',
+      })
+    },
+    cleanup: cleanupCommittedProposals,
+    skip: {
+      result: {
+        step: 'parameterization',
+        suggestions: [],
+        addedVariableNames: [],
+      },
+      summary: 'Step skipped - no values parameterized',
+    },
+  })
 
   function handleToolCall(toolCall: ParameterizationToolCall): unknown {
     if (isRecordingSearchToolCall(toolCall)) {
       return handleRecordingSearchToolCall(
         toolCall,
         requests,
-        actionsLog.addEntry
+        agent.actionsLog.addEntry
       )
     }
 
@@ -65,7 +82,7 @@ export function useParameterizationAgent() {
         const { parameter } = addParameterInputSchema.parse(toolCall.input)
         const proposal = aiParameterToRule(parameter)
         proposalsRef.current = [...proposalsRef.current, proposal]
-        actionsLog.addEntry({
+        agent.actionsLog.addEntry({
           type: 'found',
           text: `Parameterizing **${parameter.field}** in \`${parameter.location.method} ${parameter.location.path}\``,
           ruleId: proposal.rule.id,
@@ -77,7 +94,7 @@ export function useParameterizationAgent() {
         window.studio.app.trackEvent({
           event: outcomeEvents[toolCall.input.outcome],
         })
-        actionsLog.markLastReasoningAsOutcome(
+        agent.actionsLog.markLastReasoningAsOutcome(
           toolCall.input.outcome === 'failure'
             ? 'outcome-failure'
             : toolCall.input.outcome === 'partial-success'
@@ -92,7 +109,7 @@ export function useParameterizationAgent() {
     }
   }
 
-  const dispatchCompletion = () => {
+  function dispatchCompletion() {
     const proposals = proposalsRef.current
     const { rules, setRules, variables, setVariables } =
       useGeneratorStore.getState()
@@ -112,7 +129,7 @@ export function useParameterizationAgent() {
         suggestions: proposals.map((proposal) => proposal.meta),
         addedVariableNames: addedNames,
       },
-      log: actionsLog.entries,
+      log: agent.actionsLog.entries,
       summary:
         proposals.length === 0
           ? 'No values need parameterization'
@@ -120,26 +137,8 @@ export function useParameterizationAgent() {
     })
   }
 
-  useStepAgentLifecycle({
-    stepId: 'parameterization',
-    status,
-    onCompleted: dispatchCompletion,
-    failureMessage: 'The Assistant run failed. Try again.',
-  })
-
-  function start() {
-    proposalsRef.current = []
-    dispatch({ type: 'stepRunStarted', stepId: 'parameterization' })
-    // agent.start resets the log timer, so the entry goes in afterwards.
-    void agent.start(systemPrompt)
-    actionsLog.addEntry({
-      type: 'info',
-      text: 'Scanning request bodies and query strings',
-    })
-  }
-
   // Re-running the step withdraws the previously committed rules and the
-  // variables they introduced before starting a fresh analysis.
+  // variables this run introduced before starting a fresh analysis.
   function cleanupCommittedProposals() {
     if (
       stepState.status !== 'completed' ||
@@ -164,38 +163,5 @@ export function useParameterizationAgent() {
     )
   }
 
-  function restart() {
-    cleanupCommittedProposals()
-    agent.reset()
-    start()
-  }
-
-  function skip() {
-    agent.stop()
-    window.studio.app.trackEvent({
-      event: UsageEventName.TestSetupWizardStepSkipped,
-      payload: { step: 'parameterization' },
-    })
-    dispatch({
-      type: 'stepRunCompleted',
-      stepId: 'parameterization',
-      result: {
-        step: 'parameterization',
-        suggestions: [],
-        addedVariableNames: [],
-      },
-      log: actionsLog.entries,
-      summary: 'Step skipped - no values parameterized',
-    })
-  }
-
-  return {
-    start,
-    restart,
-    skip,
-    stop: agent.stop,
-    status: agent.status,
-    error: agent.error,
-    logEntries: actionsLog.entries,
-  }
+  return agent
 }
