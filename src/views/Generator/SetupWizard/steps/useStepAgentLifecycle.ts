@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { AgentRunStatus } from '@/utils/assistant/useAssistantAgent'
 
@@ -28,6 +28,13 @@ export function useStepAgentLifecycle({
 }: UseStepAgentLifecycleOptions) {
   const { state, dispatch } = useSetupWizard()
 
+  // Latest reducer status for this step, read by the unmount cleanup below
+  // (which captures values from its setup render and would otherwise go stale).
+  const stepStatusRef = useRef(state.steps[stepId].status)
+  useEffect(() => {
+    stepStatusRef.current = state.steps[stepId].status
+  })
+
   useEffect(() => {
     // Skipping a step completes it while the agent is still shutting down;
     // the trailing abort/error transition must not clobber that state.
@@ -50,4 +57,15 @@ export function useStepAgentLifecycle({
     // Only react to status transitions; the completion payload is read from refs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
+
+  // Navigating away mid-run unmounts the step before the status effect can map
+  // the abort onto the reducer, leaving it stuck 'running' and unrecoverable on
+  // return. Reconcile here so the step comes back as 'aborted' (re-runnable).
+  useEffect(() => {
+    return () => {
+      if (stepStatusRef.current === 'running') {
+        dispatch({ type: 'stepRunAborted', stepId })
+      }
+    }
+  }, [dispatch, stepId])
 }
