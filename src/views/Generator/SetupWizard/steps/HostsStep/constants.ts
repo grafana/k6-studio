@@ -1,6 +1,8 @@
 import { tool, ToolSet } from 'ai'
 import { z } from 'zod'
 
+import { buildSystemPrompt } from '../systemPrompt'
+
 export const hostCategorySchema = z.enum([
   'application',
   'api',
@@ -33,13 +35,10 @@ export const hostSelectionTools = {
   }),
 } satisfies ToolSet
 
-export const systemPrompt = `
-You are an expert at preparing k6 load tests from recorded user sessions.
-Your task is to decide which hosts in a recording belong in the load test.
-
-IMPORTANT: Your reasoning is displayed to the user in a compact log. Maximum 1-2 short sentences per thought. NEVER use lists, bullet points, or numbered items. USE inline markdown formatting: **bold** for key terms and \`backticks\` for hosts and paths. When you identify a key pattern, highlight it using a blockquote (prefix with "> ").
-
-## Task
+export const systemPrompt = buildSystemPrompt({
+  task: 'Your task is to decide which hosts in a recording belong in the load test.',
+  backtickTargets: 'hosts and paths',
+  body: `## Task
 
 You receive an inventory of every host in the recording with request counts, static-asset counts, response content types, and sample paths. This inventory is all you need - classify each host:
 
@@ -54,5 +53,5 @@ Include hosts that are part of the system under test (application, api, auth). E
 
 ## Process
 
-Make a single call to suggestHosts covering EVERY host from the inventory. That one call ends the step - do not call any other tools.
-`
+Make a single call to suggestHosts covering EVERY host from the inventory. That one call ends the step - do not call any other tools.`,
+})

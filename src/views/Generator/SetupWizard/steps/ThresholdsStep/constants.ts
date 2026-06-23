@@ -8,6 +8,8 @@ import {
 } from '@/schemas/generator'
 import { recordingSearchTools } from '@/utils/assistant/tools'
 
+import { buildSystemPrompt } from '../systemPrompt'
+
 export const thresholdSuggestionSchema = z.object({
   metric: ThresholdMetricSchema,
   statistic: ThresholdStatisticSchema,
@@ -46,13 +48,10 @@ export const thresholdsTools = {
   }),
 } satisfies ToolSet
 
-export const systemPrompt = `
-You are an expert at preparing k6 load tests from recorded user sessions.
-Your task is to recommend pass/fail thresholds tuned to the latency observed in the recording.
-
-IMPORTANT: Your reasoning is displayed to the user in a compact log. Maximum 1-2 short sentences per thought. NEVER use lists, bullet points, or numbered items. USE inline markdown formatting: **bold** for key terms and \`backticks\` for metrics and paths. When you identify a key pattern, highlight it using a blockquote (prefix with "> ").
-
-## Guidelines
+export const systemPrompt = buildSystemPrompt({
+  task: 'Your task is to recommend pass/fail thresholds tuned to the latency observed in the recording.',
+  backtickTargets: 'metrics and paths',
+  body: `## Guidelines
 
 - Base \`http_req_duration\` thresholds on the observed percentiles with sensible headroom (e.g. p(95) below roughly 1.3x the observed p95, rounded to a friendly number).
 - Always include a failed-request budget: \`http_req_failed\` rate below a small fraction (0.01 means 1%). Set stopTest true for it when the observed failure rate is 0.
@@ -64,5 +63,5 @@ IMPORTANT: Your reasoning is displayed to the user in a compact log. Maximum 1-2
 
 1. Review the response-time statistics provided (use search tools only if you need more context about specific endpoints).
 2. Call suggestThresholds exactly once with the full set.
-3. Call finish with the outcome.
-`
+3. Call finish with the outcome.`,
+})

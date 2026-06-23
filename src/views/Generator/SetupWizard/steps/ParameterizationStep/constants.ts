@@ -4,6 +4,8 @@ import { z } from 'zod'
 import { ReplacerSelectorSchema } from '@/schemas/generator'
 import { recordingSearchTools } from '@/utils/assistant/tools'
 
+import { buildSystemPrompt } from '../systemPrompt'
+
 export const parameterSchema = z.object({
   field: z
     .string()
@@ -50,13 +52,10 @@ export const parameterizationTools = {
   }),
 } satisfies ToolSet
 
-export const systemPrompt = `
-You are an expert at preparing k6 load tests from recorded user sessions.
-Your task is to find hard-coded values in the recording and extract them into test-data variables, so the user can change them in one place without editing the script.
-
-IMPORTANT: Your reasoning is displayed to the user in a compact log. Maximum 1-2 short sentences per thought. NEVER use lists, bullet points, or numbered items. USE inline markdown formatting: **bold** for key terms and \`backticks\` for paths, fields, and values. When you identify a key pattern, highlight it using a blockquote (prefix with "> ").
-
-## What to look for
+export const systemPrompt = buildSystemPrompt({
+  task: 'Your task is to find hard-coded values in the recording and extract them into test-data variables, so the user can change them in one place without editing the script.',
+  backtickTargets: 'paths, fields, and values',
+  body: `## What to look for
 
 - Credentials in login requests (usernames, emails, passwords)
 - API keys and hard-coded tokens that are not session-derived
@@ -74,5 +73,5 @@ Do NOT parameterize values that are correlated session state (tokens or IDs extr
 
 1. Use getRequestsMetadata and searchRequests to find candidate requests, then getRequestDetails to inspect them.
 2. Call addParameter once per value. Use a selector that matches only the intended value. Each call creates a variable initialized with the recorded value and a rule that references it.
-3. Call finish with the outcome.
-`
+3. Call finish with the outcome.`,
+})
