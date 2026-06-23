@@ -69,9 +69,7 @@ export function useHostsAgent() {
     },
     // Skipping mirrors the host selection dialog's default: select only the
     // first first-party host and leave the rest unclassified.
-    skip: (run) => {
-      run.stop()
-
+    skip: () => {
       const inventory = buildHostInventory(requests)
       const { firstParty } = groupHostsByParty(
         inventory.map((entry) => entry.host)
@@ -79,19 +77,12 @@ export function useHostsAgent() {
       const selectedHost = firstParty[0]
       const suggestions = buildSkippedHostSuggestions(inventory, selectedHost)
       suggestionsRef.current = suggestions
-
-      window.studio.app.trackEvent({
-        event: UsageEventName.TestSetupWizardStepSkipped,
-        payload: { step: 'hosts' },
-      })
       setAllowlist(selectedHost !== undefined ? [selectedHost] : [])
-      dispatch({
-        type: 'stepRunCompleted',
-        stepId: 'hosts',
+
+      return {
         result: { step: 'hosts', suggestions },
-        log: run.actionsLog.entries,
         summary: 'Step skipped - review the selected hosts',
-      })
+      }
     },
   })
 

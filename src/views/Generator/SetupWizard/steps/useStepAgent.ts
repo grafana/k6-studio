@@ -1,5 +1,4 @@
 import { StaticToolCall, ToolSet } from 'ai'
-import { useRef } from 'react'
 
 import { UsageEvent, UsageEventName } from '@/services/usageTracking/types'
 import { useAssistantAgent } from '@/utils/assistant/useAssistantAgent'
@@ -7,6 +6,7 @@ import { useAssistantAgent } from '@/utils/assistant/useAssistantAgent'
 import { useSetupWizard } from '../state/SetupWizardContext'
 import { StepId, StepResult } from '../state/types'
 
+import { useAbortStepOnUnmount } from './useAbortStepOnUnmount'
 import { useStepAgentLifecycle } from './useStepAgentLifecycle'
 
 const DEFAULT_FAILURE_MESSAGE = 'The Assistant run failed. Try again.'
@@ -14,6 +14,11 @@ const DEFAULT_FAILURE_MESSAGE = 'The Assistant run failed. Try again.'
 type AgentControls<TTools extends ToolSet> = ReturnType<
   typeof useAssistantAgent<TTools>
 >
+
+interface StepSkip {
+  result: StepResult
+  summary: string
+}
 
 interface UseStepAgentConfig<TTools extends ToolSet> {
   stepId: StepId
@@ -34,13 +39,11 @@ interface UseStepAgentConfig<TTools extends ToolSet> {
   /** Withdraws previously committed output before a re-run. */
   cleanup?: () => void
   /**
-   * Skips the step. A `{ result, summary }` uses the standard skip (stop the
-   * agent, track the event, complete with an empty result); a function takes
-   * over entirely for steps whose skip has side effects.
+   * The completion the step records when skipped. A function may run side
+   * effects first (e.g. host selection) before returning it; either way the
+   * shared skip path owns stopping the agent, tracking, and dispatching.
    */
-  skip:
-    | { result: StepResult; summary: string }
-    | ((agent: AgentControls<TTools>) => void)
+  skip: StepSkip | ((agent: AgentControls<TTools>) => StepSkip)
 }
 
 /**
@@ -62,10 +65,7 @@ export function useStepAgent<TTools extends ToolSet>({
   skip,
 }: UseStepAgentConfig<TTools>) {
   const { dispatch } = useSetupWizard()
-
-  // Marks a deliberate self-termination (skip) so the unmount cleanup does not
-  // re-abort a step that just completed in the same commit. Re-armed per run.
-  const terminatedRef = useRef(false)
+  const terminatedRef = useAbortStepOnUnmount(stepId)
 
   const agent = useAssistantAgent({
     tools,
@@ -79,11 +79,9 @@ export function useStepAgent<TTools extends ToolSet>({
     status: agent.status,
     onCompleted,
     failureMessage,
-    terminatedRef,
   })
 
   function start() {
-    terminatedRef.current = false
     dispatch({ type: 'stepRunStarted', stepId })
     // agent.start resets the log timer, so the opening entry goes in afterwards.
     beginRun(agent)
@@ -99,13 +97,10 @@ export function useStepAgent<TTools extends ToolSet>({
     // The step terminates itself here; suppress the unmount abort that follows
     // when the caller navigates away in the same handler.
     terminatedRef.current = true
-
-    if (typeof skip === 'function') {
-      skip(agent)
-      return
-    }
-
     agent.stop()
+
+    const { result, summary } = typeof skip === 'function' ? skip(agent) : skip
+
     window.studio.app.trackEvent({
       event: UsageEventName.TestSetupWizardStepSkipped,
       payload: { step: stepId },
@@ -113,9 +108,9 @@ export function useStepAgent<TTools extends ToolSet>({
     dispatch({
       type: 'stepRunCompleted',
       stepId,
-      result: skip.result,
+      result,
       log: agent.actionsLog.entries,
-      summary: skip.summary,
+      summary,
     })
   }
 

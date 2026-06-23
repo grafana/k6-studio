@@ -1,6 +1,6 @@
 import { Box, Button, Callout, Flex } from '@radix-ui/themes'
 import { RotateCcwIcon, UnplugIcon } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { SuggestionListPanel } from '@/components/SuggestionList/SuggestionListPanel'
@@ -22,6 +22,7 @@ import { useWizardNavigation } from '../../state/useWizardNavigation'
 import { StepFrame, StepHeader } from '../../StepFrame'
 import { WizardFooter } from '../../WizardFooter'
 import { CompletedStepSummary } from '../CompletedStepSummary'
+import { useAbortStepOnUnmount } from '../useAbortStepOnUnmount'
 
 const TERMINAL_STATUSES: CorrelationStatus[] = [
   'success',
@@ -166,20 +167,9 @@ export function AutocorrelationStep() {
   const [footerHost, setFooterHost] = useState<HTMLDivElement | null>(null)
 
   // This step embeds the standalone AutoCorrelation flow rather than useStepAgent,
-  // so it reconciles the reducer on unmount itself: a run left mid-flight comes
-  // back 'aborted' (recoverable) instead of stuck 'running' and silently re-run.
-  const stepStatusRef = useRef(stepState.status)
-  useEffect(() => {
-    stepStatusRef.current = stepState.status
-  })
-  const terminatedRef = useRef(false)
-  useEffect(() => {
-    return () => {
-      if (stepStatusRef.current === 'running' && !terminatedRef.current) {
-        dispatch({ type: 'stepRunAborted', stepId: 'autocorrelation' })
-      }
-    }
-  }, [dispatch])
+  // so it reconciles the reducer on unmount with the shared hook directly: a run
+  // left mid-flight comes back 'aborted' (recoverable) instead of stuck 'running'.
+  const terminatedRef = useAbortStepOnUnmount('autocorrelation')
 
   const handleStatusChange = (status: CorrelationStatus) => {
     if (status === 'not-started' || stepState.status === 'running') {
