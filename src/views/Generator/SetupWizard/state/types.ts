@@ -41,7 +41,12 @@ export interface ParamSuggestionMeta {
 export type StepResult =
   | { step: 'hosts'; suggestions: HostSuggestion[] }
   | { step: 'autocorrelation'; entries: SuggestedRuleEntry[] }
-  | { step: 'parameterization'; suggestions: ParamSuggestionMeta[] }
+  | {
+      step: 'parameterization'
+      suggestions: ParamSuggestionMeta[]
+      /** Variables this run created, so re-run cleanup deletes only those. */
+      addedVariableNames: string[]
+    }
   | { step: 'thresholds'; rationaleById: Record<string, string> }
 
 export type StepState =

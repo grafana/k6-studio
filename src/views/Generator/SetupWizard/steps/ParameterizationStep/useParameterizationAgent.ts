@@ -97,19 +97,20 @@ export function useParameterizationAgent() {
     const { rules, setRules, variables, setVariables } =
       useGeneratorStore.getState()
 
-    setRules([...rules, ...proposals.map((proposal) => proposal.rule)])
-    setVariables(
-      mergeVariables(
-        variables,
-        proposals.map((proposal) => proposal.variable)
-      )
+    const { variables: mergedVariables, addedNames } = mergeVariables(
+      variables,
+      proposals.map((proposal) => proposal.variable)
     )
+
+    setRules([...rules, ...proposals.map((proposal) => proposal.rule)])
+    setVariables(mergedVariables)
     dispatch({
       type: 'stepRunCompleted',
       stepId: 'parameterization',
       result: {
         step: 'parameterization',
         suggestions: proposals.map((proposal) => proposal.meta),
+        addedVariableNames: addedNames,
       },
       log: actionsLog.entries,
       summary:
@@ -150,17 +151,12 @@ export function useParameterizationAgent() {
     const ruleIds = new Set(
       stepState.result.suggestions.map((suggestion) => suggestion.ruleId)
     )
+    // Only delete variables this run created. A proposal that reused a
+    // pre-existing variable name is absent from addedVariableNames, so the
+    // user's pre-existing variable survives the re-run.
+    const removedVariableNames = new Set(stepState.result.addedVariableNames)
     const { rules, setRules, variables, setVariables } =
       useGeneratorStore.getState()
-    const removedVariableNames = new Set(
-      rules.flatMap((rule) =>
-        ruleIds.has(rule.id) &&
-        rule.type === 'parameterization' &&
-        rule.value.type === 'variable'
-          ? [rule.value.variableName]
-          : []
-      )
-    )
 
     setRules(rules.filter((rule) => !ruleIds.has(rule.id)))
     setVariables(
@@ -183,7 +179,11 @@ export function useParameterizationAgent() {
     dispatch({
       type: 'stepRunCompleted',
       stepId: 'parameterization',
-      result: { step: 'parameterization', suggestions: [] },
+      result: {
+        step: 'parameterization',
+        suggestions: [],
+        addedVariableNames: [],
+      },
       log: actionsLog.entries,
       summary: 'Step skipped - no values parameterized',
     })

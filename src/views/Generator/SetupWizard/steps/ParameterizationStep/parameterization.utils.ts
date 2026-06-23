@@ -54,6 +54,16 @@ export function aiParameterToRule(
   }
 }
 
+export interface MergeVariablesResult {
+  variables: Variable[]
+  /**
+   * Names of variables this merge actually created. Excludes proposals that
+   * collided with a pre-existing variable, so cleanup on re-run only deletes
+   * what this run introduced and never a user's pre-existing variable.
+   */
+  addedNames: string[]
+}
+
 /**
  * Variables are unique by name; later proposals for an existing name reuse
  * the variable instead of duplicating it.
@@ -61,7 +71,7 @@ export function aiParameterToRule(
 export function mergeVariables(
   existing: Variable[],
   proposed: Variable[]
-): Variable[] {
+): MergeVariablesResult {
   const knownNames = new Set(existing.map((variable) => variable.name))
   const additions = proposed.filter((variable) => {
     if (knownNames.has(variable.name)) {
@@ -72,5 +82,8 @@ export function mergeVariables(
     return true
   })
 
-  return [...existing, ...additions]
+  return {
+    variables: [...existing, ...additions],
+    addedNames: additions.map((variable) => variable.name),
+  }
 }

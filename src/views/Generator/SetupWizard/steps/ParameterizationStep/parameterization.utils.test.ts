@@ -90,7 +90,7 @@ describe('aiParameterToRule', () => {
 
 describe('mergeVariables', () => {
   it('appends new variables and skips duplicates by name', () => {
-    const merged = mergeVariables(
+    const { variables } = mergeVariables(
       [{ name: 'username', value: 'default' }],
       [
         { name: 'username', value: 'other' },
@@ -99,9 +99,22 @@ describe('mergeVariables', () => {
       ]
     )
 
-    expect(merged).toEqual([
+    expect(variables).toEqual([
       { name: 'username', value: 'default' },
       { name: 'password', value: 'secret' },
     ])
+  })
+
+  it('reports only the names it actually added, excluding pre-existing collisions', () => {
+    const { addedNames } = mergeVariables(
+      [{ name: 'token', value: 'pre-existing' }],
+      [
+        { name: 'token', value: 'proposed' },
+        { name: 'email', value: 'user@example.com' },
+      ]
+    )
+
+    // `token` pre-existed, so cleanup must not treat it as this run's to delete.
+    expect(addedNames).toEqual(['email'])
   })
 })
