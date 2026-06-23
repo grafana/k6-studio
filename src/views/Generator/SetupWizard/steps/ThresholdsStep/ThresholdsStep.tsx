@@ -76,15 +76,16 @@ export function ThresholdsStep() {
   return (
     <AgentRunPanel
       stepId="thresholds"
-      stepState={stepState}
-      logEntries={logEntries}
-      status={status}
-      onRestart={restart}
-      errorMessage="The Assistant could not suggest thresholds for this recording."
-      runningLabel="Analyzing response times..."
-      onBack={goBack}
-      onContinue={goNext}
-      onSkip={handleSkip}
+      run={{
+        state: stepState,
+        status,
+        logEntries,
+        errorMessage:
+          'The Assistant could not suggest thresholds for this recording.',
+        runningLabel: 'Analyzing response times...',
+        onRestart: restart,
+      }}
+      nav={{ onBack: goBack, onContinue: goNext, onSkip: handleSkip }}
     />
   )
 }

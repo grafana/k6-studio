@@ -9,37 +9,34 @@ import { StepId, StepState } from '../state/types'
 import { StepFrame } from '../StepFrame'
 import { WizardFooter } from '../WizardFooter'
 
-interface AgentRunPanelProps {
-  stepId: StepId
-  stepState: StepState
-  logEntries: ActionLogEntry[]
+interface AgentRun {
+  state: StepState
   status: AgentRunStatus
-  onRestart: () => void
+  logEntries: ActionLogEntry[]
   errorMessage: string
   runningLabel: string
+  onRestart: () => void
+}
+
+interface AgentRunNav {
   onBack: () => void
   onContinue: () => void
   onSkip: () => void
 }
 
-export function AgentRunPanel({
-  stepId,
-  stepState,
-  logEntries,
-  status,
-  onRestart,
-  errorMessage,
-  runningLabel,
-  onBack,
-  onContinue,
-  onSkip,
-}: AgentRunPanelProps) {
+interface AgentRunPanelProps {
+  stepId: StepId
+  run: AgentRun
+  nav: AgentRunNav
+}
+
+export function AgentRunPanel({ stepId, run, nav }: AgentRunPanelProps) {
   return (
     <>
       <StepFrame stepId={stepId}>
         <Flex direction="column" gap="3" flexGrow="1" css={{ minHeight: 0 }}>
-          <RunFailure stepState={stepState} errorMessage={errorMessage} />
-          <RestartButton stepState={stepState} onRestart={onRestart} />
+          <RunFailure stepState={run.state} errorMessage={run.errorMessage} />
+          <RestartButton stepState={run.state} onRestart={run.onRestart} />
           <Box
             css={{
               border: '1px solid var(--gray-4)',
@@ -48,17 +45,20 @@ export function AgentRunPanel({
               flexGrow: 1,
             }}
           >
-            <ActionsLog entries={logEntries} pending={status === 'running'} />
+            <ActionsLog
+              entries={run.logEntries}
+              pending={run.status === 'running'}
+            />
           </Box>
         </Flex>
       </StepFrame>
       <WizardFooter
         canContinue={false}
-        onBack={onBack}
-        onContinue={onContinue}
-        onSkip={onSkip}
+        onBack={nav.onBack}
+        onContinue={nav.onContinue}
+        onSkip={nav.onSkip}
       >
-        <RunningLabel status={status} runningLabel={runningLabel} />
+        <RunningLabel status={run.status} runningLabel={run.runningLabel} />
       </WizardFooter>
     </>
   )

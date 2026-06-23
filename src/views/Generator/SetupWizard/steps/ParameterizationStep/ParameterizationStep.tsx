@@ -109,15 +109,16 @@ export function ParameterizationStep() {
   return (
     <AgentRunPanel
       stepId="parameterization"
-      stepState={stepState}
-      logEntries={logEntries}
-      status={status}
-      onRestart={restart}
-      errorMessage="The Assistant could not analyze this recording for parameterization."
-      runningLabel="Finding values to parameterize..."
-      onBack={goBack}
-      onContinue={goNext}
-      onSkip={handleSkip}
+      run={{
+        state: stepState,
+        status,
+        logEntries,
+        errorMessage:
+          'The Assistant could not analyze this recording for parameterization.',
+        runningLabel: 'Finding values to parameterize...',
+        onRestart: restart,
+      }}
+      nav={{ onBack: goBack, onContinue: goNext, onSkip: handleSkip }}
     />
   )
 }

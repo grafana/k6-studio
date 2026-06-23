@@ -127,15 +127,16 @@ export function HostsStep() {
   return (
     <AgentRunPanel
       stepId="hosts"
-      stepState={stepState}
-      logEntries={logEntries}
-      status={status}
-      onRestart={restart}
-      errorMessage="The Assistant could not analyze the hosts in this recording."
-      runningLabel="Analyzing hosts..."
-      onBack={goBack}
-      onContinue={goNext}
-      onSkip={handleSkip}
+      run={{
+        state: stepState,
+        status,
+        logEntries,
+        errorMessage:
+          'The Assistant could not analyze the hosts in this recording.',
+        runningLabel: 'Analyzing hosts...',
+        onRestart: restart,
+      }}
+      nav={{ onBack: goBack, onContinue: goNext, onSkip: handleSkip }}
     />
   )
 }
