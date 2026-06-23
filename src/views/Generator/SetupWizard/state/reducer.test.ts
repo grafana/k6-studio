@@ -69,6 +69,22 @@ describe('wizardReducer', () => {
     expect(next.activeStep).toBe('runTest')
   })
 
+  it('continue does not advance past an earlier step that was reset', () => {
+    const base: WizardState = {
+      ...stateWithCompleted('hosts', 'autocorrelation', 'parameterization'),
+      activeStep: 'parameterization',
+    }
+    const state = wizardReducer(base, {
+      type: 'stepRunReset',
+      stepId: 'autocorrelation',
+    })
+
+    const next = wizardReducer(state, { type: 'continue' })
+
+    // parameterization is completed, but the earlier autocorrelation is not.
+    expect(next.activeStep).toBe('parameterization')
+  })
+
   it('continue does nothing on the run test step', () => {
     const state: WizardState = {
       ...stateWithCompleted(

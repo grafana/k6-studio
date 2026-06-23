@@ -101,11 +101,20 @@ export function wizardReducer(
     }
 
     case 'continue': {
-      if (state.steps[state.activeStep].status !== 'completed') {
+      const index = STEP_ORDER.indexOf(state.activeStep)
+
+      // Advance only when the active step and everything before it are
+      // completed, so resetting an earlier step blocks finishing the wizard
+      // through still-completed later steps.
+      const reachedInOrder = STEP_ORDER.slice(0, index + 1).every(
+        (step) => state.steps[step].status === 'completed'
+      )
+
+      if (!reachedInOrder) {
         return state
       }
 
-      const next = STEP_ORDER[STEP_ORDER.indexOf(state.activeStep) + 1]
+      const next = STEP_ORDER[index + 1]
 
       if (next === undefined) {
         return state
