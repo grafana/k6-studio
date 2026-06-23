@@ -1,6 +1,5 @@
 import { css } from '@emotion/react'
 import { Badge, Tabs } from '@radix-ui/themes'
-import { FlaskConical } from 'lucide-react'
 
 import { Flex } from '@/components/primitives/Flex'
 import { BrowserEvent } from '@/schemas/recording'
@@ -59,14 +58,6 @@ export function RecordingInspector({
           disabled={browserEvents.length === 0}
         >
           <Flex align="center" gap="1">
-            <FlaskConical
-              css={css`
-                width: 1em;
-                height: 1em;
-                margin-right: 0.25em;
-              `}
-              strokeWidth={1.5}
-            />
             Browser events
             <Badge
               radius="full"

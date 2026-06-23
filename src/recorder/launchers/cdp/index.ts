@@ -105,6 +105,10 @@ class CDPRecordingSession
     this.#session.on('navigate', ({ event }) => {
       this.#record([event])
     })
+
+    this.#session.on('tab-opened', ({ event }) => {
+      this.#record([event])
+    })
   }
 
   highlightElement(

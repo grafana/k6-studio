@@ -1,3 +1,4 @@
+import { ElementLocator } from '@/schemas/locator'
 import { mapNonEmpty } from '@/utils/list'
 import { exhaustive } from '@/utils/typescript'
 
@@ -66,125 +67,116 @@ function emitReloadNode(context: IntermediateContext, node: m.ReloadNode) {
   })
 }
 
-function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
-  const page = context.reference(node.inputs.page)
-
-  // We always inline locator nodes for readability. If we implement better
-  // logic for generating variable names, then we could consider declaring
-  // a variable for it if there are multiple references.
-  switch (node.locator.type) {
+function toLocatorExpression(
+  base: ir.Expression,
+  locator: ElementLocator
+): ir.Expression {
+  switch (locator.type) {
     case 'role':
-      context.inline(node, {
+      return {
         type: 'NewRoleLocatorExpression',
         role: {
           type: 'StringLiteral',
-          value: node.locator.role,
+          value: locator.role,
         },
-        options: node.locator.options?.name
+        options: locator.options?.name
           ? {
               type: 'RoleLocatorOptionsExpression',
               name: {
                 // getByRole creates an internal selector, e.g. internal:role=link[name='Hello's] that is passed
                 // to the browser. Since the string literal value is wrapped in single quotes, we need to escape
                 // any single quotes in the name. Bug report: https://github.com/grafana/k6/issues/5360
-                value: node.locator.options.name.replaceAll("'", "\\'"),
-                exact: node.locator.options.exact || undefined,
+                value: locator.options.name.replaceAll("'", "\\'"),
+                exact: locator.options.exact || undefined,
               },
             }
           : null,
-        page,
-      })
-      break
+        page: base,
+      }
 
     case 'label':
-      context.inline(node, {
+      return {
         type: 'NewLabelLocatorExpression',
         text: {
           type: 'StringLiteral',
-          value: node.locator.label,
+          value: locator.label,
         },
-        page,
-        options: node.locator.options?.exact
+        page: base,
+        options: locator.options?.exact
           ? {
               type: 'TextLocatorOptionsExpression',
-              exact: node.locator.options.exact,
+              exact: locator.options.exact,
             }
           : null,
-      })
-      break
+      }
 
     case 'placeholder':
-      context.inline(node, {
+      return {
         type: 'NewPlaceholderLocatorExpression',
         text: {
           type: 'StringLiteral',
-          value: node.locator.placeholder,
+          value: locator.placeholder,
         },
-        page,
-        options: node.locator.options?.exact
+        page: base,
+        options: locator.options?.exact
           ? {
               type: 'TextLocatorOptionsExpression',
-              exact: node.locator.options.exact,
+              exact: locator.options.exact,
             }
           : null,
-      })
-      break
+      }
 
     case 'title':
-      context.inline(node, {
+      return {
         type: 'NewTitleLocatorExpression',
         text: {
           type: 'StringLiteral',
-          value: node.locator.title,
+          value: locator.title,
         },
-        page,
-        options: node.locator.options?.exact
+        page: base,
+        options: locator.options?.exact
           ? {
               type: 'TextLocatorOptionsExpression',
-              exact: node.locator.options.exact,
+              exact: locator.options.exact,
             }
           : null,
-      })
-      break
+      }
 
     case 'alt':
-      context.inline(node, {
+      return {
         type: 'NewAltTextLocatorExpression',
         text: {
           type: 'StringLiteral',
-          value: node.locator.text,
+          value: locator.text,
         },
-        page,
-        options: node.locator.options?.exact
+        page: base,
+        options: locator.options?.exact
           ? {
               type: 'TextLocatorOptionsExpression',
-              exact: node.locator.options.exact,
+              exact: locator.options.exact,
             }
           : null,
-      })
-      break
+      }
 
     case 'testid':
-      context.inline(node, {
+      return {
         type: 'NewTestIdLocatorExpression',
         testId: {
           type: 'StringLiteral',
-          value: node.locator.testId,
+          value: locator.testId,
         },
-        page,
-      })
-      break
+        page: base,
+      }
 
     case 'css':
-      context.inline(node, {
+      return {
         type: 'NewCssLocatorExpression',
         selector: {
           type: 'StringLiteral',
-          value: node.locator.selector,
+          value: locator.selector,
         },
-        page,
-      })
-      break
+        page: base,
+      }
 
     case 'text':
       throw new Error(
@@ -192,8 +184,46 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
       )
 
     default:
-      exhaustive(node.locator)
+      return exhaustive(locator)
   }
+}
+
+// Build the scope an element locator is created on: the page, optionally wrapped
+// in a chain of frame locators (outermost first). A CSS frame uses the more
+// readable `frameLocator(selector)`. Other locator types must go through
+// `<locator>.contentFrame()` because `frameLocator` only accepts a string
+// selector.
+function toFrameScope(
+  page: ir.Expression,
+  frames: ElementLocator[] | undefined
+): ir.Expression {
+  return (frames ?? []).reduce<ir.Expression>((parent, frame) => {
+    if (frame.type === 'css') {
+      return {
+        type: 'NewFrameLocatorExpression',
+        parent,
+        selector: {
+          type: 'StringLiteral',
+          value: frame.selector,
+        },
+      }
+    }
+
+    return {
+      type: 'ContentFrameExpression',
+      target: toLocatorExpression(parent, frame),
+    }
+  }, page)
+}
+
+function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
+  const page = context.reference(node.inputs.page)
+  const scope = toFrameScope(page, node.frames)
+
+  // We always inline locator nodes for readability. If we implement better
+  // logic for generating variable names, then we could consider declaring
+  // a variable for it if there are multiple references.
+  context.inline(node, toLocatorExpression(scope, node.locator))
 }
 
 function getClickOptions(node: m.ClickNode): ir.ClickOptionsExpression | null {

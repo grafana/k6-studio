@@ -1,32 +1,13 @@
 import { Header } from '@/types'
-import { shouldSkipCookie } from '@/utils/assistant/skipCookies'
 import { StrippedProxyData } from '@/utils/assistant/stripRequestData'
 import { safeJsonParse } from '@/utils/json'
 
+import { shouldSkipHeader } from './skipHeaders'
 const MAX_RECURSION_DEPTH = 5
 const MAX_MISMATCHES = 20
 const MAX_CONTENT_LENGTH = 1000
 const MAX_ARRAY_LENGTH = 10
 const CONTENT_PREVIEW_LENGTH = 500
-
-const SKIP_HEADERS = [
-  'date',
-  'age',
-  'expires',
-  'last-modified',
-  'etag',
-  'x-request-id',
-  'x-correlation-id',
-  'x-trace-id',
-  'x-span-id',
-  'x-amzn-requestid',
-  'x-amzn-trace-id',
-  'cf-ray',
-  'content-length',
-  'transfer-encoding',
-  'content-type',
-  'user-agent',
-]
 
 const MAX_MISMATCH_VALUE_LENGTH = 80
 
@@ -158,22 +139,6 @@ function normalizeHeaders(headers: Header[]) {
 
 function parseCookieName(value: string) {
   return value.split(';')[0]?.split('=')[0]?.trim()
-}
-
-function shouldSkipHeader(key: string) {
-  const lowerKey = key.toLowerCase()
-
-  if (SKIP_HEADERS.includes(lowerKey)) {
-    return true
-  }
-
-  // Check if this is a set-cookie header with a skippable cookie name
-  if (lowerKey.startsWith('set-cookie.')) {
-    const cookieName = lowerKey.slice('set-cookie.'.length)
-    return shouldSkipCookie(cookieName)
-  }
-
-  return false
 }
 
 function normalizeValue(value: string) {

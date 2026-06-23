@@ -5,7 +5,6 @@ import {
   type ConfigEnv,
   type UserConfig,
 } from 'vite'
-import tsconfigPaths from 'vite-tsconfig-paths'
 
 import {
   getBuildConfig,
@@ -17,16 +16,17 @@ import {
 export default defineConfig((env) => {
   const forgeEnv = env as ConfigEnv<'build'>
   const { forgeConfigSelf } = forgeEnv
+
   const config: UserConfig = {
     build: {
-      rollupOptions: {
+      rolldownOptions: {
         external: getExternal(env.command),
         // Preload scripts may contain Web assets, so use the `build.rollupOptions.input` instead `build.lib.entry`.
         input: forgeConfigSelf.entry,
         output: {
           format: 'cjs',
           // It should not be split chunks.
-          inlineDynamicImports: true,
+          codeSplitting: false,
           entryFileNames: '[name].js',
           chunkFileNames: '[name].js',
           assetFileNames: '[name].[ext]',
@@ -36,13 +36,15 @@ export default defineConfig((env) => {
     },
     plugins: [
       pluginHotRestart('reload'),
-      tsconfigPaths(),
       sentryVitePlugin({
         authToken: process.env.SENTRY_AUTH_TOKEN,
         org: process.env.SENTRY_ORG,
         project: process.env.SENTRY_PROJECT,
       }),
     ],
+    resolve: {
+      tsconfigPaths: true,
+    },
   }
 
   return mergeConfig(getBuildConfig(forgeEnv), config)

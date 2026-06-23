@@ -2,7 +2,7 @@ import { StrippedProxyData } from '@/utils/assistant/stripRequestData'
 
 import { compareResponseValues, ValueMismatch } from './compareValues'
 
-interface ValidationMismatch {
+export interface ValidationMismatch {
   request: {
     method: string
     url: string
@@ -14,10 +14,9 @@ interface ValidationMismatch {
   valueMismatches?: ValueMismatch[]
 }
 
-interface ValidationResult {
+export interface ValidationResult {
   success: boolean
   details?: {
-    reason: string
     mismatches?: ValidationMismatch[]
   }
 }
@@ -77,21 +76,9 @@ export function validationMatchesRecording(
     (m) => m.statusCodeMismatch === undefined
   )
 
-  const statusCodeMismatches = allMismatches.filter(
-    (m) => m.statusCodeMismatch !== undefined
-  )
-
-  const reasons = statusCodeMismatches
-    .slice(0, 10)
-    .map(
-      (m) =>
-        `Expected ${m.statusCodeMismatch?.expected} but got ${m.statusCodeMismatch?.actual} for ${m.request.method} ${m.request.url}`
-    )
-
   return {
     success: allResponseCodesMatch,
     details: {
-      reason: reasons.join('\n'),
       mismatches: allMismatches,
     },
   }

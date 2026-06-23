@@ -91,6 +91,17 @@ describe('compareResponseValues', () => {
       expect(result.mismatches).toHaveLength(0)
     })
 
+    it('should still report Location header changes (redirect targets are correlation candidates)', () => {
+      const expected = createMockData([['Location', '/dashboard?id=1']])
+      const actual = createMockData([['Location', '/dashboard?id=2']])
+
+      const result = compareResponseValues(expected, actual)
+
+      expect(result.mismatches).toMatchObject([
+        { path: 'response.headers.location', location: 'header' },
+      ])
+    })
+
     it('should match headers case-insensitively', () => {
       const expected = createMockData([['X-Custom-Header', 'value1']])
       const actual = createMockData([['x-custom-header', 'value1']])
