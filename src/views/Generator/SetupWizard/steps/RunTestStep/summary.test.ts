@@ -89,6 +89,21 @@ describe('formatThresholds', () => {
     )
   })
 
+  it('rounds float artifacts in the failure rate percentage', () => {
+    const thresholds = [
+      createThreshold({
+        metric: 'http_req_failed',
+        statistic: 'rate',
+        condition: '<',
+        value: 0.07,
+      }),
+    ]
+
+    expect(formatThresholds(thresholds, HTTP_METRICS_CONFIG)).toBe(
+      'error rate < 7%'
+    )
+  })
+
   it('includes the metric label for other metrics', () => {
     const thresholds = [
       createThreshold({

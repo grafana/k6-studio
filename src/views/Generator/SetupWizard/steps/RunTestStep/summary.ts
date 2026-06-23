@@ -90,8 +90,12 @@ function formatThreshold(
   const suffix = threshold.stopTest ? ' (stops test)' : ''
 
   if (threshold.metric === 'http_req_failed') {
+    // toFixed(6) drops IEEE-754 noise (0.07 * 100 = 7.000000000000001); Number
+    // trims the trailing zeros so legitimate decimals (7.5%) still render.
     const percentage =
-      threshold.value <= 1 ? `${threshold.value * 100}%` : `${threshold.value}`
+      threshold.value <= 1
+        ? `${Number((threshold.value * 100).toFixed(6))}%`
+        : `${threshold.value}`
 
     return `error rate ${threshold.condition} ${percentage}${suffix}`
   }
