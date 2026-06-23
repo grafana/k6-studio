@@ -3,7 +3,7 @@ import { ReactElement, ReactNode, useEffect, useRef, useState } from 'react'
 
 import { LocatorSummary } from '@/components/Browser/Locator'
 import {
-  HighlightedLocator,
+  HighlightTarget,
   useHighlightLocator,
 } from '@/components/HighlightLocatorProvider'
 import {
@@ -345,7 +345,7 @@ function resolveHighlight(
   frameKeys: number[],
   frames: LocatorOptions[] | undefined,
   element: LocatorOptions
-): HighlightedLocator {
+): HighlightTarget {
   const chain = frames ?? []
 
   if (target !== 'element') {
