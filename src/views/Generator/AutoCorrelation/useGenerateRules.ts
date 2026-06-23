@@ -8,7 +8,6 @@ import {
   selectGeneratorData,
   useGeneratorStore,
 } from '@/store/generator'
-import type { AiCorrelationRule } from '@/types/autoCorrelation'
 import { createTerminalToolGuard } from '@/utils/assistant/chat'
 import { IPCChatTransport } from '@/utils/assistant/IPCChatTransport'
 import {
@@ -31,6 +30,7 @@ import type {
   ToolCall,
 } from './types'
 import { computeAddRuleResult } from './utils/computeAddRuleResult'
+import { parseAiCorrelationRule } from './utils/parseAiCorrelationRule'
 import { summarizeValidationForAI } from './utils/summarizeValidationForAI'
 import { validationMatchesRecording } from './utils/validationMatchesRecording'
 
@@ -205,9 +205,17 @@ export const useGenerateRules = ({
     }
   }
 
-  function addRule(rule: AiCorrelationRule) {
+  function addRule(ruleInput: unknown) {
+    // Tool input arrives unvalidated (buildToolSet uses jsonSchema with no
+    // validator), so re-parse to apply schema defaults and surface a malformed
+    // rule as a retryable tool error rather than throwing downstream.
+    const parsed = parseAiCorrelationRule(ruleInput)
+    if (!parsed.ok) {
+      return parsed.error
+    }
+
     const currentRules = ruleEntriesRef.current.map((entry) => entry.rule)
-    const result = computeAddRuleResult(rule, currentRules, recording)
+    const result = computeAddRuleResult(parsed.rule, currentRules, recording)
 
     if (!result.ok) return result.reason
 
