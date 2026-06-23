@@ -152,6 +152,37 @@ describe('AutocorrelationStep', () => {
     )
   })
 
+  it('aborts a running step when navigating away mid-run', () => {
+    const state: WizardState = {
+      ...initialWizardState,
+      screen: 'wizard',
+      activeStep: 'autocorrelation',
+      steps: {
+        ...initialWizardState.steps,
+        hosts: completedHosts,
+        autocorrelation: { status: 'running' },
+      },
+    }
+
+    function App({ mounted }: { mounted: boolean }) {
+      return (
+        <Theme>
+          <SetupWizardProvider initialState={state}>
+            {mounted && <AutocorrelationStep />}
+            <StateProbe />
+          </SetupWizardProvider>
+        </Theme>
+      )
+    }
+
+    const { rerender } = render(<App mounted />)
+    rerender(<App mounted={false} />)
+
+    expect(screen.getByTestId('probe').textContent).toBe(
+      'autocorrelation:aborted'
+    )
+  })
+
   it('does not auto-restart analysis when returning to an interrupted step', async () => {
     renderStep({ autocorrelation: { status: 'aborted' } })
 

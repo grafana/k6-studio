@@ -1,6 +1,6 @@
 import { Box, Button, Callout, Flex } from '@radix-ui/themes'
 import { RotateCcwIcon, UnplugIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { SuggestionListPanel } from '@/components/SuggestionList/SuggestionListPanel'
@@ -165,6 +165,22 @@ export function AutocorrelationStep() {
   const proxyStatus = useProxyStatus()
   const [footerHost, setFooterHost] = useState<HTMLDivElement | null>(null)
 
+  // This step embeds the standalone AutoCorrelation flow rather than useStepAgent,
+  // so it reconciles the reducer on unmount itself: a run left mid-flight comes
+  // back 'aborted' (recoverable) instead of stuck 'running' and silently re-run.
+  const stepStatusRef = useRef(stepState.status)
+  useEffect(() => {
+    stepStatusRef.current = stepState.status
+  })
+  const terminatedRef = useRef(false)
+  useEffect(() => {
+    return () => {
+      if (stepStatusRef.current === 'running' && !terminatedRef.current) {
+        dispatch({ type: 'stepRunAborted', stepId: 'autocorrelation' })
+      }
+    }
+  }, [dispatch])
+
   const handleStatusChange = (status: CorrelationStatus) => {
     if (status === 'not-started' || stepState.status === 'running') {
       return
@@ -192,6 +208,9 @@ export function AutocorrelationStep() {
   }
 
   const handleSkip = () => {
+    // Skip completes the step and navigates away in one commit; mark it so the
+    // unmount cleanup does not clobber the just-completed step back to aborted.
+    terminatedRef.current = true
     window.studio.app.trackEvent({
       event: UsageEventName.TestSetupWizardStepSkipped,
       payload: { step: 'autocorrelation' },
