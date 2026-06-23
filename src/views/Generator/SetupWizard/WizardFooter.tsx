@@ -23,14 +23,19 @@ export function WizardFooter({
       flexShrink="0"
       align="center"
       gap="3"
-      px="5"
-      py="3"
+      p="2"
       css={{
+        minHeight: 49,
         borderTop: '1px solid var(--gray-4)',
         backgroundColor: 'var(--color-panel)',
       }}
     >
-      <Button variant="ghost" color="gray" onClick={onBack}>
+      <Button
+        variant="ghost"
+        color="gray"
+        onClick={onBack}
+        css={{ marginLeft: 0 }}
+      >
         <ArrowLeftIcon size={16} /> Back
       </Button>
       <Flex flexGrow="1" align="center" justify="center">

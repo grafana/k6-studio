@@ -141,7 +141,13 @@ function SetupWizardView({
       actions={
         <>
           <StepIndicator />
-          <Button variant="ghost" color="gray" onClick={handleCancel}>
+          <Button
+            variant="ghost"
+            color="gray"
+            size="1"
+            onClick={handleCancel}
+            css={{ margin: 0 }}
+          >
             Cancel
           </Button>
         </>
