@@ -152,6 +152,21 @@ describe('AutocorrelationStep', () => {
     )
   })
 
+  it('does not auto-restart analysis when returning to an interrupted step', async () => {
+    renderStep({ autocorrelation: { status: 'aborted' } })
+
+    // A live AutoCorrelation would auto-start a fresh analysis; it must not mount.
+    expect(screen.queryByTestId('auto-correlation')).toBeNull()
+
+    await userEvent.click(screen.getByRole('button', { name: /Run analysis/ }))
+
+    // Re-running is user-initiated: reset to not-started mounts the live run.
+    expect(screen.getByTestId('auto-correlation')).toBeDefined()
+    expect(screen.getByTestId('probe').textContent).toBe(
+      'autocorrelation:not-started'
+    )
+  })
+
   it('disables Continue while the agent is running', () => {
     footerContext.isLoading = true
     footerContext.correlationStatus = 'analyzing'

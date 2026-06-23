@@ -1,5 +1,5 @@
-import { Box, Callout, Flex } from '@radix-ui/themes'
-import { UnplugIcon } from 'lucide-react'
+import { Box, Button, Callout, Flex } from '@radix-ui/themes'
+import { RotateCcwIcon, UnplugIcon } from 'lucide-react'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -123,6 +123,41 @@ function ProxyOfflineStep({ onSkip }: { onSkip: () => void }) {
   )
 }
 
+function InterruptedStep({
+  onRun,
+  onSkip,
+}: {
+  onRun: () => void
+  onSkip: () => void
+}) {
+  const { goBack, goNext } = useWizardNavigation()
+
+  return (
+    <>
+      <StepFrame stepId="autocorrelation">
+        <Flex direction="column" gap="3" align="start">
+          <Callout.Root color="gray">
+            <Callout.Icon>
+              <RotateCcwIcon size={16} />
+            </Callout.Icon>
+            <Callout.Text>
+              Correlation analysis was interrupted before it finished. Run it
+              again or skip this step.
+            </Callout.Text>
+          </Callout.Root>
+          <Button onClick={onRun}>Run analysis</Button>
+        </Flex>
+      </StepFrame>
+      <WizardFooter
+        canContinue={false}
+        onBack={goBack}
+        onContinue={goNext}
+        onSkip={onSkip}
+      />
+    </>
+  )
+}
+
 export function AutocorrelationStep() {
   const { dispatch } = useSetupWizard()
   const stepState = useStepState('autocorrelation')
@@ -178,12 +213,24 @@ export function AutocorrelationStep() {
     completeStep(context.ruleEntries, context)
   }
 
+  // Re-running an interrupted run is user-initiated: reset to not-started so the
+  // live AutoCorrelation mounts and auto-starts only on this explicit action.
+  const handleRun = () => {
+    dispatch({ type: 'stepRunReset', stepId: 'autocorrelation' })
+  }
+
   if (stepState.status === 'completed') {
     return <CompletedStep />
   }
 
   if (proxyStatus !== 'online') {
     return <ProxyOfflineStep onSkip={handleSkip} />
+  }
+
+  // A step left mid-run (e.g. navigating away) comes back 'aborted'. Show a
+  // recovery prompt instead of silently auto-restarting a full proxy replay.
+  if (stepState.status === 'aborted' || stepState.status === 'error') {
+    return <InterruptedStep onRun={handleRun} onSkip={handleSkip} />
   }
 
   return (
