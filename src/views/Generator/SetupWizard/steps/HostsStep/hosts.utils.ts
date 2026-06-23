@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import { ProxyData } from '@/types'
+import { getContentType } from '@/utils/headers'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 
 import { HostSuggestion } from '../../state/types'
@@ -29,14 +30,6 @@ export interface HostInventoryEntry {
 
 export type AiHostSuggestion = z.infer<typeof hostSuggestionSchema>
 
-function getContentType(proxyData: ProxyData): string | undefined {
-  const header = proxyData.response?.headers.find(
-    ([name]) => name.toLowerCase() === 'content-type'
-  )
-
-  return header?.[1]?.split(';')[0]?.trim()
-}
-
 export function buildHostInventory(
   requests: ProxyData[]
 ): HostInventoryEntry[] {
@@ -62,7 +55,9 @@ export function buildHostInventory(
         entry.staticAssetCount += 1
       }
 
-      const contentType = getContentType(proxyData)
+      const contentType = getContentType(
+        proxyData.response?.headers ?? []
+      )?.trim()
       if (
         contentType !== undefined &&
         entry.contentTypes.length < MAX_CONTENT_TYPES &&
