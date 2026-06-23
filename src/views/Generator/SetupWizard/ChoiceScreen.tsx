@@ -1,16 +1,11 @@
 import { Badge, Button, Card, Flex, Heading, Text } from '@radix-ui/themes'
-import {
-  ArrowRightIcon,
-  CheckIcon,
-  LucideIcon,
-  SettingsIcon,
-  SparklesIcon,
-  WandSparklesIcon,
-} from 'lucide-react'
+import { ArrowRightIcon, CheckIcon, SettingsIcon } from 'lucide-react'
 import { ReactNode } from 'react'
 
+import grotMagic from '@/assets/grot-magic.svg'
+
 interface ChoiceCardProps {
-  icon: LucideIcon
+  visual: ReactNode
   accent?: boolean
   badge?: string
   title: string
@@ -20,7 +15,7 @@ interface ChoiceCardProps {
 }
 
 function ChoiceCard({
-  icon: Icon,
+  visual,
   accent = false,
   badge,
   title,
@@ -49,18 +44,8 @@ function ChoiceCard({
             {badge}
           </Badge>
         )}
-        <Flex
-          align="center"
-          justify="center"
-          css={{
-            width: 52,
-            height: 52,
-            borderRadius: 'var(--radius-3)',
-            backgroundColor: accent ? 'var(--orange-3)' : 'var(--gray-3)',
-            color: accent ? 'var(--orange-11)' : 'var(--gray-11)',
-          }}
-        >
-          <Icon size={26} />
+        <Flex align="center" css={{ height: 64 }}>
+          {visual}
         </Flex>
         <Flex direction="column" gap="1">
           <Heading size="4">{title}</Heading>
@@ -128,7 +113,9 @@ export function ChoiceScreen({
         <ChoiceCard
           accent
           badge="Recommended"
-          icon={WandSparklesIcon}
+          visual={
+            <img src={grotMagic} alt="" css={{ height: 64, width: 'auto' }} />
+          }
           title="Configure with Assistant"
           description="The Assistant analyzes your recording and proposes the hosts, rules and thresholds your test needs."
           bullets={[
@@ -148,7 +135,9 @@ export function ChoiceScreen({
           }
         />
         <ChoiceCard
-          icon={SettingsIcon}
+          visual={
+            <SettingsIcon css={{ fontSize: 64, color: 'var(--gray-10)' }} />
+          }
           title="Configure manually"
           description="Jump straight into the generator and build your rules, parameters and options by hand."
           bullets={[
@@ -168,15 +157,6 @@ export function ChoiceScreen({
             </Button>
           }
         />
-      </Flex>
-      <Flex mt="6" gap="2" align="center">
-        <Text
-          size="1"
-          color="gray"
-          css={{ display: 'flex', alignItems: 'center', gap: 6 }}
-        >
-          <SparklesIcon size={13} /> Assistant is powered by Grafana Cloud
-        </Text>
       </Flex>
     </Flex>
   )
