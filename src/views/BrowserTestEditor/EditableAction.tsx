@@ -13,10 +13,10 @@ import { FrameChain, FrameChainProvider } from './FrameChainContext'
 import { useBrowserActionState } from './ValidationProvider'
 
 interface EditableActionProps {
-  action: AnyBrowserAction
-  onRemove: (actionId: string) => void
-  onChange: (action: AnyBrowserAction) => void
   dragHandle?: ReactNode
+  action: AnyBrowserAction
+  onChange: (action: AnyBrowserAction) => void
+  onRemove: (actionId: AnyBrowserAction) => void
 }
 
 const runningPulse = keyframes`
@@ -52,7 +52,7 @@ export function EditableAction({
   const { isValidating, state } = useBrowserActionState(action.id)
 
   const handleRemove = () => {
-    onRemove(action.id)
+    onRemove(action)
   }
 
   const editor = getActionEditorForAction(action)

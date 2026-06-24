@@ -1,4 +1,3 @@
-import { arrayMove } from '@dnd-kit/sortable'
 import { debounce, isEqual } from 'lodash-es'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -12,10 +11,10 @@ import {
   AnyBrowserAction,
   BrowserTestFile,
   BrowserTestOptions,
-  BrowserThreshold,
+  defaultBrowserTestOptions,
 } from '@/schemas/browserTest'
 import { StudioFile } from '@/types'
-import { LoadProfileExecutorOptions, LoadZoneData } from '@/types/testOptions'
+import { LoadProfileExecutorOptions } from '@/types/testOptions'
 import { getInitialStages } from '@/utils/generator'
 import { stripUndefined } from '@/utils/object'
 
@@ -139,100 +138,55 @@ function withSeededStages(
     return loadProfile
   }
   const seeded = { ...loadProfile, stages: getInitialStages() }
+
   return seeded
 }
 
-export function useBrowserTestState({ actions, options }: BrowserTestFile) {
+export function useBrowserTestState(
+  browserTestFile: BrowserTestFile | undefined
+) {
+  const { actions = [], options = defaultBrowserTestOptions } =
+    browserTestFile ?? {}
+
   const initialOptions: BrowserTestOptions = {
     ...options,
     loadProfile: withSeededStages(options.loadProfile),
   }
 
-  const [actionState, setActionState] = useState(actions)
-  const [optionsState, setOptionsState] =
-    useState<BrowserTestOptions>(initialOptions)
+  const [test, setTest] = useState(() => ({
+    actions,
+    options: initialOptions,
+  }))
 
-  const [savedActions, setSavedActions] = useState(actions)
-  const [savedOptions, setSavedOptions] =
-    useState<BrowserTestOptions>(initialOptions)
-
-  const addAction = (action: AnyBrowserAction) => {
-    setActionState([...actionState, action])
-  }
-
-  const updateAction = (updatedAction: AnyBrowserAction) => {
-    setActionState(
-      actionState.map((action) =>
-        action.id === updatedAction.id ? updatedAction : action
-      )
-    )
-  }
-
-  const removeAction = (id: string) => {
-    setActionState(actionState.filter((action) => action.id !== id))
-  }
-
-  const reorderActions = useCallback((activeId: string, overId: string) => {
-    setActionState((prev) => {
-      const oldIndex = prev.findIndex((action) => action.id === activeId)
-      const newIndex = prev.findIndex((action) => action.id === overId)
-      if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
-        return prev
-      }
-      return arrayMove(prev, oldIndex, newIndex)
-    })
-  }, [])
-
-  const setLoadProfile = useCallback(
-    (loadProfile: LoadProfileExecutorOptions) =>
-      setOptionsState((prev) => ({
-        ...prev,
-        // Merge so inactive-branch fields (e.g. user's stages while
-        // shared-iterations is active) survive an executor switch. Codegen
-        // reads only the active branch, so shadow fields are inert.
-        loadProfile: {
-          ...prev.loadProfile,
-          ...loadProfile,
-        },
-      })),
-    []
-  )
-
-  const setThresholds = useCallback(
-    (thresholds: BrowserThreshold[]) =>
-      setOptionsState((prev) => ({ ...prev, thresholds })),
-    []
-  )
-
-  const setLoadZones = useCallback(
-    (loadZones: LoadZoneData) =>
-      setOptionsState((prev) => ({ ...prev, cloud: { loadZones } })),
-    []
-  )
+  const [savedTest, setSavedTest] = useState(() => ({
+    actions,
+    options: initialOptions,
+  }))
 
   const markAsSaved = useCallback(() => {
-    setSavedActions(actionState)
-    setSavedOptions(optionsState)
-  }, [actionState, optionsState])
+    setSavedTest(test)
+  }, [test])
 
   const isDirty = useMemo(() => {
+    // Baseline widens stages to match the in-memory state so seeded defaults
+    // aren't seen as edits. Compare strips undefined keys (RHF emits cleared
+    // inputs as `key: undefined`, while Zod parse drops them entirely) and
+    // ignores key order (Zod can reorder after a save+reload roundtrip).
+    const baseline = savedTest
+
     return (
-      !isEqual(stripUndefined(actionState), stripUndefined(savedActions)) ||
-      !isEqual(stripUndefined(optionsState), stripUndefined(savedOptions))
+      !isEqual(
+        stripUndefined(test.actions),
+        stripUndefined(baseline.actions)
+      ) ||
+      !isEqual(stripUndefined(test.options), stripUndefined(baseline.options))
     )
-  }, [actionState, savedActions, optionsState, savedOptions])
+  }, [savedTest, test.actions, test.options])
 
   return {
-    actions: actionState,
-    addAction,
-    updateAction,
-    removeAction,
-    reorderActions,
-    options: optionsState,
-    setLoadProfile,
-    setThresholds,
-    setLoadZones,
+    test,
     isDirty,
+    setTest,
     markAsSaved,
   }
 }
