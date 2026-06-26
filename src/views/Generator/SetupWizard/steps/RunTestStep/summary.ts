@@ -144,7 +144,7 @@ export function formatThresholds(
   config: MetricsConfig<string>
 ): string {
   return thresholds
-    .filter((threshold) => threshold.enabled)
+    .filter((threshold) => threshold.enabled !== false)
     .map((threshold) => formatThreshold(threshold, config))
     .join(' · ')
 }
