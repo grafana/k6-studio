@@ -120,7 +120,9 @@ export function useActionsLog() {
     type: 'outcome-success' | 'outcome-partial' | 'outcome-failure'
   ) {
     setEntries((prev) => {
-      const lastReasoning = prev.findLast((entry) => entry.type === 'reasoning')
+      const lastReasoning = prev.findLast(
+        (entry) => entry.type === 'reasoning' || entry.type === 'thinking'
+      )
       if (!lastReasoning) {
         return [
           ...prev,

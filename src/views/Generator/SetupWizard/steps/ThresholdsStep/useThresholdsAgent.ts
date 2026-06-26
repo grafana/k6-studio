@@ -33,6 +33,7 @@ export function useThresholdsAgent() {
   const requests = useGeneratorStore(selectFilteredRequests)
 
   const proposalsRef = useRef<ThresholdProposal[]>([])
+  const finishSucceededRef = useRef(false)
 
   const agent = useStepAgent({
     stepId: 'thresholds',
@@ -46,6 +47,7 @@ export function useThresholdsAgent() {
     onCompleted: dispatchCompletion,
     beginRun: (run) => {
       proposalsRef.current = []
+      finishSucceededRef.current = false
       const stats = computeResponseTimeStats(requests)
 
       void run.start(
@@ -100,6 +102,7 @@ export function useThresholdsAgent() {
         const isSuccess =
           toolCall.input.outcome === 'success' &&
           proposalsRef.current.length > 0
+        finishSucceededRef.current = isSuccess
 
         window.studio.app.trackEvent({
           event: isSuccess
@@ -120,11 +123,14 @@ export function useThresholdsAgent() {
   function dispatchCompletion() {
     const proposals = proposalsRef.current
 
-    if (proposals.length === 0) {
+    if (!finishSucceededRef.current) {
       dispatch({
         type: 'stepRunFailed',
         stepId: 'thresholds',
-        message: 'The Assistant did not suggest any thresholds.',
+        message:
+          proposals.length === 0
+            ? 'The Assistant did not suggest any thresholds.'
+            : 'The Assistant could not recommend thresholds for this recording.',
       })
       return
     }

@@ -37,6 +37,7 @@ export function useParameterizationAgent() {
   const requests = useGeneratorStore(selectFilteredRequests)
 
   const proposalsRef = useRef<ParameterizationProposal[]>([])
+  const finishSucceededRef = useRef(false)
 
   const agent = useStepAgent({
     stepId: 'parameterization',
@@ -50,6 +51,7 @@ export function useParameterizationAgent() {
     onCompleted: dispatchCompletion,
     beginRun: (run) => {
       proposalsRef.current = []
+      finishSucceededRef.current = false
 
       void run.start(systemPrompt)
       run.actionsLog.addEntry({
@@ -91,6 +93,7 @@ export function useParameterizationAgent() {
       }
 
       case 'finish': {
+        finishSucceededRef.current = toolCall.input.outcome !== 'failure'
         window.studio.app.trackEvent({
           event: outcomeEvents[toolCall.input.outcome],
         })
@@ -110,6 +113,16 @@ export function useParameterizationAgent() {
   }
 
   function dispatchCompletion() {
+    if (!finishSucceededRef.current) {
+      dispatch({
+        type: 'stepRunFailed',
+        stepId: 'parameterization',
+        message:
+          'The Assistant could not analyze parameterization for this recording.',
+      })
+      return
+    }
+
     const proposals = proposalsRef.current
     const { rules, setRules, variables, setVariables } =
       useGeneratorStore.getState()
