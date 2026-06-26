@@ -54,9 +54,14 @@ async function estimateVuh(script: RawScript): Promise<VuhEstimate | null> {
       options
     )
 
+    if (result.type === 'limit-exceeded') {
+      return { status: 'limit-exceeded', message: result.message }
+    }
+
     return {
-      vuhUsage: result.vuh_usage,
-      baseVuh: result.breakdown?.base_total_vuh ?? null,
+      status: 'ok',
+      vuhUsage: result.data.vuh_usage,
+      baseVuh: result.data.breakdown?.base_total_vuh ?? null,
     }
   } catch (error) {
     logError(error)

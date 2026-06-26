@@ -98,7 +98,9 @@ beforeEach(() => {
 
   vi.stubGlobal('studio', {
     cloud: {
-      estimateVuh: vi.fn().mockResolvedValue({ vuhUsage: 1.85, baseVuh: 2 }),
+      estimateVuh: vi
+        .fn()
+        .mockResolvedValue({ status: 'ok', vuhUsage: 1.85, baseVuh: 2 }),
     },
   })
 
@@ -138,6 +140,28 @@ describe('RunTestStep', () => {
     expect(screen.getByText(/mystack/)).toBeDefined()
     // VU-hours estimate comes from Grafana Cloud (validate_options).
     expect(await screen.findByText('~1.85 VUh')).toBeDefined()
+  })
+
+  it('shows a concise message when the load exceeds project limits', async () => {
+    vi.stubGlobal('studio', {
+      cloud: {
+        estimateVuh: vi.fn().mockResolvedValue({
+          status: 'limit-exceeded',
+          message:
+            'The test duration (18150 seconds) exceeds the maximum allowed for your project (3600 seconds). Shorten the test duration.',
+        }),
+      },
+    })
+
+    renderStep()
+
+    expect(
+      await screen.findByText(
+        'The test duration (18150 seconds) exceeds the maximum allowed for your project (3600 seconds).'
+      )
+    ).toBeDefined()
+    // The verbose guidance tail stays out of the inline message.
+    expect(screen.queryByText(/Shorten the test duration/)).toBeNull()
   })
 
   it('goes to the generator without saving', async () => {

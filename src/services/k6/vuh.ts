@@ -22,6 +22,29 @@ export type ValidateOptionsResponse = z.infer<
   typeof ValidateOptionsResponseSchema
 >
 
+const ProjectLimitErrorSchema = z.object({
+  error: z.object({ message: z.string(), code: z.string() }),
+})
+
+/**
+ * Returns the human-readable message from a `validate_options` error body when
+ * it is a project quota/limit rejection (e.g. too many VUs or too long a run),
+ * or null for any other error shape.
+ */
+export function parseProjectLimitError(body: unknown): string | null {
+  const parsed = ProjectLimitErrorSchema.safeParse(body)
+
+  if (parsed.success && parsed.data.error.code === 'validation_error') {
+    return parsed.data.error.message
+  }
+
+  return null
+}
+
+export type ValidateOptionsResult =
+  | { type: 'ok'; data: ValidateOptionsResponse }
+  | { type: 'limit-exceeded'; message: string }
+
 /**
  * Asks Grafana Cloud to estimate the VU-hours a test will consume from its k6
  * options - the same `validate_options` endpoint the k6 Cloud app uses. The
@@ -39,7 +62,7 @@ export class VuhClient {
     projectId: number,
     options: K6TestOptions,
     { signal }: CloudRequest = {}
-  ): Promise<ValidateOptionsResponse> {
+  ): Promise<ValidateOptionsResult> {
     const response = await fetch(url(`/validate_options`), {
       method: 'POST',
       headers: {
@@ -55,10 +78,23 @@ export class VuhClient {
       signal,
     })
 
-    if (!response.ok) {
-      throw new HttpError('Failed to estimate VU-hours.', response)
+    if (response.ok) {
+      return {
+        type: 'ok',
+        data: await parse(response, ValidateOptionsResponseSchema),
+      }
     }
 
-    return parse(response, ValidateOptionsResponseSchema)
+    // A project quota/limit rejection is expected user input, not a failure:
+    // surface its message so the step can tell the user what to lower.
+    const limitMessage = parseProjectLimitError(
+      await response.json().catch(() => null)
+    )
+
+    if (limitMessage !== null) {
+      return { type: 'limit-exceeded', message: limitMessage }
+    }
+
+    throw new HttpError('Failed to estimate VU-hours.', response)
   }
 }

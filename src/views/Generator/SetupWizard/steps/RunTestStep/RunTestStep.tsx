@@ -12,6 +12,7 @@ import {
   GlobeIcon,
   RocketIcon,
   TrendingUpIcon,
+  TriangleAlertIcon,
 } from 'lucide-react'
 import { PropsWithChildren, useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
@@ -19,6 +20,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { LoadProfile } from '@/components/TestOptions'
+import { VuhEstimate } from '@/handlers/cloud/types'
 import { FileLocation } from '@/handlers/fs/types'
 import { useAuthStatus } from '@/hooks/useAuthStatus'
 import { ScriptPreview } from '@/hooks/useScriptPreview'
@@ -198,9 +200,17 @@ function formatVuHours(vuHours: number): string {
 }
 
 type VuhEstimateState =
+  | VuhEstimate
   | { status: 'loading' }
-  | { status: 'error' }
-  | { status: 'done'; vuhUsage: number }
+  | { status: 'hidden' }
+
+// The cloud limit messages are verbose ("... Reduce the number of VUs or have an
+// admin ... Learn more: <url>"); the first sentence states the actual breach.
+function firstSentence(text: string): string {
+  const end = text.indexOf('. ')
+
+  return end === -1 ? text : text.slice(0, end + 1)
+}
 
 function useVuhEstimate(
   script: ScriptPreview,
@@ -210,7 +220,7 @@ function useVuhEstimate(
 
   useEffect(() => {
     if (!script.valid) {
-      setState({ status: 'error' })
+      setState({ status: 'hidden' })
       return
     }
 
@@ -220,19 +230,13 @@ function useVuhEstimate(
     window.studio.cloud
       .estimateVuh({ type: 'raw', name: scriptName, content: script.preview })
       .then((result) => {
-        if (cancelled) {
-          return
+        if (!cancelled) {
+          setState(result ?? { status: 'hidden' })
         }
-
-        setState(
-          result === null
-            ? { status: 'error' }
-            : { status: 'done', vuhUsage: result.vuhUsage }
-        )
       })
       .catch(() => {
         if (!cancelled) {
-          setState({ status: 'error' })
+          setState({ status: 'hidden' })
         }
       })
 
@@ -253,7 +257,7 @@ function VuHoursEstimate({
 }) {
   const estimate = useVuhEstimate(script, scriptName)
 
-  if (estimate.status === 'error') {
+  if (estimate.status === 'hidden') {
     return null
   }
 
@@ -264,6 +268,22 @@ function VuHoursEstimate({
         <Text size="2" color="gray">
           Estimating VU-hours...
         </Text>
+      </Flex>
+    )
+  }
+
+  if (estimate.status === 'limit-exceeded') {
+    return (
+      <Flex gap="2" align="center">
+        <TriangleAlertIcon
+          size={16}
+          css={{ flexShrink: 0, color: 'var(--amber-11)' }}
+        />
+        <Tooltip content={estimate.message}>
+          <Text size="2" color="amber">
+            {firstSentence(estimate.message)}
+          </Text>
+        </Tooltip>
       </Flex>
     )
   }
