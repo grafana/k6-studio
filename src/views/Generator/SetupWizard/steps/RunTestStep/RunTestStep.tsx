@@ -1,4 +1,4 @@
-import { Badge, Box, Button, Flex, Separator, Text } from '@radix-ui/themes'
+import { Badge, Box, Button, Flex, Text } from '@radix-ui/themes'
 import {
   ArrowLeftIcon,
   ChevronDownIcon,
@@ -86,63 +86,60 @@ function StageTimeline({ profile }: { profile: LoadProfileExecutorOptions }) {
   }
 
   return (
-    <>
-      <Separator size="4" />
-      <Flex direction="column" gap="2">
-        <Flex gap="1" css={{ height: 12 }}>
-          {segments.map((segment, index) => {
-            // Only the bar's outer edges round; inner segment edges stay square.
-            const isFirst = index === 0
-            const isLast = index === segments.length - 1
+    <Flex direction="column" gap="2">
+      <Flex gap="1" css={{ height: 12 }}>
+        {segments.map((segment, index) => {
+          // Only the bar's outer edges round; inner segment edges stay square.
+          const isFirst = index === 0
+          const isLast = index === segments.length - 1
 
-            return (
-              <Box
-                key={`${segment.label}-${index}`}
-                css={{
-                  flexGrow: segment.seconds || 1,
-                  flexBasis: 0,
-                  borderTopLeftRadius: isFirst ? 9999 : 0,
-                  borderBottomLeftRadius: isFirst ? 9999 : 0,
-                  borderTopRightRadius: isLast ? 9999 : 0,
-                  borderBottomRightRadius: isLast ? 9999 : 0,
-                  backgroundColor:
-                    segment.kind === 'steady'
-                      ? 'var(--orange-9)'
-                      : 'var(--orange-7)',
-                }}
-              />
-            )
-          })}
-        </Flex>
-        <Flex gap="3">
-          {segments.map((segment, index) => (
-            <Flex
+          return (
+            <Box
               key={`${segment.label}-${index}`}
-              direction="column"
-              // The bar keeps true proportions; the legend columns stay
-              // equal-width so a long stage can't starve a short one's labels.
-              css={{ flex: '1 1 0', minWidth: 0 }}
-            >
-              <Text size="2" weight="medium">
-                {segment.label}
-              </Text>
-              <Text size="1" color="gray">
-                {segment.detail}
-              </Text>
-              {segment.duration !== '' && (
-                <Text
-                  size="1"
-                  color="gray"
-                  css={{ fontFamily: 'var(--code-font-family)' }}
-                >
-                  {segment.duration}
-                </Text>
-              )}
-            </Flex>
-          ))}
-        </Flex>
+              css={{
+                flexGrow: segment.seconds || 1,
+                flexBasis: 0,
+                borderTopLeftRadius: isFirst ? 9999 : 0,
+                borderBottomLeftRadius: isFirst ? 9999 : 0,
+                borderTopRightRadius: isLast ? 9999 : 0,
+                borderBottomRightRadius: isLast ? 9999 : 0,
+                backgroundColor:
+                  segment.kind === 'steady'
+                    ? 'var(--orange-9)'
+                    : 'var(--orange-7)',
+              }}
+            />
+          )
+        })}
       </Flex>
-    </>
+      <Flex gap="1">
+        {segments.map((segment, index) => (
+          <Flex
+            key={`${segment.label}-${index}`}
+            direction="column"
+            // Weighted to track the matching bar segment, with a min width so a
+            // short stage's labels stay readable instead of collapsing.
+            css={{ flexGrow: segment.seconds || 1, flexBasis: 0, minWidth: 88 }}
+          >
+            <Text size="2" weight="medium">
+              {segment.label}
+            </Text>
+            <Text size="1" color="gray">
+              {segment.detail}
+            </Text>
+            {segment.duration !== '' && (
+              <Text
+                size="1"
+                color="gray"
+                css={{ fontFamily: 'var(--code-font-family)' }}
+              >
+                {segment.duration}
+              </Text>
+            )}
+          </Flex>
+        ))}
+      </Flex>
+    </Flex>
   )
 }
 
