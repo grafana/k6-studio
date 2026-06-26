@@ -90,20 +90,29 @@ function StageTimeline({ profile }: { profile: LoadProfileExecutorOptions }) {
       <Separator size="4" />
       <Flex direction="column" gap="2">
         <Flex gap="1" css={{ height: 12 }}>
-          {segments.map((segment, index) => (
-            <Box
-              key={`${segment.label}-${index}`}
-              css={{
-                flexGrow: segment.seconds || 1,
-                flexBasis: 0,
-                borderRadius: 9999,
-                backgroundColor:
-                  segment.kind === 'steady'
-                    ? 'var(--orange-9)'
-                    : 'var(--orange-7)',
-              }}
-            />
-          ))}
+          {segments.map((segment, index) => {
+            // Only the bar's outer edges round; inner segment edges stay square.
+            const isFirst = index === 0
+            const isLast = index === segments.length - 1
+
+            return (
+              <Box
+                key={`${segment.label}-${index}`}
+                css={{
+                  flexGrow: segment.seconds || 1,
+                  flexBasis: 0,
+                  borderTopLeftRadius: isFirst ? 9999 : 0,
+                  borderBottomLeftRadius: isFirst ? 9999 : 0,
+                  borderTopRightRadius: isLast ? 9999 : 0,
+                  borderBottomRightRadius: isLast ? 9999 : 0,
+                  backgroundColor:
+                    segment.kind === 'steady'
+                      ? 'var(--orange-9)'
+                      : 'var(--orange-7)',
+                }}
+              />
+            )
+          })}
         </Flex>
         <Flex gap="1">
           {segments.map((segment, index) => (
@@ -178,6 +187,14 @@ function WhatWillRun() {
           </Flex>
         </Flex>
       </Flex>
+      {thresholdsLine !== '' && (
+        <Flex gap="2" align="start">
+          <GaugeIcon size={16} css={{ flexShrink: 0, marginTop: 2 }} />
+          <Text size="2" weight="medium">
+            {thresholdsLine}
+          </Text>
+        </Flex>
+      )}
       <Flex gap="2" align="start">
         <TrendingUpIcon size={16} css={{ flexShrink: 0, marginTop: 2 }} />
         <Flex direction="column" gap="1">
@@ -192,14 +209,6 @@ function WhatWillRun() {
         </Flex>
       </Flex>
       <StageTimeline profile={loadProfile} />
-      {thresholdsLine !== '' && (
-        <Flex gap="2" align="start">
-          <GaugeIcon size={16} css={{ flexShrink: 0, marginTop: 2 }} />
-          <Text size="2" weight="medium">
-            {thresholdsLine}
-          </Text>
-        </Flex>
-      )}
     </Flex>
   )
 }
