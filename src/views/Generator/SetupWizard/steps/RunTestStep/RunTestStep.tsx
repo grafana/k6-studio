@@ -114,16 +114,14 @@ function StageTimeline({ profile }: { profile: LoadProfileExecutorOptions }) {
             )
           })}
         </Flex>
-        <Flex gap="1">
+        <Flex gap="3">
           {segments.map((segment, index) => (
             <Flex
               key={`${segment.label}-${index}`}
               direction="column"
-              css={{
-                flexGrow: segment.seconds || 1,
-                flexBasis: 0,
-                minWidth: 0,
-              }}
+              // The bar keeps true proportions; the legend columns stay
+              // equal-width so a long stage can't starve a short one's labels.
+              css={{ flex: '1 1 0', minWidth: 0 }}
             >
               <Text size="2" weight="medium">
                 {segment.label}
