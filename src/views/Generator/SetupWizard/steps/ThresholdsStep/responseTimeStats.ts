@@ -31,7 +31,7 @@ function percentile(sortedValues: number[], fraction: number): number {
  * timestamps; HAR-imported recordings encode the entry's total time as
  * `request.timestampEnd` (see harToProxyData).
  */
-export function getRequestDuration({ request, response }: ProxyData): number {
+function getRequestDuration({ request, response }: ProxyData): number {
   if (!request.timestampStart) {
     return 0
   }

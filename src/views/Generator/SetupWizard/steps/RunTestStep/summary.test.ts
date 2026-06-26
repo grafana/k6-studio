@@ -1,39 +1,14 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  createProxyData,
-  createRequest,
-  createResponse,
-} from '@/test/factories/proxyData'
 import { createThreshold } from '@/test/factories/threshold'
-import { ThinkTime } from '@/types/testOptions'
 import { HTTP_METRICS_CONFIG } from '@/views/Generator/TestOptions/httpThresholdMetrics'
 
 import {
   buildStageSegments,
-  computeVuHours,
   formatThresholds,
   getLoadSummary,
   parseDurationSeconds,
 } from './summary'
-
-const NO_THINK_TIME: ThinkTime = {
-  sleepType: 'iterations',
-  timing: { type: 'fixed', value: null },
-}
-
-// A request whose recorded duration is `seconds` (response ends that much after
-// the request starts).
-function requestLasting(seconds: number, group?: string) {
-  return createProxyData({
-    group,
-    request: createRequest({ timestampStart: 100 }),
-    response: createResponse({
-      timestampStart: 100,
-      timestampEnd: 100 + seconds,
-    }),
-  })
-}
 
 describe('parseDurationSeconds', () => {
   it.each([
@@ -209,93 +184,5 @@ describe('buildStageSegments', () => {
     const [segment] = buildStageSegments({ executor: 'shared-iterations' })
 
     expect(segment?.detail).toBe('1 VUs')
-  })
-})
-
-describe('computeVuHours', () => {
-  it('sums the trapezoidal area under the ramping VU curve', () => {
-    // 0->20 over 1m (avg 10), hold 20 for 1m (avg 20), 20->0 over 1m (avg 10)
-    // => (10 + 20 + 10) * 60s = 2400 VU-seconds => 2400 / 3600 VU-hours.
-    const vuHours = computeVuHours(
-      {
-        executor: 'ramping-vus',
-        stages: [
-          { target: 20, duration: '1m' },
-          { target: 20, duration: '1m' },
-          { target: 0, duration: '1m' },
-        ],
-      },
-      [],
-      NO_THINK_TIME
-    )
-
-    expect(vuHours).toBeCloseTo(2400 / 3600, 5)
-  })
-
-  it('returns null for ramping with no stages', () => {
-    expect(
-      computeVuHours({ executor: 'ramping-vus', stages: [] }, [], NO_THINK_TIME)
-    ).toBeNull()
-  })
-
-  it('estimates shared iterations from recorded request durations', () => {
-    // Two 0.5s requests => 1s of work per iteration, 100 iterations.
-    const vuHours = computeVuHours(
-      { executor: 'shared-iterations', vus: 5, iterations: 100 },
-      [requestLasting(0.5), requestLasting(0.5)],
-      NO_THINK_TIME
-    )
-
-    expect(vuHours).toBeCloseTo(100 / 3600, 5)
-  })
-
-  it('adds per-request think time to the shared-iterations estimate', () => {
-    // 1s of requests + 1s sleep per request (x2) = 3s per iteration.
-    const vuHours = computeVuHours(
-      { executor: 'shared-iterations', iterations: 100 },
-      [requestLasting(0.5), requestLasting(0.5)],
-      { sleepType: 'requests', timing: { type: 'fixed', value: 1 } }
-    )
-
-    expect(vuHours).toBeCloseTo((100 * 3) / 3600, 5)
-  })
-
-  it('adds per-group think time using the recorded groups', () => {
-    // 1s of requests + 1s sleep x 2 groups = 3s per iteration.
-    const vuHours = computeVuHours(
-      { executor: 'shared-iterations', iterations: 100 },
-      [requestLasting(0.5, 'login'), requestLasting(0.5, 'checkout')],
-      {
-        sleepType: 'groups',
-        timing: { type: 'range', value: { min: 0, max: 2 } },
-      }
-    )
-
-    expect(vuHours).toBeCloseTo((100 * 3) / 3600, 5)
-  })
-
-  it('returns null for shared iterations without an iteration count', () => {
-    expect(
-      computeVuHours(
-        { executor: 'shared-iterations', vus: 5 },
-        [requestLasting(0.5)],
-        NO_THINK_TIME
-      )
-    ).toBeNull()
-  })
-
-  it('returns null for shared iterations when the recording has no timing', () => {
-    const untimed = createProxyData({
-      request: createRequest({ timestampStart: 0 }),
-      response: createResponse({ timestampStart: 0, timestampEnd: 0 }),
-    })
-
-    expect(
-      computeVuHours(
-        { executor: 'shared-iterations', iterations: 100 },
-        [untimed],
-        NO_THINK_TIME
-      )
-    ).toBeNull()
   })
 })
