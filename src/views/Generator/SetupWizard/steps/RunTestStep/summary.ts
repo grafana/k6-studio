@@ -1,5 +1,14 @@
 import { MetricsConfig } from '@/components/TestOptions/Thresholds/createMetricsConfig'
-import { LoadProfileExecutorOptions, Threshold } from '@/types/testOptions'
+import { ProxyData } from '@/types'
+import {
+  LoadProfileExecutorOptions,
+  ThinkTime,
+  Threshold,
+} from '@/types/testOptions'
+import { groupProxyData } from '@/utils/groups'
+import { exhaustive } from '@/utils/typescript'
+
+import { getRequestDuration } from '../ThresholdsStep/responseTimeStats'
 
 export function parseDurationSeconds(duration: string): number {
   const matches = duration.matchAll(/(\d+)([hms])/g)
@@ -106,6 +115,85 @@ export function buildStageSegments(
       seconds: parseDurationSeconds(stage.duration),
     }
   })
+}
+
+const SECONDS_PER_HOUR = 3600
+
+function avgSleepSeconds(thinkTime: ThinkTime): number {
+  const { timing } = thinkTime
+
+  return timing.type === 'fixed'
+    ? (timing.value ?? 0)
+    : (timing.value.min + timing.value.max) / 2
+}
+
+function thinkSecondsPerIteration(
+  thinkTime: ThinkTime,
+  requests: ProxyData[]
+): number {
+  const sleep = avgSleepSeconds(thinkTime)
+
+  switch (thinkTime.sleepType) {
+    case 'iterations':
+      return sleep
+    case 'requests':
+      return sleep * requests.length
+    case 'groups':
+      return sleep * Object.keys(groupProxyData(requests)).length
+    default:
+      return exhaustive(thinkTime.sleepType)
+  }
+}
+
+/**
+ * Estimated VU-hours the run will consume, or null when it can't be derived.
+ *
+ * Ramping is exact: the trapezoidal area under the VUs-over-time curve. Shared
+ * iterations has no time axis, so it's estimated from the recording - one
+ * iteration is roughly the recorded request durations plus the configured think
+ * time, times the iteration count (the vus cancel out: vus x wall-time =
+ * iterations x iteration time). Returns null without an iteration count or any
+ * recorded timing, so the caller can omit the estimate rather than fake it.
+ */
+export function computeVuHours(
+  profile: LoadProfileExecutorOptions,
+  requests: ProxyData[],
+  thinkTime: ThinkTime
+): number | null {
+  if (profile.executor === 'ramping-vus') {
+    const stages = profile.stages ?? []
+
+    if (stages.length === 0) {
+      return null
+    }
+
+    const vuSeconds = stages.reduce((total, stage, index) => {
+      const previous = index === 0 ? 0 : (stages[index - 1]?.target ?? 0)
+      const averageVus = (previous + stage.target) / 2
+
+      return total + averageVus * parseDurationSeconds(stage.duration)
+    }, 0)
+
+    return vuSeconds / SECONDS_PER_HOUR
+  }
+
+  if (profile.iterations === undefined || profile.iterations <= 0) {
+    return null
+  }
+
+  const requestSeconds = requests.reduce(
+    (total, request) => total + getRequestDuration(request) / 1000,
+    0
+  )
+
+  if (requestSeconds <= 0) {
+    return null
+  }
+
+  const iterationSeconds =
+    requestSeconds + thinkSecondsPerIteration(thinkTime, requests)
+
+  return (profile.iterations * iterationSeconds) / SECONDS_PER_HOUR
 }
 
 function formatThreshold(

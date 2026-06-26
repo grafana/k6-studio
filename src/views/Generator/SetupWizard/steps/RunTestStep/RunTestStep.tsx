@@ -7,6 +7,7 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   CloudIcon,
+  CoinsIcon,
   GaugeIcon,
   GlobeIcon,
   RocketIcon,
@@ -37,6 +38,7 @@ import { StepFrame } from '../../StepFrame'
 
 import {
   buildStageSegments,
+  computeVuHours,
   formatThresholds,
   getLoadSummary,
   StageSegment,
@@ -188,6 +190,40 @@ function StageTimeline({ profile }: { profile: LoadProfileExecutorOptions }) {
   )
 }
 
+function formatVuHours(vuHours: number): string {
+  if (vuHours > 0 && vuHours < 0.01) {
+    return '<0.01'
+  }
+
+  return String(Number(vuHours.toFixed(2)))
+}
+
+function VuHoursEstimate() {
+  const profile = useGeneratorStore(
+    useShallow(selectLoadProfileExecutorOptions)
+  )
+  const requests = useGeneratorStore(useShallow(selectFilteredRequests))
+  const sleepType = useGeneratorStore((store) => store.sleepType)
+  const timing = useGeneratorStore((store) => store.timing)
+
+  const vuHours = computeVuHours(profile, requests, { sleepType, timing })
+
+  if (vuHours === null) {
+    return null
+  }
+
+  return (
+    <Flex gap="2" align="center">
+      <CoinsIcon size={16} css={{ flexShrink: 0 }} />
+      <Tooltip content="Estimated from your load profile and recorded response times. Real usage depends on latency under load, and aborted runs aren't charged.">
+        <Text size="2" weight="medium">
+          ~{formatVuHours(vuHours)} VU-hours
+        </Text>
+      </Tooltip>
+    </Flex>
+  )
+}
+
 function WhatWillRun() {
   const requestCount = useGeneratorStore(
     (store) => selectFilteredRequests(store).length
@@ -242,6 +278,7 @@ function WhatWillRun() {
         </Text>
       </Flex>
       <StageTimeline profile={loadProfile} />
+      <VuHoursEstimate />
     </Flex>
   )
 }
