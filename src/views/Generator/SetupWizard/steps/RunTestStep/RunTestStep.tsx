@@ -1,6 +1,9 @@
-import { Badge, Box, Button, Flex, Text } from '@radix-ui/themes'
+import { Badge, Box, Button, Flex, Text, Tooltip } from '@radix-ui/themes'
 import {
+  ArrowDownIcon,
   ArrowLeftIcon,
+  ArrowRightIcon,
+  ArrowUpIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   CloudIcon,
@@ -32,7 +35,21 @@ import { STEP_ORDER, StepId } from '../../state/types'
 import { useWizardNavigation } from '../../state/useWizardNavigation'
 import { StepFrame } from '../../StepFrame'
 
-import { buildStageSegments, formatThresholds, getLoadSummary } from './summary'
+import {
+  buildStageSegments,
+  formatThresholds,
+  getLoadSummary,
+  StageSegment,
+} from './summary'
+
+const STAGE_ICONS: Record<StageSegment['kind'], typeof ArrowUpIcon> = {
+  'ramp-up': ArrowUpIcon,
+  steady: ArrowRightIcon,
+  'ramp-down': ArrowDownIcon,
+}
+
+// Width a column needs for its full labels; below this it collapses to an icon.
+const STAGE_LABEL_MIN_WIDTH = 88
 
 interface RunTestStepProps {
   script: ScriptPreview
@@ -113,31 +130,59 @@ function StageTimeline({ profile }: { profile: LoadProfileExecutorOptions }) {
         })}
       </Flex>
       <Flex gap="1">
-        {segments.map((segment, index) => (
-          <Flex
-            key={`${segment.label}-${index}`}
-            direction="column"
-            // Weighted to track the matching bar segment, with a min width so a
-            // short stage's labels stay readable instead of collapsing.
-            css={{ flexGrow: segment.seconds || 1, flexBasis: 0, minWidth: 88 }}
-          >
-            <Text size="2" weight="medium">
-              {segment.label}
-            </Text>
-            <Text size="1" color="gray">
-              {segment.detail}
-            </Text>
-            {segment.duration !== '' && (
-              <Text
-                size="1"
-                color="gray"
-                css={{ fontFamily: 'var(--code-font-family)' }}
+        {segments.map((segment, index) => {
+          const Icon = STAGE_ICONS[segment.kind]
+          const summary = [segment.label, segment.detail, segment.duration]
+            .filter(Boolean)
+            .join(' · ')
+          const whenNarrow = `@container (max-width: ${STAGE_LABEL_MIN_WIDTH - 1}px)`
+
+          return (
+            <Flex
+              key={`${segment.label}-${index}`}
+              direction="column"
+              // Weighted to track the matching bar segment. The column shrinks to
+              // an icon; the container query swaps the full labels for an
+              // icon + tooltip when there isn't room for the text.
+              css={{
+                flexGrow: segment.seconds || 1,
+                flexBasis: 0,
+                minWidth: 24,
+                containerType: 'inline-size',
+              }}
+            >
+              <Tooltip content={summary}>
+                <Flex
+                  justify="center"
+                  aria-label={summary}
+                  css={{ display: 'none', [whenNarrow]: { display: 'flex' } }}
+                >
+                  <Icon size={16} css={{ color: 'var(--orange-11)' }} />
+                </Flex>
+              </Tooltip>
+              <Flex
+                direction="column"
+                css={{ [whenNarrow]: { display: 'none' } }}
               >
-                {segment.duration}
-              </Text>
-            )}
-          </Flex>
-        ))}
+                <Text size="2" weight="medium">
+                  {segment.label}
+                </Text>
+                <Text size="1" color="gray">
+                  {segment.detail}
+                </Text>
+                {segment.duration !== '' && (
+                  <Text
+                    size="1"
+                    color="gray"
+                    css={{ fontFamily: 'var(--code-font-family)' }}
+                  >
+                    {segment.duration}
+                  </Text>
+                )}
+              </Flex>
+            </Flex>
+          )
+        })}
       </Flex>
     </Flex>
   )
