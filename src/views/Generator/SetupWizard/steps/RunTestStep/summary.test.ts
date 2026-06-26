@@ -33,10 +33,7 @@ describe('getLoadSummary', () => {
       ],
     })
 
-    expect(summary.headline).toBe('Up to 20 virtual users for ~5m 30s')
-    expect(summary.detail).toBe(
-      'Ramp to 20 VUs over 1m · hold 20 VUs for 3m30s · ramp down to 0 over 1m'
-    )
+    expect(summary).toBe('Up to 20 virtual users for ~5m 30s')
   })
 
   it('summarizes shared iterations', () => {
@@ -46,22 +43,19 @@ describe('getLoadSummary', () => {
       iterations: 100,
     })
 
-    expect(summary.headline).toBe(
-      '100 iterations shared across 5 virtual users'
-    )
-    expect(summary.detail).toBe('')
+    expect(summary).toBe('100 iterations shared across 5 virtual users')
   })
 
   it('falls back to k6 defaults for shared iterations', () => {
     const summary = getLoadSummary({ executor: 'shared-iterations' })
 
-    expect(summary.headline).toBe('1 iteration shared across 1 virtual user')
+    expect(summary).toBe('1 iteration shared across 1 virtual user')
   })
 
   it('handles an empty stage list', () => {
     const summary = getLoadSummary({ executor: 'ramping-vus', stages: [] })
 
-    expect(summary.headline).toBe('No load stages configured')
+    expect(summary).toBe('No load stages configured')
   })
 })
 

@@ -237,16 +237,9 @@ function WhatWillRun() {
       )}
       <Flex gap="2" align="start">
         <TrendingUpIcon size={16} css={{ flexShrink: 0, marginTop: 2 }} />
-        <Flex direction="column" gap="1">
-          <Text size="2" weight="medium">
-            {load.headline}
-          </Text>
-          {load.detail !== '' && (
-            <Text size="1" color="gray">
-              {load.detail}
-            </Text>
-          )}
-        </Flex>
+        <Text size="2" weight="medium">
+          {load}
+        </Text>
       </Flex>
       <StageTimeline profile={loadProfile} />
     </Flex>

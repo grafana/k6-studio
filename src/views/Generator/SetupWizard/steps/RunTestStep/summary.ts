@@ -26,32 +26,18 @@ function formatDuration(totalSeconds: number): string {
     .join(' ')
 }
 
-function formatVUs(count: number): string {
-  return count === 1 ? '1 VU' : `${count} VUs`
-}
-
-interface LoadSummary {
-  headline: string
-  detail: string
-}
-
-export function getLoadSummary(
-  profile: LoadProfileExecutorOptions
-): LoadSummary {
+export function getLoadSummary(profile: LoadProfileExecutorOptions): string {
   if (profile.executor === 'shared-iterations') {
     const iterations = profile.iterations ?? 1
     const vus = profile.vus ?? 1
 
-    return {
-      headline: `${iterations} iteration${iterations === 1 ? '' : 's'} shared across ${vus} virtual user${vus === 1 ? '' : 's'}`,
-      detail: '',
-    }
+    return `${iterations} iteration${iterations === 1 ? '' : 's'} shared across ${vus} virtual user${vus === 1 ? '' : 's'}`
   }
 
   const stages = profile.stages ?? []
 
   if (stages.length === 0) {
-    return { headline: 'No load stages configured', detail: '' }
+    return 'No load stages configured'
   }
 
   const peak = Math.max(...stages.map((stage) => stage.target))
@@ -60,26 +46,7 @@ export function getLoadSummary(
     0
   )
 
-  const detail = stages
-    .map((stage, index) => {
-      const previous = index === 0 ? 0 : (stages[index - 1]?.target ?? 0)
-
-      if (stage.target === previous) {
-        return `hold ${formatVUs(stage.target)} for ${stage.duration}`
-      }
-
-      if (stage.target < previous) {
-        return `ramp down to ${stage.target} over ${stage.duration}`
-      }
-
-      return `ramp to ${formatVUs(stage.target)} over ${stage.duration}`
-    })
-    .join(' · ')
-
-  return {
-    headline: `Up to ${peak} virtual user${peak === 1 ? '' : 's'} for ~${formatDuration(totalSeconds)}`,
-    detail: detail.charAt(0).toUpperCase() + detail.slice(1),
-  }
+  return `Up to ${peak} virtual user${peak === 1 ? '' : 's'} for ~${formatDuration(totalSeconds)}`
 }
 
 export interface StageSegment {
