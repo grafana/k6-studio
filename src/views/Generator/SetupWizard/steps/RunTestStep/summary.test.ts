@@ -4,6 +4,7 @@ import { createThreshold } from '@/test/factories/threshold'
 import { HTTP_METRICS_CONFIG } from '@/views/Generator/TestOptions/httpThresholdMetrics'
 
 import {
+  buildStageSegments,
   formatThresholds,
   getLoadSummary,
   parseDurationSeconds,
@@ -128,5 +129,66 @@ describe('formatThresholds', () => {
     expect(formatThresholds(thresholds, HTTP_METRICS_CONFIG)).toBe(
       'p95 < 300ms'
     )
+  })
+})
+
+describe('buildStageSegments', () => {
+  it('classifies ramp-up, steady, and ramp-down stages', () => {
+    const segments = buildStageSegments({
+      executor: 'ramping-vus',
+      stages: [
+        { target: 50, duration: '1m' },
+        { target: 50, duration: '3m30s' },
+        { target: 0, duration: '1m' },
+      ],
+    })
+
+    expect(segments).toEqual([
+      {
+        kind: 'ramp-up',
+        label: 'Ramp up',
+        detail: '0 → 50 VUs',
+        duration: '1m',
+        seconds: 60,
+      },
+      {
+        kind: 'steady',
+        label: 'Steady',
+        detail: '50 VUs',
+        duration: '3m30s',
+        seconds: 210,
+      },
+      {
+        kind: 'ramp-down',
+        label: 'Ramp down',
+        detail: '50 → 0 VUs',
+        duration: '1m',
+        seconds: 60,
+      },
+    ])
+  })
+
+  it('returns a single steady segment for shared iterations', () => {
+    expect(
+      buildStageSegments({
+        executor: 'shared-iterations',
+        vus: 5,
+        iterations: 100,
+      })
+    ).toEqual([
+      {
+        kind: 'steady',
+        label: 'Steady',
+        detail: '5 VUs',
+        duration: '',
+        seconds: 1,
+      },
+    ])
+  })
+
+  it('falls back to a single VU for shared iterations without vus', () => {
+    const [segment] = buildStageSegments({ executor: 'shared-iterations' })
+
+    expect(segment?.detail).toBe('1 VUs')
   })
 })

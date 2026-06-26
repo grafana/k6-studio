@@ -1,4 +1,4 @@
-import { Badge, Box, Button, Flex, Text } from '@radix-ui/themes'
+import { Badge, Box, Button, Flex, Separator, Text } from '@radix-ui/themes'
 import {
   ArrowLeftIcon,
   ChevronDownIcon,
@@ -23,6 +23,7 @@ import {
   selectLoadProfileExecutorOptions,
   useGeneratorStore,
 } from '@/store/generator'
+import { LoadProfileExecutorOptions } from '@/types/testOptions'
 import { HTTP_METRICS_CONFIG } from '@/views/Generator/TestOptions/httpThresholdMetrics'
 
 import { STEP_CONFIG } from '../../constants'
@@ -31,7 +32,7 @@ import { STEP_ORDER, StepId } from '../../state/types'
 import { useWizardNavigation } from '../../state/useWizardNavigation'
 import { StepFrame } from '../../StepFrame'
 
-import { formatThresholds, getLoadSummary } from './summary'
+import { buildStageSegments, formatThresholds, getLoadSummary } from './summary'
 
 interface RunTestStepProps {
   script: ScriptPreview
@@ -74,6 +75,67 @@ function CollapsibleSection({
         <Box css={{ borderTop: '1px solid var(--gray-4)' }}>{children}</Box>
       )}
     </Box>
+  )
+}
+
+function StageTimeline({ profile }: { profile: LoadProfileExecutorOptions }) {
+  const segments = buildStageSegments(profile)
+
+  if (segments.length === 0) {
+    return null
+  }
+
+  return (
+    <>
+      <Separator size="4" />
+      <Flex direction="column" gap="2">
+        <Flex gap="1" css={{ height: 12 }}>
+          {segments.map((segment, index) => (
+            <Box
+              key={`${segment.label}-${index}`}
+              css={{
+                flexGrow: segment.seconds || 1,
+                flexBasis: 0,
+                borderRadius: 9999,
+                backgroundColor:
+                  segment.kind === 'steady'
+                    ? 'var(--orange-9)'
+                    : 'var(--orange-7)',
+              }}
+            />
+          ))}
+        </Flex>
+        <Flex gap="1">
+          {segments.map((segment, index) => (
+            <Flex
+              key={`${segment.label}-${index}`}
+              direction="column"
+              css={{
+                flexGrow: segment.seconds || 1,
+                flexBasis: 0,
+                minWidth: 0,
+              }}
+            >
+              <Text size="2" weight="medium">
+                {segment.label}
+              </Text>
+              <Text size="1" color="gray">
+                {segment.detail}
+              </Text>
+              {segment.duration !== '' && (
+                <Text
+                  size="1"
+                  color="gray"
+                  css={{ fontFamily: 'var(--code-font-family)' }}
+                >
+                  {segment.duration}
+                </Text>
+              )}
+            </Flex>
+          ))}
+        </Flex>
+      </Flex>
+    </>
   )
 }
 
@@ -129,6 +191,7 @@ function WhatWillRun() {
           )}
         </Flex>
       </Flex>
+      <StageTimeline profile={loadProfile} />
       {thresholdsLine !== '' && (
         <Flex gap="2" align="start">
           <GaugeIcon size={16} css={{ flexShrink: 0, marginTop: 2 }} />

@@ -82,6 +82,65 @@ export function getLoadSummary(
   }
 }
 
+export interface StageSegment {
+  kind: 'ramp-up' | 'steady' | 'ramp-down'
+  label: string
+  detail: string
+  /** Raw stage duration (e.g. "1m30s"); empty for shared-iterations. */
+  duration: string
+  /** Duration in seconds, used as the segment's flex weight. */
+  seconds: number
+}
+
+const STAGE_LABELS: Record<StageSegment['kind'], string> = {
+  'ramp-up': 'Ramp up',
+  steady: 'Steady',
+  'ramp-down': 'Ramp down',
+}
+
+function classifyStage(previous: number, target: number): StageSegment['kind'] {
+  if (target > previous) return 'ramp-up'
+  if (target < previous) return 'ramp-down'
+  return 'steady'
+}
+
+/**
+ * Describes each load-profile stage for the run-test timeline. Ramping profiles
+ * map one segment per stage (relative to the previous target); shared-iterations
+ * has no stages, so it collapses to a single steady segment.
+ */
+export function buildStageSegments(
+  profile: LoadProfileExecutorOptions
+): StageSegment[] {
+  if (profile.executor === 'shared-iterations') {
+    return [
+      {
+        kind: 'steady',
+        label: STAGE_LABELS.steady,
+        detail: `${profile.vus ?? 1} VUs`,
+        duration: '',
+        seconds: 1,
+      },
+    ]
+  }
+
+  return profile.stages.map((stage, index) => {
+    const previous = index === 0 ? 0 : (profile.stages[index - 1]?.target ?? 0)
+    const kind = classifyStage(previous, stage.target)
+
+    return {
+      kind,
+      label: STAGE_LABELS[kind],
+      detail:
+        kind === 'steady'
+          ? `${stage.target} VUs`
+          : `${previous} → ${stage.target} VUs`,
+      duration: stage.duration,
+      seconds: parseDurationSeconds(stage.duration),
+    }
+  })
+}
+
 function formatThreshold(
   threshold: Threshold,
   config: MetricsConfig<string>
