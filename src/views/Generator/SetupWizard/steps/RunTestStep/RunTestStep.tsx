@@ -353,6 +353,7 @@ function WhatWillRun({
           </Text>
         </Flex>
       )}
+      <VuHoursEstimate script={script} scriptName={scriptName} />
       <Flex gap="2" align="start">
         <TrendingUpIcon size={16} css={{ flexShrink: 0, marginTop: 2 }} />
         <Text size="2" weight="medium">
@@ -360,7 +361,6 @@ function WhatWillRun({
         </Text>
       </Flex>
       <StageTimeline profile={loadProfile} />
-      <VuHoursEstimate script={script} scriptName={scriptName} />
     </Flex>
   )
 }
