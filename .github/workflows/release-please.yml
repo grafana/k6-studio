@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+      # Patch/maintenance branches. Must be named release/<major>.<minor>.x
+      # (e.g. release/1.13.x). Create them with the "Create Patch Branch" workflow.
+      - 'release/[0-9]+.[0-9]+.x'
 
 permissions: {}
 
@@ -13,33 +16,38 @@ jobs:
       contents: write
       pull-requests: write
       id-token: write
-      
+
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      sha: ${{ steps.release.outputs.sha }}
     steps:
-      - name: Retrieve release app credentials
-        id: get-secrets
-        uses: grafana/shared-workflows/actions/get-vault-secrets@a37de51f3d713a30a9e4b21bcdfbd38170020593 # get-vault-secrets/v1.3.0
+      - name: Get GitHub App token
+        id: get-github-app-token
+        uses: grafana/shared-workflows/actions/create-github-app-token@259ba21cb3ff07724f331e26d926d655d24b317b # create-github-app-token/v0.2.3
         with:
-          repo_secrets: |
-            GITHUB_APP_ID=github-app:app-id
-            GITHUB_APP_INSTALLATION_ID=github-app:app-installation-id
-            GITHUB_APP_PRIVATE_KEY=github-app:private-key
+          github_app: k6-release-app
 
-      - name: Get repository name
-        env:
-          REPOSITORY: ${{ github.repository }}
-        id: info
-        run: echo "repository_name=${REPOSITORY#*/}" >> "$GITHUB_OUTPUT"
-
-      - name: Generate a token
-        id: generate-token
-        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
+      - id: release
+        uses: googleapis/release-please-action@16a9c90856f42705d54a6fda1823352bdc62cf38 # v4.4.0
         with:
-          app-id: ${{ env.GITHUB_APP_ID }}
-          private-key: ${{ env.GITHUB_APP_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          repositories: ${{ steps.info.outputs.repository_name }}
+          token: ${{ steps.get-github-app-token.outputs.token }}
 
-      - uses: googleapis/release-please-action@16a9c90856f42705d54a6fda1823352bdc62cf38 # v4.4.0
-        with:
-          token: ${{ steps.generate-token.outputs.token }}
+  # The draft GitHub release that release-please creates does not push a git tag
+  # (GitHub only creates the tag when the draft is published), so the build runs
+  # against the SHA release-please reports rather than refs/tags/<tag_name>.
+  # publisher-github finds the existing draft by tag_name and uploads artifacts.
+  release:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    permissions:
+      contents: write
+      id-token: write
+    concurrency:
+      group: build-${{ needs.release-please.outputs.tag_name }}
+      cancel-in-progress: false
+    uses: ./.github/workflows/release-base.yml
+    with:
+      ref: ${{ needs.release-please.outputs.sha }}
+    secrets: inherit
