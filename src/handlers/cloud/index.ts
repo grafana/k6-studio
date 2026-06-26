@@ -2,16 +2,70 @@ import { ipcMain, shell } from 'electron'
 
 import { SCRIPTS_PATH } from '@/constants/workspace'
 import { getTempScriptName } from '@/main/script'
+import { ProjectClient } from '@/services/k6/projects'
+import { CloudCredentials } from '@/services/k6/types'
+import { VuhClient } from '@/services/k6/vuh'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent } from '@/utils/electron'
 import { logError } from '@/utils/errors'
 import { unlink, writeFile } from '@/utils/fs'
+import { K6Client } from '@/utils/k6/client'
 import { basename, extname, isAbsolute, join } from '@/utils/path'
 import { validateExternalUrl } from '@/utils/url'
 
+import { getProfileData } from '../auth/fs'
+
 import { RunInCloudStateMachine } from './states'
-import { CloudHandlers, RawScript, Script } from './types'
+import { CloudHandlers, RawScript, Script, VuhEstimate } from './types'
+
+async function getCloudCredentials(): Promise<CloudCredentials | null> {
+  const profiles = await getProfileData()
+  const stack = profiles.profiles.stacks[profiles.profiles.currentStack]
+
+  if (stack === undefined) {
+    return null
+  }
+
+  const token = profiles.tokens[stack.id]
+
+  return token === undefined ? null : { stackId: stack.id, token }
+}
+
+async function estimateVuh(script: RawScript): Promise<VuhEstimate | null> {
+  const credentials = await getCloudCredentials()
+
+  if (credentials === null) {
+    return null
+  }
+
+  const file = await createTempFile(script)
+
+  try {
+    const options = await new K6Client().inspect({ scriptPath: file.path })
+
+    if (options === null) {
+      return null
+    }
+
+    const project = await new ProjectClient(credentials).findDefault({})
+    const result = await new VuhClient(credentials).validateOptions(
+      project.id,
+      options
+    )
+
+    return {
+      vuhUsage: result.vuh_usage,
+      baseVuh: result.breakdown?.base_total_vuh ?? null,
+    }
+  } catch (error) {
+    logError(error)
+
+    return null
+  } finally {
+    await file.dispose()
+  }
+}
 
 async function createTempFile(script: RawScript) {
   const tempFileName = getTempScriptName()
@@ -86,4 +140,8 @@ export function initialize() {
       stateMachine = null
     }
   })
+
+  ipcMain.handle(CloudHandlers.EstimateVuh, (_event, script: RawScript) =>
+    estimateVuh(script)
+  )
 }

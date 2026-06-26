@@ -2,6 +2,14 @@ export enum CloudHandlers {
   Run = 'cloud:run',
   SignedIn = 'cloud:signed-in',
   StateChange = 'cloud:state-change',
+  EstimateVuh = 'cloud:estimate-vuh',
+}
+
+export interface VuhEstimate {
+  /** VU-hours the cloud will bill (volume reduction already applied). */
+  vuhUsage: number
+  /** Raw VU-hours before the volume reduction, when the cloud reports it. */
+  baseVuh: number | null
 }
 
 export interface RunInCloudAborted {

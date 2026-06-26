@@ -96,6 +96,12 @@ beforeEach(() => {
   runInCloudDialog.open = false
   runInCloudDialog.onRunStarted = undefined
 
+  vi.stubGlobal('studio', {
+    cloud: {
+      estimateVuh: vi.fn().mockResolvedValue({ vuhUsage: 1.85, baseVuh: 2 }),
+    },
+  })
+
   useGeneratorStore.setState({
     requests: [
       createProxyData({ request: createRequest({ host: 'example.com' }) }),
@@ -116,7 +122,7 @@ beforeEach(() => {
 })
 
 describe('RunTestStep', () => {
-  it('shows the briefing and the assistant recap', () => {
+  it('shows the briefing and the assistant recap', async () => {
     renderStep()
 
     expect(screen.getByText('2 requests across 1 host')).toBeDefined()
@@ -127,11 +133,11 @@ describe('RunTestStep', () => {
     expect(screen.getByText('Steady')).toBeDefined()
     expect(screen.getByText('Ramp down')).toBeDefined()
     expect(screen.getByText('0 → 20 VUs')).toBeDefined()
-    // (10*60 + 20*210 + 10*60) VU-seconds / 3600 = 1.5 VU-hours
-    expect(screen.getByText('~1.5 VU-hours')).toBeDefined()
     expect(screen.getByText('p95 < 300ms')).toBeDefined()
     expect(screen.getByText('3 correlation rules added')).toBeDefined()
     expect(screen.getByText(/mystack/)).toBeDefined()
+    // VU-hours estimate comes from Grafana Cloud (validate_options).
+    expect(await screen.findByText('~1.85 VUh')).toBeDefined()
   })
 
   it('goes to the generator without saving', async () => {

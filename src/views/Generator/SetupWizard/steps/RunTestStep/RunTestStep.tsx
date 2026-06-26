@@ -13,7 +13,7 @@ import {
   RocketIcon,
   TrendingUpIcon,
 } from 'lucide-react'
-import { PropsWithChildren, useState } from 'react'
+import { PropsWithChildren, useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
@@ -38,7 +38,6 @@ import { StepFrame } from '../../StepFrame'
 
 import {
   buildStageSegments,
-  computeVuHours,
   formatThresholds,
   getLoadSummary,
   StageSegment,
@@ -198,33 +197,96 @@ function formatVuHours(vuHours: number): string {
   return String(Number(vuHours.toFixed(2)))
 }
 
-function VuHoursEstimate() {
-  const profile = useGeneratorStore(
-    useShallow(selectLoadProfileExecutorOptions)
-  )
-  const requests = useGeneratorStore(useShallow(selectFilteredRequests))
-  const sleepType = useGeneratorStore((store) => store.sleepType)
-  const timing = useGeneratorStore((store) => store.timing)
+type VuhEstimateState =
+  | { status: 'loading' }
+  | { status: 'error' }
+  | { status: 'done'; vuhUsage: number }
 
-  const vuHours = computeVuHours(profile, requests, { sleepType, timing })
+function useVuhEstimate(
+  script: ScriptPreview,
+  scriptName: string
+): VuhEstimateState {
+  const [state, setState] = useState<VuhEstimateState>({ status: 'loading' })
 
-  if (vuHours === null) {
+  useEffect(() => {
+    if (!script.valid) {
+      setState({ status: 'error' })
+      return
+    }
+
+    let cancelled = false
+    setState({ status: 'loading' })
+
+    window.studio.cloud
+      .estimateVuh({ type: 'raw', name: scriptName, content: script.preview })
+      .then((result) => {
+        if (cancelled) {
+          return
+        }
+
+        setState(
+          result === null
+            ? { status: 'error' }
+            : { status: 'done', vuhUsage: result.vuhUsage }
+        )
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setState({ status: 'error' })
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [script, scriptName])
+
+  return state
+}
+
+function VuHoursEstimate({
+  script,
+  scriptName,
+}: {
+  script: ScriptPreview
+  scriptName: string
+}) {
+  const estimate = useVuhEstimate(script, scriptName)
+
+  if (estimate.status === 'error') {
     return null
+  }
+
+  if (estimate.status === 'loading') {
+    return (
+      <Flex gap="2" align="center">
+        <CoinsIcon size={16} css={{ flexShrink: 0 }} />
+        <Text size="2" color="gray">
+          Estimating VU-hours...
+        </Text>
+      </Flex>
+    )
   }
 
   return (
     <Flex gap="2" align="center">
       <CoinsIcon size={16} css={{ flexShrink: 0 }} />
-      <Tooltip content="Estimated from your load profile and recorded response times. Real usage depends on latency under load, and aborted runs aren't charged.">
+      <Tooltip content="Estimated by Grafana Cloud from your test options. Cloud volume reductions are already applied, and aborted runs aren't charged.">
         <Text size="2" weight="medium">
-          ~{formatVuHours(vuHours)} VU-hours
+          ~{formatVuHours(estimate.vuhUsage)} VUh
         </Text>
       </Tooltip>
     </Flex>
   )
 }
 
-function WhatWillRun() {
+function WhatWillRun({
+  script,
+  scriptName,
+}: {
+  script: ScriptPreview
+  scriptName: string
+}) {
   const requestCount = useGeneratorStore(
     (store) => selectFilteredRequests(store).length
   )
@@ -278,7 +340,7 @@ function WhatWillRun() {
         </Text>
       </Flex>
       <StageTimeline profile={loadProfile} />
-      <VuHoursEstimate />
+      <VuHoursEstimate script={script} scriptName={scriptName} />
     </Flex>
   )
 }
@@ -387,7 +449,7 @@ export function RunTestStep({
     <>
       <StepFrame stepId="runTest">
         <Flex direction="column" gap="4">
-          <WhatWillRun />
+          <WhatWillRun script={script} scriptName={scriptName} />
           <LoadOptionsSection />
           <AssistantRecap />
           <CollapsibleSection label="View generated script">
