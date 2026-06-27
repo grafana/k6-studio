@@ -7,7 +7,7 @@
   "main": ".vite/build/main.js",
   "engines": {
     "node": "^24.11.0",
-    "pnpm": ">=11"
+    "pnpm": ">=11.8.0"
   },
   "devEngines": {
     "packageManager": {
