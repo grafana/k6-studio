@@ -19,7 +19,24 @@ import {
 import { sendRemoteToolResponse } from './a2a/remoteToolResponse'
 import { ActiveA2ASession } from './a2a/session'
 import { createA2AStream } from './a2a/stream'
-import { getToolDefinitionsForA2A } from './tools'
+import { RemoteToolDefinition } from './types'
+
+/**
+ * `streamText` forwards its per-call ToolSet here as function tools with
+ * JSON-schema inputs, so the A2A request always carries the tools of the
+ * agent that initiated the chat.
+ */
+function getToolDefinitionsFromOptions(
+  options: LanguageModelV2CallOptions
+): RemoteToolDefinition[] {
+  return (options.tools ?? [])
+    .filter((toolDef) => toolDef.type === 'function')
+    .map((toolDef) => ({
+      name: toolDef.name,
+      description: toolDef.description ?? '',
+      inputSchema: toolDef.inputSchema,
+    }))
+}
 
 function forwardAbortSignal(
   source: AbortSignal | undefined,
@@ -104,7 +121,7 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
     const body = buildA2ARequest(
       userText,
       contextId,
-      getToolDefinitionsForA2A()
+      getToolDefinitionsFromOptions(options)
     )
     log.info(
       LOG_PREFIX,

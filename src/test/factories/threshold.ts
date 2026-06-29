@@ -8,6 +8,7 @@ export function createThreshold(threshold?: Partial<Threshold>): Threshold {
     condition: '>',
     value: 0,
     stopTest: false,
+    enabled: true,
     ...threshold,
   }
 }

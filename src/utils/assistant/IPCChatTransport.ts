@@ -5,7 +5,16 @@ import {
   UIMessageChunk,
 } from 'ai'
 
-import { StreamChatChunk, StreamChatRequest } from '@/handlers/ai/types'
+import {
+  RemoteToolDefinition,
+  StreamChatChunk,
+  StreamChatRequest,
+} from '@/handlers/ai/types'
+
+interface IPCChatTransportOptions {
+  /** Tool definitions for the agent driving this chat. */
+  tools: RemoteToolDefinition[]
+}
 
 /**
  * Custom ChatTransport implementation that uses Electron IPC for communication
@@ -14,6 +23,8 @@ import { StreamChatChunk, StreamChatRequest } from '@/handlers/ai/types'
 export class IPCChatTransport<
   Message extends UIMessage,
 > implements ChatTransport<Message> {
+  constructor(private readonly options: IPCChatTransportOptions) {}
+
   sendMessages(
     options: {
       trigger: 'submit-message' | 'regenerate-message'
@@ -33,33 +44,50 @@ export class IPCChatTransport<
       trigger: options.trigger,
       messageId: options.messageId,
       messages: options.messages,
+      tools: this.options.tools,
       headers,
       body: options.body,
     }
+
+    // Chunks can keep arriving over IPC after the stream settles (the main
+    // process does not stop immediately), so every controller call is
+    // guarded; otherwise enqueue/close throw on a settled stream.
+    let isSettled = false
+    let cleanup = () => {}
+    let abortStream = () => {}
 
     return Promise.resolve(
       new ReadableStream<UIMessageChunk>({
         start(controller) {
           const stream = window.studio.ai.streamChat(request)
+          abortStream = () => stream.abort()
+
+          const settle = (action: () => void) => {
+            if (isSettled) {
+              return
+            }
+
+            isSettled = true
+            action()
+            cleanup()
+          }
 
           const removeChunkListener = stream.onChunk(
             (data: StreamChatChunk) => {
-              if (data.chunk === undefined) {
+              if (data.chunk === undefined || isSettled) {
                 return
               }
 
               controller.enqueue(data.chunk)
 
               if (data.chunk.type === 'error') {
-                controller.close()
-                cleanup()
+                settle(() => controller.close())
               }
             }
           )
 
           const removeEndListener = stream.onEnd(() => {
-            controller.close()
-            cleanup()
+            settle(() => controller.close())
           })
 
           if (options.abortSignal) {
@@ -67,15 +95,21 @@ export class IPCChatTransport<
               stream.abort()
               // Need to call error to stop the stream immediately,
               // calling close would still proccess enqueued chunks
-              controller.error()
-              cleanup()
+              settle(() => controller.error())
             })
           }
 
-          const cleanup = () => {
+          cleanup = () => {
             removeChunkListener()
             removeEndListener()
           }
+        },
+        cancel() {
+          // The consumer (useChat) tears the stream down, e.g. after a chat
+          // error. Stop the main-process stream and detach the listeners.
+          isSettled = true
+          abortStream()
+          cleanup()
         },
       })
     )

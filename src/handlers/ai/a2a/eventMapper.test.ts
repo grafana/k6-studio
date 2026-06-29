@@ -187,6 +187,26 @@ describe('processA2AEvent', () => {
     )
   })
 
+  it('closes an open content block and resets stream state on step.complete', () => {
+    const session = createA2ASession({
+      activeStreamArtifactId: 'stream-1',
+      activeStreamContentType: 'reasoning',
+    })
+
+    const event = makeArtifactUpdateEvent('step.complete', [
+      { kind: 'data', data: { stopReason: 'tool_use' } },
+    ])
+
+    const parts = processA2AEvent(event, session)
+
+    // The reasoning block must close in this step's stream (matching its start);
+    // leaving it open leaks a stale end into the next step's stream, where the
+    // renderer has no matching reasoning part and crashes.
+    expect(parts).toContainEqual({ type: 'reasoning-end', id: 'stream-1' })
+    expect(session.activeStreamArtifactId).toBeUndefined()
+    expect(session.activeStreamContentType).toBeUndefined()
+  })
+
   it('returns text parts for step.message artifact', () => {
     const event = makeArtifactUpdateEvent(
       'step.message',
@@ -348,6 +368,29 @@ describe('processA2AEvent', () => {
 
       expect(parts).toEqual([{ type: 'text-end', id: 'stream-1' }])
       expect(session.activeStreamArtifactId).toBeUndefined()
+    })
+
+    it('opens and closes a block with the same id when no stream.start preceded it', () => {
+      const session = createA2ASession()
+
+      const startParts = processA2AEvent(
+        makeDeltaEvent('delta-1', 'thinking...', 'thinking'),
+        session
+      )
+      expect(startParts).toContainEqual({
+        type: 'reasoning-start',
+        id: 'delta-1',
+      })
+
+      // The close must reuse the id the block was opened with; otherwise the
+      // renderer gets a reasoning-end for an id it never started.
+      const endParts = processA2AEvent(
+        makeArtifactUpdateEvent('message.stream.complete', [], {
+          artifactId: 'other',
+        }),
+        session
+      )
+      expect(endParts).toEqual([{ type: 'reasoning-end', id: 'delta-1' }])
     })
 
     it('ignores message.content.delta with non-string delta', () => {

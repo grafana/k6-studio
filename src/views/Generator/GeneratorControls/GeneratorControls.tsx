@@ -4,6 +4,7 @@ import {
   DownloadIcon,
   EllipsisVerticalIcon,
   SaveIcon,
+  WandSparklesIcon,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -21,6 +22,7 @@ import { ValidatorDialog } from '../ValidatorDialog'
 interface GeneratorControlsProps {
   file: StudioFile
   onSave: () => void
+  onConfigureWithAssistant: () => void
   isDirty: boolean
   script: ScriptPreview
 }
@@ -28,6 +30,7 @@ interface GeneratorControlsProps {
 export function GeneratorControls({
   file,
   onSave,
+  onConfigureWithAssistant,
   isDirty,
   script,
 }: GeneratorControlsProps) {
@@ -81,6 +84,13 @@ export function GeneratorControls({
           disabled={!isScriptExportable || proxyStatus !== 'online'}
         >
           <CircleCheckBigIcon /> Validate
+        </ButtonWithTooltip>
+        <ButtonWithTooltip
+          variant="ghost"
+          tooltip="Reconfigure this test with the Assistant"
+          onClick={onConfigureWithAssistant}
+        >
+          <WandSparklesIcon /> Configure with Assistant
         </ButtonWithTooltip>
         <RunInCloudButton
           variant="solid"

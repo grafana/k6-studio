@@ -1,7 +1,10 @@
 import { InferUITools, StaticToolCall, UIDataTypes, UIMessage } from 'ai'
 
-import { tools } from '@/handlers/ai/tools'
 import { CorrelationRule, CorrelationState } from '@/types/rules'
+
+import { tools } from './constants'
+
+export type { ActionLogEntry } from '@/components/Assistant/types'
 
 export type Tools = InferUITools<typeof tools>
 export type Message = UIMessage<never, UIDataTypes, Tools>
@@ -19,25 +22,6 @@ export type CorrelationStatus =
   | 'failure'
   | 'error'
   | 'aborted'
-
-export interface ActionLogEntry {
-  id: string
-  timestamp: number
-  type:
-    | 'reasoning'
-    | 'found'
-    | 'validation'
-    | 'info'
-    | 'outcome-success'
-    | 'outcome-partial'
-    | 'outcome-failure'
-  text?: string
-  ruleId?: string
-  validationProgress?: {
-    completed: number
-    total: number
-  }
-}
 
 export interface SuggestedRuleEntry {
   rule: CorrelationRule

@@ -55,9 +55,35 @@ describe('useCreateGenerator', () => {
     })
 
     expect(window.studio.generator.createGenerator).toHaveBeenCalledWith('')
-    expect(navigate).toHaveBeenCalledWith(
-      '/file/%2Fsome%2Fpath%2Ftest-file.json'
-    )
+    expect(navigate).toHaveBeenCalledWith({
+      pathname: '/file/%2Fsome%2Fpath%2Ftest-file.json',
+      search: undefined,
+    })
+  })
+
+  it('should navigate with the setup search param when mode is setup', async () => {
+    const filePath = '/some/path/test-file.json'
+    const routePath = `/file/${encodeURIComponent(filePath)}`
+
+    vi.mocked(getViewPath).mockReturnValue(routePath)
+    vi.stubGlobal('studio', {
+      generator: {
+        createGenerator: vi.fn().mockResolvedValue(filePath),
+        saveGenerator: vi.fn(),
+        loadGenerator: vi.fn(),
+      },
+    })
+
+    const { result } = renderHook(() => useCreateGenerator())
+
+    await act(async () => {
+      await result.current(filePath, { mode: 'setup' })
+    })
+
+    expect(navigate).toHaveBeenCalledWith({
+      pathname: '/file/%2Fsome%2Fpath%2Ftest-file.json',
+      search: 'mode=setup',
+    })
   })
 
   it('should show a toast message on failure', async () => {

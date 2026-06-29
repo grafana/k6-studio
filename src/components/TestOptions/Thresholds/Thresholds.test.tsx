@@ -13,6 +13,7 @@ interface ThresholdRow {
   condition: string
   value: number
   stopTest: boolean
+  enabled: boolean
   id: string
 }
 
@@ -72,6 +73,7 @@ describe('Thresholds (controlled)', () => {
               condition: '<',
               value: -5,
               stopTest: false,
+              enabled: true,
             },
           ]}
           onChange={vi.fn()}
@@ -93,6 +95,7 @@ describe('Thresholds (controlled)', () => {
         condition: '<' as const,
         value: 100,
         stopTest: false,
+        enabled: true,
       },
     ]
     render(
@@ -101,5 +104,131 @@ describe('Thresholds (controlled)', () => {
       </Theme>
     )
     expect(screen.getByDisplayValue('100')).toBeDefined()
+  })
+
+  it('renders row annotations when getRowAnnotation matches', () => {
+    const value = [
+      {
+        id: 'suggested-1',
+        metric: 'response_time' as const,
+        statistic: 'avg' as const,
+        condition: '<' as const,
+        value: 100,
+        stopTest: false,
+        enabled: true,
+      },
+      {
+        id: 'manual-1',
+        metric: 'response_time' as const,
+        statistic: 'avg' as const,
+        condition: '<' as const,
+        value: 200,
+        stopTest: false,
+        enabled: true,
+      },
+    ]
+    render(
+      <Theme>
+        <Thresholds
+          value={value}
+          onChange={vi.fn()}
+          metricsConfig={config}
+          getRowAnnotation={(id) =>
+            id === 'suggested-1' ? 'observed p95 611 ms' : undefined
+          }
+        />
+      </Theme>
+    )
+
+    expect(screen.getAllByText('observed p95 611 ms')).toHaveLength(1)
+  })
+
+  it('disables a threshold via the enable switch', async () => {
+    const onChange = vi.fn<(rows: ThresholdRow[]) => void>()
+    render(
+      <Theme>
+        <Thresholds
+          value={[
+            {
+              id: '1',
+              metric: 'response_time' as const,
+              statistic: 'avg' as const,
+              condition: '<' as const,
+              value: 100,
+              stopTest: false,
+              enabled: true,
+            },
+          ]}
+          onChange={onChange}
+          metricsConfig={config}
+        />
+      </Theme>
+    )
+
+    fireEvent.click(screen.getByRole('switch', { name: 'Enable threshold' }))
+
+    await waitFor(() => expect(onChange).toHaveBeenCalled())
+    expect(onChange.mock.calls.at(-1)![0].at(0)).toMatchObject({
+      enabled: false,
+    })
+  })
+
+  it('hides the remove button when hideRemove is set', () => {
+    render(
+      <Theme>
+        <Thresholds
+          value={[
+            {
+              id: '1',
+              metric: 'response_time' as const,
+              statistic: 'avg' as const,
+              condition: '<' as const,
+              value: 100,
+              stopTest: false,
+              enabled: true,
+            },
+          ]}
+          onChange={vi.fn()}
+          metricsConfig={config}
+          hideRemove
+        />
+      </Theme>
+    )
+
+    expect(
+      screen.queryByRole('button', { name: 'Remove threshold' })
+    ).toBeNull()
+  })
+
+  it('moves the row separator to the annotation row for annotated rows', () => {
+    const value = [
+      {
+        id: 'suggested-1',
+        metric: 'response_time' as const,
+        statistic: 'avg' as const,
+        condition: '<' as const,
+        value: 100,
+        stopTest: false,
+        enabled: true,
+      },
+    ]
+    render(
+      <Theme>
+        <Thresholds
+          value={value}
+          onChange={vi.fn()}
+          metricsConfig={config}
+          getRowAnnotation={() => 'observed p95 611 ms'}
+        />
+      </Theme>
+    )
+
+    const annotationCell = screen.getByText('observed p95 611 ms').closest('td')
+    const dataRow = annotationCell?.closest('tr')?.previousElementSibling
+
+    expect(dataRow).not.toBeNull()
+    expect(
+      getComputedStyle(dataRow!).getPropertyValue('--table-row-box-shadow')
+    ).toBe('none')
   })
 })

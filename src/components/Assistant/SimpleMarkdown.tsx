@@ -1,4 +1,4 @@
-import { Box, Code, Text } from '@radix-ui/themes'
+import { Box, Code, Flex, Text } from '@radix-ui/themes'
 import { ReactNode } from 'react'
 import Markdown, { Components } from 'react-markdown'
 
@@ -42,11 +42,13 @@ const components: Components = {
       {children}
     </Text>
   ),
+  // Loose lists wrap item content in block paragraphs; the flex row keeps
+  // the bullet and the content on the same line either way.
   li: ({ children }) => (
-    <Text as="p" size="2">
-      {'- '}
-      {children}
-    </Text>
+    <Flex gap="1" align="start">
+      <Text size="2">-</Text>
+      <Box css={{ minWidth: 0 }}>{children}</Box>
+    </Flex>
   ),
   a: ({ children }) => <Text>{children}</Text>,
   h1: Heading,

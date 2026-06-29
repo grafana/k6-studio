@@ -65,7 +65,8 @@ export function RecordingPreviewControls({
     [browserEvents]
   )
 
-  const handleCreateGenerator = () => createTestGenerator(file.path)
+  const handleCreateGenerator = () =>
+    createTestGenerator(file.path, { mode: 'setup' })
 
   const handleCreateBrowserTest = () => {
     if (pages.length > 1) {

@@ -13,6 +13,7 @@ export interface ThresholdLikeRow {
   condition: z.infer<typeof ThresholdConditionSchema>
   value: number
   stopTest: boolean
+  enabled: boolean
 }
 
 export const THRESHOLD_CONDITIONS_OPTIONS = [

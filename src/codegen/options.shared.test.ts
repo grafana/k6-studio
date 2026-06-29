@@ -11,6 +11,31 @@ describe('generateThresholds', () => {
     expect(generateThresholds([])).toEqual({})
   })
 
+  it('skips disabled thresholds', () => {
+    const out = generateThresholds([
+      {
+        id: '1',
+        metric: 'http_req_duration',
+        statistic: 'avg',
+        condition: '<',
+        value: 100,
+        stopTest: false,
+        enabled: false,
+      },
+      {
+        id: '2',
+        metric: 'http_req_failed',
+        statistic: 'rate',
+        condition: '<',
+        value: 0.01,
+        stopTest: false,
+        enabled: true,
+      },
+    ])
+
+    expect(out).toEqual({ http_req_failed: ['rate<0.01'] })
+  })
+
   it('groups thresholds by metric', () => {
     const out = generateThresholds([
       {

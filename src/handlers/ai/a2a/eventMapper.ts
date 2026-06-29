@@ -195,17 +195,25 @@ function handleStepComplete(
   const stopReason = dataPart?.data?.stopReason
   const usage = extractUsage(artifact)
 
+  // Close any content block still open in this step's stream (its start was
+  // emitted here, so the ids match) and clear the trackers. Otherwise the open
+  // block leaks into the next step's stream, which would emit a stale end for a
+  // reasoning/text part the renderer never started and crash.
+  const closeParts = closeActiveContentBlock(session)
+  session.activeStreamArtifactId = undefined
+  session.activeStreamContentType = undefined
+
   // Only emit finish for non-tool-use steps. Tool-use finishes are handled
   // by the readyToFinishForTools flag set in tryMatchToolRequests.
   if (stopReason !== 'tool_use') {
-    return [{ type: 'finish', finishReason: 'stop', usage }]
+    return [...closeParts, { type: 'finish', finishReason: 'stop', usage }]
   }
 
   // Gate readyToFinishForTools so the stream won't close before all tool calls arrive.
   session.allToolCallsReceived = true
   session.tryMatchToolRequests()
 
-  return []
+  return closeParts
 }
 
 function handleMessageArtifact(
@@ -263,7 +271,14 @@ function handleContentDelta(
   session: ActiveA2ASession,
   artifact: A2AArtifact
 ): LanguageModelV2StreamPart[] {
-  const streamId = session.activeStreamArtifactId ?? artifact.artifactId
+  // Persist the id this block opens with so closeActiveContentBlock emits the
+  // matching end. Without this, a delta arriving before message.stream.start
+  // opens with artifactId but closes with a different (or absent) id.
+  if (session.activeStreamArtifactId === undefined) {
+    session.activeStreamArtifactId = artifact.artifactId
+  }
+
+  const streamId = session.activeStreamArtifactId
   const parts: LanguageModelV2StreamPart[] = []
 
   for (const part of artifact.parts) {

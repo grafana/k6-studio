@@ -57,12 +57,8 @@ function createEntries(groups: GroupedProxyData): HarEntry[] {
       response: proxyData.response && createResponse(proxyData.response),
       pageref: group,
       cache: {},
-      // TODO: add actual values
-      timings: {
-        wait: 0,
-        receive: 0,
-      },
-      time: 0,
+      timings: computeTimings(proxyData),
+      time: computeTotalTime(proxyData),
     }))
   )
 }
@@ -128,6 +124,44 @@ function createPostData(request: Request): HarEntry['request']['postData'] {
     mimeType: getContentTypeWithCharsetHeader(request.headers) ?? '',
     text: atob(request.content ?? ''),
   }
+}
+
+function computeTotalTime(proxyData: ProxyData): number {
+  const reqStart = proxyData.request.timestampStart
+  const resEnd = proxyData.response?.timestampEnd ?? 0
+
+  if (reqStart > 0 && resEnd > 0) {
+    return (resEnd - reqStart) * 1000
+  }
+
+  const reqEnd = proxyData.request.timestampEnd
+  if (reqStart > 0 && reqEnd > 0) {
+    return (reqEnd - reqStart) * 1000
+  }
+
+  return 0
+}
+
+function computeTimings(proxyData: ProxyData): {
+  send: number
+  wait: number
+  receive: number
+} {
+  const reqStart = proxyData.request.timestampStart
+  const reqEnd = proxyData.request.timestampEnd
+  const resStart = proxyData.response?.timestampStart ?? 0
+  const resEnd = proxyData.response?.timestampEnd ?? 0
+
+  if (reqStart > 0 && reqEnd > 0 && resStart > 0 && resEnd > 0) {
+    return {
+      send: (reqEnd - reqStart) * 1000,
+      wait: (resStart - reqEnd) * 1000,
+      receive: (resEnd - resStart) * 1000,
+    }
+  }
+
+  const total = computeTotalTime(proxyData)
+  return { send: 0, wait: total, receive: 0 }
 }
 
 function timeStampToISO(timeStamp: number | undefined): string {

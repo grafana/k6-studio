@@ -1,11 +1,14 @@
+import { UIMessage } from 'ai'
 import { useCallback, useRef, useState } from 'react'
 
-import type { ActionLogEntry, Message } from './types'
-import { deriveLogUpdates } from './utils/deriveLogUpdates'
+import { deriveLogUpdates } from './deriveLogUpdates'
+import type { ActionLogEntry } from './types'
 
 export function useActionsLog() {
   const [entries, setEntries] = useState<ActionLogEntry[]>([])
-  const startTimeRef = useRef(0)
+  // Initialized at mount so entries added before startTimer() still get
+  // sensible relative timestamps instead of epoch-based ones.
+  const startTimeRef = useRef(Date.now())
   const reasoningPartsRef = useRef(new Map<string, string>())
   const lastValidationEntryIdRef = useRef<string | null>(null)
 
@@ -22,7 +25,7 @@ export function useActionsLog() {
   }
 
   const syncFromMessages = useCallback(function syncFromMessages(
-    messages: Message[],
+    messages: UIMessage[],
     isLoading: boolean
   ) {
     if (!isLoading) return
@@ -34,11 +37,11 @@ export function useActionsLog() {
 
     if (added.length === 0 && updated.length === 0) return
 
-    const newEntries = added.map(({ partKey, text }) => {
+    const newEntries = added.map(({ partKey, text, kind }) => {
       const entry: ActionLogEntry = {
         id: crypto.randomUUID(),
         timestamp: Date.now() - startTimeRef.current,
-        type: 'reasoning',
+        type: kind === 'thinking' ? 'thinking' : 'reasoning',
         text,
       }
       reasoningPartsRef.current.set(partKey, entry.id)

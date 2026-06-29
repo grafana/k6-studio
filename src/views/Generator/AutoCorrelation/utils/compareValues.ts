@@ -1,9 +1,8 @@
 import { Header } from '@/types'
+import { StrippedProxyData } from '@/utils/assistant/stripRequestData'
 import { safeJsonParse } from '@/utils/json'
 
 import { shouldSkipHeader } from './skipHeaders'
-import { StrippedProxyData } from './stripRequestData'
-
 const MAX_RECURSION_DEPTH = 5
 const MAX_MISMATCHES = 20
 const MAX_CONTENT_LENGTH = 1000

@@ -15,6 +15,10 @@ interface ThresholdsProps<M extends string> {
   value: Array<ThresholdLikeRow & { metric: M }>
   onChange: (next: Array<ThresholdLikeRow & { metric: M }>) => void
   metricsConfig: MetricsConfig<M>
+  /** Returns an annotation rendered beneath the row with the given threshold id. */
+  getRowAnnotation?: (id: string) => string | undefined
+  /** Hides the remove column; rows can only be toggled, not deleted. */
+  hideRemove?: boolean
   // Resolver is contravariant in TFieldValues so callers with narrower schemas
   // cannot assign to a concrete form type. Use any to accept all resolvers.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -25,8 +29,11 @@ export function Thresholds<M extends string>({
   value,
   onChange,
   metricsConfig,
+  getRowAnnotation,
+  hideRemove = false,
   resolver,
 }: ThresholdsProps<M>) {
+  const columnCount = hideRemove ? 6 : 7
   type Row = ThresholdLikeRow & { metric: M }
   type FormShape = { thresholds: Row[] }
 
@@ -69,6 +76,7 @@ export function Thresholds<M extends string>({
       condition: '<',
       value: 0,
       stopTest: false,
+      enabled: true,
     }
     append(newRow)
   }
@@ -87,22 +95,23 @@ export function Thresholds<M extends string>({
         <Table.Root size="1" variant="surface" layout="fixed">
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeaderCell width="210px">
+              <Table.ColumnHeaderCell width="170px">
                 Metric
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="160px">
+              <Table.ColumnHeaderCell width="145px">
                 Statistic
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="100px">
+              <Table.ColumnHeaderCell width="90px">
                 Condition
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="145px">
+              <Table.ColumnHeaderCell width="125px">
                 Value
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="80px">
+              <Table.ColumnHeaderCell width="75px">
                 Stop Test
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="59px" />
+              <Table.ColumnHeaderCell width="48px" />
+              {!hideRemove && <Table.ColumnHeaderCell width="48px" />}
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -111,12 +120,13 @@ export function Thresholds<M extends string>({
                 key={field.id}
                 field={field}
                 index={index}
-                remove={remove}
+                remove={hideRemove ? undefined : remove}
                 metricsConfig={metricsConfig}
+                getRowAnnotation={getRowAnnotation}
               />
             ))}
             <Table.Row>
-              <Table.RowHeaderCell colSpan={7} justify="center">
+              <Table.RowHeaderCell colSpan={columnCount} justify="center">
                 <Button variant="ghost" onClick={handleAddThreshold}>
                   Add threshold
                 </Button>
