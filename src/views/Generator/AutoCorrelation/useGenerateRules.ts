@@ -177,9 +177,25 @@ export const useGenerateRules = ({
         })
 
         actionsLog.setValidationEntryId(entry.id)
-        const result = await runValidation()
-        actionsLog.completeValidationProgress()
-        return result
+
+        try {
+          const result = await runValidation()
+          actionsLog.completeValidationProgress()
+          return result
+        } catch (error) {
+          actionsLog.completeValidationProgress()
+
+          if (error instanceof Error && error.name === 'AbortError') {
+            throw error
+          }
+
+          return {
+            success: false,
+            error: `Validation failed to complete: ${error instanceof Error ? error.message : String(error)}`,
+            valueMismatches: [],
+            statusMismatches: [],
+          }
+        }
       }
 
       case 'finish': {
@@ -259,6 +275,9 @@ export const useGenerateRules = ({
   const isLoading = LOADING_STATES.includes(correlationStatus)
 
   async function start() {
+    abortControllerRef.current?.abort()
+    abortControllerRef.current = new AbortController()
+
     window.studio.app.trackEvent({
       event: UsageEventName.AutocorrelationStarted,
     })
