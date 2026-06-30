@@ -25,6 +25,7 @@ import { configureSystemProxy } from './services/http'
 import { initEventTracking } from './services/usageTracking'
 import { ProxyStatus } from './types'
 import { getAppIcon, getPlatform } from './utils/electron'
+import { isMsiInstall } from './utils/installationType'
 import { setupProjectStructure } from './utils/workspace'
 
 if (process.env.NODE_ENV !== 'development') {
@@ -42,14 +43,16 @@ if (process.env.NODE_ENV !== 'development') {
     },
   })
 
-  // update-electron-app swallows autoUpdater errors at info level via its
-  // default logger, so we capture them directly to surface silent failures.
-  autoUpdater.on('error', (err) => {
-    Sentry.captureException(err, { tags: { component: 'autoUpdater' } })
-  })
+  if (!isMsiInstall()) {
+    // update-electron-app swallows autoUpdater errors at info level via its
+    // default logger, so we capture them directly to surface silent failures.
+    autoUpdater.on('error', (err) => {
+      Sentry.captureException(err, { tags: { component: 'autoUpdater' } })
+    })
 
-  // handle auto updates
-  updateElectronApp({ logger: log.scope('autoUpdater') })
+    // handle auto updates
+    updateElectronApp({ logger: log.scope('autoUpdater') })
+  }
 }
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
