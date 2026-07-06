@@ -280,7 +280,7 @@ const extractCorrelationRegex = (
 
 const getCorrelationVariableSnippet = (uniqueId: number) => {
   return `if (match) {
-      correlation_vars['correlation_${uniqueId}'] = match[1]
+      correlation_vars['correlation_${uniqueId}'] = match[1] !== undefined ? match[1] : match[0]
     }`
 }
 
@@ -659,7 +659,7 @@ correlation_vars['correlation_1'] = resp.json().user_id`
     regex = new RegExp('${selector.begin}(.*?)${selector.end}')
     match = resp.body.match(regex)
     if (match) {
-      correlation_vars['correlation_1'] = match[1]
+      correlation_vars['correlation_1'] = match[1] !== undefined ? match[1] : match[0]
     }`
     const expectedResult = {
       extractedValue: 'bob',
@@ -692,7 +692,7 @@ correlation_vars['correlation_1'] = resp.json().user_id`
     regex = new RegExp('${selector.begin}(.*?)${selector.end}')
     match = resp.headers["${canonicalHeaderKey('Content-type')}"].match(regex)
     if (match) {
-      correlation_vars['correlation_1'] = match[1]
+      correlation_vars['correlation_1'] = match[1] !== undefined ? match[1] : match[0]
     }`
     const expectedResult = {
       extractedValue: '/',
@@ -725,7 +725,7 @@ correlation_vars['correlation_1'] = resp.json().user_id`
     regex = new RegExp('${selector.begin}(.*?)${selector.end}')
     match = resp.url.match(regex)
     if (match) {
-      correlation_vars['correlation_1'] = match[1]
+      correlation_vars['correlation_1'] = match[1] !== undefined ? match[1] : match[0]
     }`
     const expectedResult = {
       extractedValue: 'v1',
@@ -752,7 +752,7 @@ correlation_vars['correlation_1'] = resp.json().user_id`
     regex = new RegExp('${selector.regex}')
     match = resp.body.match(regex)
     if (match) {
-      correlation_vars['correlation_1'] = match[1]
+      correlation_vars['correlation_1'] = match[1] !== undefined ? match[1] : match[0]
     }`
     const expectedResult = {
       extractedValue: 'bob',
@@ -779,7 +779,7 @@ correlation_vars['correlation_1'] = resp.json().user_id`
     regex = new RegExp('${selector.regex}')
     match = resp.headers["${canonicalHeaderKey('Content-type')}"].match(regex)
     if (match) {
-      correlation_vars['correlation_1'] = match[1]
+      correlation_vars['correlation_1'] = match[1] !== undefined ? match[1] : match[0]
     }`
     const expectedResult = {
       extractedValue: '/',
@@ -811,7 +811,7 @@ correlation_vars['correlation_1'] = resp.json().user_id`
     regex = new RegExp('${selector.regex}')
     match = resp.url.match(regex)
     if (match) {
-      correlation_vars['correlation_1'] = match[1]
+      correlation_vars['correlation_1'] = match[1] !== undefined ? match[1] : match[0]
     }`
     const expectedResult = {
       extractedValue: 'v1',
@@ -822,6 +822,38 @@ correlation_vars['correlation_1'] = resp.json().user_id`
     expect(
       extractCorrelationRegexUrl(selector, request, 1, sequentialIdGenerator)
     ).toStrictEqual(expectedResult)
+  })
+
+  it('extract correlation regex body without capture group falls back to full match', () => {
+    const sequentialIdGenerator = generateSequentialInt()
+    const response: Response = generateResponse(
+      'token=abc123def&session=xyz'
+    )
+
+    const selector: RegexSelector = {
+      type: 'regex',
+      from: 'body',
+      regex: 'token=[a-z0-9]+',
+    }
+
+    const result = extractCorrelationRegexBody(
+      selector,
+      response,
+      1,
+      sequentialIdGenerator
+    )
+
+    expect(result.extractedValue).toBe('token=abc123def')
+
+    const correlationExtractionSnippet = `
+    regex = new RegExp('${selector.regex}')
+    match = resp.body.match(regex)
+    if (match) {
+      correlation_vars['correlation_1'] = match[1] !== undefined ? match[1] : match[0]
+    }`
+    expect(result.correlationExtractionSnippet).toBe(
+      correlationExtractionSnippet
+    )
   })
 
   it('extracts correlation header by name', () => {

@@ -341,7 +341,7 @@ describe('Code generation', () => {
           regex = new RegExp("project_id=(.*)$");
           match = resp.headers["Project"].match(regex);
           if (match) {
-            correlation_vars["correlation_0"] = match[1];
+            correlation_vars["correlation_0"] = match[1] !== undefined ? match[1] : match[0];
           }
 
           correlation_vars['correlation_1'] = resp.json().is_admin
