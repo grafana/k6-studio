@@ -1,5 +1,7 @@
 import { isElement, isHTMLIFrameElement } from '@/utils/dom/realm'
 
+import { getFrameAgent } from '../messaging/frames'
+
 /**
  * Bridge the top-frame element inspector exposes so that detection running in
  * child frames can report hovered/picked elements to it. It is only present
@@ -44,13 +46,17 @@ function getTextSelectionBridge(): TextSelectionBridge | undefined {
 }
 
 /**
- * True when the top frame has an inspector or text-selection tool active. Child
- * frames keep their own UI store where `tool` is never set, so they detect an
- * active tool through the top frame's bridge to avoid recording inspector picks
- * and text selections as real interactions.
+ * True when a tool is active in the top frame. Same-origin child frames read
+ * the top frame's bridges directly; cross-origin frames can't, so they rely on
+ * the tool state broadcast over the frame agent. Used to avoid recording
+ * inspector picks and text selections as real interactions.
  */
 export function isTopFrameToolActive(): boolean {
-  return getBridge() !== undefined || getTextSelectionBridge() !== undefined
+  return (
+    getBridge() !== undefined ||
+    getTextSelectionBridge() !== undefined ||
+    getFrameAgent()?.isToolActive === true
+  )
 }
 
 /**

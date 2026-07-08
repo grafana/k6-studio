@@ -28,24 +28,6 @@ export function buildFramePath(
   return path
 }
 
-function safeFramePath(start: Window): BrowserEventTarget[] {
-  try {
-    return buildFramePath(start, getElementDetails)
-  } catch {
-    return []
-  }
-}
-
-/**
- * The chain of iframe locators from the top frame down to the current frame,
- * outermost first. Empty when running in the top frame. Relies on the recorder
- * launching the browser with web security and site isolation disabled so that
- * `window.frameElement` is readable across origins.
- */
-export function getFramePath(): BrowserEventTarget[] {
-  return safeFramePath(window)
-}
-
 /**
  * Composition seam for getFramePathAsync: tries the synchronous walk first
  * (top frame and fully same-origin chains), then the postMessage protocol for
@@ -110,7 +92,14 @@ export async function getOwnFramePath(): Promise<BrowserEventTarget[] | null> {
  * an iframe). Empty when the element is in the top frame.
  */
 export function getFramePathForElement(element: Element): BrowserEventTarget[] {
-  return safeFramePath(element.ownerDocument.defaultView ?? window)
+  try {
+    return buildFramePath(
+      element.ownerDocument.defaultView ?? window,
+      getElementDetails
+    )
+  } catch {
+    return []
+  }
 }
 
 /**

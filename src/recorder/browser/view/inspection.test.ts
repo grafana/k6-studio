@@ -9,7 +9,9 @@ import {
   vi,
 } from 'vitest'
 
-import { attachInspectionDetection } from './inspection'
+import { FrameAgent, installFrameAgent } from '../messaging/frames'
+
+import { attachInspectionDetection, isTopFrameToolActive } from './inspection'
 
 const hover = vi.fn()
 const pick = vi.fn()
@@ -74,5 +76,29 @@ describe('attachInspectionDetection', () => {
     dispatch('click', iframe, { clientX: 5, clientY: 6 })
 
     expect(pick).not.toHaveBeenCalled()
+  })
+})
+
+describe('isTopFrameToolActive with a frame agent', () => {
+  beforeEach(() => {
+    // The outer suite's beforeEach installs an inspection bridge; these tests
+    // exercise the no-bridge, frame-agent-only path.
+    delete window.__K6_STUDIO_INSPECTION__
+  })
+
+  afterEach(() => {
+    installFrameAgent(null as unknown as FrameAgent)
+  })
+
+  it('is true when the frame agent has received an active tool state', () => {
+    installFrameAgent({ isToolActive: true } as unknown as FrameAgent)
+
+    expect(isTopFrameToolActive()).toBe(true)
+  })
+
+  it('is false when the frame agent tool state is inactive and no bridge exists', () => {
+    installFrameAgent({ isToolActive: false } as unknown as FrameAgent)
+
+    expect(isTopFrameToolActive()).toBe(false)
   })
 })
