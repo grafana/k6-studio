@@ -3,6 +3,8 @@ import { BrowserEvent, BrowserEventTarget } from '@/schemas/recording'
 import { forEachOwningFrame } from '@/utils/dom/frameChain'
 import { getCssSelector, getElementDetails } from '@/utils/dom/selectors'
 
+import { FrameAgent, getFrameAgent } from './messaging/frames'
+
 /**
  * Walks from `start` up to the top frame, collecting details for each owning
  * `<iframe>` element along the way. The result is ordered outermost first, so it
@@ -42,6 +44,64 @@ function safeFramePath(start: Window): BrowserEventTarget[] {
  */
 export function getFramePath(): BrowserEventTarget[] {
   return safeFramePath(window)
+}
+
+/**
+ * Composition seam for getFramePathAsync: tries the synchronous walk first
+ * (top frame and fully same-origin chains), then the postMessage protocol for
+ * cross-origin frames, then gives up with no frame path.
+ */
+export async function resolveFramePath(
+  walk: () => BrowserEventTarget[],
+  agent: FrameAgent | null
+): Promise<BrowserEventTarget[]> {
+  try {
+    return walk()
+  } catch {
+    // Cross-origin chain; fall through to the protocol.
+  }
+
+  if (agent === null) {
+    return []
+  }
+
+  try {
+    return (await agent.requestFramePath()) ?? []
+  } catch {
+    return []
+  }
+}
+
+/**
+ * The chain of iframe locators from the top frame down to the current frame,
+ * outermost first. Empty when running in the top frame or when the chain can't
+ * be determined. Same-origin chains resolve synchronously via frameElement;
+ * cross-origin frames ask their ancestors over postMessage.
+ */
+export function getFramePathAsync(): Promise<BrowserEventTarget[]> {
+  return resolveFramePath(
+    () => buildFramePath(window, getElementDetails),
+    getFrameAgent()
+  )
+}
+
+/**
+ * Like getFramePathAsync but distinguishes "top frame" ([]) from "unknown"
+ * (null), so a parent answering a child's request over the frame agent doesn't
+ * claim a wrong, shallow position in the frame tree.
+ */
+export async function getOwnFramePath(): Promise<BrowserEventTarget[] | null> {
+  try {
+    return buildFramePath(window, getElementDetails)
+  } catch {
+    // Cross-origin chain; ask the ancestors instead.
+  }
+
+  try {
+    return (await getFrameAgent()?.requestFramePath()) ?? null
+  } catch {
+    return null
+  }
 }
 
 /**

@@ -1,8 +1,16 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { BrowserEvent, BrowserEventTarget } from '@/schemas/recording'
 
-import { buildFramePath, getCssFramePathForElement, withFrames } from './frames'
+import {
+  buildFramePath,
+  getCssFramePathForElement,
+  getFramePathAsync,
+  getOwnFramePath,
+  resolveFramePath,
+  withFrames,
+} from './frames'
+import { FrameAgent, installFrameAgent } from './messaging/frames'
 
 interface FakeWindow {
   parent: FakeWindow
@@ -94,5 +102,56 @@ describe('getCssFramePathForElement', () => {
     }
 
     expect(getCssFramePathForElement(target)).toEqual([])
+  })
+})
+
+describe('getFramePathAsync', () => {
+  afterEach(() => {
+    installFrameAgent(null)
+    vi.restoreAllMocks()
+  })
+
+  it('returns an empty path in the top frame without consulting the agent', async () => {
+    // Under jsdom `window.frameElement` is null and `window.parent` self-references,
+    // so the sync walk succeeds with an empty path.
+    await expect(getFramePathAsync()).resolves.toEqual([])
+  })
+
+  it('falls back to the frame agent when the sync walk throws', async () => {
+    const agent = {
+      requestFramePath: vi
+        .fn()
+        .mockResolvedValue([{ selectors: { css: 'iframe#outer' } }]),
+    } as unknown as FrameAgent
+
+    await expect(
+      resolveFramePath(() => {
+        throw new Error('cross-origin')
+      }, agent)
+    ).resolves.toEqual([{ selectors: { css: 'iframe#outer' } }])
+  })
+
+  it('returns an empty path when the agent cannot resolve one', async () => {
+    const agent = {
+      requestFramePath: vi.fn().mockResolvedValue(null),
+    } as unknown as FrameAgent
+
+    await expect(
+      resolveFramePath(() => {
+        throw new Error('cross-origin')
+      }, agent)
+    ).resolves.toEqual([])
+  })
+
+  it('returns an empty path when there is no agent and the walk throws', async () => {
+    await expect(
+      resolveFramePath(() => {
+        throw new Error('cross-origin')
+      }, null)
+    ).resolves.toEqual([])
+  })
+
+  it('getOwnFramePath returns an empty path in the top frame', async () => {
+    await expect(getOwnFramePath()).resolves.toEqual([])
   })
 })
