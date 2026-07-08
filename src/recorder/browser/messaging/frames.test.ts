@@ -425,6 +425,46 @@ describe('FrameAgent handshake and tool state', () => {
     ])
   })
 
+  it('relays the acked tool state to its own child frames on handshake-ack', () => {
+    const parentWin = new FakeFrameWindow()
+    const childWin = new FakeFrameWindow()
+    const iframeElement = { id: 'child-iframe' } as unknown as Element
+
+    const { win, agent } = createAgent({
+      parentWindow: parentWin,
+      getFrames: () => [{ element: iframeElement, contentWindow: childWin }],
+    })
+
+    const sent: Array<{ message: { type: string; id: string } }> = []
+    parentWin.addEventListener('message', (event) => {
+      sent.push(event.data as { message: { type: string; id: string } })
+    })
+
+    agent.announce()
+
+    const relayed: unknown[] = []
+    childWin.addEventListener('message', (event) => relayed.push(event.data))
+
+    win.deliverFrom(parentWin, {
+      source: 'k6-studio-frames',
+      version: 1,
+      message: {
+        type: 'handshake-ack',
+        id: sent[0]?.message.id ?? '',
+        toolActive: true,
+      },
+    })
+
+    expect(agent.isToolActive).toBe(true)
+    expect(relayed).toEqual([
+      {
+        source: 'k6-studio-frames',
+        version: 1,
+        message: { type: 'tool-state', active: true },
+      },
+    ])
+  })
+
   it('ignores tool-state that does not come from the parent', () => {
     const parentWin = new FakeFrameWindow()
     const intruder = new FakeFrameWindow()

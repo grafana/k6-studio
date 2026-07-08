@@ -328,7 +328,7 @@ export class FrameAgent {
           this.#handshakeTimer = null
         }
 
-        this.#toolActive = message.toolActive
+        this.broadcastToolState(message.toolActive)
 
         return
       }

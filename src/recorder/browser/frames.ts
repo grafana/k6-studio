@@ -68,22 +68,41 @@ export function getFramePathAsync(): Promise<BrowserEventTarget[]> {
 }
 
 /**
- * Like getFramePathAsync but distinguishes "top frame" ([]) from "unknown"
- * (null), so a parent answering a child's request over the frame agent doesn't
- * claim a wrong, shallow position in the frame tree.
+ * Composition seam for getOwnFramePath: tries the synchronous walk first, then
+ * the postMessage protocol for cross-origin frames, then gives up with null
+ * rather than a wrong, shallow path.
  */
-export async function getOwnFramePath(): Promise<BrowserEventTarget[] | null> {
+export async function resolveOwnFramePath(
+  walk: () => BrowserEventTarget[],
+  agent: FrameAgent | null
+): Promise<BrowserEventTarget[] | null> {
   try {
-    return buildFramePath(window, getElementDetails)
+    return walk()
   } catch {
     // Cross-origin chain; ask the ancestors instead.
   }
 
+  if (agent === null) {
+    return null
+  }
+
   try {
-    return (await getFrameAgent()?.requestFramePath()) ?? null
+    return (await agent.requestFramePath()) ?? null
   } catch {
     return null
   }
+}
+
+/**
+ * Like getFramePathAsync but distinguishes "top frame" ([]) from "unknown"
+ * (null), so a parent answering a child's request over the frame agent doesn't
+ * claim a wrong, shallow position in the frame tree.
+ */
+export function getOwnFramePath(): Promise<BrowserEventTarget[] | null> {
+  return resolveOwnFramePath(
+    () => buildFramePath(window, getElementDetails),
+    getFrameAgent()
+  )
 }
 
 /**

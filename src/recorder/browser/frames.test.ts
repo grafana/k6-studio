@@ -8,6 +8,7 @@ import {
   getFramePathAsync,
   getOwnFramePath,
   resolveFramePath,
+  resolveOwnFramePath,
   withFrames,
 } from './frames'
 import { FrameAgent, installFrameAgent } from './messaging/frames'
@@ -153,5 +154,64 @@ describe('getFramePathAsync', () => {
 
   it('getOwnFramePath returns an empty path in the top frame', async () => {
     await expect(getOwnFramePath()).resolves.toEqual([])
+  })
+})
+
+describe('resolveOwnFramePath', () => {
+  it('falls back to the frame agent when the walk throws', async () => {
+    const agent = {
+      requestFramePath: vi
+        .fn()
+        .mockResolvedValue([{ selectors: { css: 'iframe#outer' } }]),
+    } as unknown as FrameAgent
+
+    await expect(
+      resolveOwnFramePath(() => {
+        throw new Error('cross-origin')
+      }, agent)
+    ).resolves.toEqual([{ selectors: { css: 'iframe#outer' } }])
+  })
+
+  it('returns null when the walk throws and the agent cannot resolve one', async () => {
+    const agent = {
+      requestFramePath: vi.fn().mockResolvedValue(null),
+    } as unknown as FrameAgent
+
+    await expect(
+      resolveOwnFramePath(() => {
+        throw new Error('cross-origin')
+      }, agent)
+    ).resolves.toBeNull()
+  })
+
+  it('returns null when the walk throws and there is no agent', async () => {
+    await expect(
+      resolveOwnFramePath(() => {
+        throw new Error('cross-origin')
+      }, null)
+    ).resolves.toBeNull()
+  })
+
+  it('returns null when the walk throws and the agent rejects', async () => {
+    const agent = {
+      requestFramePath: vi.fn().mockRejectedValue(new Error('timeout')),
+    } as unknown as FrameAgent
+
+    await expect(
+      resolveOwnFramePath(() => {
+        throw new Error('cross-origin')
+      }, agent)
+    ).resolves.toBeNull()
+  })
+
+  it('returns the walk result without consulting the agent when the walk succeeds', async () => {
+    const requestFramePath = vi.fn()
+    const agent = { requestFramePath } as unknown as FrameAgent
+
+    await expect(
+      resolveOwnFramePath(() => [{ selectors: { css: 'iframe#outer' } }], agent)
+    ).resolves.toEqual([{ selectors: { css: 'iframe#outer' } }])
+
+    expect(requestFramePath).not.toHaveBeenCalled()
   })
 })
