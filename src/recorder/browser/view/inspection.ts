@@ -93,8 +93,9 @@ export function readSelection(
  * Runs in child frames so the top-frame inspector can pick elements inside
  * iframes. Detection has to happen in each frame because DOM events don't cross
  * iframe boundaries; matched elements are forwarded to the top frame with a
- * direct call (frames are same-process with web security disabled, so the live
- * element reference passes across the boundary).
+ * direct call, which only works for same-origin frames since it passes a live
+ * element reference. Cross-origin frames can't reach the top frame's bridge
+ * (see `getTopFrameBridge`) and so no-op here (tier 3 follow-up).
  */
 export function attachInspectionDetection() {
   document.addEventListener('mouseover', (event) => {

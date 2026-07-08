@@ -29,14 +29,15 @@ const DEBUGGER_PORT = 9222
 
 const BROWSER_CDP_ARGS = [
   '--disable-back-forward-cache',
-  // Disable web security to allow our script to be executed in sandboxed iframes.
-  '--disable-web-security',
+  // Allows each frame's ws:// connection to the recorder from https pages.
   '--allow-running-insecure-content',
   // Keep cross-origin iframes in the parent's process so the injected recording
-  // script runs inside them and can walk up to the top frame. Disabling the
-  // IsolateOrigins/site-per-process features (see FEATURES_TO_DISABLE) is not
-  // enough on its own in current Chrome; the site-isolation trials must also be
-  // turned off.
+  // script runs inside them. Disabling the IsolateOrigins/site-per-process
+  // features (see FEATURES_TO_DISABLE) is not enough on its own in current
+  // Chrome; the site-isolation trials must also be turned off. Web security
+  // stays ON: cross-origin frames coordinate over postMessage (FrameAgent)
+  // instead of direct DOM access, so the browser keeps sending Origin headers
+  // (SPA IdP logins depend on them, e.g. Entra ID AADSTS9002327).
   '--disable-site-isolation-trials',
 ]
 
