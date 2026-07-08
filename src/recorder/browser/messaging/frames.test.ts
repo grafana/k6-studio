@@ -168,3 +168,102 @@ describe('FrameAgent.requestFramePath', () => {
     await expect(pathPromise).resolves.toBeNull()
   })
 })
+
+describe('FrameAgent responder', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  function linkChild(parentSetup: {
+    getOwnPath?: () => Promise<BrowserEventTarget[] | null>
+  }) {
+    const childWin = new FakeFrameWindow()
+    const iframeElement = { id: 'child-iframe' } as unknown as Element
+
+    const { win: parentWin } = createAgent({
+      getFrames: () => [{ element: iframeElement, contentWindow: childWin }],
+      getIframeLocator: () => locator('iframe#child'),
+      getOwnPath: parentSetup.getOwnPath ?? (() => Promise.resolve([])),
+    })
+
+    return { parentWin, childWin }
+  }
+
+  function requestFromChild(
+    parentWin: FakeFrameWindow,
+    childWin: FakeFrameWindow
+  ) {
+    const received: unknown[] = []
+    childWin.addEventListener('message', (event) => received.push(event.data))
+
+    parentWin.deliverFrom(childWin, {
+      source: 'k6-studio-frames',
+      version: 1,
+      message: { type: 'frame-path-request', id: 'req-1' },
+    })
+
+    return received
+  }
+
+  it('responds with its own path plus the child iframe locator', async () => {
+    const { parentWin, childWin } = linkChild({
+      getOwnPath: () => Promise.resolve([locator('iframe#outer')]),
+    })
+
+    const received = requestFromChild(parentWin, childWin)
+
+    await vi.runAllTimersAsync()
+
+    expect(received).toEqual([
+      {
+        source: 'k6-studio-frames',
+        version: 1,
+        message: {
+          type: 'frame-path-response',
+          id: 'req-1',
+          path: [locator('iframe#outer'), locator('iframe#child')],
+        },
+      },
+    ])
+  })
+
+  it('responds with a null path when its own path is unknown', async () => {
+    const { parentWin, childWin } = linkChild({
+      getOwnPath: () => Promise.resolve(null),
+    })
+
+    const received = requestFromChild(parentWin, childWin)
+
+    await vi.runAllTimersAsync()
+
+    expect(received).toEqual([
+      {
+        source: 'k6-studio-frames',
+        version: 1,
+        message: { type: 'frame-path-response', id: 'req-1', path: null },
+      },
+    ])
+  })
+
+  it('ignores requests from windows that are not its own frames', async () => {
+    const { parentWin, childWin } = linkChild({})
+    const intruder = new FakeFrameWindow()
+
+    const received: unknown[] = []
+    childWin.addEventListener('message', (event) => received.push(event.data))
+
+    parentWin.deliverFrom(intruder, {
+      source: 'k6-studio-frames',
+      version: 1,
+      message: { type: 'frame-path-request', id: 'req-1' },
+    })
+
+    await vi.runAllTimersAsync()
+
+    expect(received).toEqual([])
+  })
+})

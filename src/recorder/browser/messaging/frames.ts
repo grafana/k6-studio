@@ -177,9 +177,30 @@ export class FrameAgent {
         return
       }
 
-      case 'frame-path-request':
-        // Handled in Task 2.
+      case 'frame-path-request': {
+        const frame = this.#options
+          .getFrames()
+          .find((candidate) => candidate.contentWindow === source)
+
+        if (frame === undefined) {
+          return
+        }
+
+        void this.#options.getOwnPath().then((ownPath) => {
+          const path =
+            ownPath === null
+              ? null
+              : [...ownPath, this.#options.getIframeLocator(frame.element)]
+
+          this.#post(source, {
+            type: 'frame-path-response',
+            id: message.id,
+            path,
+          })
+        })
+
         return
+      }
     }
   }
 }
