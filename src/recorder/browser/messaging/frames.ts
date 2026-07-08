@@ -23,10 +23,32 @@ const FramePathResponseSchema = z.object({
   path: BrowserEventTargetSchema.array().nullable(),
 })
 
+const HandshakeSchema = z.object({
+  type: z.literal('handshake'),
+  id: z.string(),
+})
+
+const HandshakeAckSchema = z.object({
+  type: z.literal('handshake-ack'),
+  id: z.string(),
+  toolActive: z.boolean(),
+})
+
+const ToolStateSchema = z.object({
+  type: z.literal('tool-state'),
+  active: z.boolean(),
+})
+
 const FrameMessageSchema = z.discriminatedUnion('type', [
   FramePathRequestSchema,
   FramePathResponseSchema,
+  HandshakeSchema,
+  HandshakeAckSchema,
+  ToolStateSchema,
 ])
+
+const HANDSHAKE_RETRY_MS = 100
+const MAX_HANDSHAKE_ATTEMPTS = 5
 
 const FrameEnvelopeSchema = z.object({
   source: z.literal(PROTOCOL_SOURCE),
@@ -96,6 +118,9 @@ export class FrameAgent {
   #send: (target: unknown, envelope: unknown) => void
   #requestTimeoutMs: number
   #pending = new Map<string, PendingRequest>()
+  #toolActive = false
+  #handshakeId: string | null = null
+  #handshakeTimer: ReturnType<typeof setTimeout> | null = null
 
   #handleMessage = (event: FrameMessageEvent) => {
     const parsed = FrameEnvelopeSchema.safeParse(event.data)
@@ -114,6 +139,36 @@ export class FrameAgent {
       options.requestTimeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS
 
     options.win.addEventListener('message', this.#handleMessage)
+  }
+
+  get isToolActive(): boolean {
+    return this.#toolActive
+  }
+
+  /**
+   * Announces this frame to its parent, retrying with backoff until the
+   * parent's agent acknowledges (covers the child-before-parent init race).
+   * The ack carries the current tool state.
+   */
+  announce() {
+    if (this.#options.parentWindow === null) {
+      return
+    }
+
+    this.#handshakeId = nanoid()
+    this.#sendHandshake(0)
+  }
+
+  /**
+   * Caches the tool state and pushes it to all direct child frames. Used by
+   * the top frame on tool changes and by child frames to relay downward.
+   */
+  broadcastToolState(active: boolean) {
+    this.#toolActive = active
+
+    this.#options.getFrames().forEach((frame) => {
+      this.#post(frame.contentWindow, { type: 'tool-state', active })
+    })
   }
 
   requestFramePath(): Promise<BrowserEventTarget[] | null> {
@@ -147,6 +202,11 @@ export class FrameAgent {
     })
 
     this.#pending.clear()
+
+    if (this.#handshakeTimer !== null) {
+      clearTimeout(this.#handshakeTimer)
+      this.#handshakeTimer = null
+    }
   }
 
   #post(target: unknown, message: FrameMessage) {
@@ -155,6 +215,24 @@ export class FrameAgent {
       version: PROTOCOL_VERSION,
       message,
     })
+  }
+
+  #sendHandshake(attempt: number) {
+    if (this.#handshakeId === null || attempt >= MAX_HANDSHAKE_ATTEMPTS) {
+      return
+    }
+
+    this.#post(this.#options.parentWindow, {
+      type: 'handshake',
+      id: this.#handshakeId,
+    })
+
+    this.#handshakeTimer = setTimeout(
+      () => {
+        this.#sendHandshake(attempt + 1)
+      },
+      HANDSHAKE_RETRY_MS * 2 ** attempt
+    )
   }
 
   #dispatch(message: FrameMessage, source: unknown) {
@@ -201,6 +279,64 @@ export class FrameAgent {
 
         return
       }
+
+      case 'handshake': {
+        const frame = this.#options
+          .getFrames()
+          .find((candidate) => candidate.contentWindow === source)
+
+        if (frame === undefined) {
+          return
+        }
+
+        this.#post(source, {
+          type: 'handshake-ack',
+          id: message.id,
+          toolActive: this.#toolActive,
+        })
+
+        return
+      }
+
+      case 'handshake-ack': {
+        if (
+          source !== this.#options.parentWindow ||
+          message.id !== this.#handshakeId
+        ) {
+          return
+        }
+
+        this.#handshakeId = null
+
+        if (this.#handshakeTimer !== null) {
+          clearTimeout(this.#handshakeTimer)
+          this.#handshakeTimer = null
+        }
+
+        this.#toolActive = message.toolActive
+
+        return
+      }
+
+      case 'tool-state': {
+        if (source !== this.#options.parentWindow) {
+          return
+        }
+
+        this.broadcastToolState(message.active)
+
+        return
+      }
     }
   }
+}
+
+let installedAgent: FrameAgent | null = null
+
+export function installFrameAgent(agent: FrameAgent | null) {
+  installedAgent = agent
+}
+
+export function getFrameAgent(): FrameAgent | null {
+  return installedAgent
 }

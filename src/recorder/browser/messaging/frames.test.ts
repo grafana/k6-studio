@@ -267,3 +267,136 @@ describe('FrameAgent responder', () => {
     expect(received).toEqual([])
   })
 })
+
+describe('FrameAgent handshake and tool state', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('retries the handshake until acknowledged and caches the acked tool state', () => {
+    const parentWin = new FakeFrameWindow()
+    const { win, agent } = createAgent({ parentWindow: parentWin })
+
+    const sent: Array<{ message: { type: string; id: string } }> = []
+    parentWin.addEventListener('message', (event) => {
+      sent.push(event.data as { message: { type: string; id: string } })
+    })
+
+    agent.announce()
+
+    expect(sent).toHaveLength(1)
+
+    vi.advanceTimersByTime(100)
+
+    expect(sent).toHaveLength(2)
+    expect(sent.every((entry) => entry.message.type === 'handshake')).toBe(true)
+
+    win.deliverFrom(parentWin, {
+      source: 'k6-studio-frames',
+      version: 1,
+      message: {
+        type: 'handshake-ack',
+        id: sent[1]?.message.id ?? '',
+        toolActive: true,
+      },
+    })
+
+    expect(agent.isToolActive).toBe(true)
+
+    // Acked: no further retries.
+    vi.advanceTimersByTime(10_000)
+
+    expect(sent).toHaveLength(2)
+  })
+
+  it('stops retrying the handshake after the attempt limit', () => {
+    const parentWin = new FakeFrameWindow()
+    const { agent } = createAgent({ parentWindow: parentWin })
+
+    const sent: unknown[] = []
+    parentWin.addEventListener('message', (event) => sent.push(event.data))
+
+    agent.announce()
+
+    vi.advanceTimersByTime(60_000)
+
+    expect(sent).toHaveLength(5)
+  })
+
+  it('acknowledges a child handshake with the current tool state', () => {
+    const childWin = new FakeFrameWindow()
+    const iframeElement = { id: 'child-iframe' } as unknown as Element
+
+    const { win: parentWin, agent } = createAgent({
+      getFrames: () => [{ element: iframeElement, contentWindow: childWin }],
+    })
+
+    agent.broadcastToolState(true)
+
+    const received: unknown[] = []
+    childWin.addEventListener('message', (event) => received.push(event.data))
+
+    parentWin.deliverFrom(childWin, {
+      source: 'k6-studio-frames',
+      version: 1,
+      message: { type: 'handshake', id: 'hs-1' },
+    })
+
+    expect(received).toContainEqual({
+      source: 'k6-studio-frames',
+      version: 1,
+      message: { type: 'handshake-ack', id: 'hs-1', toolActive: true },
+    })
+  })
+
+  it('relays tool-state from the parent to its own child frames and caches it', () => {
+    const parentWin = new FakeFrameWindow()
+    const grandchildWin = new FakeFrameWindow()
+    const iframeElement = { id: 'grandchild-iframe' } as unknown as Element
+
+    const { win, agent } = createAgent({
+      parentWindow: parentWin,
+      getFrames: () => [
+        { element: iframeElement, contentWindow: grandchildWin },
+      ],
+    })
+
+    const relayed: unknown[] = []
+    grandchildWin.addEventListener('message', (event) =>
+      relayed.push(event.data)
+    )
+
+    win.deliverFrom(parentWin, {
+      source: 'k6-studio-frames',
+      version: 1,
+      message: { type: 'tool-state', active: true },
+    })
+
+    expect(agent.isToolActive).toBe(true)
+    expect(relayed).toEqual([
+      {
+        source: 'k6-studio-frames',
+        version: 1,
+        message: { type: 'tool-state', active: true },
+      },
+    ])
+  })
+
+  it('ignores tool-state that does not come from the parent', () => {
+    const parentWin = new FakeFrameWindow()
+    const intruder = new FakeFrameWindow()
+    const { win, agent } = createAgent({ parentWindow: parentWin })
+
+    win.deliverFrom(intruder, {
+      source: 'k6-studio-frames',
+      version: 1,
+      message: { type: 'tool-state', active: true },
+    })
+
+    expect(agent.isToolActive).toBe(false)
+  })
+})
