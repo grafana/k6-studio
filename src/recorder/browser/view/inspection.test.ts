@@ -87,7 +87,7 @@ describe('isTopFrameToolActive with a frame agent', () => {
   })
 
   afterEach(() => {
-    installFrameAgent(null as unknown as FrameAgent)
+    installFrameAgent(null)
   })
 
   it('is true when the frame agent has received an active tool state', () => {

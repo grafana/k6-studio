@@ -88,4 +88,28 @@ describe('createSequentialEmitter', () => {
       'second',
     ])
   })
+
+  it('keeps emitting after send throws', async () => {
+    const sent: BrowserEvent[][] = []
+    let shouldThrow = true
+
+    const emit = createSequentialEmitter(
+      () => Promise.resolve([]),
+      (events) => {
+        if (shouldThrow) {
+          shouldThrow = false
+          throw new Error('transport down')
+        }
+
+        sent.push(events)
+      }
+    )
+
+    emit(makeEvent('first'))
+    emit(makeEvent('second'))
+
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(sent.flat().map((event) => event.eventId)).toEqual(['second'])
+  })
 })
