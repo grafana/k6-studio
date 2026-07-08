@@ -268,6 +268,45 @@ describe('FrameAgent responder', () => {
   })
 })
 
+describe('FrameAgent default send', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('posts to a parent window that only exposes postMessage, like a cross-origin WindowProxy', () => {
+    const win = new FakeFrameWindow()
+    const postMessage = vi.fn()
+    const parentWindow = { postMessage }
+
+    const agent = new FrameAgent({
+      win,
+      parentWindow,
+      getFrames: () => [],
+      getIframeLocator: () => locator('iframe#unused'),
+      getOwnPath: () => Promise.resolve([]),
+    })
+
+    void agent.requestFramePath()
+
+    expect(postMessage).toHaveBeenCalledTimes(1)
+
+    const [envelope, targetOrigin] = postMessage.mock.calls[0] as [
+      { source: string; message: { type: string } },
+      string,
+    ]
+
+    expect(envelope.source).toBe('k6-studio-frames')
+    expect(envelope.message.type).toBe('frame-path-request')
+    expect(targetOrigin).toBe('*')
+
+    agent.dispose()
+  })
+})
+
 describe('FrameAgent handshake and tool state', () => {
   beforeEach(() => {
     vi.useFakeTimers()

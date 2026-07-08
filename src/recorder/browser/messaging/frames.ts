@@ -96,8 +96,23 @@ export interface FrameAgentOptions {
 
 const DEFAULT_REQUEST_TIMEOUT_MS = 1000
 
+interface PostMessageTarget {
+  postMessage(message: unknown, targetOrigin: string): void
+}
+
+function isPostMessageTarget(target: unknown): target is PostMessageTarget {
+  return (
+    typeof target === 'object' &&
+    target !== null &&
+    typeof (target as PostMessageTarget).postMessage === 'function'
+  )
+}
+
+// A cross-origin WindowProxy fails `instanceof Window` silently, because its
+// prototype chain is inaccessible cross-origin. Checking for postMessage
+// structurally works for both same-origin windows and cross-origin proxies.
 function defaultSend(target: unknown, envelope: unknown) {
-  if (target instanceof Window) {
+  if (isPostMessageTarget(target)) {
     target.postMessage(envelope, '*')
   }
 }
