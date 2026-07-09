@@ -2,6 +2,7 @@ import { Button, Callout, Flex, Spinner, Text } from '@radix-ui/themes'
 import { AlertTriangleIcon, LinkIcon, WandSparklesIcon } from 'lucide-react'
 import { PropsWithChildren, ReactNode, useState } from 'react'
 
+import { ExternalLink } from '@/components/ExternalLink'
 import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
 import { GrafanaCloudSignIn } from '@/components/Profile/GrafanaCloudSignIn'
 import {
@@ -10,6 +11,7 @@ import {
   useAssistantSignIn,
 } from '@/hooks/useAssistantAuth'
 import { useStackHealth } from '@/hooks/useStackHealth'
+import { UsageEventName } from '@/services/usageTracking/types'
 
 interface AssistantAuthGateProps {
   /** Rendered once the user is signed in, connected, and the stack is ready. */
@@ -28,6 +30,12 @@ export function AssistantAuthGate({ children }: AssistantAuthGateProps) {
   const isSignedIn = !!authStatus?.stackId
   const isAuthenticated = authStatus?.authenticated ?? false
   const isAwaitingApproval = !isAuthenticated && signIn.isPending
+
+  const handleSignUpClick = () => {
+    window.studio.app.trackEvent({
+      event: UsageEventName.TestSetupWizardSignUpClicked,
+    })
+  }
 
   if (isLoading) {
     return (
@@ -67,6 +75,13 @@ export function AssistantAuthGate({ children }: AssistantAuthGateProps) {
           <GrafanaIcon />
           Sign in to Grafana Cloud
         </Button>
+        <ExternalLink
+          size="2"
+          href={`${GRAFANA_COM_URL}/auth/sign-up/create-user?pg=k6-studio&plcmt=test-config-wizard`}
+          onClick={handleSignUpClick}
+        >
+          Create a free account
+        </ExternalLink>
       </GateLayout>
     )
   }

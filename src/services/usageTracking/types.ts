@@ -58,6 +58,7 @@ export enum UsageEventName {
   TestSetupWizardCompleted = 'test_setup_wizard_completed',
   TestSetupWizardDismissed = 'test_setup_wizard_dismissed',
   TestSetupWizardStepSkipped = 'test_setup_wizard_step_skipped',
+  TestSetupWizardSignUpClicked = 'test_setup_wizard_sign_up_clicked',
 }
 
 export interface UsageEventMetadata {
@@ -259,6 +260,11 @@ interface TestSetupWizardStepSkippedEvent {
   }
 }
 
+/** The user followed the wizard's sign-up link to create a Grafana Cloud account. */
+interface TestSetupWizardSignUpClickedEvent {
+  event: UsageEventName.TestSetupWizardSignUpClicked
+}
+
 export type UsageEvent =
   | AppInstalledEvent
   | UserLoggedInEvent
@@ -301,5 +307,6 @@ export type UsageEvent =
   | TestSetupWizardCompletedEvent
   | TestSetupWizardDismissedEvent
   | TestSetupWizardStepSkippedEvent
+  | TestSetupWizardSignUpClickedEvent
 
 export type UsageEventWithMetadata = UsageEvent & UsageEventMetadata
