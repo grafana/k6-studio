@@ -30,9 +30,6 @@ function ChoiceCard({
         flex: 1,
         maxWidth: 360,
         position: 'relative',
-        '&:hover': {
-          outline: accent ? '1px solid var(--orange-8)' : undefined,
-        },
       }}
     >
       <Flex direction="column" gap="4" height="100%">
@@ -112,7 +109,7 @@ export function ChoiceScreen({
       >
         <ChoiceCard
           accent
-          badge="Recommended"
+          badge="Experimental"
           visual={
             <img src={grotMagic} alt="" css={{ height: 64, width: 'auto' }} />
           }

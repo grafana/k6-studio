@@ -15,7 +15,19 @@ describe('ChoiceScreen', () => {
 
     expect(screen.getByText('Configure with Assistant')).toBeDefined()
     expect(screen.getByText('Configure manually')).toBeDefined()
-    expect(screen.getByText('Recommended')).toBeDefined()
+    // The assistant card is badged as experimental, not recommended.
+    expect(screen.queryByText('Recommended')).toBeNull()
+  })
+
+  it('labels the choice screen as experimental', () => {
+    render(
+      <ChoiceScreen
+        onStartGuidedSetup={vi.fn()}
+        onConfigureManually={vi.fn()}
+      />
+    )
+
+    expect(screen.getByText('Experimental')).toBeDefined()
   })
 
   it('starts guided setup', async () => {

@@ -61,6 +61,13 @@ describe('SetupWizard', () => {
     expect(screen.getByText('New HTTP test')).toBeDefined()
   })
 
+  it('labels the wizard as experimental', () => {
+    render(<SetupWizard {...defaultProps} />)
+
+    // Once in the header, once on the choice screen itself.
+    expect(screen.getAllByText('Experimental').length).toBeGreaterThan(0)
+  })
+
   it('titles a generator relaunch "Configure HTTP test"', () => {
     render(<SetupWizard {...defaultProps} startInGuidedSetup />)
 

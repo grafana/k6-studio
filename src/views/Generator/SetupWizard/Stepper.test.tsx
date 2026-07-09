@@ -35,6 +35,12 @@ describe('Stepper', () => {
     expect(screen.getByText('Run test')).toBeDefined()
   })
 
+  it('shows the experimental badge', () => {
+    renderStepper()
+
+    expect(screen.getByText('Experimental')).toBeDefined()
+  })
+
   it('marks the active step with aria-current', () => {
     renderStepper()
 
