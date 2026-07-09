@@ -180,13 +180,15 @@ describe('FrameAgent responder', () => {
 
   function linkChild(parentSetup: {
     getOwnPath?: () => Promise<BrowserEventTarget[] | null>
+    getIframeLocator?: (iframe: Element) => BrowserEventTarget
   }) {
     const childWin = new FakeFrameWindow()
     const iframeElement = { id: 'child-iframe' } as unknown as Element
 
     const { win: parentWin } = createAgent({
       getFrames: () => [{ element: iframeElement, contentWindow: childWin }],
-      getIframeLocator: () => locator('iframe#child'),
+      getIframeLocator:
+        parentSetup.getIframeLocator ?? (() => locator('iframe#child')),
       getOwnPath: parentSetup.getOwnPath ?? (() => Promise.resolve([])),
     })
 
@@ -265,6 +267,45 @@ describe('FrameAgent responder', () => {
     await vi.runAllTimersAsync()
 
     expect(received).toEqual([])
+  })
+
+  it('responds with a null path when computing the iframe locator throws', async () => {
+    const { parentWin, childWin } = linkChild({
+      getOwnPath: () => Promise.resolve([locator('iframe#outer')]),
+      getIframeLocator: () => {
+        throw new Error('detached iframe')
+      },
+    })
+
+    const received = requestFromChild(parentWin, childWin)
+
+    await vi.runAllTimersAsync()
+
+    expect(received).toEqual([
+      {
+        source: 'k6-studio-frames',
+        version: 1,
+        message: { type: 'frame-path-response', id: 'req-1', path: null },
+      },
+    ])
+  })
+
+  it('responds with a null path when getOwnPath rejects', async () => {
+    const { parentWin, childWin } = linkChild({
+      getOwnPath: () => Promise.reject(new Error('boom')),
+    })
+
+    const received = requestFromChild(parentWin, childWin)
+
+    await vi.runAllTimersAsync()
+
+    expect(received).toEqual([
+      {
+        source: 'k6-studio-frames',
+        version: 1,
+        message: { type: 'frame-path-response', id: 'req-1', path: null },
+      },
+    ])
   })
 })
 

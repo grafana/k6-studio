@@ -279,18 +279,25 @@ export class FrameAgent {
           return
         }
 
-        void this.#options.getOwnPath().then((ownPath) => {
-          const path =
+        // Any failure (getOwnPath rejecting or the locator computation
+        // throwing, e.g. on a detached iframe) still answers with a null
+        // path, so the child falls back immediately instead of stalling
+        // its full request timeout.
+        void this.#options
+          .getOwnPath()
+          .then((ownPath) =>
             ownPath === null
               ? null
               : [...ownPath, this.#options.getIframeLocator(frame.element)]
-
-          this.#post(source, {
-            type: 'frame-path-response',
-            id: message.id,
-            path,
+          )
+          .catch(() => null)
+          .then((path) => {
+            this.#post(source, {
+              type: 'frame-path-response',
+              id: message.id,
+              path,
+            })
           })
-        })
 
         return
       }
