@@ -4,10 +4,10 @@ import { BrowserEvent, BrowserEventTarget } from '@/schemas/recording'
 
 import {
   buildFramePath,
+  createNegativeCachedResolver,
   getCssFramePathForElement,
   getFramePathAsync,
   getOwnFramePath,
-  resolveFramePath,
   resolveOwnFramePath,
   withFrames,
 } from './frames'
@@ -118,42 +118,41 @@ describe('getFramePathAsync', () => {
     await expect(getFramePathAsync()).resolves.toEqual([])
   })
 
-  it('falls back to the frame agent when the sync walk throws', async () => {
-    const agent = {
-      requestFramePath: vi
-        .fn()
-        .mockResolvedValue([{ selectors: { css: 'iframe#outer' } }]),
-    } as unknown as FrameAgent
-
-    await expect(
-      resolveFramePath(() => {
-        throw new Error('cross-origin')
-      }, agent)
-    ).resolves.toEqual([{ selectors: { css: 'iframe#outer' } }])
-  })
-
-  it('returns an empty path when the agent cannot resolve one', async () => {
-    const agent = {
-      requestFramePath: vi.fn().mockResolvedValue(null),
-    } as unknown as FrameAgent
-
-    await expect(
-      resolveFramePath(() => {
-        throw new Error('cross-origin')
-      }, agent)
-    ).resolves.toEqual([])
-  })
-
-  it('returns an empty path when there is no agent and the walk throws', async () => {
-    await expect(
-      resolveFramePath(() => {
-        throw new Error('cross-origin')
-      }, null)
-    ).resolves.toEqual([])
-  })
-
   it('getOwnFramePath returns an empty path in the top frame', async () => {
     await expect(getOwnFramePath()).resolves.toEqual([])
+  })
+})
+
+describe('createNegativeCachedResolver', () => {
+  it('returns an empty path and stops resolving after a null result', async () => {
+    const resolve = vi.fn().mockResolvedValue(null)
+    const resolver = createNegativeCachedResolver(resolve)
+
+    await expect(resolver()).resolves.toEqual([])
+    await expect(resolver()).resolves.toEqual([])
+
+    expect(resolve).toHaveBeenCalledTimes(1)
+  })
+
+  it('passes a resolved path through without caching a negative result', async () => {
+    const path: BrowserEventTarget[] = [{ selectors: { css: 'iframe#outer' } }]
+    const resolve = vi.fn().mockResolvedValue(path)
+    const resolver = createNegativeCachedResolver(resolve)
+
+    await expect(resolver()).resolves.toEqual(path)
+    await expect(resolver()).resolves.toEqual(path)
+
+    expect(resolve).toHaveBeenCalledTimes(2)
+  })
+
+  it('returns an empty path and stops resolving after a rejection', async () => {
+    const resolve = vi.fn().mockRejectedValue(new Error('timeout'))
+    const resolver = createNegativeCachedResolver(resolve)
+
+    await expect(resolver()).resolves.toEqual([])
+    await expect(resolver()).resolves.toEqual([])
+
+    expect(resolve).toHaveBeenCalledTimes(1)
   })
 })
 

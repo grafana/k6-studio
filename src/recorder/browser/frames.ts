@@ -29,42 +29,52 @@ export function buildFramePath(
 }
 
 /**
- * Composition seam for getFramePathAsync: tries the synchronous walk first
- * (top frame and fully same-origin chains), then the postMessage protocol for
- * cross-origin frames, then gives up with no frame path.
+ * Wraps a frame path lookup with a negative cache: once the lookup resolves
+ * null (an ancestor never answered) or rejects, every later call
+ * short-circuits to an empty path instead of paying the full request timeout
+ * again. An unresponsive ancestor stays unresponsive for this document's
+ * lifetime; the recorder script is re-injected per document, so the cache
+ * resets naturally on navigation.
  */
-export async function resolveFramePath(
-  walk: () => BrowserEventTarget[],
-  agent: FrameAgent | null
-): Promise<BrowserEventTarget[]> {
-  try {
-    return walk()
-  } catch {
-    // Cross-origin chain; fall through to the protocol.
-  }
+export function createNegativeCachedResolver(
+  resolve: () => Promise<BrowserEventTarget[] | null>
+): () => Promise<BrowserEventTarget[]> {
+  let ancestorUnresponsive = false
 
-  if (agent === null) {
-    return []
-  }
+  return async () => {
+    if (ancestorUnresponsive) {
+      return []
+    }
 
-  try {
-    return (await agent.requestFramePath()) ?? []
-  } catch {
-    return []
+    const path = await resolve().catch(() => null)
+
+    if (path === null) {
+      ancestorUnresponsive = true
+      return []
+    }
+
+    return path
   }
 }
+
+const resolveCrossOriginFramePath = createNegativeCachedResolver(
+  () => getFrameAgent()?.requestFramePath() ?? Promise.resolve(null)
+)
 
 /**
  * The chain of iframe locators from the top frame down to the current frame,
  * outermost first. Empty when running in the top frame or when the chain can't
  * be determined. Same-origin chains resolve synchronously via frameElement;
- * cross-origin frames ask their ancestors over postMessage.
+ * cross-origin frames ask their ancestors over postMessage, with unanswered
+ * lookups negative-cached so one silent ancestor can't stall every event.
  */
 export function getFramePathAsync(): Promise<BrowserEventTarget[]> {
-  return resolveFramePath(
-    () => buildFramePath(window, getElementDetails),
-    getFrameAgent()
-  )
+  try {
+    return Promise.resolve(buildFramePath(window, getElementDetails))
+  } catch {
+    // Cross-origin chain; fall back to the protocol.
+    return resolveCrossOriginFramePath()
+  }
 }
 
 /**
