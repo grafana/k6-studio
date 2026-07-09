@@ -95,7 +95,9 @@ export function readSelection(
  * iframe boundaries; matched elements are forwarded to the top frame with a
  * direct call, which only works for same-origin frames since it passes a live
  * element reference. Cross-origin frames can't reach the top frame's bridge
- * (see `getTopFrameBridge`) and so no-op here (tier 3 follow-up).
+ * (see `getTopFrameBridge`), so picking still no-ops there, but the click is
+ * swallowed whenever the frame agent reports the tool is active, so the page's
+ * real click handler doesn't fire underneath the inspector.
  */
 export function attachInspectionDetection() {
   document.addEventListener('mouseover', (event) => {
@@ -124,6 +126,15 @@ export function attachInspectionDetection() {
       const bridge = getBridge()
 
       if (bridge === undefined) {
+        // No same-origin path to the top frame's inspector. If the inspector
+        // is active in an ancestor frame, the frame agent still knows via the
+        // broadcast tool state, so the real page click is swallowed even
+        // though there is no bridge to report the pick to.
+        if (getFrameAgent()?.isToolActive === true) {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+
         return
       }
 

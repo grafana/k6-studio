@@ -102,3 +102,64 @@ describe('isTopFrameToolActive with a frame agent', () => {
     expect(isTopFrameToolActive()).toBe(false)
   })
 })
+
+describe('attachInspectionDetection with no top-frame bridge', () => {
+  beforeEach(() => {
+    // The outer suite's beforeEach installs an inspection bridge; these tests
+    // exercise the cross-origin path where the bridge is unreachable.
+    delete window.__K6_STUDIO_INSPECTION__
+  })
+
+  afterEach(() => {
+    installFrameAgent(null)
+  })
+
+  it('prevents the default click action when the tool is active in an ancestor frame', () => {
+    installFrameAgent({ isToolActive: true } as unknown as FrameAgent)
+
+    const button = document.createElement('button')
+    document.body.append(button)
+
+    const event = new MouseEvent('click', {
+      bubbles: true,
+      composed: true,
+      cancelable: true,
+    })
+    button.dispatchEvent(event)
+
+    expect(event.defaultPrevented).toBe(true)
+    expect(pick).not.toHaveBeenCalled()
+  })
+
+  it('does not prevent the default click action when no frame agent is installed', () => {
+    const button = document.createElement('button')
+    document.body.append(button)
+
+    const event = new MouseEvent('click', {
+      bubbles: true,
+      composed: true,
+      cancelable: true,
+    })
+    button.dispatchEvent(event)
+
+    expect(event.defaultPrevented).toBe(false)
+    expect(pick).not.toHaveBeenCalled()
+  })
+
+  it('does not prevent the default click action when the frame agent tool is inactive', () => {
+    installFrameAgent({ isToolActive: false } as unknown as FrameAgent)
+
+    const button = document.createElement('button')
+    document.body.append(button)
+
+    const event = new MouseEvent('click', {
+      bubbles: true,
+      composed: true,
+      cancelable: true,
+    })
+    button.dispatchEvent(event)
+
+    expect(event.defaultPrevented).toBe(false)
+    expect(pick).not.toHaveBeenCalled()
+  })
+})
