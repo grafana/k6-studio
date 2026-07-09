@@ -84,4 +84,25 @@ describe('SetupWizard', () => {
 
     expect(screen.getByText('Step 1 of 5')).toBeDefined()
   })
+
+  // Merely opening the wizard proves nothing; the flag is set when a step
+  // completes (see useStepAgent tests). Peek-and-cancel must not mark the
+  // generator or leave it dirty.
+  it('does not mark the generator just for entering guided setup', async () => {
+    useGeneratorStore.setState({ wizardUsed: false })
+    render(<SetupWizard {...defaultProps} />)
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /Start guided setup/ })
+    )
+
+    expect(useGeneratorStore.getState().wizardUsed).toBe(false)
+  })
+
+  it('does not mark the generator when relaunched straight into guided setup', () => {
+    useGeneratorStore.setState({ wizardUsed: false })
+    render(<SetupWizard {...defaultProps} startInGuidedSetup />)
+
+    expect(useGeneratorStore.getState().wizardUsed).toBe(false)
+  })
 })

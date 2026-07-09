@@ -30,6 +30,8 @@ export function migrate(
   return {
     ...generator,
     version: '3.0',
+    // The wizard did not exist when v2 files were written.
+    wizardUsed: false,
     recordingPath: generator.recordingPath
       ? `../Recordings/${generator.recordingPath}`
       : generator.recordingPath,

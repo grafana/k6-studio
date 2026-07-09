@@ -93,7 +93,7 @@ export function toTypeScriptAst(test: ir.Test): ts.Program {
     ...scenarios.filter((item) => item !== undefined),
   ])
 
-  const header = comment(generateScriptHeader(), {
+  const header = comment(generateScriptHeader(false), {
     after: true,
   })
 

@@ -13,12 +13,14 @@ import { WizardState } from '../state/types'
 
 import { HostsStep } from './HostsStep/HostsStep'
 
+const agentMock = vi.hoisted(() => ({ status: 'running' }))
+
 vi.mock('@/utils/assistant/useAssistantAgent', () => ({
   useAssistantAgent: () => ({
     start: vi.fn(),
     stop: vi.fn(),
     reset: vi.fn(),
-    status: 'running',
+    status: agentMock.status,
     error: undefined,
     actionsLog: {
       entries: [],
@@ -60,7 +62,8 @@ function renderWizard() {
 beforeEach(() => {
   vi.clearAllMocks()
   vi.stubGlobal('studio', { app: { trackEvent: vi.fn() } })
-  useGeneratorStore.setState({ requests: [], allowlist: [] })
+  agentMock.status = 'running'
+  useGeneratorStore.setState({ requests: [], allowlist: [], wizardUsed: false })
 })
 
 describe('useStepAgent', () => {
@@ -75,5 +78,21 @@ describe('useStepAgent', () => {
     expect(screen.getByTestId('after-hosts').textContent).toBe(
       'autocorrelation:completed'
     )
+  })
+
+  it('marks the generator as wizard-configured when the agent completes a step', () => {
+    agentMock.status = 'completed'
+
+    renderWizard()
+
+    expect(useGeneratorStore.getState().wizardUsed).toBe(true)
+  })
+
+  it('does not mark the generator when the step is skipped', async () => {
+    renderWizard()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Skip step' }))
+
+    expect(useGeneratorStore.getState().wizardUsed).toBe(false)
   })
 })
