@@ -20,7 +20,7 @@ describe('createSequentialEmitter', () => {
     ]
     const sent: BrowserEvent[][] = []
 
-    const emit = createSequentialEmitter(
+    const { emit } = createSequentialEmitter(
       () => Promise.resolve(frames),
       (events) => sent.push(events)
     )
@@ -43,7 +43,7 @@ describe('createSequentialEmitter', () => {
       Promise.resolve<BrowserEventTarget[]>([]),
     ]
 
-    const emit = createSequentialEmitter(
+    const { emit } = createSequentialEmitter(
       () => paths.shift() ?? Promise.resolve([]),
       (events) => sent.push(events)
     )
@@ -73,7 +73,7 @@ describe('createSequentialEmitter', () => {
       Promise.resolve<BrowserEventTarget[]>([]),
     ]
 
-    const emit = createSequentialEmitter(
+    const { emit } = createSequentialEmitter(
       () => paths.shift() ?? Promise.resolve([]),
       (events) => sent.push(events)
     )
@@ -93,7 +93,7 @@ describe('createSequentialEmitter', () => {
     const sent: BrowserEvent[][] = []
     let shouldThrow = true
 
-    const emit = createSequentialEmitter(
+    const { emit } = createSequentialEmitter(
       () => Promise.resolve([]),
       (events) => {
         if (shouldThrow) {
@@ -111,5 +111,64 @@ describe('createSequentialEmitter', () => {
     await new Promise((resolve) => setTimeout(resolve, 0))
 
     expect(sent.flat().map((event) => event.eventId)).toEqual(['second'])
+  })
+
+  it('flushes queued events immediately without waiting for the frame path', () => {
+    const sent: BrowserEvent[][] = []
+
+    const { emit, flush } = createSequentialEmitter(
+      () => new Promise<BrowserEventTarget[]>(() => undefined),
+      (events) => sent.push(events)
+    )
+
+    emit(makeEvent('first'))
+    emit(makeEvent('second'))
+
+    flush()
+
+    expect(sent.flat()).toEqual([makeEvent('first'), makeEvent('second')])
+  })
+
+  it('does not send a batch again when its delayed path resolves after a flush', async () => {
+    const sent: BrowserEvent[][] = []
+    let resolvePath: (path: BrowserEventTarget[]) => void = () => undefined
+
+    const { emit, flush } = createSequentialEmitter(
+      () =>
+        new Promise<BrowserEventTarget[]>((resolve) => {
+          resolvePath = resolve
+        }),
+      (events) => sent.push(events)
+    )
+
+    emit(makeEvent('first'))
+
+    flush()
+
+    expect(sent).toEqual([[makeEvent('first')]])
+
+    resolvePath([])
+
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(sent).toEqual([[makeEvent('first')]])
+  })
+
+  it('still emits normally after a flush', async () => {
+    const sent: BrowserEvent[][] = []
+
+    const { emit, flush } = createSequentialEmitter(
+      () => Promise.resolve([]),
+      (events) => sent.push(events)
+    )
+
+    emit(makeEvent('first'))
+    flush()
+
+    emit(makeEvent('second'))
+
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(sent).toEqual([[makeEvent('first')], [makeEvent('second')]])
   })
 })

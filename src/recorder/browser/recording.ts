@@ -54,12 +54,17 @@ export function startRecording(
     }
   }
 
-  const recordEvents = createSequentialEmitter(getFramePathAsync, (events) => {
-    client.send({
-      type: 'record-events',
-      events,
-    })
-  })
+  const { emit: recordEvents, flush } = createSequentialEmitter(
+    getFramePathAsync,
+    (events) => {
+      client.send({
+        type: 'record-events',
+        events,
+      })
+    }
+  )
+
+  window.addEventListener('pagehide', flush)
 
   const manager = eventManager
 
