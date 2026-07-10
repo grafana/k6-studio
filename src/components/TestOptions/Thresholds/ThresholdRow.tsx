@@ -186,15 +186,17 @@ export function ThresholdRow<M extends string>({
           </Flex>
         </Table.Cell>
         {remove !== undefined && (
-          <Table.Cell>
-            <IconButton
-              variant="ghost"
-              color="gray"
-              aria-label="Remove threshold"
-              onClick={() => remove(index)}
-            >
-              <Trash2Icon size={16} />
-            </IconButton>
+          <Table.Cell align="center" justify="center">
+            <Flex align="center" justify="center" height="100%">
+              <IconButton
+                variant="ghost"
+                color="gray"
+                aria-label="Remove threshold"
+                onClick={() => remove(index)}
+              >
+                <Trash2Icon size={16} />
+              </IconButton>
+            </Flex>
           </Table.Cell>
         )}
       </Table.Row>
