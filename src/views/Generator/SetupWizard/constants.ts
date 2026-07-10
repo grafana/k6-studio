@@ -36,10 +36,10 @@ export const STEP_CONFIG: Record<StepId, StepConfig> = {
   },
   parameterization: {
     label: 'Parameterization',
-    hint: 'Vary inputs per user',
+    hint: 'Extract values into variables',
     title: 'Parameterization',
     description:
-      'Hard-coded values like credentials should vary per virtual user. Edit the replacements inline - the Assistant picked sensible defaults.',
+      'Hard-coded values like credentials and search terms are baked into your recording. The Assistant extracted them into variables you can edit in one place.',
     icon: DatabaseIcon,
   },
   thresholds: {
