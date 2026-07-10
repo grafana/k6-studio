@@ -6,7 +6,7 @@ import {
   createResponse,
 } from '@/test/factories/proxyData'
 
-import { searchRequests } from './searchToolHandlers'
+import { getRequestsMetadata, searchRequests } from './searchToolHandlers'
 
 describe('searchRequests', () => {
   it('matches by request header name and value', () => {
@@ -183,5 +183,27 @@ describe('searchRequests', () => {
       url: 'http://example.com',
       statusCode: 200,
     })
+  })
+})
+
+describe('getRequestsMetadata', () => {
+  it('returns an empty range for an explicit endIndex of 0', () => {
+    const requests = [
+      createProxyData({ id: 'first' }),
+      createProxyData({ id: 'second' }),
+    ]
+
+    expect(getRequestsMetadata(requests, 0, 0)).toEqual([])
+  })
+
+  it('returns the tail when endIndex is omitted', () => {
+    const requests = [
+      createProxyData({ id: 'first' }),
+      createProxyData({ id: 'second' }),
+    ]
+
+    const results = getRequestsMetadata(requests, 1)
+
+    expect(results.map((result) => result.id)).toEqual(['second'])
   })
 })

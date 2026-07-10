@@ -31,11 +31,10 @@ export function getRequestsMetadata(
   startIndex: number = 0,
   endIndex?: number
 ) {
-  const slice = endIndex
-    ? requests.slice(startIndex, endIndex)
-    : requests.slice(startIndex)
-
-  return slice
+  // slice() natively treats an undefined end as "to the end"; an explicit
+  // endIndex of 0 must produce an empty range, not the whole tail.
+  return requests
+    .slice(startIndex, endIndex)
     .filter((data) => isNonStaticAssetResponse(data))
     .map((data) => ({
       id: data.id,
