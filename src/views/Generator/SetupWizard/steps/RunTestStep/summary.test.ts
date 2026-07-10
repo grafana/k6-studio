@@ -36,6 +36,15 @@ describe('getLoadSummary', () => {
     expect(summary).toBe('Up to 20 virtual users for ~5m 30s')
   })
 
+  it('omits the duration when every stage lasts zero seconds', () => {
+    const summary = getLoadSummary({
+      executor: 'ramping-vus',
+      stages: [{ target: 20, duration: '0s' }],
+    })
+
+    expect(summary).toBe('Up to 20 virtual users')
+  })
+
   it('summarizes shared iterations', () => {
     const summary = getLoadSummary({
       executor: 'shared-iterations',

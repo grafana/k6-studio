@@ -46,7 +46,13 @@ export function getLoadSummary(profile: LoadProfileExecutorOptions): string {
     0
   )
 
-  return `Up to ${peak} virtual user${peak === 1 ? '' : 's'} for ~${formatDuration(totalSeconds)}`
+  const headline = `Up to ${peak} virtual user${peak === 1 ? '' : 's'}`
+
+  // formatDuration(0) is an empty string; drop the duration rather than
+  // rendering a dangling "for ~".
+  return totalSeconds === 0
+    ? headline
+    : `${headline} for ~${formatDuration(totalSeconds)}`
 }
 
 export interface StageSegment {
