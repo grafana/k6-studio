@@ -27,6 +27,14 @@ export const suggestThresholdsInputSchema = z.object({
   thresholds: z.array(thresholdSuggestionSchema),
 })
 
+export const finishInputSchema = z.object({
+  outcome: z
+    .enum(['success', 'failure'])
+    .describe(
+      'Use success when thresholds were recommended. Use failure when analysis was not possible.'
+    ),
+})
+
 export const thresholdsTools = {
   ...recordingSearchTools,
 
@@ -38,13 +46,7 @@ export const thresholdsTools = {
 
   finish: tool({
     description: 'Call this tool once threshold analysis is finished.',
-    inputSchema: z.object({
-      outcome: z
-        .enum(['success', 'failure'])
-        .describe(
-          'Use success when thresholds were recommended. Use failure when analysis was not possible.'
-        ),
-    }),
+    inputSchema: finishInputSchema,
   }),
 } satisfies ToolSet
 

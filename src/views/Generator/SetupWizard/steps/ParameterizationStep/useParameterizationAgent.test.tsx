@@ -108,6 +108,22 @@ describe('useParameterizationAgent completion', () => {
     expect(useGeneratorStore.getState().rules).toEqual([])
   })
 
+  it('rejects a finish call with an outcome outside the enum', () => {
+    render(<App />)
+
+    expect(() =>
+      agentMock.onToolCall!({
+        type: 'tool-call',
+        toolName: 'finish',
+        toolCallId: 't9',
+        input: { outcome: 'completed' },
+      })
+    ).toThrow()
+
+    // No usage event fires for an unknown outcome.
+    expect(window.studio.app.trackEvent).not.toHaveBeenCalled()
+  })
+
   it('completes with no proposals when finish reports success', () => {
     const { rerender } = render(<App />)
 

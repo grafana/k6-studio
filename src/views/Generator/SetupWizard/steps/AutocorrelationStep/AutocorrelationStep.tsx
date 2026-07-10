@@ -164,6 +164,7 @@ export function AutocorrelationStep() {
   const stepState = useStepState('autocorrelation')
   const { goBack, goNext } = useWizardNavigation()
   const proxyStatus = useProxyStatus()
+  const setWizardUsed = useGeneratorStore((store) => store.setWizardUsed)
   const [footerHost, setFooterHost] = useState<HTMLDivElement | null>(null)
 
   // This step embeds the standalone AutoCorrelation flow rather than useStepAgent,
@@ -198,6 +199,10 @@ export function AutocorrelationStep() {
       'logEntries' | 'correlationStatus'
     >
   ) => {
+    // Any settled run commits its accepted entries to the generator, so the
+    // wizard configured it. This step bypasses useStepAgentLifecycle (which
+    // sets the flag for the other agent steps); skips do not come through here.
+    setWizardUsed(true)
     dispatch({
       type: 'stepRunCompleted',
       stepId: 'autocorrelation',

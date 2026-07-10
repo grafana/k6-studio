@@ -14,6 +14,7 @@ import { useSetupWizard, useStepState } from '../../state/SetupWizardContext'
 import { useStepAgent } from '../useStepAgent'
 
 import {
+  finishInputSchema,
   suggestThresholdsInputSchema,
   systemPrompt,
   thresholdsTools,
@@ -101,9 +102,11 @@ export function useThresholdsAgent() {
       }
 
       case 'finish': {
+        // Tool input arrives unvalidated; re-parse so an off-enum outcome is
+        // returned to the model as a retryable error instead of committing.
+        const { outcome } = finishInputSchema.parse(toolCall.input)
         const isSuccess =
-          toolCall.input.outcome === 'success' &&
-          proposalsRef.current.length > 0
+          outcome === 'success' && proposalsRef.current.length > 0
 
         window.studio.app.trackEvent({
           event: isSuccess
@@ -113,8 +116,8 @@ export function useThresholdsAgent() {
         agent.actionsLog.markLastReasoningAsOutcome(
           isSuccess ? 'outcome-success' : 'outcome-failure'
         )
-        finishOutcomeRef.current = toolCall.input.outcome
-        return toolCall.input.outcome
+        finishOutcomeRef.current = outcome
+        return outcome
       }
 
       default:

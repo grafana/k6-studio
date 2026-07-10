@@ -112,7 +112,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   vi.stubGlobal('studio', { app: { trackEvent: vi.fn() } })
   vi.mocked(useProxyStatus).mockReturnValue('online')
-  useGeneratorStore.setState({ rules: [] })
+  useGeneratorStore.setState({ rules: [], wizardUsed: false })
   footerContext.isLoading = false
   footerContext.correlationStatus = 'success'
   footerContext.ruleEntries = []
@@ -266,6 +266,24 @@ describe('AutocorrelationStep', () => {
     )
     expect(screen.getByText('1 correlation rule added')).toBeDefined()
     expect(screen.getByText('a...b')).toBeDefined()
+  })
+
+  it('marks the generator as wizard-configured when the run settles', async () => {
+    footerContext.ruleEntries = [ruleEntry]
+
+    renderStep()
+
+    await userEvent.click(screen.getByRole('button', { name: 'settle-run' }))
+
+    expect(useGeneratorStore.getState().wizardUsed).toBe(true)
+  })
+
+  it('does not mark the generator when the step is skipped', async () => {
+    renderStep()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Skip step' }))
+
+    expect(useGeneratorStore.getState().wizardUsed).toBe(false)
   })
 
   it('disables an accepted rule via the toggle without removing it', async () => {

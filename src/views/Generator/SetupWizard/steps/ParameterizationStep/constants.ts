@@ -31,6 +31,14 @@ export const parameterSchema = z.object({
 
 export const addParameterInputSchema = z.object({ parameter: parameterSchema })
 
+export const finishInputSchema = z.object({
+  outcome: z
+    .enum(['success', 'partial-success', 'failure'])
+    .describe(
+      'Use success when all clear candidates were parameterized. Use partial-success when some proposals need review. Use failure when analysis was not possible.'
+    ),
+})
+
 export const parameterizationTools = {
   ...recordingSearchTools,
 
@@ -42,13 +50,7 @@ export const parameterizationTools = {
 
   finish: tool({
     description: 'Call this tool once parameterization analysis is finished.',
-    inputSchema: z.object({
-      outcome: z
-        .enum(['success', 'partial-success', 'failure'])
-        .describe(
-          'Use success when all clear candidates were parameterized. Use partial-success when some proposals need review. Use failure when analysis was not possible.'
-        ),
-    }),
+    inputSchema: finishInputSchema,
   }),
 } satisfies ToolSet
 

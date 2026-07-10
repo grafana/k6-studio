@@ -14,6 +14,7 @@ import { useStepAgent } from '../useStepAgent'
 
 import {
   addParameterInputSchema,
+  finishInputSchema,
   parameterizationTools,
   systemPrompt,
 } from './constants'
@@ -95,18 +96,21 @@ export function useParameterizationAgent() {
       }
 
       case 'finish': {
+        // Tool input arrives unvalidated; re-parse so an off-enum outcome is
+        // returned to the model as a retryable error instead of committing.
+        const { outcome } = finishInputSchema.parse(toolCall.input)
         window.studio.app.trackEvent({
-          event: outcomeEvents[toolCall.input.outcome],
+          event: outcomeEvents[outcome],
         })
         agent.actionsLog.markLastReasoningAsOutcome(
-          toolCall.input.outcome === 'failure'
+          outcome === 'failure'
             ? 'outcome-failure'
-            : toolCall.input.outcome === 'partial-success'
+            : outcome === 'partial-success'
               ? 'outcome-partial'
               : 'outcome-success'
         )
-        finishOutcomeRef.current = toolCall.input.outcome
-        return toolCall.input.outcome
+        finishOutcomeRef.current = outcome
+        return outcome
       }
 
       default:
