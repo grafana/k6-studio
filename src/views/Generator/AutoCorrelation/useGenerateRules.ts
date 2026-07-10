@@ -1,5 +1,6 @@
 import { useChat } from '@ai-sdk/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { z } from 'zod'
 
 import { useActionsLog } from '@/components/Assistant/useActionsLog'
 import { UsageEventName } from '@/services/usageTracking/types'
@@ -33,6 +34,13 @@ import { computeAddRuleResult } from './utils/computeAddRuleResult'
 import { parseAiCorrelationRule } from './utils/parseAiCorrelationRule'
 import { summarizeValidationForAI } from './utils/summarizeValidationForAI'
 import { validationMatchesRecording } from './utils/validationMatchesRecording'
+
+// The finish tool's input arrives unvalidated (tool definitions are plain
+// JSON schemas with no validator), so the outcome must be re-parsed before it
+// becomes the correlation status or a usage-event key.
+const finishInputSchema = z.object({
+  outcome: z.enum(['success', 'partial-success', 'failure']),
+})
 
 const outcomeEvents = {
   success: UsageEventName.AutocorrelationSucceeded,
@@ -202,17 +210,20 @@ export const useGenerateRules = ({
       }
 
       case 'finish': {
+        // Throws on an off-enum outcome; the wrapper returns the error to the
+        // model so it can retry with a valid one.
+        const { outcome } = finishInputSchema.parse(toolCall.input)
         window.studio.app.trackEvent({
-          event: outcomeEvents[toolCall.input.outcome],
+          event: outcomeEvents[outcome],
         })
         const outcomeType =
-          toolCall.input.outcome === 'failure'
+          outcome === 'failure'
             ? 'outcome-failure'
-            : toolCall.input.outcome === 'partial-success'
+            : outcome === 'partial-success'
               ? 'outcome-partial'
               : 'outcome-success'
         actionsLog.markLastReasoningAsOutcome(outcomeType)
-        return toolCall.input.outcome
+        return outcome
       }
 
       default:
@@ -395,8 +406,12 @@ function toolCallToStep(toolCall: ToolCall): CorrelationStatus {
     case 'addRuleJson':
     case 'addRuleHeaderName':
       return 'creating-rules'
-    case 'finish':
-      return toolCall.input.outcome
+    case 'finish': {
+      // An off-enum outcome must not become the status; stay on the
+      // 'finalizing' loading state while the error round-trips to the model.
+      const parsed = finishInputSchema.safeParse(toolCall.input)
+      return parsed.success ? parsed.data.outcome : 'finalizing'
+    }
     default:
       return exhaustive(toolName)
   }

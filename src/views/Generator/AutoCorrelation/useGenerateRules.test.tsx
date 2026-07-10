@@ -1,5 +1,5 @@
 import { useChat } from '@ai-sdk/react'
-import { renderHook } from '@testing-library/react'
+import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useGeneratorStore } from '@/store/generator'
@@ -68,5 +68,49 @@ describe('useGenerateRules onToolCall', () => {
     expect(call?.tool).toBe('getRequestDetails')
     expect(call?.toolCallId).toBe('t1')
     expect(call?.output).toHaveProperty('error')
+  })
+
+  it('rejects a finish call with an outcome outside the enum', async () => {
+    const { result } = renderHook(() =>
+      useGenerateRules({ clearValidation: vi.fn() })
+    )
+
+    await act(() =>
+      capturedOnToolCall!({
+        toolCall: {
+          toolName: 'finish',
+          toolCallId: 't2',
+          // The model invented an outcome; it must not become the status.
+          input: { outcome: 'completed' },
+          dynamic: false,
+        },
+      })
+    )
+
+    expect(result.current.correlationStatus).not.toBe('completed')
+    expect(addToolOutput.mock.calls[0]?.[0]?.output).toHaveProperty('error')
+    // No usage event fires for an unknown outcome.
+    expect(window.studio.app.trackEvent).not.toHaveBeenCalledWith({
+      event: undefined,
+    })
+  })
+
+  it('settles the status for a valid finish outcome', async () => {
+    const { result } = renderHook(() =>
+      useGenerateRules({ clearValidation: vi.fn() })
+    )
+
+    await act(() =>
+      capturedOnToolCall!({
+        toolCall: {
+          toolName: 'finish',
+          toolCallId: 't3',
+          input: { outcome: 'success' },
+          dynamic: false,
+        },
+      })
+    )
+
+    expect(result.current.correlationStatus).toBe('success')
   })
 })
