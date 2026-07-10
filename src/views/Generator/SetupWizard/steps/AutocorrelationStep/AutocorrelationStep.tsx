@@ -183,7 +183,18 @@ export function AutocorrelationStep() {
   }, [proxyStatus, stepState.status, dispatch])
 
   const handleStatusChange = (status: CorrelationStatus) => {
-    if (status === 'not-started' || stepState.status === 'running') {
+    if (status === 'not-started') {
+      // A reset back to not-started mid-run (the error state's "Go back")
+      // leaves an idle view the one-shot auto-start never revives; treat it as
+      // an interruption so the recovery prompt offers "Run analysis". Retry is
+      // unaffected: restart() batches straight to a loading status.
+      if (stepState.status === 'running') {
+        dispatch({ type: 'stepRunAborted', stepId: 'autocorrelation' })
+      }
+      return
+    }
+
+    if (stepState.status === 'running') {
       return
     }
 

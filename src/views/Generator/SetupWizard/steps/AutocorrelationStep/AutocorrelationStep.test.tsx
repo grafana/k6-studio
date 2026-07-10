@@ -33,14 +33,19 @@ vi.mock('@/views/Generator/AutoCorrelation/AutoCorrelation', () => ({
   AutoCorrelation: ({
     footer,
     onSettled,
+    onStatusChange,
   }: {
     footer?: (context: AutoCorrelationFooterContext) => React.ReactNode
     onSettled?: (context: AutoCorrelationFooterContext) => void
+    onStatusChange?: (status: string) => void
   }) => (
     <div data-testid="auto-correlation">
       {footer?.(footerContext)}
       <button type="button" onClick={() => onSettled?.(footerContext)}>
         settle-run
+      </button>
+      <button type="button" onClick={() => onStatusChange?.('not-started')}>
+        reset-run
       </button>
     </div>
   ),
@@ -223,6 +228,20 @@ describe('AutocorrelationStep', () => {
     rerender(<App />)
 
     expect(screen.queryByTestId('auto-correlation')).toBeNull()
+    expect(screen.getByRole('button', { name: /Run analysis/ })).toBeDefined()
+  })
+
+  it('offers recovery when the embedded run is reset mid-run', async () => {
+    // The error state's "Go back" resets the analysis to not-started, but the
+    // one-shot auto-start will not revive it; the step must fall back to the
+    // interrupted prompt instead of an idle empty view.
+    renderStep({ autocorrelation: { status: 'running' } })
+
+    await userEvent.click(screen.getByRole('button', { name: 'reset-run' }))
+
+    expect(screen.getByTestId('probe').textContent).toBe(
+      'autocorrelation:aborted'
+    )
     expect(screen.getByRole('button', { name: /Run analysis/ })).toBeDefined()
   })
 
