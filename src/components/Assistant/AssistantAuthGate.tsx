@@ -5,6 +5,7 @@ import { PropsWithChildren, ReactNode, useState } from 'react'
 import { ExternalLink } from '@/components/ExternalLink'
 import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
 import { GrafanaCloudSignIn } from '@/components/Profile/GrafanaCloudSignIn'
+import { GrafanaLogo } from '@/components/Profile/GrafanaLogo'
 import {
   invalidateAssistantAuthStatus,
   useAssistantAuthStatus,
@@ -62,7 +63,7 @@ export function AssistantAuthGate({ children }: AssistantAuthGateProps) {
   if (!isSignedIn) {
     return (
       <GateLayout>
-        <GateIcon />
+        <GrafanaLogo />
         <GateHeading
           title="Sign in to continue"
           description="Guided setup uses the Grafana Assistant, which needs a Grafana Cloud account."
