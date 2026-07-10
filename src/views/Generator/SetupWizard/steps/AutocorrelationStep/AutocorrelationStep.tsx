@@ -1,6 +1,6 @@
 import { Box, Button, Callout, Flex } from '@radix-ui/themes'
 import { RotateCcwIcon, UnplugIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { SuggestionListPanel } from '@/components/SuggestionList/SuggestionListPanel'
@@ -170,6 +170,16 @@ export function AutocorrelationStep() {
   // so it reconciles the reducer on unmount with the shared hook directly: a run
   // left mid-flight comes back 'aborted' (recoverable) instead of stuck 'running'.
   const terminatedRef = useAbortStepOnUnmount('autocorrelation')
+
+  // A proxy drop mid-run unmounts the live analysis (the offline branch below
+  // takes over), and its own aborted update is lost in the teardown. Reconcile
+  // here so proxy recovery lands on the recovery prompt instead of silently
+  // auto-starting a fresh full replay.
+  useEffect(() => {
+    if (proxyStatus !== 'online' && stepState.status === 'running') {
+      dispatch({ type: 'stepRunAborted', stepId: 'autocorrelation' })
+    }
+  }, [proxyStatus, stepState.status, dispatch])
 
   const handleStatusChange = (status: CorrelationStatus) => {
     if (status === 'not-started' || stepState.status === 'running') {

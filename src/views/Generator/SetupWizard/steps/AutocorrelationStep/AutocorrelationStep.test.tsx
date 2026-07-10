@@ -183,6 +183,49 @@ describe('AutocorrelationStep', () => {
     )
   })
 
+  it('aborts a running step when the proxy drops, and recovery waits for the user', () => {
+    const state: WizardState = {
+      ...initialWizardState,
+      screen: 'wizard',
+      activeStep: 'autocorrelation',
+      steps: {
+        ...initialWizardState.steps,
+        hosts: completedHosts,
+        autocorrelation: { status: 'running' },
+      },
+    }
+
+    function App() {
+      return (
+        <Theme>
+          <SetupWizardProvider initialState={state}>
+            <AutocorrelationStep />
+            <StateProbe />
+          </SetupWizardProvider>
+        </Theme>
+      )
+    }
+
+    const { rerender } = render(<App />)
+
+    // The proxy dies mid-run: the live analysis unmounts and the step must
+    // reconcile to 'aborted' rather than staying 'running'.
+    vi.mocked(useProxyStatus).mockReturnValue('offline')
+    rerender(<App />)
+
+    expect(screen.getByTestId('probe').textContent).toBe(
+      'autocorrelation:aborted'
+    )
+
+    // When the proxy comes back the step offers recovery instead of silently
+    // auto-starting a fresh full replay.
+    vi.mocked(useProxyStatus).mockReturnValue('online')
+    rerender(<App />)
+
+    expect(screen.queryByTestId('auto-correlation')).toBeNull()
+    expect(screen.getByRole('button', { name: /Run analysis/ })).toBeDefined()
+  })
+
   it('does not auto-restart analysis when returning to an interrupted step', async () => {
     renderStep({ autocorrelation: { status: 'aborted' } })
 
