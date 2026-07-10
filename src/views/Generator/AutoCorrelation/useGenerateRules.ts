@@ -48,6 +48,10 @@ const outcomeEvents = {
   failure: UsageEventName.AutocorrelationFailed,
 } as const
 
+// How many consecutive tool-handler failures round-trip to the model before
+// the run gives up and surfaces the error state.
+const MAX_CONSECUTIVE_TOOL_FAILURES = 3
+
 const LOADING_STATES: CorrelationStatus[] = [
   'validating',
   'analyzing',
@@ -67,6 +71,7 @@ export const useGenerateRules = ({
   const ruleEntriesRef = useRef(ruleEntries)
   const correlationStatusRef = useRef(correlationStatus)
   const abortControllerRef = useRef<AbortController | null>(null)
+  const consecutiveToolFailuresRef = useRef(0)
 
   const recording = useGeneratorStore(selectFilteredRequests)
   const generator = useGeneratorStore(selectGeneratorData)
@@ -127,14 +132,25 @@ export const useGenerateRules = ({
 
       setCorrelationStatusAndRef(toolCallToStep(toolCallWithType))
 
-      // A handler failure (e.g. the model sent malformed tool input) must still
-      // produce a tool output: throwing here leaves the tool call unanswered
-      // and wedges the AI SDK stream. Returning the error lets the model retry.
+      // A handler failure (e.g. the model sent malformed tool input) is
+      // returned as the tool output so the model can retry, but only a few
+      // times: persistent failures (proxy died, k6 gone) would otherwise loop
+      // "Correlating..." forever. Past the cap the rejection propagates to the
+      // AI SDK, which routes it to onError and the error/retry UI.
       let toolResult: unknown
       try {
         toolResult = await handleToolCall(toolCallWithType)
+        consecutiveToolFailuresRef.current = 0
       } catch (toolError) {
         console.error(toolError)
+        consecutiveToolFailuresRef.current += 1
+
+        if (
+          consecutiveToolFailuresRef.current >= MAX_CONSECUTIVE_TOOL_FAILURES
+        ) {
+          throw toolError
+        }
+
         toolResult = {
           error:
             toolError instanceof Error
