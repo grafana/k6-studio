@@ -18,18 +18,23 @@ interface ToolCallArg {
 }
 type OnToolCall = (arg: ToolCallArg) => Promise<void> | void
 
+type OnFinish = (arg: { message: { parts: { type: string }[] } }) => void
+
 let capturedOnToolCall: OnToolCall | undefined
+let capturedOnFinish: OnFinish | undefined
 const addToolOutput =
   vi.fn<(arg: { tool: string; toolCallId: string; output: unknown }) => void>()
 
 beforeEach(() => {
   vi.clearAllMocks()
   capturedOnToolCall = undefined
+  capturedOnFinish = undefined
   vi.stubGlobal('studio', { app: { trackEvent: vi.fn() } })
   useGeneratorStore.setState({ requests: [], allowlist: [] })
 
   vi.mocked(useChat).mockImplementation((options) => {
     capturedOnToolCall = (options as { onToolCall?: OnToolCall }).onToolCall
+    capturedOnFinish = (options as { onFinish?: OnFinish }).onFinish
     return {
       sendMessage: vi.fn(),
       error: undefined,
@@ -148,6 +153,59 @@ describe('useGenerateRules onToolCall', () => {
 
     // The next failure is a fresh streak, so it still round-trips.
     await expect(act(() => failingCall('t4'))).resolves.toBeUndefined()
+  })
+
+  it('errors the run when it finishes without any tool call', async () => {
+    const { result } = renderHook(() =>
+      useGenerateRules({ clearValidation: vi.fn() })
+    )
+
+    // A search tool call puts the run into a loading state.
+    await act(() =>
+      capturedOnToolCall!({
+        toolCall: {
+          toolName: 'getRequestsMetadata',
+          toolCallId: 't1',
+          input: {},
+          dynamic: false,
+        },
+      })
+    )
+
+    // The assistant replied with prose only and the stream finished: nothing
+    // auto-sends and the finish tool never fired.
+    act(() => {
+      capturedOnFinish?.({ message: { parts: [{ type: 'text' }] } })
+    })
+
+    expect(result.current.correlationStatus).toBe('error')
+  })
+
+  it('keeps running when the finished turn continues with tool calls', async () => {
+    const { result } = renderHook(() =>
+      useGenerateRules({ clearValidation: vi.fn() })
+    )
+
+    await act(() =>
+      capturedOnToolCall!({
+        toolCall: {
+          toolName: 'getRequestsMetadata',
+          toolCallId: 't1',
+          input: {},
+          dynamic: false,
+        },
+      })
+    )
+
+    act(() => {
+      capturedOnFinish?.({
+        message: {
+          parts: [{ type: 'text' }, { type: 'tool-getRequestsMetadata' }],
+        },
+      })
+    })
+
+    expect(result.current.correlationStatus).toBe('analyzing')
   })
 
   it('settles the status for a valid finish outcome', async () => {

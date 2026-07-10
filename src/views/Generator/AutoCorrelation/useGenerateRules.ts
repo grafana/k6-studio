@@ -120,6 +120,25 @@ export const useGenerateRules = ({
       })
       console.error(error)
     },
+    onFinish: ({ message }) => {
+      // A turn that ends with tool calls either settled via finish or
+      // continues automatically. A prose-only finish means the assistant
+      // stopped without the finish tool and the run would otherwise show
+      // "Correlating..." forever.
+      const hasToolCalls = message.parts.some(
+        (part) => part.type === 'dynamic-tool' || part.type.startsWith('tool-')
+      )
+
+      if (
+        !hasToolCalls &&
+        LOADING_STATES.includes(correlationStatusRef.current)
+      ) {
+        setCorrelationStatusAndRef('error')
+        window.studio.app.trackEvent({
+          event: UsageEventName.AutocorrelationErrored,
+        })
+      }
+    },
     onToolCall: async ({ toolCall }) => {
       if (toolCall.dynamic) {
         return
