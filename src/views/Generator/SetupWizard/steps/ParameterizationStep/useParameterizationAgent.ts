@@ -37,6 +37,9 @@ export function useParameterizationAgent() {
   const requests = useGeneratorStore(selectFilteredRequests)
 
   const proposalsRef = useRef<ParameterizationProposal[]>([])
+  const finishOutcomeRef = useRef<'success' | 'partial-success' | 'failure'>(
+    'success'
+  )
 
   const agent = useStepAgent({
     stepId: 'parameterization',
@@ -50,6 +53,7 @@ export function useParameterizationAgent() {
     onCompleted: dispatchCompletion,
     beginRun: (run) => {
       proposalsRef.current = []
+      finishOutcomeRef.current = 'success'
 
       void run.start(systemPrompt)
       run.actionsLog.addEntry({
@@ -101,6 +105,7 @@ export function useParameterizationAgent() {
               ? 'outcome-partial'
               : 'outcome-success'
         )
+        finishOutcomeRef.current = toolCall.input.outcome
         return toolCall.input.outcome
       }
 
@@ -110,6 +115,18 @@ export function useParameterizationAgent() {
   }
 
   function dispatchCompletion() {
+    // An explicit failure outcome means the analysis was not usable; discard
+    // any proposals made along the way instead of committing them.
+    if (finishOutcomeRef.current === 'failure') {
+      dispatch({
+        type: 'stepRunFailed',
+        stepId: 'parameterization',
+        message:
+          'The Assistant could not analyze this recording for parameterization.',
+      })
+      return
+    }
+
     const proposals = proposalsRef.current
     const { rules, setRules, variables, setVariables } =
       useGeneratorStore.getState()

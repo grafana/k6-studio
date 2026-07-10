@@ -33,6 +33,9 @@ export function useThresholdsAgent() {
   const requests = useGeneratorStore(selectFilteredRequests)
 
   const proposalsRef = useRef<ThresholdProposal[]>([])
+  const finishOutcomeRef = useRef<'success' | 'partial-success' | 'failure'>(
+    'success'
+  )
 
   const agent = useStepAgent({
     stepId: 'thresholds',
@@ -46,6 +49,7 @@ export function useThresholdsAgent() {
     onCompleted: dispatchCompletion,
     beginRun: (run) => {
       proposalsRef.current = []
+      finishOutcomeRef.current = 'success'
       const stats = computeResponseTimeStats(requests)
 
       void run.start(
@@ -109,6 +113,7 @@ export function useThresholdsAgent() {
         agent.actionsLog.markLastReasoningAsOutcome(
           isSuccess ? 'outcome-success' : 'outcome-failure'
         )
+        finishOutcomeRef.current = toolCall.input.outcome
         return toolCall.input.outcome
       }
 
@@ -119,6 +124,18 @@ export function useThresholdsAgent() {
 
   function dispatchCompletion() {
     const proposals = proposalsRef.current
+
+    // An explicit failure outcome means the analysis was not usable; discard
+    // any proposals made along the way instead of committing them.
+    if (finishOutcomeRef.current === 'failure') {
+      dispatch({
+        type: 'stepRunFailed',
+        stepId: 'thresholds',
+        message:
+          'The Assistant could not suggest thresholds for this recording.',
+      })
+      return
+    }
 
     if (proposals.length === 0) {
       dispatch({
