@@ -23,7 +23,6 @@ export interface AutoCorrelationFooterContext {
 
 interface AutoCorrelationProps {
   close: () => void
-  /** Start analysis immediately instead of showing the introduction screen. */
   skipIntroduction?: boolean
   onStatusChange?: (status: CorrelationStatus) => void
   /** Replaces the default Stop/Discard/Accept footer. */

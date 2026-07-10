@@ -5,20 +5,15 @@ import { ReactNode, useState } from 'react'
 const MONO = 'var(--code-font-family)'
 
 interface SuggestionRowProps {
-  /** Leading type icon, rendered in the accent color. */
   icon?: ReactNode
-  /** Primary label (bold monospace). */
   name: ReactNode
-  /** Muted secondary detail shown next to the name. */
   secondary?: ReactNode
-  /** Right-aligned controls (toggle, remove, value editor). */
   controls?: ReactNode
   /** When set, the row gains an expand chevron revealing this content. */
   expandableContent?: ReactNode
   defaultExpanded?: boolean
   /** Omits the bottom divider on the last row of a panel. */
   isLast?: boolean
-  /** Dims the row (e.g. a disabled rule). */
   dimmed?: boolean
 }
 
