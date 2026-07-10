@@ -286,6 +286,25 @@ describe('processA2AEvent', () => {
       expect(session.activeStreamArtifactId).toBe('stream-1')
     })
 
+    it('closes a block opened by an early delta when stream.start arrives', () => {
+      // A delta can arrive before message.stream.start; the block it opened
+      // must be closed before the start event resets the stream trackers.
+      const session = createA2ASession({
+        activeStreamArtifactId: 'early-delta',
+        activeStreamContentType: 'reasoning',
+      })
+
+      const event = makeArtifactUpdateEvent('message.stream.start', [], {
+        artifactId: 'stream-1',
+      })
+
+      const parts = processA2AEvent(event, session)
+
+      expect(parts).toEqual([{ type: 'reasoning-end', id: 'early-delta' }])
+      expect(session.activeStreamArtifactId).toBe('stream-1')
+      expect(session.activeStreamContentType).toBeUndefined()
+    })
+
     it('emits text-start and text-delta for text content', () => {
       const session = createA2ASession({ activeStreamArtifactId: 'stream-1' })
 

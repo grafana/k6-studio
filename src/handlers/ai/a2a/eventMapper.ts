@@ -250,10 +250,15 @@ function handleTokenStreamArtifact(
   const id = artifact.artifactId
 
   switch (artifact.name) {
-    case ARTIFACT_NAME.MESSAGE_STREAM_START:
+    case ARTIFACT_NAME.MESSAGE_STREAM_START: {
+      // A delta arriving before this event may have already opened a block;
+      // close it before the trackers are overwritten, or its end is never
+      // emitted and the stream carries an unbalanced start.
+      const parts = closeActiveContentBlock(session)
       session.activeStreamArtifactId = id
       session.activeStreamContentType = undefined
-      return []
+      return parts
+    }
     case ARTIFACT_NAME.MESSAGE_CONTENT_DELTA:
       return handleContentDelta(session, artifact)
     case ARTIFACT_NAME.MESSAGE_STREAM_COMPLETE: {
