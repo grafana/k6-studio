@@ -12,6 +12,11 @@ import { SuggestedRuleEntry } from './types'
 import { useGenerateRules } from './useGenerateRules'
 
 vi.mock('./useGenerateRules', () => ({ useGenerateRules: vi.fn() }))
+// ErrorMessage pulls assistant-auth hooks (query client + window.studio.ai)
+// that are irrelevant to these tests.
+vi.mock('./ErrorMessage', () => ({
+  ErrorMessage: () => <div data-testid="error-message" />,
+}))
 vi.mock('./IntroductionMessage', () => ({
   IntroductionMessage: () => <div>introduction-message</div>,
 }))
@@ -119,6 +124,30 @@ describe('AutoCorrelation', () => {
       screen.getByRole('button', { name: 'custom-footer-success' })
     ).toBeDefined()
     expect(screen.queryByRole('button', { name: /Discard/ })).toBeNull()
+  })
+
+  it('renders the custom footer alongside the error state', () => {
+    // The wizard supplies its footer (Back/Skip) through this prop; the error
+    // state must not strand the user without it.
+    mockGenerateRules({
+      error: new Error('assistant run failed'),
+      correlationStatus: 'error',
+    })
+
+    renderWithTheme(
+      <AutoCorrelation
+        close={vi.fn()}
+        footer={(context) => (
+          <button type="button">
+            custom-footer-{context.correlationStatus}
+          </button>
+        )}
+      />
+    )
+
+    expect(
+      screen.getByRole('button', { name: 'custom-footer-error' })
+    ).toBeDefined()
   })
 
   it('accepts suggested rules into the generator store without closing', async () => {

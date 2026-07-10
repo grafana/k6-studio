@@ -146,12 +146,24 @@ export function AutoCorrelation({
 
   if (error) {
     return (
-      <ErrorMessage
-        error={error}
-        onRetry={restart}
-        onReset={reset}
-        onClose={close}
-      />
+      <>
+        <ErrorMessage
+          error={error}
+          onRetry={restart}
+          onReset={reset}
+          onClose={close}
+        />
+        {/* An embedding host (the wizard) supplies its navigation through the
+            footer prop; the error state must keep it available. */}
+        {footer?.({
+          isLoading,
+          ruleEntries,
+          logEntries: actionsLog,
+          correlationStatus,
+          stop,
+          accept: acceptRules,
+        })}
+      </>
     )
   }
 
