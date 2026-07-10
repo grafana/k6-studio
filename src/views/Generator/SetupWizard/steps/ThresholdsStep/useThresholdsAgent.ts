@@ -59,7 +59,7 @@ export function useThresholdsAgent() {
     cleanup: cleanupCommittedThresholds,
     skip: {
       result: { step: 'thresholds', rationaleById: {} },
-      summary: 'Step skipped - no thresholds suggested',
+      summary: 'Step skipped, no thresholds suggested',
     },
   })
 

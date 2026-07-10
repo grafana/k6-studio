@@ -220,7 +220,7 @@ export function AutocorrelationStep() {
       stepId: 'autocorrelation',
       result: { step: 'autocorrelation', entries: [] },
       log: [],
-      summary: 'Step skipped - no correlation rules added',
+      summary: 'Step skipped, no correlation rules added',
     })
     goNext()
   }

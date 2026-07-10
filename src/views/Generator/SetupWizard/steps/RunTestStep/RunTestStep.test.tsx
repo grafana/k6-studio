@@ -168,7 +168,7 @@ describe('RunTestStep', () => {
     const { onSave, onComplete } = renderStep()
 
     await userEvent.click(
-      screen.getByRole('button', { name: 'Go to generator' })
+      screen.getByRole('button', { name: 'Open generator' })
     )
 
     expect(onComplete).toHaveBeenCalledOnce()
@@ -178,13 +178,13 @@ describe('RunTestStep', () => {
   it('saves and opens the cloud run dialog', async () => {
     const { onSave } = renderStep()
 
-    await userEvent.click(screen.getByRole('button', { name: /Save & Run/ }))
+    await userEvent.click(screen.getByRole('button', { name: /Save and run/ }))
 
     expect(onSave).toHaveBeenCalledOnce()
     await waitFor(() =>
       expect(screen.getByTestId('run-in-cloud-dialog')).toBeDefined()
     )
-    expect(screen.getByRole('button', { name: /Save & Run/ })).toHaveProperty(
+    expect(screen.getByRole('button', { name: /Save and run/ })).toHaveProperty(
       'disabled',
       true
     )
@@ -193,7 +193,7 @@ describe('RunTestStep', () => {
   it('completes the wizard when the cloud run starts', async () => {
     const { onComplete } = renderStep()
 
-    await userEvent.click(screen.getByRole('button', { name: /Save & Run/ }))
+    await userEvent.click(screen.getByRole('button', { name: /Save and run/ }))
     await waitFor(() => expect(runInCloudDialog.open).toBe(true))
 
     runInCloudDialog.onRunStarted?.()
@@ -206,11 +206,11 @@ describe('RunTestStep', () => {
       onSave: vi.fn().mockRejectedValue(new Error('disk full')),
     })
 
-    await userEvent.click(screen.getByRole('button', { name: /Save & Run/ }))
+    await userEvent.click(screen.getByRole('button', { name: /Save and run/ }))
 
     expect(runInCloudDialog.open).toBe(false)
     expect(onComplete).not.toHaveBeenCalled()
-    expect(screen.getByRole('button', { name: /Save & Run/ })).toHaveProperty(
+    expect(screen.getByRole('button', { name: /Save and run/ })).toHaveProperty(
       'disabled',
       false
     )
@@ -219,7 +219,7 @@ describe('RunTestStep', () => {
   it('disables Save & Run when the script is invalid', () => {
     renderStep({ script: { valid: false, error: new Error('broken') } })
 
-    expect(screen.getByRole('button', { name: /Save & Run/ })).toHaveProperty(
+    expect(screen.getByRole('button', { name: /Save and run/ })).toHaveProperty(
       'disabled',
       true
     )

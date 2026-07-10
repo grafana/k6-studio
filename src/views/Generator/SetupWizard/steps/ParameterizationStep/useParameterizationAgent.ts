@@ -64,7 +64,7 @@ export function useParameterizationAgent() {
         suggestions: [],
         addedVariableNames: [],
       },
-      summary: 'Step skipped - no values parameterized',
+      summary: 'Step skipped, no values parameterized',
     },
   })
 

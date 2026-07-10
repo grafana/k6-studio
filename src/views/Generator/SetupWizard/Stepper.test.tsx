@@ -28,11 +28,11 @@ describe('Stepper', () => {
   it('renders all steps', () => {
     renderStepper()
 
-    expect(screen.getByText('Select hosts')).toBeDefined()
+    expect(screen.getByText('Hosts')).toBeDefined()
     expect(screen.getByText('Autocorrelation')).toBeDefined()
     expect(screen.getByText('Parameterization')).toBeDefined()
     expect(screen.getByText('Thresholds')).toBeDefined()
-    expect(screen.getByText('Run test')).toBeDefined()
+    expect(screen.getByText('Test run')).toBeDefined()
   })
 
   it('shows the experimental badge', () => {
@@ -46,7 +46,7 @@ describe('Stepper', () => {
 
     expect(
       screen
-        .getByRole('button', { name: 'Step 1: Select hosts' })
+        .getByRole('button', { name: 'Step 1: Hosts' })
         .getAttribute('aria-current')
     ).toBe('step')
   })
@@ -65,13 +65,11 @@ describe('Stepper', () => {
       steps: { ...initialWizardState.steps, hosts: completed },
     })
 
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Step 1: Select hosts' })
-    )
+    await userEvent.click(screen.getByRole('button', { name: 'Step 1: Hosts' }))
 
     expect(
       screen
-        .getByRole('button', { name: 'Step 1: Select hosts' })
+        .getByRole('button', { name: 'Step 1: Hosts' })
         .getAttribute('aria-current')
     ).toBe('step')
   })

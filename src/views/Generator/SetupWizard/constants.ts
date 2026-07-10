@@ -19,7 +19,7 @@ interface StepConfig {
 
 export const STEP_CONFIG: Record<StepId, StepConfig> = {
   hosts: {
-    label: 'Select hosts',
+    label: 'Hosts',
     hint: 'Choose what to test',
     title: 'Select hosts',
     description:
@@ -51,7 +51,7 @@ export const STEP_CONFIG: Record<StepId, StepConfig> = {
     icon: GaugeIcon,
   },
   runTest: {
-    label: 'Run test',
+    label: 'Test run',
     hint: 'Save and launch in the cloud',
     title: 'Run test',
     description:

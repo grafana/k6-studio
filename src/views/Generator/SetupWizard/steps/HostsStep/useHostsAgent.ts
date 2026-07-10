@@ -81,7 +81,7 @@ export function useHostsAgent() {
 
       return {
         result: { step: 'hosts', suggestions },
-        summary: 'Step skipped - review the selected hosts',
+        summary: 'Step skipped, review the selected hosts',
       }
     },
   })
