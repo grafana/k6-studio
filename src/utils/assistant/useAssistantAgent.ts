@@ -100,6 +100,20 @@ export function useAssistantAgent<TTools extends ToolSet>({
       window.studio.app.trackEvent(trackingEvents.errored)
       console.error(chatError)
     },
+    onFinish: ({ message }) => {
+      // A turn that ends with tool calls either completed via the terminal
+      // tool or continues automatically (the guard re-sends tool results). A
+      // prose-only finish means the assistant stopped without its terminal
+      // tool and the run would otherwise stay "running" forever.
+      const hasToolCalls = message.parts.some(
+        (part) => part.type === 'dynamic-tool' || part.type.startsWith('tool-')
+      )
+
+      if (statusRef.current === 'running' && !hasToolCalls) {
+        setStatusAndRef('error')
+        window.studio.app.trackEvent(trackingEvents.errored)
+      }
+    },
     onToolCall: async ({ toolCall }) => {
       if (toolCall.dynamic) {
         return

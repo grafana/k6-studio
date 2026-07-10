@@ -30,6 +30,7 @@ const trackingEvents = {
 interface CapturedChatOptions {
   onToolCall?: (input: { toolCall: Record<string, unknown> }) => Promise<void>
   onError?: (error: Error) => void
+  onFinish?: (input: { message: { parts: { type: string }[] } }) => void
 }
 
 describe('useAssistantAgent', () => {
@@ -194,6 +195,63 @@ describe('useAssistantAgent', () => {
         toolCall: { toolName: 'doWork', toolCallId: 'call-1', input: {} },
       })
     )
+
+    expect(result.current.status).toBe('completed')
+  })
+
+  it('errors when the run finishes without any tool call', () => {
+    const { result } = renderAgent()
+
+    act(() => {
+      void result.current.start('prompt text')
+    })
+
+    // The assistant replied with prose only (refusal, clarification) and the
+    // stream finished: nothing will auto-send and no terminal tool fired.
+    act(() => {
+      capturedOptions.onFinish?.({
+        message: { parts: [{ type: 'text' }] },
+      })
+    })
+
+    expect(result.current.status).toBe('error')
+    expect(trackEvent).toHaveBeenCalledWith(trackingEvents.errored)
+  })
+
+  it('keeps running when the finished turn continues with tool calls', () => {
+    const { result } = renderAgent()
+
+    act(() => {
+      void result.current.start('prompt text')
+    })
+
+    act(() => {
+      capturedOptions.onFinish?.({
+        message: { parts: [{ type: 'text' }, { type: 'tool-doWork' }] },
+      })
+    })
+
+    expect(result.current.status).toBe('running')
+  })
+
+  it('stays completed when the terminal tool ran before the finish', async () => {
+    const { result } = renderAgent()
+
+    act(() => {
+      void result.current.start('prompt text')
+    })
+
+    await act(() =>
+      capturedOptions.onToolCall!({
+        toolCall: { toolName: 'finish', toolCallId: 'call-1', input: {} },
+      })
+    )
+
+    act(() => {
+      capturedOptions.onFinish?.({
+        message: { parts: [{ type: 'tool-finish' }] },
+      })
+    })
 
     expect(result.current.status).toBe('completed')
   })
