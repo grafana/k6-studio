@@ -1,7 +1,6 @@
 import { StaticToolCall } from 'ai'
 import { useRef } from 'react'
 
-import { UsageEventName } from '@/services/usageTracking/types'
 import { selectFilteredRequests, useGeneratorStore } from '@/store/generator'
 import {
   handleRecordingSearchToolCall,
@@ -26,12 +25,6 @@ import {
 
 type ParameterizationToolCall = StaticToolCall<typeof parameterizationTools>
 
-const outcomeEvents = {
-  success: UsageEventName.ParameterizationSucceeded,
-  'partial-success': UsageEventName.ParameterizationPartiallySucceeded,
-  failure: UsageEventName.ParameterizationFailed,
-} as const
-
 export function useParameterizationAgent() {
   const { dispatch } = useSetupWizard()
   const stepState = useStepState('parameterization')
@@ -45,11 +38,6 @@ export function useParameterizationAgent() {
   const agent = useStepAgent({
     stepId: 'parameterization',
     tools: parameterizationTools,
-    trackingEvents: {
-      started: { event: UsageEventName.ParameterizationStarted },
-      errored: { event: UsageEventName.ParameterizationErrored },
-      aborted: { event: UsageEventName.ParameterizationAborted },
-    },
     onToolCall: handleToolCall,
     onCompleted: dispatchCompletion,
     beginRun: (run) => {
@@ -99,9 +87,6 @@ export function useParameterizationAgent() {
         // Tool input arrives unvalidated; re-parse so an off-enum outcome is
         // returned to the model as a retryable error instead of committing.
         const { outcome } = finishInputSchema.parse(toolCall.input)
-        window.studio.app.trackEvent({
-          event: outcomeEvents[outcome],
-        })
         agent.actionsLog.markLastReasoningAsOutcome(
           outcome === 'failure'
             ? 'outcome-failure'
@@ -122,6 +107,7 @@ export function useParameterizationAgent() {
     // An explicit failure outcome means the analysis was not usable; discard
     // any proposals made along the way instead of committing them.
     if (finishOutcomeRef.current === 'failure') {
+      agent.trackFinished('failure')
       dispatch({
         type: 'stepRunFailed',
         stepId: 'parameterization',
@@ -130,6 +116,8 @@ export function useParameterizationAgent() {
       })
       return
     }
+
+    agent.trackFinished(finishOutcomeRef.current)
 
     const proposals = proposalsRef.current
     const { rules, setRules, variables, setVariables } =

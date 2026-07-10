@@ -1,7 +1,6 @@
 import { StaticToolCall } from 'ai'
 import { useRef } from 'react'
 
-import { UsageEventName } from '@/services/usageTracking/types'
 import { useGeneratorStore } from '@/store/generator'
 import { groupHostsByParty } from '@/store/generator/slices/recording.utils'
 import { exhaustive } from '@/utils/typescript'
@@ -47,11 +46,6 @@ export function useHostsAgent() {
     // The full host inventory is in the prompt, so the agent classifies in a
     // single suggestHosts call that also ends the run.
     terminalTool: 'suggestHosts',
-    trackingEvents: {
-      started: { event: UsageEventName.HostSelectionStarted },
-      errored: { event: UsageEventName.HostSelectionErrored },
-      aborted: { event: UsageEventName.HostSelectionAborted },
-    },
     onToolCall: handleToolCall,
     onCompleted: dispatchCompletion,
     beginRun: (run) => {
@@ -96,11 +90,6 @@ export function useHostsAgent() {
         )
         const isSuccess = suggestionsRef.current.length > 0
 
-        window.studio.app.trackEvent({
-          event: isSuccess
-            ? UsageEventName.HostSelectionSucceeded
-            : UsageEventName.HostSelectionFailed,
-        })
         agent.actionsLog.addEntry({
           type: 'found',
           text: `Classified **${suggestionsRef.current.length} hosts**`,
@@ -120,6 +109,7 @@ export function useHostsAgent() {
     const suggestions = suggestionsRef.current
 
     if (suggestions.length === 0) {
+      agent.trackFinished('failure')
       dispatch({
         type: 'stepRunFailed',
         stepId: 'hosts',
@@ -127,6 +117,8 @@ export function useHostsAgent() {
       })
       return
     }
+
+    agent.trackFinished('success')
 
     setAllowlist(
       suggestions

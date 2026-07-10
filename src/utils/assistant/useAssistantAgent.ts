@@ -9,7 +9,6 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { useActionsLog } from '@/components/Assistant/useActionsLog'
-import { UsageEvent } from '@/services/usageTracking/types'
 
 import { createTerminalToolGuard } from './chat'
 import { IPCChatTransport } from './IPCChatTransport'
@@ -40,18 +39,12 @@ interface UseAssistantAgentOptions<TTools extends ToolSet> {
    * of it). Calling the terminal tool marks the run as completed.
    */
   onToolCall: (toolCall: StaticToolCall<TTools>) => unknown
-  trackingEvents: {
-    started: UsageEvent
-    errored: UsageEvent
-    aborted: UsageEvent
-  }
 }
 
 export function useAssistantAgent<TTools extends ToolSet>({
   tools,
   terminalTool = 'finish',
   onToolCall,
-  trackingEvents,
 }: UseAssistantAgentOptions<TTools>) {
   const [status, setStatus] = useState<AgentRunStatus>('not-started')
 
@@ -97,7 +90,6 @@ export function useAssistantAgent<TTools extends ToolSet>({
     sendAutomaticallyWhen: finishGuard.guard,
     onError: (chatError) => {
       setStatusAndRef('error')
-      window.studio.app.trackEvent(trackingEvents.errored)
       console.error(chatError)
     },
     onFinish: ({ message }) => {
@@ -111,7 +103,6 @@ export function useAssistantAgent<TTools extends ToolSet>({
 
       if (statusRef.current === 'running' && !hasToolCalls) {
         setStatusAndRef('error')
-        window.studio.app.trackEvent(trackingEvents.errored)
       }
     },
     onToolCall: async ({ toolCall }) => {
@@ -164,7 +155,6 @@ export function useAssistantAgent<TTools extends ToolSet>({
   }, [messages, syncMessagesToLog])
 
   function start(initialText: string) {
-    window.studio.app.trackEvent(trackingEvents.started)
     actionsLog.startTimer()
     setStatusAndRef('running')
     clearError()
@@ -177,7 +167,6 @@ export function useAssistantAgent<TTools extends ToolSet>({
       return
     }
 
-    window.studio.app.trackEvent(trackingEvents.aborted)
     void stopGeneration()
     setStatusAndRef('aborted')
   }

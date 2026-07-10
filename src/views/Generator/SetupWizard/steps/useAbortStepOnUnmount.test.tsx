@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { initialWizardState } from '../state/reducer'
 import { SetupWizardProvider, useStepState } from '../state/SetupWizardContext'
@@ -25,6 +25,10 @@ function stateWithHosts(hosts: WizardState['steps']['hosts']): WizardState {
     steps: { ...initialWizardState.steps, hosts },
   }
 }
+
+beforeEach(() => {
+  vi.stubGlobal('studio', { app: { trackEvent: vi.fn() } })
+})
 
 describe('useAbortStepOnUnmount', () => {
   it('aborts a running step when it unmounts mid-run', () => {

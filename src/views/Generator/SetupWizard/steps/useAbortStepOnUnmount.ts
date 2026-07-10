@@ -3,6 +3,8 @@ import { useEffect, useRef } from 'react'
 import { useSetupWizard } from '../state/SetupWizardContext'
 import { StepId } from '../state/types'
 
+import { trackStepFinished } from './stepTracking'
+
 /**
  * Reconciles a step's reducer status on unmount. A run left mid-flight (the user
  * navigates away) comes back 'aborted' (recoverable) instead of stuck 'running'
@@ -32,6 +34,7 @@ export function useAbortStepOnUnmount(stepId: StepId): { current: boolean } {
   useEffect(() => {
     return () => {
       if (statusRef.current === 'running' && !terminatedRef.current) {
+        trackStepFinished(stepId, 'aborted')
         dispatch({ type: 'stepRunAborted', stepId })
       }
     }

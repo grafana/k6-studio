@@ -1,11 +1,13 @@
 import { StaticToolCall, ToolSet } from 'ai'
+import { useRef } from 'react'
 
-import { UsageEvent, UsageEventName } from '@/services/usageTracking/types'
+import { WizardStepOutcome } from '@/services/usageTracking/types'
 import { useAssistantAgent } from '@/utils/assistant/useAssistantAgent'
 
 import { useSetupWizard } from '../state/SetupWizardContext'
 import { StepId, StepResult } from '../state/types'
 
+import { trackStepFinished, trackStepStarted } from './stepTracking'
 import { useAbortStepOnUnmount } from './useAbortStepOnUnmount'
 import { useStepAgentLifecycle } from './useStepAgentLifecycle'
 
@@ -25,11 +27,6 @@ interface UseStepAgentConfig<TTools extends ToolSet> {
   tools: TTools
   /** Tool whose call ends the run (default "finish"). */
   terminalTool?: keyof TTools & string
-  trackingEvents: {
-    started: UsageEvent
-    errored: UsageEvent
-    aborted: UsageEvent
-  }
   failureMessage?: string
   onToolCall: (toolCall: StaticToolCall<TTools>) => unknown
   /** Reads run results from refs and dispatches the completion action. */
@@ -56,7 +53,6 @@ export function useStepAgent<TTools extends ToolSet>({
   stepId,
   tools,
   terminalTool,
-  trackingEvents,
   failureMessage = DEFAULT_FAILURE_MESSAGE,
   onToolCall,
   onCompleted,
@@ -66,22 +62,36 @@ export function useStepAgent<TTools extends ToolSet>({
 }: UseStepAgentConfig<TTools>) {
   const { dispatch } = useSetupWizard()
   const terminatedRef = useAbortStepOnUnmount(stepId)
+  const startedAtRef = useRef<number | null>(null)
 
   const agent = useAssistantAgent({
     tools,
     terminalTool,
-    trackingEvents,
     onToolCall,
   })
+
+  /** Fires the single step_finished event for this run, with its duration. */
+  function trackFinished(outcome: WizardStepOutcome) {
+    trackStepFinished(
+      stepId,
+      outcome,
+      startedAtRef.current === null
+        ? undefined
+        : Date.now() - startedAtRef.current
+    )
+  }
 
   useStepAgentLifecycle({
     stepId,
     status: agent.status,
     onCompleted,
     failureMessage,
+    onFinished: trackFinished,
   })
 
   function start() {
+    trackStepStarted(stepId)
+    startedAtRef.current = Date.now()
     dispatch({ type: 'stepRunStarted', stepId })
     // agent.start resets the log timer, so the opening entry goes in afterwards.
     beginRun(agent)
@@ -101,10 +111,7 @@ export function useStepAgent<TTools extends ToolSet>({
 
     const { result, summary } = typeof skip === 'function' ? skip(agent) : skip
 
-    window.studio.app.trackEvent({
-      event: UsageEventName.TestSetupWizardStepSkipped,
-      payload: { step: stepId },
-    })
+    trackFinished('skipped')
     dispatch({
       type: 'stepRunCompleted',
       stepId,
@@ -118,6 +125,7 @@ export function useStepAgent<TTools extends ToolSet>({
     start,
     restart,
     skip: runSkip,
+    trackFinished,
     stop: agent.stop,
     status: agent.status,
     error: agent.error,

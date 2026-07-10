@@ -15,6 +15,8 @@ interface UseStepAgentLifecycleOptions {
    */
   onCompleted: () => void
   failureMessage: string
+  /** Reports the step_finished usage event for error/abort terminals. */
+  onFinished: (outcome: 'error' | 'aborted') => void
 }
 
 /**
@@ -27,6 +29,7 @@ export function useStepAgentLifecycle({
   status,
   onCompleted,
   failureMessage,
+  onFinished,
 }: UseStepAgentLifecycleOptions) {
   const { state, dispatch } = useSetupWizard()
   const setWizardUsed = useGeneratorStore((store) => store.setWizardUsed)
@@ -48,10 +51,12 @@ export function useStepAgentLifecycle({
     }
 
     if (status === 'error') {
+      onFinished('error')
       dispatch({ type: 'stepRunFailed', stepId, message: failureMessage })
     }
 
     if (status === 'aborted') {
+      onFinished('aborted')
       dispatch({ type: 'stepRunAborted', stepId })
     }
     // Only react to status transitions; the completion payload is read from refs.

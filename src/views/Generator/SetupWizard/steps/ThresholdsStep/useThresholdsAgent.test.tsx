@@ -123,6 +123,14 @@ describe('useThresholdsAgent completion', () => {
 
     expect(screen.getByTestId('probe').textContent).toBe('error')
     expect(useGeneratorStore.getState().thresholds).toEqual([])
+    expect(window.studio.app.trackEvent).toHaveBeenCalledWith({
+      event: 'test_setup_wizard_step_finished',
+      payload: {
+        step: 'thresholds',
+        outcome: 'failure',
+        durationMs: undefined,
+      },
+    })
   })
 
   it('rejects a finish call with an outcome outside the enum', () => {
@@ -166,5 +174,13 @@ describe('useThresholdsAgent completion', () => {
 
     expect(screen.getByTestId('probe').textContent).toBe('completed')
     expect(useGeneratorStore.getState().thresholds).toHaveLength(1)
+    expect(window.studio.app.trackEvent).toHaveBeenCalledWith({
+      event: 'test_setup_wizard_step_finished',
+      payload: {
+        step: 'thresholds',
+        outcome: 'success',
+        durationMs: undefined,
+      },
+    })
   })
 })

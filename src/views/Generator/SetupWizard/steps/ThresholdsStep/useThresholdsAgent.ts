@@ -1,7 +1,6 @@
 import { StaticToolCall } from 'ai'
 import { useRef } from 'react'
 
-import { UsageEventName } from '@/services/usageTracking/types'
 import { selectFilteredRequests, useGeneratorStore } from '@/store/generator'
 import { Threshold } from '@/types/testOptions'
 import {
@@ -41,11 +40,6 @@ export function useThresholdsAgent() {
   const agent = useStepAgent({
     stepId: 'thresholds',
     tools: thresholdsTools,
-    trackingEvents: {
-      started: { event: UsageEventName.ThresholdSuggestionStarted },
-      errored: { event: UsageEventName.ThresholdSuggestionErrored },
-      aborted: { event: UsageEventName.ThresholdSuggestionAborted },
-    },
     onToolCall: handleToolCall,
     onCompleted: dispatchCompletion,
     beginRun: (run) => {
@@ -108,11 +102,6 @@ export function useThresholdsAgent() {
         const isSuccess =
           outcome === 'success' && proposalsRef.current.length > 0
 
-        window.studio.app.trackEvent({
-          event: isSuccess
-            ? UsageEventName.ThresholdSuggestionSucceeded
-            : UsageEventName.ThresholdSuggestionFailed,
-        })
         agent.actionsLog.markLastReasoningAsOutcome(
           isSuccess ? 'outcome-success' : 'outcome-failure'
         )
@@ -131,6 +120,7 @@ export function useThresholdsAgent() {
     // An explicit failure outcome means the analysis was not usable; discard
     // any proposals made along the way instead of committing them.
     if (finishOutcomeRef.current === 'failure') {
+      agent.trackFinished('failure')
       dispatch({
         type: 'stepRunFailed',
         stepId: 'thresholds',
@@ -141,6 +131,7 @@ export function useThresholdsAgent() {
     }
 
     if (proposals.length === 0) {
+      agent.trackFinished('failure')
       dispatch({
         type: 'stepRunFailed',
         stepId: 'thresholds',
@@ -148,6 +139,8 @@ export function useThresholdsAgent() {
       })
       return
     }
+
+    agent.trackFinished(finishOutcomeRef.current)
 
     const { thresholds, setThresholds } = useGeneratorStore.getState()
 

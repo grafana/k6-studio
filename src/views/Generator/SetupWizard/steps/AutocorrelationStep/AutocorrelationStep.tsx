@@ -1,11 +1,11 @@
 import { Box, Button, Callout, Flex } from '@radix-ui/themes'
 import { RotateCcwIcon, UnplugIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { SuggestionListPanel } from '@/components/SuggestionList/SuggestionListPanel'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
-import { UsageEventName } from '@/services/usageTracking/types'
+import { WizardStepOutcome } from '@/services/usageTracking/types'
 import { useGeneratorStore } from '@/store/generator'
 import {
   AutoCorrelation,
@@ -22,6 +22,7 @@ import { useWizardNavigation } from '../../state/useWizardNavigation'
 import { StepFrame, StepHeader } from '../../StepFrame'
 import { WizardFooter } from '../../WizardFooter'
 import { CompletedStepSummary } from '../CompletedStepSummary'
+import { trackStepFinished, trackStepStarted } from '../stepTracking'
 import { useAbortStepOnUnmount } from '../useAbortStepOnUnmount'
 
 const TERMINAL_STATUSES: CorrelationStatus[] = [
@@ -178,9 +179,22 @@ export function AutocorrelationStep() {
   // auto-starting a fresh full replay.
   useEffect(() => {
     if (proxyStatus !== 'online' && stepState.status === 'running') {
+      trackStepFinished('autocorrelation', 'aborted')
       dispatch({ type: 'stepRunAborted', stepId: 'autocorrelation' })
     }
   }, [proxyStatus, stepState.status, dispatch])
+
+  const startedAtRef = useRef<number | null>(null)
+
+  const trackFinished = (outcome: WizardStepOutcome) => {
+    trackStepFinished(
+      'autocorrelation',
+      outcome,
+      startedAtRef.current === null
+        ? undefined
+        : Date.now() - startedAtRef.current
+    )
+  }
 
   const handleStatusChange = (status: CorrelationStatus) => {
     if (status === 'not-started') {
@@ -189,6 +203,7 @@ export function AutocorrelationStep() {
       // an interruption so the recovery prompt offers "Run analysis". Retry is
       // unaffected: restart() batches straight to a loading status.
       if (stepState.status === 'running') {
+        trackFinished('aborted')
         dispatch({ type: 'stepRunAborted', stepId: 'autocorrelation' })
       }
       return
@@ -199,6 +214,8 @@ export function AutocorrelationStep() {
     }
 
     if (!TERMINAL_STATUSES.includes(status)) {
+      trackStepStarted('autocorrelation')
+      startedAtRef.current = Date.now()
       dispatch({ type: 'stepRunStarted', stepId: 'autocorrelation' })
     }
   }
@@ -214,6 +231,13 @@ export function AutocorrelationStep() {
     // wizard configured it. This step bypasses useStepAgentLifecycle (which
     // sets the flag for the other agent steps); skips do not come through here.
     setWizardUsed(true)
+    trackFinished(
+      context.correlationStatus === 'partial-success'
+        ? 'partial-success'
+        : context.correlationStatus === 'failure'
+          ? 'failure'
+          : 'success'
+    )
     dispatch({
       type: 'stepRunCompleted',
       stepId: 'autocorrelation',
@@ -227,10 +251,7 @@ export function AutocorrelationStep() {
     // Skip completes the step and navigates away in one commit; mark it so the
     // unmount cleanup does not clobber the just-completed step back to aborted.
     terminatedRef.current = true
-    window.studio.app.trackEvent({
-      event: UsageEventName.TestSetupWizardStepSkipped,
-      payload: { step: 'autocorrelation' },
-    })
+    trackFinished('skipped')
     dispatch({
       type: 'stepRunCompleted',
       stepId: 'autocorrelation',

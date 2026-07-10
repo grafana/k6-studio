@@ -295,6 +295,29 @@ describe('AutocorrelationStep', () => {
     await userEvent.click(screen.getByRole('button', { name: 'settle-run' }))
 
     expect(useGeneratorStore.getState().wizardUsed).toBe(true)
+    expect(window.studio.app.trackEvent).toHaveBeenCalledWith({
+      event: 'test_setup_wizard_step_finished',
+      payload: {
+        step: 'autocorrelation',
+        outcome: 'success',
+        durationMs: undefined,
+      },
+    })
+  })
+
+  it('tracks a skipped outcome when the step is skipped', async () => {
+    renderStep()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Skip step' }))
+
+    expect(window.studio.app.trackEvent).toHaveBeenCalledWith({
+      event: 'test_setup_wizard_step_finished',
+      payload: {
+        step: 'autocorrelation',
+        outcome: 'skipped',
+        durationMs: undefined,
+      },
+    })
   })
 
   it('does not mark the generator when the step is skipped', async () => {

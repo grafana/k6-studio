@@ -4,8 +4,6 @@ import { tool } from 'ai'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
 
-import { UsageEventName } from '@/services/usageTracking/types'
-
 import { useAssistantAgent } from './useAssistantAgent'
 
 vi.mock('@ai-sdk/react', () => ({ useChat: vi.fn() }))
@@ -20,12 +18,6 @@ const tools = {
     inputSchema: z.object({ outcome: z.enum(['success', 'failure']) }),
   }),
 }
-
-const trackingEvents = {
-  started: { event: UsageEventName.HostSelectionStarted },
-  errored: { event: UsageEventName.HostSelectionErrored },
-  aborted: { event: UsageEventName.HostSelectionAborted },
-} as const
 
 interface CapturedChatOptions {
   onToolCall?: (input: { toolCall: Record<string, unknown> }) => Promise<void>
@@ -60,9 +52,7 @@ describe('useAssistantAgent', () => {
   })
 
   function renderAgent(onToolCall: (toolCall: unknown) => unknown = vi.fn()) {
-    return renderHook(() =>
-      useAssistantAgent({ tools, onToolCall, trackingEvents })
-    )
+    return renderHook(() => useAssistantAgent({ tools, onToolCall }))
   }
 
   it('starts in the not-started state', () => {
@@ -79,7 +69,6 @@ describe('useAssistantAgent', () => {
     })
 
     expect(result.current.status).toBe('running')
-    expect(trackEvent).toHaveBeenCalledWith(trackingEvents.started)
     expect(sendMessage).toHaveBeenCalledWith({ text: 'prompt text' })
   })
 
@@ -183,7 +172,6 @@ describe('useAssistantAgent', () => {
         tools,
         terminalTool: 'doWork',
         onToolCall: vi.fn(),
-        trackingEvents,
       })
     )
 
@@ -215,7 +203,6 @@ describe('useAssistantAgent', () => {
     })
 
     expect(result.current.status).toBe('error')
-    expect(trackEvent).toHaveBeenCalledWith(trackingEvents.errored)
   })
 
   it('keeps running when the finished turn continues with tool calls', () => {
@@ -264,7 +251,6 @@ describe('useAssistantAgent', () => {
     })
 
     expect(result.current.status).toBe('error')
-    expect(trackEvent).toHaveBeenCalledWith(trackingEvents.errored)
   })
 
   it('only aborts while running', () => {
@@ -284,7 +270,6 @@ describe('useAssistantAgent', () => {
     })
 
     expect(result.current.status).toBe('aborted')
-    expect(trackEvent).toHaveBeenCalledWith(trackingEvents.aborted)
     expect(stopGeneration).toHaveBeenCalledOnce()
   })
 

@@ -35,31 +35,22 @@ export enum UsageEventName {
   AutocorrelationAborted = 'autocorrelation_aborted',
   AutocorrelationErrored = 'autocorrelation_errored',
 
-  HostSelectionStarted = 'host_selection_started',
-  HostSelectionSucceeded = 'host_selection_succeeded',
-  HostSelectionFailed = 'host_selection_failed',
-  HostSelectionAborted = 'host_selection_aborted',
-  HostSelectionErrored = 'host_selection_errored',
-
-  ParameterizationStarted = 'parameterization_started',
-  ParameterizationSucceeded = 'parameterization_succeeded',
-  ParameterizationPartiallySucceeded = 'parameterization_partially_succeeded',
-  ParameterizationFailed = 'parameterization_failed',
-  ParameterizationAborted = 'parameterization_aborted',
-  ParameterizationErrored = 'parameterization_errored',
-
-  ThresholdSuggestionStarted = 'threshold_suggestion_started',
-  ThresholdSuggestionSucceeded = 'threshold_suggestion_succeeded',
-  ThresholdSuggestionFailed = 'threshold_suggestion_failed',
-  ThresholdSuggestionAborted = 'threshold_suggestion_aborted',
-  ThresholdSuggestionErrored = 'threshold_suggestion_errored',
-
   TestSetupWizardOpened = 'test_setup_wizard_opened',
   TestSetupWizardCompleted = 'test_setup_wizard_completed',
   TestSetupWizardDismissed = 'test_setup_wizard_dismissed',
-  TestSetupWizardStepSkipped = 'test_setup_wizard_step_skipped',
+  TestSetupWizardStepStarted = 'test_setup_wizard_step_started',
+  TestSetupWizardStepFinished = 'test_setup_wizard_step_finished',
   TestSetupWizardSignUpClicked = 'test_setup_wizard_sign_up_clicked',
 }
+
+/** How a wizard step run ended; one step_finished event fires per run. */
+export type WizardStepOutcome =
+  | 'success'
+  | 'partial-success'
+  | 'failure'
+  | 'error'
+  | 'aborted'
+  | 'skipped'
 
 export interface UsageEventMetadata {
   usageStatsId: string
@@ -176,70 +167,6 @@ interface AutocorrelationErroredEvent {
   event: UsageEventName.AutocorrelationErrored
 }
 
-interface HostSelectionStartedEvent {
-  event: UsageEventName.HostSelectionStarted
-}
-
-interface HostSelectionSucceededEvent {
-  event: UsageEventName.HostSelectionSucceeded
-}
-
-interface HostSelectionFailedEvent {
-  event: UsageEventName.HostSelectionFailed
-}
-
-interface HostSelectionAbortedEvent {
-  event: UsageEventName.HostSelectionAborted
-}
-
-interface HostSelectionErroredEvent {
-  event: UsageEventName.HostSelectionErrored
-}
-
-interface ParameterizationStartedEvent {
-  event: UsageEventName.ParameterizationStarted
-}
-
-interface ParameterizationSucceededEvent {
-  event: UsageEventName.ParameterizationSucceeded
-}
-
-interface ParameterizationPartiallySucceededEvent {
-  event: UsageEventName.ParameterizationPartiallySucceeded
-}
-
-interface ParameterizationFailedEvent {
-  event: UsageEventName.ParameterizationFailed
-}
-
-interface ParameterizationAbortedEvent {
-  event: UsageEventName.ParameterizationAborted
-}
-
-interface ParameterizationErroredEvent {
-  event: UsageEventName.ParameterizationErrored
-}
-
-interface ThresholdSuggestionStartedEvent {
-  event: UsageEventName.ThresholdSuggestionStarted
-}
-
-interface ThresholdSuggestionSucceededEvent {
-  event: UsageEventName.ThresholdSuggestionSucceeded
-}
-
-interface ThresholdSuggestionFailedEvent {
-  event: UsageEventName.ThresholdSuggestionFailed
-}
-
-interface ThresholdSuggestionAbortedEvent {
-  event: UsageEventName.ThresholdSuggestionAborted
-}
-
-interface ThresholdSuggestionErroredEvent {
-  event: UsageEventName.ThresholdSuggestionErrored
-}
-
 interface TestSetupWizardOpenedEvent {
   event: UsageEventName.TestSetupWizardOpened
 }
@@ -253,10 +180,20 @@ interface TestSetupWizardDismissedEvent {
   event: UsageEventName.TestSetupWizardDismissed
 }
 
-interface TestSetupWizardStepSkippedEvent {
-  event: UsageEventName.TestSetupWizardStepSkipped
+interface TestSetupWizardStepStartedEvent {
+  event: UsageEventName.TestSetupWizardStepStarted
   payload: {
     step: string
+  }
+}
+
+interface TestSetupWizardStepFinishedEvent {
+  event: UsageEventName.TestSetupWizardStepFinished
+  payload: {
+    step: string
+    outcome: WizardStepOutcome
+    /** Omitted when the run is reconciled outside the step (e.g. unmount). */
+    durationMs?: number
   }
 }
 
@@ -287,26 +224,11 @@ export type UsageEvent =
   | AutocorrelationFailedEvent
   | AutocorrelationAbortedEvent
   | AutocorrelationErroredEvent
-  | HostSelectionStartedEvent
-  | HostSelectionSucceededEvent
-  | HostSelectionFailedEvent
-  | HostSelectionAbortedEvent
-  | HostSelectionErroredEvent
-  | ParameterizationStartedEvent
-  | ParameterizationSucceededEvent
-  | ParameterizationPartiallySucceededEvent
-  | ParameterizationFailedEvent
-  | ParameterizationAbortedEvent
-  | ParameterizationErroredEvent
-  | ThresholdSuggestionStartedEvent
-  | ThresholdSuggestionSucceededEvent
-  | ThresholdSuggestionFailedEvent
-  | ThresholdSuggestionAbortedEvent
-  | ThresholdSuggestionErroredEvent
   | TestSetupWizardOpenedEvent
   | TestSetupWizardCompletedEvent
   | TestSetupWizardDismissedEvent
-  | TestSetupWizardStepSkippedEvent
+  | TestSetupWizardStepStartedEvent
+  | TestSetupWizardStepFinishedEvent
   | TestSetupWizardSignUpClickedEvent
 
 export type UsageEventWithMetadata = UsageEvent & UsageEventMetadata

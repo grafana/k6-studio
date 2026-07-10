@@ -78,6 +78,32 @@ describe('useStepAgent', () => {
     expect(screen.getByTestId('after-hosts').textContent).toBe(
       'autocorrelation:completed'
     )
+    expect(window.studio.app.trackEvent).toHaveBeenCalledWith({
+      event: 'test_setup_wizard_step_finished',
+      payload: { step: 'hosts', outcome: 'skipped', durationMs: undefined },
+    })
+  })
+
+  it('tracks step_started when a run begins', async () => {
+    const state: WizardState = {
+      ...initialWizardState,
+      screen: 'wizard',
+      activeStep: 'hosts',
+    }
+
+    render(
+      <SetupWizardProvider initialState={state}>
+        <ActiveStep />
+      </SetupWizardProvider>
+    )
+
+    // The step auto-starts on mount when not started yet.
+    await vi.waitFor(() =>
+      expect(window.studio.app.trackEvent).toHaveBeenCalledWith({
+        event: 'test_setup_wizard_step_started',
+        payload: { step: 'hosts' },
+      })
+    )
   })
 
   it('marks the generator as wizard-configured when the agent completes a step', () => {
