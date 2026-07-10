@@ -1,4 +1,4 @@
-import { Badge, Flex, Grid, Text } from '@radix-ui/themes'
+import { Flex, Text } from '@radix-ui/themes'
 import { CheckIcon } from 'lucide-react'
 import { Fragment } from 'react'
 
@@ -68,24 +68,17 @@ export function Stepper() {
   const { state, dispatch } = useSetupWizard()
 
   return (
-    <Grid
+    <Flex
       flexShrink="0"
       align="center"
-      gap="3"
       css={{
-        // Equal 1fr side columns keep the steps truly centered on the bar
-        // while the badge occupies the right column without overlapping.
-        gridTemplateColumns: '1fr minmax(0, 860px) 1fr',
         height: 64,
         borderBottom: '1px solid var(--gray-4)',
         backgroundColor: 'var(--gray-2)',
-        // The right padding matches the view header's, so the badge lines up
-        // with the actions above it.
-        padding: '0 8px 0 24px',
+        padding: '0 24px',
       }}
     >
-      <span />
-      <Flex align="center" width="100%">
+      <Flex align="center" width="100%" maxWidth="860px" mx="auto">
         {STEP_ORDER.map((stepId, index) => {
           const config = STEP_CONFIG[stepId]
           const isCompleted = state.steps[stepId].status === 'completed'
@@ -141,11 +134,6 @@ export function Stepper() {
           )
         })}
       </Flex>
-      <Flex justify="end">
-        <Badge color="orange" variant="soft">
-          Experimental
-        </Badge>
-      </Flex>
-    </Grid>
+    </Flex>
   )
 }

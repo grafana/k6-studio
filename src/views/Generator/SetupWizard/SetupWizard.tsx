@@ -1,4 +1,4 @@
-import { Button, Text } from '@radix-ui/themes'
+import { Badge, Button, Text } from '@radix-ui/themes'
 import { useEffect } from 'react'
 
 import { View } from '@/components/Layout/View'
@@ -45,6 +45,25 @@ export function SetupWizard({
         {...props}
       />
     </SetupWizardProvider>
+  )
+}
+
+/**
+ * Marks guided setup itself as experimental. Hidden on the choice screen,
+ * where the guided card carries its own badge - the screen also offers the
+ * non-experimental manual path.
+ */
+function ExperimentalChip() {
+  const { state } = useSetupWizard()
+
+  if (state.screen !== 'wizard') {
+    return null
+  }
+
+  return (
+    <Badge color="orange" variant="soft" size="1">
+      Experimental
+    </Badge>
   )
 }
 
@@ -134,9 +153,12 @@ function SetupWizardView({
     <View
       title={title}
       subTitle={
-        <Text size="1" color="gray">
-          {basename(recordingPath)}
-        </Text>
+        <>
+          <ExperimentalChip />
+          <Text size="1" color="gray">
+            {basename(recordingPath)}
+          </Text>
+        </>
       }
       actions={
         <>

@@ -61,11 +61,18 @@ describe('SetupWizard', () => {
     expect(screen.getByText('New HTTP test')).toBeDefined()
   })
 
-  it('labels the wizard as experimental', () => {
+  it('labels only the guided card as experimental on the choice screen', () => {
     render(<SetupWizard {...defaultProps} />)
 
-    // Once in the header, once on the choice screen itself.
-    expect(screen.getAllByText('Experimental').length).toBeGreaterThan(0)
+    // The manual option is not experimental, so the screen itself carries no
+    // label; the guided card does.
+    expect(screen.getAllByText('Experimental')).toHaveLength(1)
+  })
+
+  it('shows the experimental chip in the header once inside guided setup', () => {
+    render(<SetupWizard {...defaultProps} startInGuidedSetup />)
+
+    expect(screen.getAllByText('Experimental')).toHaveLength(1)
   })
 
   it('titles a generator relaunch "Configure HTTP test"', () => {
