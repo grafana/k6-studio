@@ -284,13 +284,17 @@ const getCorrelationVariableSnippet = (uniqueId: number) => {
     }`
 }
 
+function escapeForJsStringLiteral(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/'/g, "\\'")
+}
+
 const getCorrelationBeginEndSnippet = (
   selector: BeginEndSelector,
   matchStatement: string,
   uniqueId: number
 ) => {
-  const begin = escapeRegExp(selector.begin)
-  const end = escapeRegExp(selector.end)
+  const begin = escapeForJsStringLiteral(escapeRegExp(selector.begin))
+  const end = escapeForJsStringLiteral(escapeRegExp(selector.end))
 
   // TODO: replace regex with findBetween from k6-utils once we have imports
   return `
@@ -305,7 +309,7 @@ const getCorrelationRegexSnippet = (
   uniqueId: number
 ) => {
   return `
-    regex = new RegExp('${selector.regex}')
+    regex = new RegExp('${escapeForJsStringLiteral(selector.regex)}')
     match = ${matchStatement}
     ${getCorrelationVariableSnippet(uniqueId)}`
 }
@@ -822,6 +826,76 @@ correlation_vars['correlation_1'] = resp.json().user_id`
     expect(
       extractCorrelationRegexUrl(selector, request, 1, sequentialIdGenerator)
     ).toStrictEqual(expectedResult)
+  })
+
+  it('escapes regex backslashes for JS string literal context', () => {
+    const sequentialIdGenerator = generateSequentialInt()
+    const response: Response = generateResponse('token=abc123&rest')
+
+    const selector: RegexSelector = {
+      type: 'regex',
+      from: 'body',
+      regex: 'token=(\\w+)',
+    }
+
+    const result = extractCorrelationRegexBody(
+      selector,
+      response,
+      1,
+      sequentialIdGenerator
+    )
+
+    expect(result.extractedValue).toBe('abc123')
+    expect(result.correlationExtractionSnippet).toContain(
+      "new RegExp('token=(\\\\w+)')"
+    )
+  })
+
+  it('escapes single quotes in regex for JS string literal context', () => {
+    const sequentialIdGenerator = generateSequentialInt()
+    const response: Response = generateResponse("id='999'")
+
+    const selector: RegexSelector = {
+      type: 'regex',
+      from: 'body',
+      regex: "id='(\\d+)'",
+    }
+
+    const result = extractCorrelationRegexBody(
+      selector,
+      response,
+      1,
+      sequentialIdGenerator
+    )
+
+    expect(result.extractedValue).toBe('999')
+    expect(result.correlationExtractionSnippet).toContain(
+      "new RegExp('id=\\'(\\\\d+)\\''"
+    )
+  })
+
+  it('escapes begin-end metacharacters for JS string literal context', () => {
+    const sequentialIdGenerator = generateSequentialInt()
+    const response: Response = generateResponse('data.value=42&end')
+
+    const selector: BeginEndSelector = {
+      type: 'begin-end',
+      from: 'body',
+      begin: 'data.value=',
+      end: '&',
+    }
+
+    const result = extractCorrelationBeginEndBody(
+      selector,
+      response,
+      1,
+      sequentialIdGenerator
+    )
+
+    expect(result.extractedValue).toBe('42')
+    expect(result.correlationExtractionSnippet).toContain(
+      "new RegExp('data\\\\.value=(.*?)&')"
+    )
   })
 
   it('extracts correlation header by name', () => {
