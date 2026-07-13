@@ -1,11 +1,10 @@
 import { Box, Button, Callout, Flex } from '@radix-ui/themes'
 import { RotateCcwIcon, UnplugIcon } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { SuggestionListPanel } from '@/components/SuggestionList/SuggestionListPanel'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
-import { WizardStepOutcome } from '@/services/usageTracking/types'
 import { useGeneratorStore } from '@/store/generator'
 import {
   AutoCorrelation,
@@ -22,7 +21,7 @@ import { useWizardNavigation } from '../../state/useWizardNavigation'
 import { StepFrame, StepHeader } from '../../StepFrame'
 import { WizardFooter } from '../../WizardFooter'
 import { CompletedStepSummary } from '../CompletedStepSummary'
-import { trackStepFinished, trackStepStarted } from '../stepTracking'
+import { useStepRunTracker } from '../stepTracking'
 import { useAbortStepOnUnmount } from '../useAbortStepOnUnmount'
 
 const TERMINAL_STATUSES: CorrelationStatus[] = [
@@ -172,6 +171,7 @@ export function AutocorrelationStep() {
   // so it reconciles the reducer on unmount with the shared hook directly: a run
   // left mid-flight comes back 'aborted' (recoverable) instead of stuck 'running'.
   const terminatedRef = useAbortStepOnUnmount('autocorrelation')
+  const { trackStarted, trackFinished } = useStepRunTracker('autocorrelation')
 
   // A proxy drop mid-run unmounts the live analysis (the offline branch below
   // takes over), and its own aborted update is lost in the teardown. Reconcile
@@ -179,22 +179,12 @@ export function AutocorrelationStep() {
   // auto-starting a fresh full replay.
   useEffect(() => {
     if (proxyStatus !== 'online' && stepState.status === 'running') {
-      trackStepFinished('autocorrelation', 'aborted')
+      trackFinished('aborted')
       dispatch({ type: 'stepRunAborted', stepId: 'autocorrelation' })
     }
+    // trackFinished is a stable per-mount helper.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [proxyStatus, stepState.status, dispatch])
-
-  const startedAtRef = useRef<number | null>(null)
-
-  const trackFinished = (outcome: WizardStepOutcome) => {
-    trackStepFinished(
-      'autocorrelation',
-      outcome,
-      startedAtRef.current === null
-        ? undefined
-        : Date.now() - startedAtRef.current
-    )
-  }
 
   const handleStatusChange = (status: CorrelationStatus) => {
     if (status === 'not-started') {
@@ -214,8 +204,7 @@ export function AutocorrelationStep() {
     }
 
     if (!TERMINAL_STATUSES.includes(status)) {
-      trackStepStarted('autocorrelation')
-      startedAtRef.current = Date.now()
+      trackStarted()
       dispatch({ type: 'stepRunStarted', stepId: 'autocorrelation' })
     }
   }

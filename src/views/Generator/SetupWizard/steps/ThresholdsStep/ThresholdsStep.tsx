@@ -59,7 +59,7 @@ function CompletedThresholdsStep({ onRerun }: CompletedThresholdsStepProps) {
 export function ThresholdsStep() {
   const stepState = useStepState('thresholds')
   const { goBack, goNext } = useWizardNavigation()
-  const { start, restart, skip, stop, logEntries, status } =
+  const { start, restart, skip, stop, actionsLog, status } =
     useThresholdsAgent()
 
   useAutoStartAgent(stepState.status, start, stop)
@@ -79,7 +79,7 @@ export function ThresholdsStep() {
       run={{
         state: stepState,
         status,
-        logEntries,
+        logEntries: actionsLog.entries,
         errorMessage:
           'The Assistant could not suggest thresholds for this recording.',
         runningLabel: 'Analyzing response times...',

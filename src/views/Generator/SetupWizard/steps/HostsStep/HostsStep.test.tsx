@@ -37,7 +37,7 @@ function mockAgent(overrides: Partial<ReturnType<typeof useHostsAgent>> = {}) {
     stop: vi.fn(),
     status: 'not-started',
     error: undefined,
-    logEntries: [],
+    actionsLog: { entries: [] },
     ...overrides,
   } as ReturnType<typeof useHostsAgent>
 

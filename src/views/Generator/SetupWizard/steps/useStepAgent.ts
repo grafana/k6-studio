@@ -1,13 +1,11 @@
 import { StaticToolCall, ToolSet } from 'ai'
-import { useRef } from 'react'
 
-import { WizardStepOutcome } from '@/services/usageTracking/types'
 import { useAssistantAgent } from '@/utils/assistant/useAssistantAgent'
 
 import { useSetupWizard } from '../state/SetupWizardContext'
 import { WizardStep, StepResult } from '../state/types'
 
-import { trackStepFinished, trackStepStarted } from './stepTracking'
+import { useStepRunTracker } from './stepTracking'
 import { useAbortStepOnUnmount } from './useAbortStepOnUnmount'
 import { useStepAgentLifecycle } from './useStepAgentLifecycle'
 
@@ -62,24 +60,13 @@ export function useStepAgent<TTools extends ToolSet>({
 }: UseStepAgentConfig<TTools>) {
   const { dispatch } = useSetupWizard()
   const terminatedRef = useAbortStepOnUnmount(stepId)
-  const startedAtRef = useRef<number | null>(null)
+  const { trackStarted, trackFinished } = useStepRunTracker(stepId)
 
   const agent = useAssistantAgent({
     tools,
     terminalTool,
     onToolCall,
   })
-
-  /** Fires the single step_finished event for this run, with its duration. */
-  function trackFinished(outcome: WizardStepOutcome) {
-    trackStepFinished(
-      stepId,
-      outcome,
-      startedAtRef.current === null
-        ? undefined
-        : Date.now() - startedAtRef.current
-    )
-  }
 
   useStepAgentLifecycle({
     stepId,
@@ -90,8 +77,7 @@ export function useStepAgent<TTools extends ToolSet>({
   })
 
   function start() {
-    trackStepStarted(stepId)
-    startedAtRef.current = Date.now()
+    trackStarted()
     dispatch({ type: 'stepRunStarted', stepId })
     // agent.start resets the log timer, so the opening entry goes in afterwards.
     beginRun(agent)
@@ -129,7 +115,6 @@ export function useStepAgent<TTools extends ToolSet>({
     stop: agent.stop,
     status: agent.status,
     error: agent.error,
-    logEntries: agent.actionsLog.entries,
     actionsLog: agent.actionsLog,
   }
 }

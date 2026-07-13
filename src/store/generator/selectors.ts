@@ -29,7 +29,9 @@ export function selectHasRecording(state: GeneratorStore) {
   )
 }
 
-export function selectFilteredRequests(state: GeneratorStore) {
+export function selectFilteredRequests(
+  state: Pick<GeneratorStore, 'requests' | 'allowlist' | 'includeStaticAssets'>
+) {
   const allowedRequests = state.requests.filter((request) => {
     return state.allowlist.includes(request.request.host)
   })

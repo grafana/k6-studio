@@ -14,7 +14,7 @@ import {
   TrendingUpIcon,
   TriangleAlertIcon,
 } from 'lucide-react'
-import { PropsWithChildren, useEffect, useState } from 'react'
+import { useMemo, PropsWithChildren, useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
@@ -212,14 +212,22 @@ function firstSentence(text: string): string {
   return end === -1 ? text : text.slice(0, end + 1)
 }
 
+// Each estimate is a heavy main-process chain (temp file, k6 inspect
+// subprocess, two cloud round-trips); wait out preview churn from live load
+// edits before firing one.
+const VUH_ESTIMATE_DEBOUNCE_MS = 500
+
 function useVuhEstimate(
   script: ScriptPreview,
   scriptName: string
 ): VuhEstimateState {
   const [state, setState] = useState<VuhEstimateState>({ status: 'loading' })
+  // Primitive deps: the preview object is re-created on every generator-store
+  // change even when its content is unchanged.
+  const preview = script.valid ? script.preview : null
 
   useEffect(() => {
-    if (!script.valid) {
+    if (preview === null) {
       setState({ status: 'hidden' })
       return
     }
@@ -227,23 +235,26 @@ function useVuhEstimate(
     let cancelled = false
     setState({ status: 'loading' })
 
-    window.studio.cloud
-      .estimateVuh({ type: 'raw', name: scriptName, content: script.preview })
-      .then((result) => {
-        if (!cancelled) {
-          setState(result ?? { status: 'hidden' })
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setState({ status: 'hidden' })
-        }
-      })
+    const timer = setTimeout(() => {
+      window.studio.cloud
+        .estimateVuh({ type: 'raw', name: scriptName, content: preview })
+        .then((result) => {
+          if (!cancelled) {
+            setState(result ?? { status: 'hidden' })
+          }
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setState({ status: 'hidden' })
+          }
+        })
+    }, VUH_ESTIMATE_DEBOUNCE_MS)
 
     return () => {
       cancelled = true
+      clearTimeout(timer)
     }
-  }, [script, scriptName])
+  }, [preview, scriptName])
 
   return state
 }
@@ -307,10 +318,19 @@ function WhatWillRun({
   script: ScriptPreview
   scriptName: string
 }) {
-  const requestCount = useGeneratorStore(
-    (store) => selectFilteredRequests(store).length
+  const requests = useGeneratorStore((store) => store.requests)
+  const includeStaticAssets = useGeneratorStore(
+    (store) => store.includeStaticAssets
   )
   const allowlist = useGeneratorStore((store) => store.allowlist)
+  // selectFilteredRequests scans and re-allocates on every store change;
+  // recompute the count only when its actual inputs change.
+  const requestCount = useMemo(
+    () =>
+      selectFilteredRequests({ requests, includeStaticAssets, allowlist })
+        .length,
+    [requests, includeStaticAssets, allowlist]
+  )
   const loadProfile = useGeneratorStore(
     useShallow(selectLoadProfileExecutorOptions)
   )

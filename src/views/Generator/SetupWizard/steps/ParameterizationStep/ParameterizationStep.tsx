@@ -92,7 +92,7 @@ function CompletedParameterizationStep({ onRerun }: { onRerun: () => void }) {
 export function ParameterizationStep() {
   const stepState = useStepState('parameterization')
   const { goBack, goNext } = useWizardNavigation()
-  const { start, restart, skip, stop, logEntries, status } =
+  const { start, restart, skip, stop, actionsLog, status } =
     useParameterizationAgent()
 
   useAutoStartAgent(stepState.status, start, stop)
@@ -112,7 +112,7 @@ export function ParameterizationStep() {
       run={{
         state: stepState,
         status,
-        logEntries,
+        logEntries: actionsLog.entries,
         errorMessage:
           'The Assistant could not analyze this recording for parameterization.',
         runningLabel: 'Finding values to parameterize...',

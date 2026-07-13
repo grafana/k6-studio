@@ -1,5 +1,6 @@
-import { Box, Checkbox, Flex, Text } from '@radix-ui/themes'
+import { Checkbox, Flex, Text } from '@radix-ui/themes'
 
+import { SuggestionListPanel } from '@/components/SuggestionList/SuggestionListPanel'
 import { useGeneratorStore } from '@/store/generator'
 
 import { useStepState } from '../../state/SetupWizardContext'
@@ -45,13 +46,7 @@ function HostList({ suggestions }: { suggestions: HostSuggestion[] }) {
 
   return (
     <Flex direction="column">
-      <Box
-        css={{
-          border: '1px solid var(--gray-4)',
-          borderRadius: 'var(--radius-3)',
-          overflow: 'hidden',
-        }}
-      >
+      <SuggestionListPanel>
         {suggestions.map((suggestion) => (
           <HostRow
             key={suggestion.host}
@@ -60,7 +55,7 @@ function HostList({ suggestions }: { suggestions: HostSuggestion[] }) {
             onCheckedChange={handleToggleHost(suggestion.host)}
           />
         ))}
-      </Box>
+      </SuggestionListPanel>
       <Flex mt="3" gap="2" align="center">
         <Checkbox
           checked={includeStaticAssets}
@@ -111,7 +106,7 @@ function CompletedHostsStep({ onRerun }: { onRerun: () => void }) {
 export function HostsStep() {
   const stepState = useStepState('hosts')
   const { goBack, goNext } = useWizardNavigation()
-  const { start, restart, skip, stop, logEntries, status } = useHostsAgent()
+  const { start, restart, skip, stop, actionsLog, status } = useHostsAgent()
 
   useAutoStartAgent(stepState.status, start, stop)
 
@@ -130,7 +125,7 @@ export function HostsStep() {
       run={{
         state: stepState,
         status,
-        logEntries,
+        logEntries: actionsLog.entries,
         errorMessage:
           'The Assistant could not analyze the hosts in this recording.',
         runningLabel: 'Analyzing hosts...',
