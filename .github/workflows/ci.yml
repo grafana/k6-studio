@@ -18,6 +18,11 @@ jobs:
         with:
           persist-credentials: false
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        with:
+          # Pinned like release-base.yml: without it the runner's pnpm
+          # self-updates to the newest 11.x, whose installer can crash on
+          # freshly published versions.
+          version: 11.5.2
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: 24.11
