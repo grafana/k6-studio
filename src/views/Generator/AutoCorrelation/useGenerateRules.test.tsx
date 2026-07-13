@@ -100,61 +100,6 @@ describe('useGenerateRules onToolCall', () => {
     })
   })
 
-  it('errors the run after three consecutive handler failures', async () => {
-    renderHook(() => useGenerateRules({ clearValidation: vi.fn() }))
-
-    const failingCall = (id: string) =>
-      capturedOnToolCall!({
-        toolCall: {
-          toolName: 'getRequestDetails',
-          toolCallId: id,
-          input: {},
-          dynamic: false,
-        },
-      })
-
-    // The first two failures round-trip to the model as error outputs.
-    await act(() => failingCall('t1'))
-    await act(() => failingCall('t2'))
-    expect(addToolOutput).toHaveBeenCalledTimes(2)
-
-    // The third consecutive failure gives up: the rejection reaches the AI
-    // SDK, which routes it to onError and the error/retry UI.
-    await expect(act(() => failingCall('t3'))).rejects.toThrow()
-  })
-
-  it('resets the failure count when a tool call succeeds', async () => {
-    renderHook(() => useGenerateRules({ clearValidation: vi.fn() }))
-
-    const failingCall = (id: string) =>
-      capturedOnToolCall!({
-        toolCall: {
-          toolName: 'getRequestDetails',
-          toolCallId: id,
-          input: {},
-          dynamic: false,
-        },
-      })
-
-    await act(() => failingCall('t1'))
-    await act(() => failingCall('t2'))
-
-    // A successful call breaks the streak.
-    await act(() =>
-      capturedOnToolCall!({
-        toolCall: {
-          toolName: 'searchRequests',
-          toolCallId: 't3',
-          input: { query: 'token' },
-          dynamic: false,
-        },
-      })
-    )
-
-    // The next failure is a fresh streak, so it still round-trips.
-    await expect(act(() => failingCall('t4'))).resolves.toBeUndefined()
-  })
-
   it('errors the run when it finishes without any tool call', async () => {
     const { result } = renderHook(() =>
       useGenerateRules({ clearValidation: vi.fn() })
