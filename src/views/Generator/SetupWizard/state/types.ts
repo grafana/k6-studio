@@ -1,15 +1,12 @@
 import { ActionLogEntry } from '@/components/Assistant/types'
+import { WizardStep } from '@/services/usageTracking/types'
 import { SuggestedRuleEntry } from '@/views/Generator/AutoCorrelation/types'
 
-export const STEP_ORDER = [
-  'hosts',
-  'autocorrelation',
-  'parameterization',
-  'thresholds',
-  'runTest',
-] as const
-
-export type StepId = (typeof STEP_ORDER)[number]
+// The step list lives with the usage-event types so the analytics payloads
+// stay precisely typed without importing view code into the services layer.
+// Re-exported here as the wizard's import point for it.
+export { WIZARD_STEPS } from '@/services/usageTracking/types'
+export type { WizardStep }
 
 export type HostCategory =
   | 'application'
@@ -63,23 +60,23 @@ export type StepState =
 
 export interface WizardState {
   screen: 'choice' | 'wizard'
-  activeStep: StepId
-  steps: Record<StepId, StepState>
+  activeStep: WizardStep
+  steps: Record<WizardStep, StepState>
 }
 
 export type WizardAction =
   | { type: 'startWizard' }
-  | { type: 'goToStep'; stepId: StepId }
-  | { type: 'stepRunStarted'; stepId: StepId }
+  | { type: 'goToStep'; stepId: WizardStep }
+  | { type: 'stepRunStarted'; stepId: WizardStep }
   | {
       type: 'stepRunCompleted'
-      stepId: StepId
+      stepId: WizardStep
       result: StepResult
       log: ActionLogEntry[]
       summary: string
     }
-  | { type: 'stepRunFailed'; stepId: StepId; message: string }
-  | { type: 'stepRunAborted'; stepId: StepId }
-  | { type: 'stepRunReset'; stepId: StepId }
+  | { type: 'stepRunFailed'; stepId: WizardStep; message: string }
+  | { type: 'stepRunAborted'; stepId: WizardStep }
+  | { type: 'stepRunReset'; stepId: WizardStep }
   | { type: 'back' }
   | { type: 'continue' }

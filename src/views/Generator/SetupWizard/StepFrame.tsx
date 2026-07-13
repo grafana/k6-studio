@@ -2,10 +2,10 @@ import { Flex, Heading, Text } from '@radix-ui/themes'
 import { PropsWithChildren } from 'react'
 
 import { STEP_CONFIG } from './constants'
-import { StepId } from './state/types'
+import { WizardStep } from './state/types'
 
 interface StepHeaderProps {
-  stepId: StepId
+  stepId: WizardStep
 }
 
 export function StepHeader({ stepId }: StepHeaderProps) {
@@ -38,7 +38,7 @@ export function StepHeader({ stepId }: StepHeaderProps) {
 }
 
 interface StepFrameProps {
-  stepId: StepId
+  stepId: WizardStep
 }
 
 export function StepFrame({

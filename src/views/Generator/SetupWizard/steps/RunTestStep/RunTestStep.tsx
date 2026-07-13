@@ -34,7 +34,7 @@ import { HTTP_METRICS_CONFIG } from '@/views/Generator/TestOptions/httpThreshold
 
 import { STEP_CONFIG } from '../../constants'
 import { useSetupWizard } from '../../state/SetupWizardContext'
-import { STEP_ORDER, StepId } from '../../state/types'
+import { WIZARD_STEPS, WizardStep } from '../../state/types'
 import { useWizardNavigation } from '../../state/useWizardNavigation'
 import { StepFrame } from '../../StepFrame'
 
@@ -386,7 +386,10 @@ function LoadOptionsSection() {
 
 function AssistantRecap() {
   const { state } = useSetupWizard()
-  const agentSteps = STEP_ORDER.slice(0, -1) as Exclude<StepId, 'runTest'>[]
+  const agentSteps = WIZARD_STEPS.slice(0, -1) as Exclude<
+    WizardStep,
+    'runTest'
+  >[]
 
   return (
     <Flex direction="column" gap="2">

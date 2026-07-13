@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { initialWizardState } from './state/reducer'
 import { SetupWizardProvider } from './state/SetupWizardContext'
-import { StepId, StepState, WizardState } from './state/types'
+import { WizardStep, StepState, WizardState } from './state/types'
 import { WizardShell } from './WizardShell'
 
 vi.mock('@/components/Assistant/AssistantAuthGate', () => ({
@@ -34,7 +34,10 @@ function completed(): StepState {
   }
 }
 
-function renderShell(activeStep: StepId, completedSteps: StepId[] = []) {
+function renderShell(
+  activeStep: WizardStep,
+  completedSteps: WizardStep[] = []
+) {
   const state: WizardState = {
     ...initialWizardState,
     screen: 'wizard',

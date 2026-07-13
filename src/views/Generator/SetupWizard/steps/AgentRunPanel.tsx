@@ -5,7 +5,7 @@ import { ActionsLog } from '@/components/Assistant/ActionsLog'
 import { ActionLogEntry } from '@/components/Assistant/types'
 import { AgentRunStatus } from '@/utils/assistant/useAssistantAgent'
 
-import { StepId, StepState } from '../state/types'
+import { WizardStep, StepState } from '../state/types'
 import { StepFrame } from '../StepFrame'
 import { WizardFooter } from '../WizardFooter'
 
@@ -25,7 +25,7 @@ interface AgentRunNav {
 }
 
 interface AgentRunPanelProps {
-  stepId: StepId
+  stepId: WizardStep
   run: AgentRun
   nav: AgentRunNav
 }

@@ -5,7 +5,7 @@ import { WizardStepOutcome } from '@/services/usageTracking/types'
 import { useAssistantAgent } from '@/utils/assistant/useAssistantAgent'
 
 import { useSetupWizard } from '../state/SetupWizardContext'
-import { StepId, StepResult } from '../state/types'
+import { WizardStep, StepResult } from '../state/types'
 
 import { trackStepFinished, trackStepStarted } from './stepTracking'
 import { useAbortStepOnUnmount } from './useAbortStepOnUnmount'
@@ -23,7 +23,7 @@ interface StepSkip {
 }
 
 interface UseStepAgentConfig<TTools extends ToolSet> {
-  stepId: StepId
+  stepId: WizardStep
   tools: TTools
   /** Tool whose call ends the run (default "finish"). */
   terminalTool?: keyof TTools & string

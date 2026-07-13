@@ -11,7 +11,7 @@ import { basename } from '@/utils/path'
 import { ChoiceScreen } from './ChoiceScreen'
 import { initialWizardState } from './state/reducer'
 import { useSetupWizard, SetupWizardProvider } from './state/SetupWizardContext'
-import { STEP_ORDER } from './state/types'
+import { WIZARD_STEPS } from './state/types'
 import { WizardShell } from './WizardShell'
 
 export type SetupWizardOutcome = 'completed' | 'manual'
@@ -76,7 +76,7 @@ function StepIndicator() {
 
   return (
     <Text size="1" color="gray">
-      Step {STEP_ORDER.indexOf(state.activeStep) + 1} of {STEP_ORDER.length}
+      Step {WIZARD_STEPS.indexOf(state.activeStep) + 1} of {WIZARD_STEPS.length}
     </Text>
   )
 }

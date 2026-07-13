@@ -5,7 +5,7 @@ import { FileLocation } from '@/handlers/fs/types'
 import { ScriptPreview } from '@/hooks/useScriptPreview'
 
 import { useSetupWizard } from './state/SetupWizardContext'
-import { StepId } from './state/types'
+import { WizardStep } from './state/types'
 import { Stepper } from './Stepper'
 import { AutocorrelationStep } from './steps/AutocorrelationStep/AutocorrelationStep'
 import { HostsStep } from './steps/HostsStep/HostsStep'
@@ -14,7 +14,7 @@ import { RunTestStep } from './steps/RunTestStep/RunTestStep'
 import { ThresholdsStep } from './steps/ThresholdsStep/ThresholdsStep'
 
 interface ActiveStepProps extends Omit<WizardShellProps, 'onComplete'> {
-  stepId: StepId
+  stepId: WizardStep
   onComplete: () => void
 }
 

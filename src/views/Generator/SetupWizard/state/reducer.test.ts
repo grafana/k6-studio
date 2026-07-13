@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
 import { initialWizardState, isStepReachable, wizardReducer } from './reducer'
-import { StepId, StepResult, WizardState } from './types'
+import { WizardStep, StepResult, WizardState } from './types'
 
-function completedStep(): WizardState['steps'][StepId] {
+function completedStep(): WizardState['steps'][WizardStep] {
   const result: StepResult = { step: 'autocorrelation', entries: [] }
 
   return { status: 'completed', result, log: [], summary: 'done' }
 }
 
-function stateWithCompleted(...steps: StepId[]): WizardState {
+function stateWithCompleted(...steps: WizardStep[]): WizardState {
   return steps.reduce(
     (state, step) => ({
       ...state,

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 
 import { useSetupWizard } from '../state/SetupWizardContext'
-import { StepId } from '../state/types'
+import { WizardStep } from '../state/types'
 
 import { trackStepFinished } from './stepTracking'
 
@@ -14,7 +14,9 @@ import { trackStepFinished } from './stepTracking'
  * itself in the same commit that unmounts it (e.g. skip), so the completion is
  * not clobbered back to 'aborted'. The ref re-arms whenever the step runs again.
  */
-export function useAbortStepOnUnmount(stepId: StepId): { current: boolean } {
+export function useAbortStepOnUnmount(stepId: WizardStep): {
+  current: boolean
+} {
   const { state, dispatch } = useSetupWizard()
 
   const status = state.steps[stepId].status

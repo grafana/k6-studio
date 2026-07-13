@@ -5,13 +5,13 @@ import { Fragment } from 'react'
 import { STEP_CONFIG } from './constants'
 import { isStepReachable } from './state/reducer'
 import { useSetupWizard } from './state/SetupWizardContext'
-import { STEP_ORDER, StepId } from './state/types'
+import { WIZARD_STEPS, WizardStep } from './state/types'
 
 type StepDisplayState = 'done' | 'active' | 'todo'
 
 function getStepDisplayState(
-  stepId: StepId,
-  activeStep: StepId,
+  stepId: WizardStep,
+  activeStep: WizardStep,
   isCompleted: boolean
 ): StepDisplayState {
   if (isCompleted) return 'done'
@@ -79,7 +79,7 @@ export function Stepper() {
       }}
     >
       <Flex align="center" width="100%" maxWidth="860px" mx="auto">
-        {STEP_ORDER.map((stepId, index) => {
+        {WIZARD_STEPS.map((stepId, index) => {
           const config = STEP_CONFIG[stepId]
           const isCompleted = state.steps[stepId].status === 'completed'
           const displayState = getStepDisplayState(
@@ -88,7 +88,7 @@ export function Stepper() {
             isCompleted
           )
           const isClickable = isStepReachable(state, stepId)
-          const isLast = index === STEP_ORDER.length - 1
+          const isLast = index === WIZARD_STEPS.length - 1
 
           return (
             <Fragment key={stepId}>

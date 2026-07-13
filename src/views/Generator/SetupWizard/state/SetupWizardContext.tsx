@@ -8,7 +8,7 @@ import {
 import invariant from 'tiny-invariant'
 
 import { initialWizardState, wizardReducer } from './reducer'
-import { StepId, StepState, WizardAction, WizardState } from './types'
+import { WizardStep, StepState, WizardAction, WizardState } from './types'
 
 interface SetupWizardContextValue {
   state: WizardState
@@ -41,7 +41,7 @@ export function useSetupWizard() {
   return context
 }
 
-export function useStepState(stepId: StepId): StepState {
+export function useStepState(stepId: WizardStep): StepState {
   const { state } = useSetupWizard()
 
   return state.steps[stepId]

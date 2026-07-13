@@ -43,6 +43,20 @@ export enum UsageEventName {
   TestSetupWizardSignUpClicked = 'test_setup_wizard_sign_up_clicked',
 }
 
+/**
+ * The wizard steps as reported in usage events. The wizard's STEP_ORDER derives
+ * its StepId from this list, so a new step extends it here first.
+ */
+export const WIZARD_STEPS = [
+  'hosts',
+  'autocorrelation',
+  'parameterization',
+  'thresholds',
+  'runTest',
+] as const
+
+export type WizardStep = (typeof WIZARD_STEPS)[number]
+
 /** How a wizard step run ended; one step_finished event fires per run. */
 export type WizardStepOutcome =
   | 'success'
@@ -183,14 +197,14 @@ interface TestSetupWizardDismissedEvent {
 interface TestSetupWizardStepStartedEvent {
   event: UsageEventName.TestSetupWizardStepStarted
   payload: {
-    step: string
+    step: WizardStep
   }
 }
 
 interface TestSetupWizardStepFinishedEvent {
   event: UsageEventName.TestSetupWizardStepFinished
   payload: {
-    step: string
+    step: WizardStep
     outcome: WizardStepOutcome
     /** Omitted when the run is reconciled outside the step (e.g. unmount). */
     durationMs?: number

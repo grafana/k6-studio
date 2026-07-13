@@ -7,7 +7,7 @@ import {
   RocketIcon,
 } from 'lucide-react'
 
-import { StepId } from './state/types'
+import { WizardStep } from './state/types'
 
 interface StepConfig {
   label: string
@@ -17,7 +17,7 @@ interface StepConfig {
   icon: LucideIcon
 }
 
-export const STEP_CONFIG: Record<StepId, StepConfig> = {
+export const STEP_CONFIG: Record<WizardStep, StepConfig> = {
   hosts: {
     label: 'Hosts',
     hint: 'Choose what to test',

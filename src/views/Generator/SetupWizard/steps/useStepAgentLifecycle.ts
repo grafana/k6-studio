@@ -4,10 +4,10 @@ import { useGeneratorStore } from '@/store/generator'
 import { AgentRunStatus } from '@/utils/assistant/useAssistantAgent'
 
 import { useSetupWizard } from '../state/SetupWizardContext'
-import { StepId } from '../state/types'
+import { WizardStep } from '../state/types'
 
 interface UseStepAgentLifecycleOptions {
-  stepId: StepId
+  stepId: WizardStep
   status: AgentRunStatus
   /**
    * Called once the agent reaches the `completed` status. Implementations read
