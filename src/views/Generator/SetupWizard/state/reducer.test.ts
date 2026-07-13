@@ -206,6 +206,25 @@ describe('wizardReducer', () => {
     expect(next.steps.hosts).toEqual({ status: 'not-started' })
   })
 
+  it('invalidates the steps after a given step', () => {
+    const state = stateWithCompleted(
+      'hosts',
+      'autocorrelation',
+      'parameterization',
+      'thresholds'
+    )
+
+    const next = wizardReducer(state, {
+      type: 'invalidateStepsAfter',
+      stepId: 'hosts',
+    })
+
+    expect(next.steps.hosts.status).toBe('completed')
+    expect(next.steps.autocorrelation).toEqual({ status: 'not-started' })
+    expect(next.steps.parameterization).toEqual({ status: 'not-started' })
+    expect(next.steps.thresholds).toEqual({ status: 'not-started' })
+  })
+
   it('records failures and aborts', () => {
     const failed = wizardReducer(
       { ...initialWizardState, screen: 'wizard' },

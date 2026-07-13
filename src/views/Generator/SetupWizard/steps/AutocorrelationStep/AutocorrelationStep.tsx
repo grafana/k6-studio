@@ -23,6 +23,7 @@ import { WizardFooter } from '../../WizardFooter'
 import { CompletedStepSummary } from '../CompletedStepSummary'
 import { useStepRunTracker } from '../stepTracking'
 import { useAbortStepOnUnmount } from '../useAbortStepOnUnmount'
+import { withdrawStepArtifacts } from '../withdrawStepArtifacts'
 
 const TERMINAL_STATUSES: CorrelationStatus[] = [
   'success',
@@ -45,7 +46,6 @@ function CompletedStep() {
   const stepState = useStepState('autocorrelation')
   const { goBack, goNext } = useWizardNavigation()
   const rules = useGeneratorStore((store) => store.rules)
-  const setRules = useGeneratorStore((store) => store.setRules)
   const toggleEnableRule = useGeneratorStore((store) => store.toggleEnableRule)
 
   if (
@@ -60,8 +60,7 @@ function CompletedStep() {
   // Re-running withdraws the rules accepted by the previous run; the fresh
   // mount of AutoCorrelation auto-starts a new analysis.
   const handleRerun = () => {
-    const committedIds = new Set(entries.map((entry) => entry.rule.id))
-    setRules(rules.filter((rule) => !committedIds.has(rule.id)))
+    withdrawStepArtifacts(stepState)
     dispatch({ type: 'stepRunReset', stepId: 'autocorrelation' })
   }
 

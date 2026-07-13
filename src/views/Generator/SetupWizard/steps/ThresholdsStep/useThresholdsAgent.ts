@@ -11,6 +11,7 @@ import { exhaustive } from '@/utils/typescript'
 
 import { useSetupWizard, useStepState } from '../../state/SetupWizardContext'
 import { useStepAgent } from '../useStepAgent'
+import { withdrawStepArtifacts } from '../withdrawStepArtifacts'
 
 import {
   finishInputSchema,
@@ -170,19 +171,7 @@ export function useThresholdsAgent() {
 
   // Re-running the step withdraws the previously committed thresholds.
   function cleanupCommittedThresholds() {
-    if (
-      stepState.status !== 'completed' ||
-      stepState.result.step !== 'thresholds'
-    ) {
-      return
-    }
-
-    const committedIds = new Set(Object.keys(stepState.result.rationaleById))
-    const { thresholds, setThresholds } = useGeneratorStore.getState()
-
-    setThresholds(
-      thresholds.filter((threshold) => !committedIds.has(threshold.id))
-    )
+    withdrawStepArtifacts(stepState)
   }
 
   return agent

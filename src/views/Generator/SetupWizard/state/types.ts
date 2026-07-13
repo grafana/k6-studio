@@ -77,6 +77,7 @@ export type WizardAction =
     }
   | { type: 'stepRunFailed'; stepId: WizardStep; message: string }
   | { type: 'stepRunAborted'; stepId: WizardStep }
+  | { type: 'invalidateStepsAfter'; stepId: WizardStep }
   | { type: 'stepRunReset'; stepId: WizardStep }
   | { type: 'back' }
   | { type: 'continue' }

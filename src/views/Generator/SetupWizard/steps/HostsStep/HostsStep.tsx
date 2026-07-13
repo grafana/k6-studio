@@ -3,14 +3,15 @@ import { Checkbox, Flex, Text } from '@radix-ui/themes'
 import { SuggestionListPanel } from '@/components/SuggestionList/SuggestionListPanel'
 import { useGeneratorStore } from '@/store/generator'
 
-import { useStepState } from '../../state/SetupWizardContext'
-import { HostSuggestion } from '../../state/types'
+import { useSetupWizard, useStepState } from '../../state/SetupWizardContext'
+import { HostSuggestion, WIZARD_STEPS } from '../../state/types'
 import { useWizardNavigation } from '../../state/useWizardNavigation'
 import { StepFrame } from '../../StepFrame'
 import { WizardFooter } from '../../WizardFooter'
 import { AgentRunPanel } from '../AgentRunPanel'
 import { CompletedStepSummary } from '../CompletedStepSummary'
 import { useAutoStartAgent } from '../useAutoStartAgent'
+import { withdrawStepArtifacts } from '../withdrawStepArtifacts'
 
 import { HostRow } from './HostRow'
 import { useHostsAgent } from './useHostsAgent'
@@ -26,6 +27,7 @@ function FooterSummary({ totalHosts }: { totalHosts: number }) {
 }
 
 function HostList({ suggestions }: { suggestions: HostSuggestion[] }) {
+  const { state, dispatch } = useSetupWizard()
   const allowlist = useGeneratorStore((store) => store.allowlist)
   const setAllowlist = useGeneratorStore((store) => store.setAllowlist)
   const includeStaticAssets = useGeneratorStore(
@@ -35,13 +37,36 @@ function HostList({ suggestions }: { suggestions: HostSuggestion[] }) {
     (store) => store.setIncludeStaticAssets
   )
 
+  // The later analyses ran against the previous filtered request set; once it
+  // changes their committed suggestions no longer apply. Withdraw them and
+  // send the steps back to not-started so revisiting re-analyzes.
+  const invalidateDownstreamAnalyses = () => {
+    const laterSteps = WIZARD_STEPS.slice(WIZARD_STEPS.indexOf('hosts') + 1)
+
+    if (
+      laterSteps.every((step) => state.steps[step].status === 'not-started')
+    ) {
+      return
+    }
+
+    laterSteps.forEach((step) => withdrawStepArtifacts(state.steps[step]))
+    dispatch({ type: 'invalidateStepsAfter', stepId: 'hosts' })
+  }
+
   const handleToggleHost = (host: string) => (checked: boolean) => {
+    invalidateDownstreamAnalyses()
+
     if (checked) {
       setAllowlist([...allowlist, host])
       return
     }
 
     setAllowlist(allowlist.filter((item) => item !== host))
+  }
+
+  const handleToggleStaticAssets = (checked: boolean) => {
+    invalidateDownstreamAnalyses()
+    setIncludeStaticAssets(checked)
   }
 
   return (
@@ -59,7 +84,7 @@ function HostList({ suggestions }: { suggestions: HostSuggestion[] }) {
       <Flex mt="3" gap="2" align="center">
         <Checkbox
           checked={includeStaticAssets}
-          onCheckedChange={(value) => setIncludeStaticAssets(value === true)}
+          onCheckedChange={(value) => handleToggleStaticAssets(value === true)}
         />
         <Text size="1" color="gray">
           Include requests for static assets (images, fonts, scripts)

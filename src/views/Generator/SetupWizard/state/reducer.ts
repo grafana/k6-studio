@@ -93,6 +93,20 @@ export function wizardReducer(
     case 'stepRunReset':
       return withStepState(state, action.stepId, { status: 'not-started' })
 
+    // The steps after the given one consumed its output (e.g. the filtered
+    // request set); when that output changes their runs no longer apply.
+    case 'invalidateStepsAfter': {
+      const laterSteps = WIZARD_STEPS.slice(
+        WIZARD_STEPS.indexOf(action.stepId) + 1
+      )
+
+      return laterSteps.reduce(
+        (next, stepId) =>
+          withStepState(next, stepId, { status: 'not-started' }),
+        state
+      )
+    }
+
     case 'back': {
       const index = WIZARD_STEPS.indexOf(state.activeStep)
 

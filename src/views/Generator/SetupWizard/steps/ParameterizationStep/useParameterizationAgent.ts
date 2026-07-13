@@ -10,6 +10,7 @@ import { exhaustive } from '@/utils/typescript'
 
 import { useSetupWizard, useStepState } from '../../state/SetupWizardContext'
 import { useStepAgent } from '../useStepAgent'
+import { withdrawStepArtifacts } from '../withdrawStepArtifacts'
 
 import {
   addParameterInputSchema,
@@ -152,27 +153,7 @@ export function useParameterizationAgent() {
   // Re-running the step withdraws the previously committed rules and the
   // variables this run introduced before starting a fresh analysis.
   function cleanupCommittedProposals() {
-    if (
-      stepState.status !== 'completed' ||
-      stepState.result.step !== 'parameterization'
-    ) {
-      return
-    }
-
-    const ruleIds = new Set(
-      stepState.result.suggestions.map((suggestion) => suggestion.ruleId)
-    )
-    // Only delete variables this run created. A proposal that reused a
-    // pre-existing variable name is absent from addedVariableNames, so the
-    // user's pre-existing variable survives the re-run.
-    const removedVariableNames = new Set(stepState.result.addedVariableNames)
-    const { rules, setRules, variables, setVariables } =
-      useGeneratorStore.getState()
-
-    setRules(rules.filter((rule) => !ruleIds.has(rule.id)))
-    setVariables(
-      variables.filter((variable) => !removedVariableNames.has(variable.name))
-    )
+    withdrawStepArtifacts(stepState)
   }
 
   return agent
