@@ -94,7 +94,11 @@ beforeEach(() => {
   agentMock.status = 'running'
   agentMock.onToolCall = undefined
   vi.stubGlobal('studio', { app: { trackEvent: vi.fn() } })
-  useGeneratorStore.setState({ requests: [], thresholds: [] })
+  useGeneratorStore.setState({
+    requests: [],
+    thresholds: [],
+    wizardUsed: false,
+  })
 })
 
 describe('useThresholdsAgent completion', () => {
@@ -123,6 +127,7 @@ describe('useThresholdsAgent completion', () => {
 
     expect(screen.getByTestId('probe').textContent).toBe('error')
     expect(useGeneratorStore.getState().thresholds).toEqual([])
+    expect(useGeneratorStore.getState().wizardUsed).toBe(false)
     expect(window.studio.app.trackEvent).toHaveBeenCalledWith({
       event: 'test_setup_wizard_step_finished',
       payload: {
@@ -174,6 +179,7 @@ describe('useThresholdsAgent completion', () => {
 
     expect(screen.getByTestId('probe').textContent).toBe('completed')
     expect(useGeneratorStore.getState().thresholds).toHaveLength(1)
+    expect(useGeneratorStore.getState().wizardUsed).toBe(true)
     expect(window.studio.app.trackEvent).toHaveBeenCalledWith({
       event: 'test_setup_wizard_step_finished',
       payload: {

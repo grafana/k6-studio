@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 
-import { useGeneratorStore } from '@/store/generator'
 import { AgentRunStatus } from '@/utils/assistant/useAssistantAgent'
 
 import { useSetupWizard } from '../state/SetupWizardContext'
@@ -32,7 +31,6 @@ export function useStepAgentLifecycle({
   onFinished,
 }: UseStepAgentLifecycleOptions) {
   const { state, dispatch } = useSetupWizard()
-  const setWizardUsed = useGeneratorStore((store) => store.setWizardUsed)
 
   useEffect(() => {
     // Skipping a step completes it while the agent is still shutting down;
@@ -42,10 +40,6 @@ export function useStepAgentLifecycle({
     }
 
     if (status === 'completed') {
-      // A finished agent step means the wizard actually configured something;
-      // opening and closing the wizard, skips, and failures do not count. The
-      // flag persists in the generator file and script header for reporting.
-      setWizardUsed(true)
       onCompleted()
       return
     }

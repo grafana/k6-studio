@@ -106,12 +106,15 @@ describe('useStepAgent', () => {
     )
   })
 
-  it('marks the generator as wizard-configured when the agent completes a step', () => {
+  it('does not mark the generator when the completed run failed', () => {
+    // The hosts agent completed without classifying anything: dispatchCompletion
+    // fails the step and commits nothing, so the generator is not
+    // wizard-configured.
     agentMock.status = 'completed'
 
     renderWizard()
 
-    expect(useGeneratorStore.getState().wizardUsed).toBe(true)
+    expect(useGeneratorStore.getState().wizardUsed).toBe(false)
   })
 
   it('does not mark the generator when the step is skipped', async () => {

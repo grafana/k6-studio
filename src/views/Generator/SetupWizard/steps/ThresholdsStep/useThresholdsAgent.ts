@@ -142,8 +142,11 @@ export function useThresholdsAgent() {
 
     agent.trackFinished(finishOutcomeRef.current)
 
-    const { thresholds, setThresholds } = useGeneratorStore.getState()
+    const { thresholds, setThresholds, setWizardUsed } =
+      useGeneratorStore.getState()
 
+    // The wizard configured the generator only when the run actually commits.
+    setWizardUsed(true)
     setThresholds([
       ...thresholds,
       ...proposals.map((proposal) => proposal.threshold),

@@ -85,7 +85,12 @@ beforeEach(() => {
   agentMock.status = 'running'
   agentMock.onToolCall = undefined
   vi.stubGlobal('studio', { app: { trackEvent: vi.fn() } })
-  useGeneratorStore.setState({ requests: [], rules: [], variables: [] })
+  useGeneratorStore.setState({
+    requests: [],
+    rules: [],
+    variables: [],
+    wizardUsed: false,
+  })
 })
 
 describe('useParameterizationAgent completion', () => {
@@ -106,6 +111,7 @@ describe('useParameterizationAgent completion', () => {
 
     expect(screen.getByTestId('probe').textContent).toBe('error')
     expect(useGeneratorStore.getState().rules).toEqual([])
+    expect(useGeneratorStore.getState().wizardUsed).toBe(false)
   })
 
   it('rejects a finish call with an outcome outside the enum', () => {
@@ -140,5 +146,6 @@ describe('useParameterizationAgent completion', () => {
     rerender(<App />)
 
     expect(screen.getByTestId('probe').textContent).toBe('completed')
+    expect(useGeneratorStore.getState().wizardUsed).toBe(true)
   })
 })

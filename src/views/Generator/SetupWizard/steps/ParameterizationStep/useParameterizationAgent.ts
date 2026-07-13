@@ -120,8 +120,11 @@ export function useParameterizationAgent() {
     agent.trackFinished(finishOutcomeRef.current)
 
     const proposals = proposalsRef.current
-    const { rules, setRules, variables, setVariables } =
+    const { rules, setRules, variables, setVariables, setWizardUsed } =
       useGeneratorStore.getState()
+
+    // The wizard configured the generator only when the run actually commits.
+    setWizardUsed(true)
 
     const { variables: mergedVariables, addedNames } = mergeVariables(
       variables,

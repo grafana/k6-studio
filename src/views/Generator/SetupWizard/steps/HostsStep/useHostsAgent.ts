@@ -120,6 +120,9 @@ export function useHostsAgent() {
 
     agent.trackFinished('success')
 
+    // The wizard configured the generator only when the run actually commits;
+    // failed completions above leave the flag (and script header) untouched.
+    useGeneratorStore.getState().setWizardUsed(true)
     setAllowlist(
       suggestions
         .filter((suggestion) => suggestion.suggested)
