@@ -84,8 +84,17 @@ function handleStatusUpdate(
   const state = event.status.state
 
   if (state === 'completed') {
+    // The completed status can outrun the stream/step events that normally
+    // close an open content block. Close it here too: stale trackers would
+    // make the next round's first delta skip its start event, and every
+    // finish must leave the stream balanced.
+    const closeParts = closeActiveContentBlock(session)
+    session.activeStreamArtifactId = undefined
+    session.activeStreamContentType = undefined
+
     // Usage is reported per-step via step.complete artifacts, not here
     return [
+      ...closeParts,
       {
         type: 'finish',
         finishReason: 'stop',
@@ -315,7 +324,7 @@ function handleContentDelta(
   return parts
 }
 
-function closeActiveContentBlock(
+export function closeActiveContentBlock(
   session: ActiveA2ASession
 ): LanguageModelV2StreamPart[] {
   const streamId = session.activeStreamArtifactId

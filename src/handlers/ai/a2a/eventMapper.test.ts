@@ -82,6 +82,25 @@ describe('processA2AEvent', () => {
     )
   })
 
+  it('closes an open content block before finishing on status-update(completed)', () => {
+    // The completed status can outrun the message.stream.complete event; the
+    // open block must still be closed before finish, and the trackers cleared
+    // so the next round re-opens its own block.
+    const session = createA2ASession({
+      activeStreamArtifactId: 'stream-1',
+      activeStreamContentType: 'reasoning',
+    })
+
+    const parts = processA2AEvent(makeStatusUpdateEvent('completed'), session)
+
+    expect(parts).toEqual([
+      { type: 'reasoning-end', id: 'stream-1' },
+      expect.objectContaining({ type: 'finish', finishReason: 'stop' }),
+    ])
+    expect(session.activeStreamArtifactId).toBeUndefined()
+    expect(session.activeStreamContentType).toBeUndefined()
+  })
+
   it('returns error for status-update(failed)', () => {
     const parts = processA2AEvent(
       makeStatusUpdateEvent('failed'),
