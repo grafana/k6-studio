@@ -1,5 +1,5 @@
 import { StaticToolCall } from 'ai'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { useGeneratorStore } from '@/store/generator'
 import { groupHostsByParty } from '@/store/generator/slices/recording.utils'
@@ -8,6 +8,7 @@ import { exhaustive } from '@/utils/typescript'
 import { useSetupWizard } from '../../state/SetupWizardContext'
 import { HostSuggestion } from '../../state/types'
 import { useStepAgent } from '../useStepAgent'
+import { invalidateDownstreamSteps } from '../withdrawStepArtifacts'
 
 import {
   hostSelectionTools,
@@ -31,7 +32,13 @@ function buildSummary(suggestions: HostSuggestion[]): string {
 }
 
 export function useHostsAgent() {
-  const { dispatch } = useSetupWizard()
+  const { state, dispatch } = useSetupWizard()
+  // onCompleted/skip fire from effects and callbacks, so read the latest
+  // reducer state through a ref rather than a stale render closure.
+  const stateRef = useRef(state)
+  useEffect(() => {
+    stateRef.current = state
+  })
   // The allowlist is still empty at this point, so read the unfiltered
   // requests rather than selectFilteredRequests.
   const requests = useGeneratorStore((store) => store.requests)
@@ -72,6 +79,7 @@ export function useHostsAgent() {
       const suggestions = buildSkippedHostSuggestions(inventory, selectedHost)
       suggestionsRef.current = suggestions
       setAllowlist(selectedHost !== undefined ? [selectedHost] : [])
+      invalidateDownstreamSteps('hosts', stateRef.current, dispatch)
 
       return {
         result: { step: 'hosts', suggestions },
@@ -128,6 +136,10 @@ export function useHostsAgent() {
         .filter((suggestion) => suggestion.suggested)
         .map((suggestion) => suggestion.host)
     )
+    // A re-run commits a new allowlist; the downstream analyses ran against
+    // the previous filtered request set, so invalidate them (no-op on the
+    // first run when nothing downstream has completed yet).
+    invalidateDownstreamSteps('hosts', stateRef.current, dispatch)
     dispatch({
       type: 'stepRunCompleted',
       stepId: 'hosts',

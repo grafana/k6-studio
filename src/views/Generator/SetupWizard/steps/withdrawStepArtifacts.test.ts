@@ -1,12 +1,16 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useGeneratorStore } from '@/store/generator'
 import { createThreshold } from '@/test/factories/threshold'
 import { CorrelationRule } from '@/types/rules'
 
-import { StepState } from '../state/types'
+import { initialWizardState } from '../state/reducer'
+import { StepState, WizardState } from '../state/types'
 
-import { withdrawStepArtifacts } from './withdrawStepArtifacts'
+import {
+  invalidateDownstreamSteps,
+  withdrawStepArtifacts,
+} from './withdrawStepArtifacts'
 
 const correlationRule: CorrelationRule = {
   id: 'rule-1',
@@ -113,5 +117,51 @@ describe('withdrawStepArtifacts', () => {
     withdrawStepArtifacts({ status: 'not-started' })
 
     expect(useGeneratorStore.getState().rules).toEqual([correlationRule])
+  })
+})
+
+describe('invalidateDownstreamSteps', () => {
+  function completedThresholds(): StepState {
+    return {
+      status: 'completed',
+      result: { step: 'thresholds', rationaleById: { t1: 'why' } },
+      log: [],
+      summary: '',
+    }
+  }
+
+  function stateWith(steps: Record<string, StepState>): WizardState {
+    return {
+      ...initialWizardState,
+      screen: 'wizard',
+      steps: { ...initialWizardState.steps, ...steps },
+    }
+  }
+
+  it('withdraws artifacts and dispatches when a downstream step is completed', () => {
+    useGeneratorStore.setState({
+      thresholds: [createThreshold({ id: 't1' })],
+    })
+    const dispatch = vi.fn()
+
+    invalidateDownstreamSteps(
+      'hosts',
+      stateWith({ thresholds: completedThresholds() }),
+      dispatch
+    )
+
+    expect(useGeneratorStore.getState().thresholds).toEqual([])
+    expect(dispatch).toHaveBeenCalledWith({
+      type: 'invalidateStepsAfter',
+      stepId: 'hosts',
+    })
+  })
+
+  it('does nothing when every downstream step is untouched', () => {
+    const dispatch = vi.fn()
+
+    invalidateDownstreamSteps('hosts', stateWith({}), dispatch)
+
+    expect(dispatch).not.toHaveBeenCalled()
   })
 })

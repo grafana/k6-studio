@@ -1,6 +1,12 @@
 import { useGeneratorStore } from '@/store/generator'
 
-import { StepState } from '../state/types'
+import {
+  StepState,
+  WizardAction,
+  WizardState,
+  WIZARD_STEPS,
+  WizardStep,
+} from '../state/types'
 
 /**
  * Removes whatever a completed step committed to the generator store (rules,
@@ -52,4 +58,26 @@ export function withdrawStepArtifacts(stepState: StepState) {
       return
     }
   }
+}
+
+/**
+ * Withdraws every completed step after `stepId` and resets them to
+ * not-started. Called whenever that step's committed output changes (host
+ * selection edited, re-run, or skipped), because the later analyses were
+ * computed against the previous filtered request set. A no-op when nothing
+ * downstream has run yet.
+ */
+export function invalidateDownstreamSteps(
+  stepId: WizardStep,
+  state: WizardState,
+  dispatch: (action: WizardAction) => void
+) {
+  const laterSteps = WIZARD_STEPS.slice(WIZARD_STEPS.indexOf(stepId) + 1)
+
+  if (laterSteps.every((step) => state.steps[step].status === 'not-started')) {
+    return
+  }
+
+  laterSteps.forEach((step) => withdrawStepArtifacts(state.steps[step]))
+  dispatch({ type: 'invalidateStepsAfter', stepId })
 }

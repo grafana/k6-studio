@@ -4,14 +4,14 @@ import { SuggestionListPanel } from '@/components/SuggestionList/SuggestionListP
 import { useGeneratorStore } from '@/store/generator'
 
 import { useSetupWizard, useStepState } from '../../state/SetupWizardContext'
-import { HostSuggestion, WIZARD_STEPS } from '../../state/types'
+import { HostSuggestion } from '../../state/types'
 import { useWizardNavigation } from '../../state/useWizardNavigation'
 import { StepFrame } from '../../StepFrame'
 import { WizardFooter } from '../../WizardFooter'
 import { AgentRunPanel } from '../AgentRunPanel'
 import { CompletedStepSummary } from '../CompletedStepSummary'
 import { useAutoStartAgent } from '../useAutoStartAgent'
-import { withdrawStepArtifacts } from '../withdrawStepArtifacts'
+import { invalidateDownstreamSteps } from '../withdrawStepArtifacts'
 
 import { HostRow } from './HostRow'
 import { useHostsAgent } from './useHostsAgent'
@@ -40,21 +40,8 @@ function HostList({ suggestions }: { suggestions: HostSuggestion[] }) {
   // The later analyses ran against the previous filtered request set; once it
   // changes their committed suggestions no longer apply. Withdraw them and
   // send the steps back to not-started so revisiting re-analyzes.
-  const invalidateDownstreamAnalyses = () => {
-    const laterSteps = WIZARD_STEPS.slice(WIZARD_STEPS.indexOf('hosts') + 1)
-
-    if (
-      laterSteps.every((step) => state.steps[step].status === 'not-started')
-    ) {
-      return
-    }
-
-    laterSteps.forEach((step) => withdrawStepArtifacts(state.steps[step]))
-    dispatch({ type: 'invalidateStepsAfter', stepId: 'hosts' })
-  }
-
   const handleToggleHost = (host: string) => (checked: boolean) => {
-    invalidateDownstreamAnalyses()
+    invalidateDownstreamSteps('hosts', state, dispatch)
 
     if (checked) {
       setAllowlist([...allowlist, host])
@@ -65,7 +52,7 @@ function HostList({ suggestions }: { suggestions: HostSuggestion[] }) {
   }
 
   const handleToggleStaticAssets = (checked: boolean) => {
-    invalidateDownstreamAnalyses()
+    invalidateDownstreamSteps('hosts', state, dispatch)
     setIncludeStaticAssets(checked)
   }
 
