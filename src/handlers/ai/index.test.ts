@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { AiHandler, StreamChatRequest } from './types'
 
-import { handleStreamChat } from './index'
+import { handleAbortStreamChat, handleStreamChat } from './index'
 
 vi.mock('electron', () => ({
   ipcMain: { on: vi.fn(), handle: vi.fn() },
@@ -188,6 +188,47 @@ describe('handleStreamChat', () => {
       id: 'test-request-id',
       chunk: { type: 'error' },
     })
+  })
+
+  it('keeps the newest stream on a chatId abortable after an earlier one ends', async () => {
+    const { streamText } = await import('ai')
+    const { streamMessages } = await import('./streamMessages')
+
+    // Capture the abort signal handed to each streamText call.
+    const signals: AbortSignal[] = []
+    vi.mocked(streamText).mockImplementation(
+      (options: { abortSignal?: AbortSignal }) => {
+        if (options.abortSignal) {
+          signals.push(options.abortSignal)
+        }
+        return {} as unknown as ReturnType<typeof streamText>
+      }
+    )
+
+    // First stream on chatId "c" hangs until we release it.
+    let releaseFirst = () => {}
+    const firstDone = new Promise<void>((resolve) => {
+      releaseFirst = resolve
+    })
+    // Second stream (same chatId) stays pending.
+    vi.mocked(streamMessages)
+      .mockReturnValueOnce(firstDone)
+      .mockReturnValueOnce(new Promise<void>(() => {}))
+
+    const request = createRequest({ id: 'c' })
+    const firstCall = handleStreamChat(createMockEvent(), request)
+    const secondCall = handleStreamChat(createMockEvent(), request)
+    void secondCall
+
+    // The first stream finishes; its finally must not remove the second
+    // stream's controller from the registry.
+    releaseFirst()
+    await firstCall
+
+    handleAbortStreamChat(createMockEvent(), { id: 'c' })
+
+    expect(signals).toHaveLength(2)
+    expect(signals[1]?.aborted).toBe(true)
   })
 
   it('sends Unknown error when catch receives a non-Error value', async () => {

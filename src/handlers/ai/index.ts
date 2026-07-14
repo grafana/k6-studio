@@ -77,7 +77,12 @@ export async function handleStreamChat(
       id: request.id,
     })
   } finally {
-    activeAbortControllers.delete(request.id)
+    // A newer stream can reuse this chatId (the id is the stable chat id, and
+    // the wizard's multi-round tool loops resend on it). Only remove our own
+    // entry, or we would strand the newer stream's controller and kill Stop.
+    if (activeAbortControllers.get(request.id) === abortController) {
+      activeAbortControllers.delete(request.id)
+    }
   }
 }
 
@@ -119,7 +124,7 @@ function sanitizeModelMessages(messages: ModelMessage[]): ModelMessage[] {
   })
 }
 
-function handleAbortStreamChat(
+export function handleAbortStreamChat(
   _event: IpcMainEvent,
   request: AbortStreamChatRequest
 ) {
