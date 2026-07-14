@@ -13,12 +13,12 @@ import { WizardState } from '../state/types'
 
 import { HostsStep } from './HostsStep/HostsStep'
 
-const agentMock = vi.hoisted(() => ({ status: 'running' }))
+const agentMock = vi.hoisted(() => ({ status: 'running', stop: vi.fn() }))
 
 vi.mock('@/utils/assistant/useAssistantAgent', () => ({
   useAssistantAgent: () => ({
     start: vi.fn(),
-    stop: vi.fn(),
+    stop: agentMock.stop,
     reset: vi.fn(),
     status: agentMock.status,
     error: undefined,
@@ -63,6 +63,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   vi.stubGlobal('studio', { app: { trackEvent: vi.fn() } })
   agentMock.status = 'running'
+  agentMock.stop = vi.fn()
   useGeneratorStore.setState({ requests: [], allowlist: [], wizardUsed: false })
 })
 
@@ -104,6 +105,27 @@ describe('useStepAgent', () => {
         payload: { step: 'hosts' },
       })
     )
+  })
+
+  it('stops the agent when a running step unmounts', () => {
+    function Wrapper({ mounted }: { mounted: boolean }) {
+      const state: WizardState = {
+        ...initialWizardState,
+        screen: 'wizard',
+        activeStep: 'hosts',
+        steps: { ...initialWizardState.steps, hosts: { status: 'running' } },
+      }
+      return (
+        <SetupWizardProvider initialState={state}>
+          {mounted && <HostsStep />}
+        </SetupWizardProvider>
+      )
+    }
+
+    const { rerender } = render(<Wrapper mounted />)
+    rerender(<Wrapper mounted={false} />)
+
+    expect(agentMock.stop).toHaveBeenCalled()
   })
 
   it('does not mark the generator when the completed run failed', () => {
