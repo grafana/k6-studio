@@ -146,7 +146,7 @@ export function useParameterizationAgent() {
       summary:
         proposals.length === 0
           ? 'No values need parameterization'
-          : `Suggested ${proposals.length} parameterization rule${proposals.length === 1 ? '' : 's'} - review the values below`,
+          : `Suggested ${proposals.length} parameterization rule${proposals.length === 1 ? '' : 's'}`,
     })
   }
 
