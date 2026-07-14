@@ -84,7 +84,7 @@ describe('SetupWizard', () => {
   it('exits to the generator when cancelled', async () => {
     render(<SetupWizard {...defaultProps} />)
 
-    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
     expect(onExit).toHaveBeenCalledWith('manual')
   })

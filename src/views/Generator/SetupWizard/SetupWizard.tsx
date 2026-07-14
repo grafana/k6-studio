@@ -145,9 +145,10 @@ function SetupWizardView({
     })
   }, [])
 
-  // Cancelling drops the wizard search param, landing on the generator the
-  // wizard was configuring.
-  const handleCancel = () => bodyProps.onExit('manual')
+  // Closing drops the wizard search param, landing on the generator the
+  // wizard was configuring. Completed steps keep their committed changes,
+  // hence "Close" rather than "Cancel".
+  const handleClose = () => bodyProps.onExit('manual')
 
   return (
     <View
@@ -167,10 +168,10 @@ function SetupWizardView({
             variant="ghost"
             color="gray"
             size="1"
-            onClick={handleCancel}
+            onClick={handleClose}
             css={{ margin: 0 }}
           >
-            Cancel
+            Close
           </Button>
         </>
       }
