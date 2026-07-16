@@ -11,7 +11,7 @@ import {
 import { getElementDetails } from '@/utils/dom/selectors'
 
 import { CheckAssertionData } from './assertions/types'
-import { TrackedElement } from './utils'
+import { LiveTrackedElement } from './utils'
 
 function* getAncestors(element: Element) {
   let currentElement: Element | null = element
@@ -30,14 +30,14 @@ export interface LabeledControl {
 }
 
 // Only these three fields feed the association walk. The narrowed parameter
-// lets callers without a full TrackedElement (e.g. cross-origin child-frame
+// lets callers without a full LiveTrackedElement (e.g. cross-origin child-frame
 // capture, which must not compute top-frame bounds) reuse the same logic.
 export function findAssociatedControl({
   element,
   target,
   roles,
 }: Pick<
-  TrackedElement,
+  LiveTrackedElement,
   'element' | 'target' | 'roles'
 >): LabeledControl | null {
   // If the target is already a control, then we don't need to do a search.

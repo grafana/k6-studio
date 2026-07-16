@@ -9,7 +9,7 @@ import { useHighlightDebounce } from '../hooks/useHighlightDebounce'
 import { usePreventClick } from '../hooks/usePreventClick'
 
 import { usePinnedElement } from './hooks'
-import { toTrackedElement, TrackedElement } from './utils'
+import { LiveTrackedElement, toTrackedElement } from './utils'
 
 function isInsideBounds(
   position: Position,
@@ -42,7 +42,7 @@ export function useInspectedElement() {
    *    the selection and removed when the user contracts the selection. If the
    *    stack is empty, then no element is pinned.
    */
-  const [hoveredEl, setHoveredEl] = useState<TrackedElement | null>(null)
+  const [hoveredEl, setHoveredEl] = useState<LiveTrackedElement | null>(null)
 
   const { selected, pinned, pin, unpin, expand, contract } = usePinnedElement()
 

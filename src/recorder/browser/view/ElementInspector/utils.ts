@@ -7,7 +7,7 @@ import { getElementDetails } from '@/utils/dom/selectors'
 
 import { getElementBoundsInTopFrame } from '../frameGeometry'
 
-export interface TrackedElement {
+export interface LiveTrackedElement {
   id: string
   roles: ElementRole[]
   target: BrowserEventTarget
@@ -15,7 +15,7 @@ export interface TrackedElement {
   bounds: Bounds
 }
 
-export function toTrackedElement(element: Element): TrackedElement {
+export function toTrackedElement(element: Element): LiveTrackedElement {
   const roles = getElementRoles(element)
 
   return {

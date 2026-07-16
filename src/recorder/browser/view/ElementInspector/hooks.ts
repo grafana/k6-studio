@@ -6,14 +6,14 @@ import { emptyToUndefined } from '@/utils/list'
 import { getCssFramePathForElement } from '../../frames'
 import { useStudioClient } from '../StudioClientProvider'
 
-import { toTrackedElement, TrackedElement } from './utils'
+import { LiveTrackedElement, toTrackedElement } from './utils'
 
-export function usePinnedElement(element?: TrackedElement) {
-  const [elements, setElements] = useState<TrackedElement[]>(
+export function usePinnedElement(element?: LiveTrackedElement) {
+  const [elements, setElements] = useState<LiveTrackedElement[]>(
     element !== undefined ? [element] : []
   )
 
-  const pin = useCallback((element: TrackedElement) => {
+  const pin = useCallback((element: LiveTrackedElement) => {
     setElements([element])
   }, [])
 
@@ -68,7 +68,7 @@ export function usePinnedElement(element?: TrackedElement) {
   }
 }
 
-export function useElementHighlight(element: TrackedElement | null) {
+export function useElementHighlight(element: LiveTrackedElement | null) {
   const client = useStudioClient()
 
   // The frame chain is the same for every element in a given document, and

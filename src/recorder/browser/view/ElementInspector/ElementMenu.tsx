@@ -21,7 +21,7 @@ import {
   LabeledControl,
   getTextBoxValue,
 } from './ElementMenu.utils'
-import { TrackedElement } from './utils'
+import { LiveTrackedElement } from './utils'
 import { WaitForData } from './waitConditions/types'
 
 function ToolbarRoot(props: ComponentProps<typeof Toolbar.Root>) {
@@ -186,7 +186,7 @@ function RoleAssertions({ role, input, onAddAssertion }: RoleCategoryProps) {
 }
 
 interface ElementMenuProps {
-  element: TrackedElement
+  element: LiveTrackedElement
   onSelectAssertion: (data: AssertionData) => void
   onAddWaitFor: (data: WaitForData) => void
 }

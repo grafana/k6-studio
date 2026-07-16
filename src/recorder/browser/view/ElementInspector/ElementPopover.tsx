@@ -7,7 +7,7 @@ import { IconButton } from '@/components/primitives/IconButton'
 import { Popover } from '@/components/primitives/Popover'
 import { Tooltip } from '@/components/primitives/Tooltip'
 
-import { TrackedElement } from './utils'
+import { LiveTrackedElement } from './utils'
 
 interface ElementPopoverProps {
   open?: boolean
@@ -75,7 +75,7 @@ ElementPopover.Heading = function PopoverHeading(props: PopoverHeadingProps) {
 }
 
 interface ElementSelectorProps {
-  element: TrackedElement
+  element: LiveTrackedElement
   onExpand?: () => void
   onContract?: () => void
 }
