@@ -1,5 +1,7 @@
 import { Bounds } from '@/components/Browser/types'
+import { getElementRoles } from '@/utils/dom/aria'
 import { isElement, isHTMLIFrameElement } from '@/utils/dom/realm'
+import { getElementDetails } from '@/utils/dom/selectors'
 
 import { getOwnFramePath } from '../frames'
 import { getFrameAgent } from '../messaging/frames'
@@ -11,7 +13,6 @@ import {
 
 import { clearChildOverlays, showChildOverlays } from './childOverlays'
 import { findAssociatedControl } from './ElementInspector/ElementMenu.utils'
-import { toTrackedElement } from './ElementInspector/utils'
 
 const HOVER_STYLE = { kind: 'hover' } as const
 
@@ -120,14 +121,20 @@ function toBounds(rect: DOMRect): Bounds {
 /**
  * The associated control for `element`, serialized the same way the live
  * top-frame menu computes it (`findAssociatedControl`), so a checkbox picked
- * by its wrapping label resolves to the checkbox rather than the label. Built
- * from a plain `Element` since there is no live `TrackedElement` when the
- * bridge is unreachable.
+ * by its wrapping label resolves to the checkbox rather than the label. The
+ * argument is built by hand rather than through `toTrackedElement`: that
+ * helper also computes top-frame bounds, which reads the top window's scroll
+ * position and throws a SecurityError in the cross-origin frames this path
+ * runs in.
  */
 function resolveAssociatedControl(
   element: Element
 ): SerializedElementState | null {
-  const control = findAssociatedControl(toTrackedElement(element))
+  const control = findAssociatedControl({
+    element,
+    target: getElementDetails(element),
+    roles: [...getElementRoles(element)],
+  })
 
   return control ? serializeElementState(control.element) : null
 }

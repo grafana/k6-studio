@@ -29,11 +29,17 @@ export interface LabeledControl {
   roles: ElementRole[]
 }
 
+// Only these three fields feed the association walk. The narrowed parameter
+// lets callers without a full TrackedElement (e.g. cross-origin child-frame
+// capture, which must not compute top-frame bounds) reuse the same logic.
 export function findAssociatedControl({
   element,
   target,
   roles,
-}: TrackedElement): LabeledControl | null {
+}: Pick<
+  TrackedElement,
+  'element' | 'target' | 'roles'
+>): LabeledControl | null {
   // If the target is already a control, then we don't need to do a search.
   if (
     isHTMLInputElement(element) ||

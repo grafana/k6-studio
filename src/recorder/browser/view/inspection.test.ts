@@ -326,6 +326,59 @@ describe('attachInspectionDetection with no top-frame bridge and an active frame
     expect(pick).toHaveBeenCalledWith(button, 5, 6)
     expect(sendElementPick).not.toHaveBeenCalled()
   })
+
+  describe('when top-window scroll access throws like a cross-origin frame', () => {
+    // In a real cross-origin frame, reading `scrollX`/`scrollY` on the top
+    // WindowProxy throws a SecurityError. jsdom neither enforces cross-origin
+    // access nor allows redefining `window.top` (non-configurable), but in
+    // this environment `window.top === window`, so making `window`'s own
+    // scroll accessors throw puts the SecurityError at the exact property
+    // read the top-scroll lookup performs.
+    const scrollDescriptors = ['scrollX', 'scrollY'].map(
+      (property) =>
+        [property, Object.getOwnPropertyDescriptor(window, property)] as const
+    )
+
+    beforeEach(() => {
+      scrollDescriptors.forEach(([property]) => {
+        Object.defineProperty(window, property, {
+          configurable: true,
+          get() {
+            throw new DOMException('cross-origin', 'SecurityError')
+          },
+        })
+      })
+    })
+
+    afterEach(() => {
+      scrollDescriptors.forEach(([property, descriptor]) => {
+        if (descriptor !== undefined) {
+          Object.defineProperty(window, property, descriptor)
+        }
+      })
+    })
+
+    it('still sends a serialized pick with the associated control', async () => {
+      const label = document.createElement('label')
+      label.id = 'label'
+      const checkbox = document.createElement('input')
+      checkbox.type = 'checkbox'
+      checkbox.id = 'checkbox'
+      checkbox.checked = true
+      label.append(checkbox, document.createTextNode('Accept'))
+      document.body.append(label)
+
+      dispatch('click', label, { clientX: 5, clientY: 6 })
+
+      await flush()
+
+      expect(sendElementPick).toHaveBeenCalledTimes(1)
+
+      const payload = sendElementPick.mock.calls[0]![0]
+
+      expect(payload.associatedControl).toEqual(serializeElementState(checkbox))
+    })
+  })
 })
 
 describe('attachTextSelectionDetection', () => {
