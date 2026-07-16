@@ -1,6 +1,19 @@
+import { Bounds } from '@/components/Browser/types'
 import { isElement, isHTMLIFrameElement } from '@/utils/dom/realm'
 
+import { getOwnFramePath } from '../frames'
 import { getFrameAgent } from '../messaging/frames'
+import {
+  SerializedElementState,
+  serializeElementChain,
+  serializeElementState,
+} from '../serialization'
+
+import { clearChildOverlays, showChildOverlays } from './childOverlays'
+import { findAssociatedControl } from './ElementInspector/ElementMenu.utils'
+import { toTrackedElement } from './ElementInspector/utils'
+
+const HOVER_STYLE = { kind: 'hover' } as const
 
 /**
  * Bridge the top-frame element inspector exposes so that detection running in
@@ -90,6 +103,36 @@ export function readSelection(
 }
 
 /**
+ * Maps a DOMRect to a plain, structured-clone- and Zod-friendly object. Used
+ * for both the local hover overlay and the payloads relayed to the top frame,
+ * since a `DOMRect` instance itself isn't what `BoundsSchema` (nor the plain
+ * `Bounds` overlay type) expects.
+ */
+function toBounds(rect: DOMRect): Bounds {
+  return {
+    top: rect.top,
+    left: rect.left,
+    width: rect.width,
+    height: rect.height,
+  }
+}
+
+/**
+ * The associated control for `element`, serialized the same way the live
+ * top-frame menu computes it (`findAssociatedControl`), so a checkbox picked
+ * by its wrapping label resolves to the checkbox rather than the label. Built
+ * from a plain `Element` since there is no live `TrackedElement` when the
+ * bridge is unreachable.
+ */
+function resolveAssociatedControl(
+  element: Element
+): SerializedElementState | null {
+  const control = findAssociatedControl(toTrackedElement(element))
+
+  return control ? serializeElementState(control.element) : null
+}
+
+/**
  * Runs in child frames so the top-frame inspector can pick elements inside
  * iframes. Detection has to happen in each frame because DOM events don't cross
  * iframe boundaries; matched elements are forwarded to the top frame with a
@@ -97,27 +140,50 @@ export function readSelection(
  * element reference. Cross-origin frames can't reach the top frame's bridge
  * (see `getTopFrameBridge`), so picking still no-ops there, but the click is
  * swallowed whenever the frame agent reports the tool is active, so the page's
- * real click handler doesn't fire underneath the inspector.
+ * real click handler doesn't fire underneath the inspector. In that case the
+ * pick is instead serialized and relayed to the top frame over the frame
+ * agent, and a local hover overlay stands in for the live highlight the
+ * bridge would otherwise draw.
  */
 export function attachInspectionDetection() {
   document.addEventListener('mouseover', (event) => {
     const bridge = getBridge()
 
-    if (bridge === undefined) {
+    if (bridge !== undefined) {
+      const [target] = event.composedPath()
+
+      if (!isElement(target)) {
+        return
+      }
+
+      // The inspector running inside the iframe reports the actual element
+      // under the cursor, so don't highlight the iframe element itself; clear
+      // the hover instead so a prior highlight can't linger over it (this
+      // also avoids an expensive selector computation on the often deeply
+      // nested iframe element).
+      bridge.hover(isHTMLIFrameElement(target) ? null : target)
+
+      return
+    }
+
+    if (!isTopFrameToolActive()) {
+      // Cheap per-event clear instead of a subscription: as soon as the tool
+      // goes inactive, the next mouseover in this frame drops any hover
+      // overlay left over from while it was active.
+      clearChildOverlays(HOVER_STYLE)
+
       return
     }
 
     const [target] = event.composedPath()
 
-    if (!isElement(target)) {
+    if (!isElement(target) || isHTMLIFrameElement(target)) {
+      clearChildOverlays(HOVER_STYLE)
+
       return
     }
 
-    // The inspector running inside the iframe reports the actual element under
-    // the cursor, so don't highlight the iframe element itself; clear the hover
-    // instead so a prior highlight can't linger over it (this also avoids an
-    // expensive selector computation on the often deeply nested iframe element).
-    bridge.hover(isHTMLIFrameElement(target) ? null : target)
+    showChildOverlays([toBounds(target.getBoundingClientRect())], HOVER_STYLE)
   })
 
   document.addEventListener(
@@ -129,11 +195,36 @@ export function attachInspectionDetection() {
         // No same-origin path to the top frame's inspector. A tool can still
         // be active in an ancestor frame (known here via the frame agent's
         // broadcast state), so the real page click is swallowed even though
-        // there is no bridge to report the pick to.
-        if (isTopFrameToolActive()) {
-          event.preventDefault()
-          event.stopPropagation()
+        // there is no bridge to report the pick to directly; the pick is
+        // relayed to the top frame over the frame agent instead.
+        if (!isTopFrameToolActive()) {
+          return
         }
+
+        event.preventDefault()
+        event.stopPropagation()
+        clearChildOverlays(HOVER_STYLE)
+
+        const [target] = event.composedPath()
+
+        // Don't pick the iframe element itself; the inspector inside it
+        // picks the real element under the cursor.
+        if (!isElement(target) || isHTMLIFrameElement(target)) {
+          return
+        }
+
+        const elements = serializeElementChain(target)
+        const associatedControl = resolveAssociatedControl(target)
+        const position = { left: event.clientX, top: event.clientY }
+
+        void getOwnFramePath().then((framePath) => {
+          getFrameAgent()?.sendElementPick({
+            elements,
+            associatedControl,
+            framePath,
+            position,
+          })
+        })
 
         return
       }
@@ -163,13 +254,15 @@ export function attachInspectionDetection() {
 /**
  * Runs in child frames so the top-frame text-selection tool can assert on text
  * selected inside an iframe. Selection state is per-document, so the selection
- * is read here and forwarded to the top frame.
+ * is read here and forwarded to the top frame, either directly through the
+ * bridge (same-origin) or, when it's unreachable, serialized and relayed over
+ * the frame agent.
  */
 export function attachTextSelectionDetection() {
   let isSelecting = false
 
   document.addEventListener('selectstart', () => {
-    if (getTextSelectionBridge() !== undefined) {
+    if (isTopFrameToolActive()) {
       isSelecting = true
     }
   })
@@ -183,14 +276,41 @@ export function attachTextSelectionDetection() {
 
     const bridge = getTextSelectionBridge()
 
-    if (bridge === undefined) {
+    if (bridge !== undefined) {
+      const selection = readSelection(document)
+
+      if (selection !== null) {
+        bridge.select(selection.range, selection.commonAncestor)
+      }
+
+      return
+    }
+
+    if (!isTopFrameToolActive()) {
       return
     }
 
     const selection = readSelection(document)
 
-    if (selection !== null) {
-      bridge.select(selection.range, selection.commonAncestor)
+    if (selection === null) {
+      return
     }
+
+    const { range, commonAncestor } = selection
+
+    const text = range.toString()
+    const elements = serializeElementChain(commonAncestor)
+    const highlights = [...range.getClientRects()].map(toBounds)
+    const bounds = toBounds(range.getBoundingClientRect())
+
+    void getOwnFramePath().then((framePath) => {
+      getFrameAgent()?.sendTextSelection({
+        text,
+        elements,
+        framePath,
+        highlights,
+        bounds,
+      })
+    })
   })
 }
