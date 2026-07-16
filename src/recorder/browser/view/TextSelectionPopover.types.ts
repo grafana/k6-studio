@@ -1,11 +1,28 @@
 import { Bounds } from '@/components/Browser/types'
+import { BrowserEventTarget } from '@/schemas/recording'
 
-import { LiveTrackedElement } from './ElementInspector/utils'
+import {
+  LiveTrackedElement,
+  RemoteTrackedElement,
+} from './ElementInspector/utils'
 
-export interface TextSelection {
+interface TextSelectionBase {
   text: string
-  element: LiveTrackedElement
-  range: Range
   bounds: Bounds
   highlights: Bounds[]
 }
+
+export interface LiveTextSelection extends TextSelectionBase {
+  kind: 'live'
+  element: LiveTrackedElement
+  range: Range
+}
+
+export interface RemoteTextSelection extends TextSelectionBase {
+  kind: 'remote'
+  element: RemoteTrackedElement
+  /** The selection's own frame chain, as resolved when it was relayed up. */
+  framePath: BrowserEventTarget[] | null
+}
+
+export type TextSelection = LiveTextSelection | RemoteTextSelection

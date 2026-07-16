@@ -17,11 +17,13 @@ import { AssertionData, CheckAssertionData } from './assertions/types'
 import {
   findAssociatedControl,
   getCheckedState,
-  isNative,
-  LabeledControl,
+  getRemoteAssociatedControl,
   getTextBoxValue,
+  isNative,
+  isNativeRemote,
+  LabeledControl,
 } from './ElementMenu.utils'
-import { LiveTrackedElement } from './utils'
+import { getTarget, InspectedElement } from './utils'
 import { WaitForData } from './waitConditions/types'
 
 function ToolbarRoot(props: ComponentProps<typeof Toolbar.Root>) {
@@ -91,11 +93,19 @@ function CheckboxAssertion({
   onAddAssertion,
 }: CheckboxCategoryProps) {
   function handleAddCheckAssertion() {
+    const isInputNative =
+      input.kind === 'live'
+        ? isNative(role, input.element)
+        : isNativeRemote(role, input.isNativeCheckbox)
+
     onAddAssertion({
       type: 'check',
       target: input.target,
-      inputType: isNative(role, input.element) ? 'native' : 'aria',
-      expected: getCheckedState(input.element),
+      inputType: isInputNative ? 'native' : 'aria',
+      expected:
+        input.kind === 'live'
+          ? getCheckedState(input.element)
+          : input.checkedState,
     })
   }
 
@@ -117,13 +127,22 @@ function TextInputAssertion({
   onAddAssertion,
 }: TextInputAssertionProps) {
   const handleAddAssertion = () => {
+    // Whether the control is multiline can only be read from the live DOM
+    // (tag name or `aria-multiline`), so a remote control defaults to
+    // single-line; the user can still submit and edit the expected value.
+    const multiline =
+      input.kind === 'live' &&
+      (isHTMLTextAreaElement(input.element) ||
+        input.element.getAttribute('aria-multiline') === 'true')
+
     onAddAssertion({
       type: 'text-input',
       target: input.target,
-      multiline:
-        isHTMLTextAreaElement(input.element) ||
-        input.element.getAttribute('aria-multiline') === 'true',
-      expected: getTextBoxValue(input.element),
+      multiline,
+      expected:
+        input.kind === 'live'
+          ? getTextBoxValue(input.element)
+          : input.textBoxValue,
     })
   }
 
@@ -186,7 +205,7 @@ function RoleAssertions({ role, input, onAddAssertion }: RoleCategoryProps) {
 }
 
 interface ElementMenuProps {
-  element: LiveTrackedElement
+  element: InspectedElement
   onSelectAssertion: (data: AssertionData) => void
   onAddWaitFor: (data: WaitForData) => void
 }
@@ -196,12 +215,15 @@ export function ElementMenu({
   onSelectAssertion,
   onAddWaitFor,
 }: ElementMenuProps) {
-  const associatedElement = findAssociatedControl(element)
+  const associatedElement =
+    element.kind === 'live'
+      ? findAssociatedControl(element)
+      : getRemoteAssociatedControl(element)
 
   const handleAddVisibilityAssertion = () => {
     onSelectAssertion({
       type: 'visibility',
-      target: element.target,
+      target: getTarget(element),
       state: 'visible',
     })
   }
@@ -209,14 +231,16 @@ export function ElementMenu({
   const handleAddTextAssertion = () => {
     onSelectAssertion({
       type: 'text',
-      target: element.target,
-      text: element.element.textContent ?? '',
+      target: getTarget(element),
+      // A remote element has no live textContent to prefill from, so the
+      // assertion starts empty; the user can still type the expected text.
+      text: element.kind === 'live' ? (element.element.textContent ?? '') : '',
     })
   }
 
   const handleAddWaitFor = () => {
     onAddWaitFor({
-      target: element.target,
+      target: getTarget(element),
     })
   }
 

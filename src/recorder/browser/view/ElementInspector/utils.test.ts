@@ -6,6 +6,8 @@ import { BrowserEventTarget } from '@/schemas/recording'
 
 import {
   expandRemoteTrackedElement,
+  finalizeRemoteBounds,
+  finalizeRemotePosition,
   getBounds,
   getRoles,
   getTarget,
@@ -44,6 +46,37 @@ describe('toTrackedElement', () => {
     document.body.append(div)
 
     expect(toTrackedElement(div).kind).toBe('live')
+  })
+})
+
+describe('finalizeRemotePosition', () => {
+  it('adds the relay offset and the top scroll to the payload point', () => {
+    setScroll(1, 2)
+
+    expect(
+      finalizeRemotePosition({ top: 100, left: 50 }, { left: 5, top: 7 })
+    ).toEqual({
+      top: 100 + 7 + 2,
+      left: 50 + 5 + 1,
+    })
+  })
+})
+
+describe('finalizeRemoteBounds', () => {
+  it('finalizes the position and carries width/height through unchanged', () => {
+    setScroll(1, 2)
+
+    const bounds = finalizeRemoteBounds(
+      { top: 100, left: 50, width: 30, height: 40 },
+      { left: 5, top: 7 }
+    )
+
+    expect(bounds).toEqual({
+      top: 100 + 7 + 2,
+      left: 50 + 5 + 1,
+      width: 30,
+      height: 40,
+    })
   })
 })
 
@@ -94,6 +127,53 @@ describe('toRemoteTrackedElement', () => {
     expect(remote.state).toBe(state)
     expect(remote.ancestors).toEqual([state])
     expect(remote.framePath).toBe(framePath)
+  })
+
+  it('defaults associatedControl to null when not given', () => {
+    const div = document.createElement('div')
+    document.body.append(div)
+
+    const [state] = serializeElementChain(div)
+
+    if (state === undefined) {
+      throw new Error('expected a serialized state')
+    }
+
+    const remote = toRemoteTrackedElement(state, [], null, {
+      left: 0,
+      top: 0,
+    })
+
+    expect(remote.associatedControl).toBeNull()
+  })
+
+  it('keeps the given associatedControl', () => {
+    document.body.innerHTML =
+      '<label id="label"></label><input type="checkbox" id="checkbox" />'
+
+    const label = document.querySelector('#label')
+    const checkbox = document.querySelector('#checkbox')
+
+    if (label === null || checkbox === null) {
+      throw new Error('expected #label and #checkbox elements')
+    }
+
+    const [state] = serializeElementChain(label)
+    const [associatedControl] = serializeElementChain(checkbox)
+
+    if (state === undefined || associatedControl === undefined) {
+      throw new Error('expected serialized states')
+    }
+
+    const remote = toRemoteTrackedElement(
+      state,
+      [],
+      null,
+      { left: 0, top: 0 },
+      associatedControl
+    )
+
+    expect(remote.associatedControl).toBe(associatedControl)
   })
 })
 
@@ -177,6 +257,48 @@ describe('expandRemoteTrackedElement', () => {
       width: middleState.bounds.width,
       height: middleState.bounds.height,
     })
+  })
+
+  it('clears associatedControl on the expanded ancestor', () => {
+    document.body.innerHTML =
+      '<div id="outer"><div id="inner"></div></div><input type="checkbox" id="checkbox" />'
+
+    const inner = document.querySelector('#inner')
+    const checkbox = document.querySelector('#checkbox')
+
+    if (inner === null || checkbox === null) {
+      throw new Error('expected #inner and #checkbox elements')
+    }
+
+    const chain = serializeElementChain(inner)
+    const [associatedControl] = serializeElementChain(checkbox)
+
+    if (associatedControl === undefined) {
+      throw new Error('expected a serialized associated control')
+    }
+
+    const [innerState] = chain
+
+    if (innerState === undefined) {
+      throw new Error('expected an inner state')
+    }
+
+    const head = toRemoteTrackedElement(
+      innerState,
+      chain.slice(1),
+      null,
+      { left: 0, top: 0 },
+      associatedControl
+    )
+
+    const expanded = expandRemoteTrackedElement(head)
+
+    if (expanded === undefined) {
+      throw new Error('expected expansion to succeed')
+    }
+
+    expect(head.associatedControl).toBe(associatedControl)
+    expect(expanded.associatedControl).toBeNull()
   })
 })
 

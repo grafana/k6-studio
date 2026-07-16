@@ -7,7 +7,7 @@ import { IconButton } from '@/components/primitives/IconButton'
 import { Popover } from '@/components/primitives/Popover'
 import { Tooltip } from '@/components/primitives/Tooltip'
 
-import { LiveTrackedElement } from './utils'
+import { getTarget, InspectedElement } from './utils'
 
 interface ElementPopoverProps {
   open?: boolean
@@ -75,7 +75,7 @@ ElementPopover.Heading = function PopoverHeading(props: PopoverHeadingProps) {
 }
 
 interface ElementSelectorProps {
-  element: LiveTrackedElement
+  element: InspectedElement
   onExpand?: () => void
   onContract?: () => void
 }
@@ -97,7 +97,7 @@ ElementPopover.Selector = function ElementSelector({
           flex: 1 1 0;
         `}
       >
-        {element.target.selectors.css}
+        {getTarget(element).selectors.css}
       </ElementPopover.Heading>
       <Tooltip asChild content="Select child element">
         <IconButton disabled={onContract === undefined} onClick={onContract}>

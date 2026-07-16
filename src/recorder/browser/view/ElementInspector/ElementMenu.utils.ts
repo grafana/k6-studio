@@ -1,3 +1,4 @@
+import { SerializedElementState } from '@/recorder/browser/serialization'
 import { BrowserEventTarget } from '@/schemas/recording'
 import { ElementRole, getElementRoles } from '@/utils/dom/aria'
 import { findAssociatedElement } from '@/utils/dom/dom'
@@ -11,7 +12,7 @@ import {
 import { getElementDetails } from '@/utils/dom/selectors'
 
 import { CheckAssertionData } from './assertions/types'
-import { LiveTrackedElement } from './utils'
+import { LiveTrackedElement, RemoteTrackedElement } from './utils'
 
 function* getAncestors(element: Element) {
   let currentElement: Element | null = element
@@ -23,11 +24,29 @@ function* getAncestors(element: Element) {
   }
 }
 
-export interface LabeledControl {
+export interface LiveLabeledControl {
+  kind: 'live'
   element: Element
   target: BrowserEventTarget
   roles: ElementRole[]
 }
+
+export interface RemoteLabeledControl {
+  kind: 'remote'
+  target: BrowserEventTarget
+  roles: ElementRole[]
+  checkedState: SerializedElementState['checkedState']
+  textBoxValue: string
+  isNativeCheckbox: boolean
+}
+
+/**
+ * A control the assertion menu can read from, either a live DOM element or a
+ * remote element's serialized state. The role-specific menu items branch on
+ * `kind` to read checked/value state through the DOM helpers below for a live
+ * control, or straight from the serialized fields for a remote one.
+ */
+export type LabeledControl = LiveLabeledControl | RemoteLabeledControl
 
 // Only these three fields feed the association walk. The narrowed parameter
 // lets callers without a full LiveTrackedElement (e.g. cross-origin child-frame
@@ -39,7 +58,7 @@ export function findAssociatedControl({
 }: Pick<
   LiveTrackedElement,
   'element' | 'target' | 'roles'
->): LabeledControl | null {
+>): LiveLabeledControl | null {
   // If the target is already a control, then we don't need to do a search.
   if (
     isHTMLInputElement(element) ||
@@ -48,6 +67,7 @@ export function findAssociatedControl({
     isHTMLTextAreaElement(element)
   ) {
     return {
+      kind: 'live',
       element,
       target,
       roles,
@@ -69,9 +89,35 @@ export function findAssociatedControl({
   }
 
   return {
+    kind: 'live',
     element: associatedElement,
     target: getElementDetails(associatedElement),
     roles: [...getElementRoles(associatedElement)],
+  }
+}
+
+/**
+ * The remote equivalent of `findAssociatedControl`: the picked element's
+ * associated control, as relayed in the `element-pick` payload. Only the
+ * originally picked remote element carries it (see `RemoteTrackedElement`),
+ * so this returns null once the user has expanded to an ancestor.
+ */
+export function getRemoteAssociatedControl(
+  element: RemoteTrackedElement
+): RemoteLabeledControl | null {
+  const { associatedControl } = element
+
+  if (associatedControl === null) {
+    return null
+  }
+
+  return {
+    kind: 'remote',
+    target: associatedControl.target,
+    roles: associatedControl.roles,
+    checkedState: associatedControl.checkedState,
+    textBoxValue: associatedControl.textBoxValue,
+    isNativeCheckbox: associatedControl.isNativeCheckbox,
   }
 }
 
@@ -110,17 +156,27 @@ export function getTextBoxValue(element: Element): string {
   return element.textContent ?? ''
 }
 
-export function isNative(role: ElementRole, element: Element) {
-  // The 'switch' role differs from 'checkbox' only in semantics, so if it is on a
-  // native checkbox we want the generated code to use `.toBeChecked()` and not
-  // `.toHaveAttribute()`.
-  if (
-    role.role === 'switch' &&
-    isHTMLInputElement(element) &&
-    element.type === 'checkbox'
-  ) {
+// The 'switch' role differs from 'checkbox' only in semantics, so if it is on a
+// native checkbox we want the generated code to use `.toBeChecked()` and not
+// `.toHaveAttribute()`. Shared by the live and remote variants below so the
+// rule stays in one place; the remote variant is given the precomputed
+// `isNativeCheckbox` flag instead of the element itself since it has no DOM
+// access to check.
+function isNativeGivenCheckbox(role: ElementRole, isNativeCheckbox: boolean) {
+  if (role.role === 'switch' && isNativeCheckbox) {
     return true
   }
 
   return role.type === 'intrinsic'
+}
+
+export function isNative(role: ElementRole, element: Element) {
+  return isNativeGivenCheckbox(
+    role,
+    isHTMLInputElement(element) && element.type === 'checkbox'
+  )
+}
+
+export function isNativeRemote(role: ElementRole, isNativeCheckbox: boolean) {
+  return isNativeGivenCheckbox(role, isNativeCheckbox)
 }

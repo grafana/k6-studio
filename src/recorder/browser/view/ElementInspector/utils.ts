@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid'
 
-import { Bounds } from '@/components/Browser/types'
+import { Bounds, Position } from '@/components/Browser/types'
 import { SerializedElementState } from '@/recorder/browser/serialization'
 import { cssLocatorOptions, LocatorOptions } from '@/schemas/locator'
 import { BrowserEventTarget } from '@/schemas/recording'
@@ -30,6 +30,14 @@ export interface RemoteTrackedElement {
   framePath: BrowserEventTarget[] | null
   /** Top-document coordinates: payload bounds plus the relay offset and top scroll. */
   bounds: Bounds
+  /**
+   * The control associated with the picked element (e.g. the checkbox a label
+   * wraps), as captured in the picking frame. Only meaningful for the element
+   * that was actually picked; expanding to an ancestor clears it, since
+   * recomputing the association for the ancestor would require live DOM
+   * access the remote element doesn't have.
+   */
+  associatedControl: SerializedElementState | null
 }
 
 export type InspectedElement = LiveTrackedElement | RemoteTrackedElement
@@ -48,17 +56,52 @@ export function toTrackedElement(element: Element): LiveTrackedElement {
 }
 
 /**
+ * Finalizes a point captured in a remote frame (e.g. a click position) into
+ * top-frame document coordinates: the payload's own point plus the frame-hop
+ * offset the relay accumulated on the way up, plus the top document's own
+ * scroll. Only the top frame can read its own scroll position, so this must
+ * run there, once the payload has arrived.
+ */
+export function finalizeRemotePosition(
+  point: Position,
+  offset: { left: number; top: number }
+): Position {
+  return {
+    top: point.top + offset.top + window.scrollY,
+    left: point.left + offset.left + window.scrollX,
+  }
+}
+
+/**
+ * Finalizes a rect captured in a remote frame (e.g. an element's bounds or a
+ * text range's client rect) into top-frame document coordinates, reusing
+ * {@link finalizeRemotePosition} for the position and carrying the size
+ * through unchanged.
+ */
+export function finalizeRemoteBounds(
+  bounds: Bounds,
+  offset: { left: number; top: number }
+): Bounds {
+  return {
+    ...finalizeRemotePosition(bounds, offset),
+    width: bounds.width,
+    height: bounds.height,
+  }
+}
+
+/**
  * Finalizes a remote element's top-frame bounds from the payload's own bounds
  * (viewport-relative in the frame where it was picked), the frame-hop offset
  * the relay accumulated on the way up, and the top document's own scroll.
- * Only the top frame can read its own scroll position, so this must run
- * there, once the payload has arrived.
+ * `associatedControl` defaults to null for callers (e.g. existing tests) that
+ * don't care about it.
  */
 export function toRemoteTrackedElement(
   state: SerializedElementState,
   ancestors: SerializedElementState[],
   framePath: BrowserEventTarget[] | null,
-  offset: { left: number; top: number }
+  offset: { left: number; top: number },
+  associatedControl: SerializedElementState | null = null
 ): RemoteTrackedElement {
   return {
     kind: 'remote',
@@ -66,12 +109,8 @@ export function toRemoteTrackedElement(
     state,
     ancestors,
     framePath,
-    bounds: {
-      top: state.bounds.top + offset.top + window.scrollY,
-      left: state.bounds.left + offset.left + window.scrollX,
-      width: state.bounds.width,
-      height: state.bounds.height,
-    },
+    bounds: finalizeRemoteBounds(state.bounds, offset),
+    associatedControl,
   }
 }
 
@@ -110,6 +149,9 @@ export function expandRemoteTrackedElement(
       width: nextState.bounds.width,
       height: nextState.bounds.height,
     },
+    // The association was only computed for the originally picked element;
+    // recomputing it for the ancestor would require live DOM access.
+    associatedControl: null,
   }
 }
 
