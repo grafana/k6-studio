@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { Bounds } from '@/components/Browser/types'
 
@@ -22,9 +22,17 @@ function getShadowContainers(): HTMLElement[] {
   )
 }
 
+// MutationObserver callbacks are delivered asynchronously. A macrotask tick
+// flushes all pending microtasks, including observer callbacks and any
+// follow-up callbacks triggered by the repositioning itself.
+function flushMutationObservers(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 0))
+}
+
 afterEach(() => {
   clearChildOverlays(hoverStyle)
   clearChildOverlays(highlightStyle)
+  document.body.innerHTML = ''
 })
 
 describe('showChildOverlays', () => {
@@ -116,6 +124,54 @@ describe('showChildOverlays', () => {
     expect(root.dataset.ksixStudio).toBe('true')
   })
 
+  it('positions the container absolutely without occupying layout space', () => {
+    showChildOverlays([makeBounds()], hoverStyle)
+
+    const [container] = getShadowContainers()
+
+    expect(container?.style.position).toBe('absolute')
+    expect(container?.style.top).toBe('0px')
+    expect(container?.style.left).toBe('0px')
+    expect(container?.style.width).toBe('0px')
+    expect(container?.style.height).toBe('0px')
+  })
+
+  it('moves the container back to the end of body when the page appends elements', async () => {
+    // If the container is not the last child of body while a page element is
+    // appended after it, the selector generator can produce an nth-child
+    // selector that breaks once the container is removed. Same failure mode
+    // documented for the top-frame mount in view/index.tsx's positionObserver.
+    showChildOverlays([makeBounds()], hoverStyle)
+
+    const intruder = document.createElement('span')
+
+    document.body.appendChild(intruder)
+
+    await flushMutationObservers()
+
+    const [container] = getShadowContainers()
+
+    expect(document.body.lastElementChild).toBe(container)
+    expect(intruder.nextElementSibling).toBe(container)
+  })
+
+  it('keeps both kind containers trailing in body without fighting each other', async () => {
+    showChildOverlays([makeBounds()], hoverStyle)
+    showChildOverlays([makeBounds()], highlightStyle)
+
+    const intruder = document.createElement('span')
+
+    document.body.appendChild(intruder)
+
+    await flushMutationObservers()
+
+    const children = Array.from(document.body.children)
+
+    expect(children[0]).toBe(intruder)
+    expect(getShadowContainers()).toHaveLength(2)
+    expect(children.slice(1)).toEqual(getShadowContainers())
+  })
+
   it('keeps overlay boxes out of light-DOM queries used by selector generation', () => {
     // Selector generation (src/utils/dom/selectors.ts) walks the light DOM
     // via `document.body.querySelectorAll` and `finder`, neither of which
@@ -150,5 +206,37 @@ describe('clearChildOverlays', () => {
 
   it('does not throw when there is nothing to clear', () => {
     expect(() => clearChildOverlays(hoverStyle)).not.toThrow()
+  })
+
+  it('stops repositioning once the containers are cleared', async () => {
+    showChildOverlays([makeBounds()], hoverStyle)
+
+    clearChildOverlays(hoverStyle)
+
+    const intruder = document.createElement('span')
+
+    document.body.appendChild(intruder)
+
+    await flushMutationObservers()
+
+    expect(document.body.lastElementChild).toBe(intruder)
+    expect(getShadowContainers()).toHaveLength(0)
+  })
+
+  it('disconnects the reposition observer when the last container is cleared', () => {
+    const disconnectSpy = vi.spyOn(MutationObserver.prototype, 'disconnect')
+
+    showChildOverlays([makeBounds()], hoverStyle)
+    showChildOverlays([makeBounds()], highlightStyle)
+
+    clearChildOverlays(hoverStyle)
+
+    expect(disconnectSpy).not.toHaveBeenCalled()
+
+    clearChildOverlays(highlightStyle)
+
+    expect(disconnectSpy).toHaveBeenCalled()
+
+    disconnectSpy.mockRestore()
   })
 })

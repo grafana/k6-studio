@@ -22,6 +22,57 @@ const MAX_Z_INDEX = 2147483647
 
 const containersByKind = new Map<ChildOverlayStyle['kind'], OverlayContainer>()
 
+// While a container sits in the body, page insertions after it would get
+// nth-child-shifted selectors that break once the container is removed. This
+// is the same failure mode the top-frame mount guards against with its
+// positionObserver in `view/index.tsx`, so we keep the containers as the
+// trailing children of body while any of them are mounted.
+//
+// Unlike the top-frame mount there can be two containers (one per kind). Two
+// independent observers each re-appending their own container when it has a
+// next sibling would ping-pong each other to the end forever, so a single
+// shared observer repositions all mounted containers at once and settles as
+// soon as they form the tail of the body.
+let positionObserver: MutationObserver | null = null
+
+function areContainersTrailing(): boolean {
+  const mounted = Array.from(containersByKind.values())
+  const tail = Array.from(document.body.children).slice(-mounted.length)
+
+  return mounted.every((entry, index) => tail[index] === entry.container)
+}
+
+function repositionContainers() {
+  if (areContainersTrailing()) {
+    return
+  }
+
+  containersByKind.forEach((entry) => {
+    document.body.appendChild(entry.container)
+  })
+}
+
+function ensurePositionObserver() {
+  if (positionObserver !== null) {
+    return
+  }
+
+  positionObserver = new MutationObserver(repositionContainers)
+
+  positionObserver.observe(document.body, {
+    childList: true,
+  })
+}
+
+function disconnectPositionObserverWhenIdle() {
+  if (containersByKind.size > 0 || positionObserver === null) {
+    return
+  }
+
+  positionObserver.disconnect()
+  positionObserver = null
+}
+
 function applyOverlayVisuals(
   overlay: HTMLDivElement,
   kind: ChildOverlayStyle['kind']
@@ -37,6 +88,12 @@ function applyOverlayVisuals(
 
 function createOverlayContainer(): OverlayContainer {
   const container = document.createElement('div')
+
+  container.style.position = 'absolute'
+  container.style.top = '0px'
+  container.style.left = '0px'
+  container.style.width = '0px'
+  container.style.height = '0px'
 
   document.body.appendChild(container)
 
@@ -63,6 +120,7 @@ function getOverlayContainer(
   const created = createOverlayContainer()
 
   containersByKind.set(kind, created)
+  ensurePositionObserver()
 
   return created
 }
@@ -115,4 +173,5 @@ export function clearChildOverlays(style: ChildOverlayStyle): void {
 
   existing.container.remove()
   containersByKind.delete(style.kind)
+  disconnectPositionObserverWhenIdle()
 }
