@@ -145,12 +145,10 @@ function resolveAssociatedControl(
  * iframe boundaries; matched elements are forwarded to the top frame with a
  * direct call, which only works for same-origin frames since it passes a live
  * element reference. Cross-origin frames can't reach the top frame's bridge
- * (see `getTopFrameBridge`), so picking still no-ops there, but the click is
- * swallowed whenever the frame agent reports the tool is active, so the page's
- * real click handler doesn't fire underneath the inspector. In that case the
- * pick is instead serialized and relayed to the top frame over the frame
- * agent, and a local hover overlay stands in for the live highlight the
- * bridge would otherwise draw.
+ * (see `getTopFrameBridge`); there the click is swallowed whenever the frame
+ * agent reports the tool is active, the pick is serialized and relayed to the
+ * top frame over the frame agent, and a local hover overlay stands in for the
+ * live highlight the bridge would otherwise draw.
  */
 export function attachInspectionDetection() {
   document.addEventListener('mouseover', (event) => {
