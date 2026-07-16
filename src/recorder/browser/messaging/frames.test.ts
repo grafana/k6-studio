@@ -2,7 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { BrowserEventTarget } from '@/schemas/recording'
 
-import { FrameAgent, FrameMessageEvent } from './frames'
+import {
+  ElementPickPayload,
+  FrameAgent,
+  FrameMessageEvent,
+  TextSelectionPayload,
+} from './frames'
 
 type Listener = (event: FrameMessageEvent) => void
 
@@ -48,6 +53,45 @@ const envelope = (message: unknown) => ({
   source: 'k6-studio-frames',
   version: 1,
   message,
+})
+
+/**
+ * Fake iframe element for offset relay tests. `clientLeft`/`clientTop` are
+ * non-zero and deliberately excluded from the expected offsets in the tests
+ * below, matching `getFrameOffset` (src/utils/dom/layout.ts), which only
+ * accumulates `getBoundingClientRect().left`/`.top` per hop.
+ */
+function fakeIframeElement(rect: { left: number; top: number }): Element {
+  return {
+    getBoundingClientRect: () =>
+      ({
+        left: rect.left,
+        top: rect.top,
+        width: 0,
+        height: 0,
+        right: rect.left,
+        bottom: rect.top,
+        x: rect.left,
+        y: rect.top,
+      }) as DOMRect,
+    clientLeft: 3,
+    clientTop: 4,
+  } as unknown as Element
+}
+
+const textSelectionPayload = (): Omit<TextSelectionPayload, 'offset'> => ({
+  text: 'hello world',
+  elements: [],
+  framePath: null,
+  highlights: [{ top: 0, left: 0, width: 10, height: 10 }],
+  bounds: { top: 0, left: 0, width: 10, height: 10 },
+})
+
+const elementPickPayload = (): Omit<ElementPickPayload, 'offset'> => ({
+  elements: [],
+  associatedControl: null,
+  framePath: null,
+  position: { left: 3, top: 4 },
 })
 
 function createAgent(
@@ -479,5 +523,270 @@ describe('FrameAgent handshake and tool state', () => {
     win.deliverFrom(intruder, envelope({ type: 'tool-state', active: true }))
 
     expect(agent.isToolActive).toBe(false)
+  })
+})
+
+describe('FrameAgent text-selection and element-pick relay', () => {
+  it('accumulates the offset over two hops and delivers the payload once to the top listener', () => {
+    const topWin = new FakeFrameWindow()
+    const middleWin = new FakeFrameWindow()
+    const grandchildWin = new FakeFrameWindow()
+
+    const middleIframeElement = fakeIframeElement({ left: 10, top: 20 })
+    const grandchildIframeElement = fakeIframeElement({ left: 5, top: 7 })
+
+    const topAgent = new FrameAgent({
+      win: topWin,
+      parentWindow: null,
+      getFrames: () => [
+        { element: middleIframeElement, contentWindow: middleWin },
+      ],
+      getIframeLocator: () => locator('iframe#unused'),
+      getOwnPath: () => Promise.resolve([]),
+      send: sendFrom(topWin),
+    })
+
+    const middleAgent = new FrameAgent({
+      win: middleWin,
+      parentWindow: topWin,
+      getFrames: () => [
+        { element: grandchildIframeElement, contentWindow: grandchildWin },
+      ],
+      getIframeLocator: () => locator('iframe#unused'),
+      getOwnPath: () => Promise.resolve([]),
+      send: sendFrom(middleWin),
+    })
+
+    const grandchildAgent = new FrameAgent({
+      win: grandchildWin,
+      parentWindow: middleWin,
+      getFrames: () => [],
+      getIframeLocator: () => locator('iframe#unused'),
+      getOwnPath: () => Promise.resolve([]),
+      send: sendFrom(grandchildWin),
+    })
+
+    const received: TextSelectionPayload[] = []
+    topAgent.onTextSelection((payload) => received.push(payload))
+
+    grandchildAgent.sendTextSelection(textSelectionPayload())
+
+    // Hand-computed: grandchild hop (left: 5, top: 7) + middle hop
+    // (left: 10, top: 20), clientLeft/clientTop excluded.
+    expect(received).toEqual([
+      { ...textSelectionPayload(), offset: { left: 15, top: 27 } },
+    ])
+
+    topAgent.dispose()
+    middleAgent.dispose()
+    grandchildAgent.dispose()
+  })
+
+  it('accumulates the offset for a single hop when relaying an element pick', () => {
+    const childWin = new FakeFrameWindow()
+    const iframeElement = fakeIframeElement({ left: 8, top: 3 })
+
+    const { win, agent } = createAgent({
+      getFrames: () => [{ element: iframeElement, contentWindow: childWin }],
+    })
+
+    const received: ElementPickPayload[] = []
+    agent.onElementPick((payload) => received.push(payload))
+
+    win.deliverFrom(
+      childWin,
+      envelope({
+        type: 'element-pick',
+        payload: { ...elementPickPayload(), offset: { left: 0, top: 0 } },
+      })
+    )
+
+    expect(received).toEqual([
+      { ...elementPickPayload(), offset: { left: 8, top: 3 } },
+    ])
+  })
+
+  it('reposts a text-selection message upward, adding its own hop, when it has a parent', () => {
+    const parentWin = new FakeFrameWindow()
+    const childWin = new FakeFrameWindow()
+    const iframeElement = fakeIframeElement({ left: 6, top: 9 })
+
+    const { win } = createAgent({
+      parentWindow: parentWin,
+      getFrames: () => [{ element: iframeElement, contentWindow: childWin }],
+    })
+
+    const sent: unknown[] = []
+    parentWin.addEventListener('message', (event) => sent.push(event.data))
+
+    win.deliverFrom(
+      childWin,
+      envelope({
+        type: 'text-selection',
+        payload: { ...textSelectionPayload(), offset: { left: 1, top: 2 } },
+      })
+    )
+
+    expect(sent).toEqual([
+      envelope({
+        type: 'text-selection',
+        payload: {
+          ...textSelectionPayload(),
+          offset: { left: 7, top: 11 },
+        },
+      }),
+    ])
+  })
+
+  it('ignores a text-selection relay from a window that is not a matched child frame', () => {
+    const childWin = new FakeFrameWindow()
+    const intruder = new FakeFrameWindow()
+    const iframeElement = fakeIframeElement({ left: 10, top: 20 })
+
+    const { win, agent } = createAgent({
+      getFrames: () => [{ element: iframeElement, contentWindow: childWin }],
+    })
+
+    const received: TextSelectionPayload[] = []
+    agent.onTextSelection((payload) => received.push(payload))
+
+    win.deliverFrom(
+      intruder,
+      envelope({
+        type: 'text-selection',
+        payload: { ...textSelectionPayload(), offset: { left: 0, top: 0 } },
+      })
+    )
+
+    expect(received).toEqual([])
+  })
+
+  it('ignores an element-pick relay from a window that is not a matched child frame', () => {
+    const childWin = new FakeFrameWindow()
+    const intruder = new FakeFrameWindow()
+    const iframeElement = fakeIframeElement({ left: 10, top: 20 })
+
+    const { win, agent } = createAgent({
+      getFrames: () => [{ element: iframeElement, contentWindow: childWin }],
+    })
+
+    const received: ElementPickPayload[] = []
+    agent.onElementPick((payload) => received.push(payload))
+
+    win.deliverFrom(
+      intruder,
+      envelope({
+        type: 'element-pick',
+        payload: { ...elementPickPayload(), offset: { left: 0, top: 0 } },
+      })
+    )
+
+    expect(received).toEqual([])
+  })
+
+  it('stops delivering element-pick payloads to a listener after it unsubscribes', () => {
+    const childWin = new FakeFrameWindow()
+    const iframeElement = fakeIframeElement({ left: 1, top: 2 })
+
+    const { win, agent } = createAgent({
+      getFrames: () => [{ element: iframeElement, contentWindow: childWin }],
+    })
+
+    const received: ElementPickPayload[] = []
+    const unsubscribe = agent.onElementPick((payload) => received.push(payload))
+
+    const deliver = () =>
+      win.deliverFrom(
+        childWin,
+        envelope({
+          type: 'element-pick',
+          payload: { ...elementPickPayload(), offset: { left: 0, top: 0 } },
+        })
+      )
+
+    deliver()
+
+    expect(received).toHaveLength(1)
+
+    unsubscribe()
+    deliver()
+
+    expect(received).toHaveLength(1)
+  })
+
+  it('allows multiple listeners to receive the same text-selection payload', () => {
+    const childWin = new FakeFrameWindow()
+    const iframeElement = fakeIframeElement({ left: 1, top: 2 })
+
+    const { win, agent } = createAgent({
+      getFrames: () => [{ element: iframeElement, contentWindow: childWin }],
+    })
+
+    const receivedByFirst: TextSelectionPayload[] = []
+    const receivedBySecond: TextSelectionPayload[] = []
+    agent.onTextSelection((payload) => receivedByFirst.push(payload))
+    agent.onTextSelection((payload) => receivedBySecond.push(payload))
+
+    win.deliverFrom(
+      childWin,
+      envelope({
+        type: 'text-selection',
+        payload: { ...textSelectionPayload(), offset: { left: 0, top: 0 } },
+      })
+    )
+
+    expect(receivedByFirst).toHaveLength(1)
+    expect(receivedBySecond).toHaveLength(1)
+  })
+
+  it('does not send anything when sendTextSelection/sendElementPick are called in the top frame', () => {
+    const sendSpy = vi.fn()
+    const agent = new FrameAgent({
+      win: new FakeFrameWindow(),
+      parentWindow: null,
+      getFrames: () => [],
+      getIframeLocator: () => locator('iframe#unused'),
+      getOwnPath: () => Promise.resolve([]),
+      send: sendSpy,
+    })
+
+    agent.sendTextSelection(textSelectionPayload())
+    agent.sendElementPick(elementPickPayload())
+
+    expect(sendSpy).not.toHaveBeenCalled()
+  })
+
+  it('posts a text-selection message to the parent with a zero offset', () => {
+    const parentWin = new FakeFrameWindow()
+    const { agent } = createAgent({ parentWindow: parentWin })
+
+    const sent: unknown[] = []
+    parentWin.addEventListener('message', (event) => sent.push(event.data))
+
+    agent.sendTextSelection(textSelectionPayload())
+
+    expect(sent).toEqual([
+      envelope({
+        type: 'text-selection',
+        payload: { ...textSelectionPayload(), offset: { left: 0, top: 0 } },
+      }),
+    ])
+  })
+
+  it('posts an element-pick message to the parent with a zero offset', () => {
+    const parentWin = new FakeFrameWindow()
+    const { agent } = createAgent({ parentWindow: parentWin })
+
+    const sent: unknown[] = []
+    parentWin.addEventListener('message', (event) => sent.push(event.data))
+
+    agent.sendElementPick(elementPickPayload())
+
+    expect(sent).toEqual([
+      envelope({
+        type: 'element-pick',
+        payload: { ...elementPickPayload(), offset: { left: 0, top: 0 } },
+      }),
+    ])
   })
 })

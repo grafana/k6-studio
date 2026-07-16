@@ -2,9 +2,16 @@ import { nanoid } from 'nanoid'
 import { z } from 'zod/v4'
 
 import {
+  BoundsSchema,
+  SerializedElementState,
+  SerializedElementStateSchema,
+} from '@/recorder/browser/serialization'
+import {
   BrowserEventTarget,
   BrowserEventTargetSchema,
 } from '@/schemas/recording'
+
+type Bounds = z.infer<typeof BoundsSchema>
 
 const PROTOCOL_SOURCE = 'k6-studio-frames'
 const PROTOCOL_VERSION = 1
@@ -39,13 +46,98 @@ const ToolStateSchema = z.object({
   active: z.boolean(),
 })
 
+const OffsetSchema = z.object({
+  left: z.number(),
+  top: z.number(),
+})
+
+const TextSelectionPayloadSchema = z.object({
+  text: z.string(),
+  elements: SerializedElementStateSchema.array(),
+  framePath: BrowserEventTargetSchema.array().nullable(),
+  highlights: BoundsSchema.array(),
+  bounds: BoundsSchema,
+  offset: OffsetSchema,
+})
+
+const ElementPickPayloadSchema = z.object({
+  elements: SerializedElementStateSchema.array(),
+  associatedControl: SerializedElementStateSchema.nullable(),
+  framePath: BrowserEventTargetSchema.array().nullable(),
+  position: OffsetSchema,
+  offset: OffsetSchema,
+})
+
+const TextSelectionSchema = z.object({
+  type: z.literal('text-selection'),
+  payload: TextSelectionPayloadSchema,
+})
+
+const ElementPickSchema = z.object({
+  type: z.literal('element-pick'),
+  payload: ElementPickPayloadSchema,
+})
+
 const FrameMessageSchema = z.discriminatedUnion('type', [
   FramePathRequestSchema,
   FramePathResponseSchema,
   HandshakeSchema,
   HandshakeAckSchema,
   ToolStateSchema,
+  TextSelectionSchema,
+  ElementPickSchema,
 ])
+
+/**
+ * Payload carried by a `text-selection` message, relayed from the frame where
+ * the selection was made up to the top frame. `offset` accumulates each
+ * intermediate frame's viewport position as the message travels upward,
+ * starting at `{ left: 0, top: 0 }` in the sending frame.
+ */
+export interface TextSelectionPayload {
+  text: string
+  /** commonAncestor chain, innermost first. */
+  elements: SerializedElementState[]
+  framePath: BrowserEventTarget[] | null
+  /** Range client rects, in the sending frame's viewport coordinates. */
+  highlights: Bounds[]
+  /** Range bounding rect, in the sending frame's viewport coordinates. */
+  bounds: Bounds
+  offset: { left: number; top: number }
+}
+
+/**
+ * Payload carried by an `element-pick` message, relayed from the frame where
+ * the element was picked up to the top frame. `offset` accumulates each
+ * intermediate frame's viewport position as the message travels upward,
+ * starting at `{ left: 0, top: 0 }` in the sending frame.
+ */
+export interface ElementPickPayload {
+  /** Picked element chain, innermost first. */
+  elements: SerializedElementState[]
+  associatedControl: SerializedElementState | null
+  framePath: BrowserEventTarget[] | null
+  /** clientX/Y, in the sending frame's viewport coordinates. */
+  position: { left: number; top: number }
+  offset: { left: number; top: number }
+}
+
+/**
+ * Accumulates one frame hop's viewport offset onto `offset`. Mirrors the
+ * single-hop math in `getFrameOffset` (src/utils/dom/layout.ts): only the
+ * iframe's bounding rect position is added, not `clientLeft`/`clientTop`.
+ */
+function addFrameHopOffset(
+  offset: { left: number; top: number },
+  iframe: Element
+): { left: number; top: number } {
+  const rect = iframe.getBoundingClientRect()
+
+  return {
+    left: offset.left + rect.left,
+    top: offset.top + rect.top,
+  }
+}
 
 const HANDSHAKE_RETRY_MS = 100
 const MAX_HANDSHAKE_ATTEMPTS = 5
@@ -149,6 +241,8 @@ export class FrameAgent {
   #toolActive = false
   #handshakeId: string | null = null
   #handshakeTimer: ReturnType<typeof setTimeout> | null = null
+  #textSelectionListeners = new Set<(payload: TextSelectionPayload) => void>()
+  #elementPickListeners = new Set<(payload: ElementPickPayload) => void>()
 
   #handleMessage = (event: FrameMessageEvent) => {
     // This listener sees every postMessage the page receives (ads, widgets,
@@ -228,6 +322,56 @@ export class FrameAgent {
     })
   }
 
+  /**
+   * Sends a text selection made in this frame toward the top frame, starting
+   * with a zero offset. A no-op in the top frame: there is no parent to send
+   * to, and the top frame delivers payloads to listeners instead of sending.
+   */
+  sendTextSelection(payload: Omit<TextSelectionPayload, 'offset'>) {
+    if (this.#options.parentWindow === null) {
+      return
+    }
+
+    this.#post(this.#options.parentWindow, {
+      type: 'text-selection',
+      payload: { ...payload, offset: { left: 0, top: 0 } },
+    })
+  }
+
+  /**
+   * Sends an element pick made in this frame toward the top frame, starting
+   * with a zero offset. A no-op in the top frame, for the same reason as
+   * {@link sendTextSelection}.
+   */
+  sendElementPick(payload: Omit<ElementPickPayload, 'offset'>) {
+    if (this.#options.parentWindow === null) {
+      return
+    }
+
+    this.#post(this.#options.parentWindow, {
+      type: 'element-pick',
+      payload: { ...payload, offset: { left: 0, top: 0 } },
+    })
+  }
+
+  /** Registers a listener for text selections relayed up to the top frame. */
+  onTextSelection(listener: (payload: TextSelectionPayload) => void) {
+    this.#textSelectionListeners.add(listener)
+
+    return () => {
+      this.#textSelectionListeners.delete(listener)
+    }
+  }
+
+  /** Registers a listener for element picks relayed up to the top frame. */
+  onElementPick(listener: (payload: ElementPickPayload) => void) {
+    this.#elementPickListeners.add(listener)
+
+    return () => {
+      this.#elementPickListeners.delete(listener)
+    }
+  }
+
   dispose() {
     this.#options.win.removeEventListener('message', this.#handleMessage)
 
@@ -237,6 +381,8 @@ export class FrameAgent {
     })
 
     this.#pending.clear()
+    this.#textSelectionListeners.clear()
+    this.#elementPickListeners.clear()
 
     if (this.#handshakeTimer !== null) {
       clearTimeout(this.#handshakeTimer)
@@ -367,6 +513,58 @@ export class FrameAgent {
         }
 
         this.broadcastToolState(message.active)
+
+        return
+      }
+
+      case 'text-selection': {
+        const frame = this.#findChildFrame(source)
+
+        if (frame === undefined) {
+          return
+        }
+
+        const payload: TextSelectionPayload = {
+          ...message.payload,
+          offset: addFrameHopOffset(message.payload.offset, frame.element),
+        }
+
+        if (this.#options.parentWindow === null) {
+          this.#textSelectionListeners.forEach((listener) => listener(payload))
+
+          return
+        }
+
+        this.#post(this.#options.parentWindow, {
+          type: 'text-selection',
+          payload,
+        })
+
+        return
+      }
+
+      case 'element-pick': {
+        const frame = this.#findChildFrame(source)
+
+        if (frame === undefined) {
+          return
+        }
+
+        const payload: ElementPickPayload = {
+          ...message.payload,
+          offset: addFrameHopOffset(message.payload.offset, frame.element),
+        }
+
+        if (this.#options.parentWindow === null) {
+          this.#elementPickListeners.forEach((listener) => listener(payload))
+
+          return
+        }
+
+        this.#post(this.#options.parentWindow, {
+          type: 'element-pick',
+          payload,
+        })
 
         return
       }
