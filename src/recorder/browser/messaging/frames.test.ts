@@ -44,6 +44,12 @@ const locator = (id: string): BrowserEventTarget => ({
   selectors: { css: id },
 })
 
+const envelope = (message: unknown) => ({
+  source: 'k6-studio-frames',
+  version: 1,
+  message,
+})
+
 function createAgent(
   overrides: Partial<ConstructorParameters<typeof FrameAgent>[0]> = {}
 ) {
@@ -86,19 +92,20 @@ describe('FrameAgent.requestFramePath', () => {
 
     const pathPromise = agent.requestFramePath()
 
-    const [envelope] = sent as [{ message: { type: string; id: string } }]
+    const [requestEnvelope] = sent as [
+      { message: { type: string; id: string } },
+    ]
 
-    expect(envelope.message.type).toBe('frame-path-request')
+    expect(requestEnvelope.message.type).toBe('frame-path-request')
 
-    win.deliverFrom(parentWin, {
-      source: 'k6-studio-frames',
-      version: 1,
-      message: {
+    win.deliverFrom(
+      parentWin,
+      envelope({
         type: 'frame-path-response',
-        id: envelope.message.id,
+        id: requestEnvelope.message.id,
         path: [locator('iframe#outer')],
-      },
-    })
+      })
+    )
 
     await expect(pathPromise).resolves.toEqual([locator('iframe#outer')])
   })
@@ -151,17 +158,16 @@ describe('FrameAgent.requestFramePath', () => {
 
     const pathPromise = agent.requestFramePath()
 
-    const [envelope] = sent as [{ message: { id: string } }]
+    const [sentEnvelope] = sent as [{ message: { id: string } }]
 
-    win.deliverFrom(intruder, {
-      source: 'k6-studio-frames',
-      version: 1,
-      message: {
+    win.deliverFrom(
+      intruder,
+      envelope({
         type: 'frame-path-response',
-        id: envelope.message.id,
+        id: sentEnvelope.message.id,
         path: [locator('iframe#evil')],
-      },
-    })
+      })
+    )
 
     vi.advanceTimersByTime(1000)
 
@@ -221,15 +227,11 @@ describe('FrameAgent responder', () => {
     await vi.runAllTimersAsync()
 
     expect(received).toEqual([
-      {
-        source: 'k6-studio-frames',
-        version: 1,
-        message: {
-          type: 'frame-path-response',
-          id: 'req-1',
-          path: [locator('iframe#outer'), locator('iframe#child')],
-        },
-      },
+      envelope({
+        type: 'frame-path-response',
+        id: 'req-1',
+        path: [locator('iframe#outer'), locator('iframe#child')],
+      }),
     ])
   })
 
@@ -243,11 +245,7 @@ describe('FrameAgent responder', () => {
     await vi.runAllTimersAsync()
 
     expect(received).toEqual([
-      {
-        source: 'k6-studio-frames',
-        version: 1,
-        message: { type: 'frame-path-response', id: 'req-1', path: null },
-      },
+      envelope({ type: 'frame-path-response', id: 'req-1', path: null }),
     ])
   })
 
@@ -258,11 +256,10 @@ describe('FrameAgent responder', () => {
     const received: unknown[] = []
     childWin.addEventListener('message', (event) => received.push(event.data))
 
-    parentWin.deliverFrom(intruder, {
-      source: 'k6-studio-frames',
-      version: 1,
-      message: { type: 'frame-path-request', id: 'req-1' },
-    })
+    parentWin.deliverFrom(
+      intruder,
+      envelope({ type: 'frame-path-request', id: 'req-1' })
+    )
 
     await vi.runAllTimersAsync()
 
@@ -282,11 +279,7 @@ describe('FrameAgent responder', () => {
     await vi.runAllTimersAsync()
 
     expect(received).toEqual([
-      {
-        source: 'k6-studio-frames',
-        version: 1,
-        message: { type: 'frame-path-response', id: 'req-1', path: null },
-      },
+      envelope({ type: 'frame-path-response', id: 'req-1', path: null }),
     ])
   })
 
@@ -300,11 +293,7 @@ describe('FrameAgent responder', () => {
     await vi.runAllTimersAsync()
 
     expect(received).toEqual([
-      {
-        source: 'k6-studio-frames',
-        version: 1,
-        message: { type: 'frame-path-response', id: 'req-1', path: null },
-      },
+      envelope({ type: 'frame-path-response', id: 'req-1', path: null }),
     ])
   })
 })
@@ -375,15 +364,14 @@ describe('FrameAgent handshake and tool state', () => {
     expect(sent).toHaveLength(2)
     expect(sent.every((entry) => entry.message.type === 'handshake')).toBe(true)
 
-    win.deliverFrom(parentWin, {
-      source: 'k6-studio-frames',
-      version: 1,
-      message: {
+    win.deliverFrom(
+      parentWin,
+      envelope({
         type: 'handshake-ack',
         id: sent[1]?.message.id ?? '',
         toolActive: true,
-      },
-    })
+      })
+    )
 
     expect(agent.isToolActive).toBe(true)
 
@@ -420,17 +408,11 @@ describe('FrameAgent handshake and tool state', () => {
     const received: unknown[] = []
     childWin.addEventListener('message', (event) => received.push(event.data))
 
-    parentWin.deliverFrom(childWin, {
-      source: 'k6-studio-frames',
-      version: 1,
-      message: { type: 'handshake', id: 'hs-1' },
-    })
+    parentWin.deliverFrom(childWin, envelope({ type: 'handshake', id: 'hs-1' }))
 
-    expect(received).toContainEqual({
-      source: 'k6-studio-frames',
-      version: 1,
-      message: { type: 'handshake-ack', id: 'hs-1', toolActive: true },
-    })
+    expect(received).toContainEqual(
+      envelope({ type: 'handshake-ack', id: 'hs-1', toolActive: true })
+    )
   })
 
   it('relays tool-state from the parent to its own child frames and caches it', () => {
@@ -450,20 +432,10 @@ describe('FrameAgent handshake and tool state', () => {
       relayed.push(event.data)
     )
 
-    win.deliverFrom(parentWin, {
-      source: 'k6-studio-frames',
-      version: 1,
-      message: { type: 'tool-state', active: true },
-    })
+    win.deliverFrom(parentWin, envelope({ type: 'tool-state', active: true }))
 
     expect(agent.isToolActive).toBe(true)
-    expect(relayed).toEqual([
-      {
-        source: 'k6-studio-frames',
-        version: 1,
-        message: { type: 'tool-state', active: true },
-      },
-    ])
+    expect(relayed).toEqual([envelope({ type: 'tool-state', active: true })])
   })
 
   it('relays the acked tool state to its own child frames on handshake-ack', () => {
@@ -486,24 +458,17 @@ describe('FrameAgent handshake and tool state', () => {
     const relayed: unknown[] = []
     childWin.addEventListener('message', (event) => relayed.push(event.data))
 
-    win.deliverFrom(parentWin, {
-      source: 'k6-studio-frames',
-      version: 1,
-      message: {
+    win.deliverFrom(
+      parentWin,
+      envelope({
         type: 'handshake-ack',
         id: sent[0]?.message.id ?? '',
         toolActive: true,
-      },
-    })
+      })
+    )
 
     expect(agent.isToolActive).toBe(true)
-    expect(relayed).toEqual([
-      {
-        source: 'k6-studio-frames',
-        version: 1,
-        message: { type: 'tool-state', active: true },
-      },
-    ])
+    expect(relayed).toEqual([envelope({ type: 'tool-state', active: true })])
   })
 
   it('ignores tool-state that does not come from the parent', () => {
@@ -511,11 +476,7 @@ describe('FrameAgent handshake and tool state', () => {
     const intruder = new FakeFrameWindow()
     const { win, agent } = createAgent({ parentWindow: parentWin })
 
-    win.deliverFrom(intruder, {
-      source: 'k6-studio-frames',
-      version: 1,
-      message: { type: 'tool-state', active: true },
-    })
+    win.deliverFrom(intruder, envelope({ type: 'tool-state', active: true }))
 
     expect(agent.isToolActive).toBe(false)
   })

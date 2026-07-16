@@ -13,6 +13,8 @@ const makeEvent = (eventId: string): BrowserEvent => ({
   source: 'address-bar',
 })
 
+const flushMicrotasks = () => new Promise((resolve) => setTimeout(resolve, 0))
+
 describe('createSequentialEmitter', () => {
   it('attaches the resolved frame path to every event', async () => {
     const frames: BrowserEventTarget[] = [
@@ -27,7 +29,7 @@ describe('createSequentialEmitter', () => {
 
     emit(makeEvent('first'))
 
-    await new Promise((resolve) => setTimeout(resolve, 0))
+    await flushMicrotasks()
 
     expect(sent).toEqual([[{ ...makeEvent('first'), frames }]])
   })
@@ -51,13 +53,13 @@ describe('createSequentialEmitter', () => {
     emit(makeEvent('first'))
     emit(makeEvent('second'))
 
-    await new Promise((resolve) => setTimeout(resolve, 0))
+    await flushMicrotasks()
 
     expect(sent).toEqual([])
 
     resolveFirst([])
 
-    await new Promise((resolve) => setTimeout(resolve, 0))
+    await flushMicrotasks()
 
     expect(sent.flat().map((event) => event.eventId)).toEqual([
       'first',
@@ -81,7 +83,7 @@ describe('createSequentialEmitter', () => {
     emit(makeEvent('first'))
     emit(makeEvent('second'))
 
-    await new Promise((resolve) => setTimeout(resolve, 0))
+    await flushMicrotasks()
 
     expect(sent.flat().map((event) => event.eventId)).toEqual([
       'first',
@@ -108,7 +110,7 @@ describe('createSequentialEmitter', () => {
     emit(makeEvent('first'))
     emit(makeEvent('second'))
 
-    await new Promise((resolve) => setTimeout(resolve, 0))
+    await flushMicrotasks()
 
     expect(sent.flat().map((event) => event.eventId)).toEqual(['second'])
   })
@@ -149,7 +151,7 @@ describe('createSequentialEmitter', () => {
 
     resolvePath([])
 
-    await new Promise((resolve) => setTimeout(resolve, 0))
+    await flushMicrotasks()
 
     expect(sent).toEqual([[makeEvent('first')]])
   })
@@ -167,7 +169,7 @@ describe('createSequentialEmitter', () => {
 
     emit(makeEvent('second'))
 
-    await new Promise((resolve) => setTimeout(resolve, 0))
+    await flushMicrotasks()
 
     expect(sent).toEqual([[makeEvent('first')], [makeEvent('second')]])
   })

@@ -58,6 +58,19 @@ const FrameEnvelopeSchema = z.object({
 
 type FrameMessage = z.infer<typeof FrameMessageSchema>
 
+/**
+ * Fast pre-check for the protocol's envelope marker, so unrelated page
+ * messages are discarded on one property read instead of a full schema parse.
+ */
+function isProtocolEnvelope(data: unknown): boolean {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'source' in data &&
+    data.source === PROTOCOL_SOURCE
+  )
+}
+
 export interface FrameMessageEvent {
   data: unknown
   source: unknown
@@ -138,6 +151,13 @@ export class FrameAgent {
   #handshakeTimer: ReturnType<typeof setTimeout> | null = null
 
   #handleMessage = (event: FrameMessageEvent) => {
+    // This listener sees every postMessage the page receives (ads, widgets,
+    // analytics), so bail on a single property read before paying for full
+    // schema validation of unrelated traffic.
+    if (!isProtocolEnvelope(event.data)) {
+      return
+    }
+
     const parsed = FrameEnvelopeSchema.safeParse(event.data)
 
     if (!parsed.success) {
@@ -250,6 +270,13 @@ export class FrameAgent {
     )
   }
 
+  /** The child frame whose contentWindow sent a message, if it is ours. */
+  #findChildFrame(source: unknown): FrameRef | undefined {
+    return this.#options
+      .getFrames()
+      .find((candidate) => candidate.contentWindow === source)
+  }
+
   #dispatch(message: FrameMessage, source: unknown) {
     switch (message.type) {
       case 'frame-path-response': {
@@ -271,9 +298,7 @@ export class FrameAgent {
       }
 
       case 'frame-path-request': {
-        const frame = this.#options
-          .getFrames()
-          .find((candidate) => candidate.contentWindow === source)
+        const frame = this.#findChildFrame(source)
 
         if (frame === undefined) {
           return
@@ -303,11 +328,7 @@ export class FrameAgent {
       }
 
       case 'handshake': {
-        const frame = this.#options
-          .getFrames()
-          .find((candidate) => candidate.contentWindow === source)
-
-        if (frame === undefined) {
+        if (this.#findChildFrame(source) === undefined) {
           return
         }
 

@@ -126,11 +126,11 @@ export function attachInspectionDetection() {
       const bridge = getBridge()
 
       if (bridge === undefined) {
-        // No same-origin path to the top frame's inspector. If the inspector
-        // is active in an ancestor frame, the frame agent still knows via the
-        // broadcast tool state, so the real page click is swallowed even
-        // though there is no bridge to report the pick to.
-        if (getFrameAgent()?.isToolActive === true) {
+        // No same-origin path to the top frame's inspector. A tool can still
+        // be active in an ancestor frame (known here via the frame agent's
+        // broadcast state), so the real page click is swallowed even though
+        // there is no bridge to report the pick to.
+        if (isTopFrameToolActive()) {
           event.preventDefault()
           event.stopPropagation()
         }

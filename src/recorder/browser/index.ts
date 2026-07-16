@@ -1,3 +1,4 @@
+import { isHTMLFrameElement, isHTMLIFrameElement } from '@/utils/dom/realm'
 import { getElementDetails } from '@/utils/dom/selectors'
 
 import { getOwnFramePath } from './frames'
@@ -26,10 +27,7 @@ const agent = new FrameAgent({
   parentWindow: isInFrame() ? window.parent : null,
   getFrames: () =>
     [...document.querySelectorAll('iframe, frame')].flatMap((element) => {
-      if (
-        element instanceof HTMLIFrameElement ||
-        element instanceof HTMLFrameElement
-      ) {
+      if (isHTMLIFrameElement(element) || isHTMLFrameElement(element)) {
         return [{ element, contentWindow: element.contentWindow }]
       }
 

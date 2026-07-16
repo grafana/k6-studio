@@ -57,8 +57,8 @@ export function createNegativeCachedResolver(
   }
 }
 
-const resolveCrossOriginFramePath = createNegativeCachedResolver(
-  () => getFrameAgent()?.requestFramePath() ?? Promise.resolve(null)
+const resolveEventFramePath = createNegativeCachedResolver(() =>
+  getOwnFramePath()
 )
 
 /**
@@ -69,12 +69,7 @@ const resolveCrossOriginFramePath = createNegativeCachedResolver(
  * lookups negative-cached so one silent ancestor can't stall every event.
  */
 export function getFramePathAsync(): Promise<BrowserEventTarget[]> {
-  try {
-    return Promise.resolve(buildFramePath(window, getElementDetails))
-  } catch {
-    // Cross-origin chain; fall back to the protocol.
-    return resolveCrossOriginFramePath()
-  }
+  return resolveEventFramePath()
 }
 
 /**
