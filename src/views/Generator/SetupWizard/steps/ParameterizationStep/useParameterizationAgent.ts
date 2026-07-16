@@ -45,7 +45,7 @@ export function useParameterizationAgent() {
       proposalsRef.current = []
       finishOutcomeRef.current = 'success'
 
-      void run.start(systemPrompt)
+      void run.start(`${systemPrompt}${buildExistingRulesContext()}`)
       run.actionsLog.addEntry({
         type: 'info',
         text: 'Scanning request bodies and query strings',
@@ -61,6 +61,25 @@ export function useParameterizationAgent() {
       summary: 'Step skipped, no values parameterized',
     },
   })
+
+  // On older generators the test may already parameterize values; without
+  // this the agent happily proposes duplicates of those rules.
+  function buildExistingRulesContext() {
+    const existingRules = useGeneratorStore
+      .getState()
+      .rules.filter((rule) => rule.type === 'parameterization')
+
+    if (existingRules.length === 0) {
+      return ''
+    }
+
+    const summary = existingRules.map(({ filter, selector, value }) => ({
+      filter,
+      selector,
+      value,
+    }))
+    return `\n\nThe test already has these parameterization rules. Do not suggest duplicates of them; only propose parameters they do not cover:\n${JSON.stringify(summary)}`
+  }
 
   function handleToolCall(toolCall: ParameterizationToolCall): unknown {
     if (isRecordingSearchToolCall(toolCall)) {
