@@ -92,15 +92,19 @@ describe('withdrawStepArtifacts', () => {
     ])
   })
 
-  it('removes the thresholds committed by a thresholds step', () => {
-    const committed = createThreshold({ id: 'committed' })
-    const own = createThreshold({ id: 'own' })
-    useGeneratorStore.setState({ thresholds: [committed, own] })
+  it('removes everything a thresholds step produced, keeping pre-existing rows', () => {
+    const preexisting = createThreshold({ id: 'pre-existing' })
+    const suggested = createThreshold({ id: 'suggested' })
+    const addedInStep = createThreshold({ id: 'added-in-step' })
+    useGeneratorStore.setState({
+      thresholds: [preexisting, suggested, addedInStep],
+    })
     const stepState: StepState = {
       status: 'completed',
       result: {
         step: 'thresholds',
-        rationaleById: { committed: 'observed p95' },
+        rationaleById: { suggested: 'observed p95' },
+        preexistingIds: ['pre-existing'],
       },
       log: [],
       summary: '',
@@ -108,7 +112,7 @@ describe('withdrawStepArtifacts', () => {
 
     withdrawStepArtifacts(stepState)
 
-    expect(useGeneratorStore.getState().thresholds).toEqual([own])
+    expect(useGeneratorStore.getState().thresholds).toEqual([preexisting])
   })
 
   it('ignores steps that are not completed', () => {
@@ -124,7 +128,11 @@ describe('invalidateDownstreamSteps', () => {
   function completedThresholds(): StepState {
     return {
       status: 'completed',
-      result: { step: 'thresholds', rationaleById: { t1: 'why' } },
+      result: {
+        step: 'thresholds',
+        rationaleById: { t1: 'why' },
+        preexistingIds: [],
+      },
       log: [],
       summary: '',
     }

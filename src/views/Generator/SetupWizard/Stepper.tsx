@@ -1,41 +1,69 @@
 import { Flex, Text } from '@radix-ui/themes'
-import { CheckIcon } from 'lucide-react'
-import { Fragment } from 'react'
+import { CheckIcon, MinusIcon } from 'lucide-react'
+import { ComponentProps, CSSProperties, Fragment } from 'react'
 
 import { STEP_CONFIG } from './constants'
 import { isStepReachable } from './state/reducer'
 import { useSetupWizard } from './state/SetupWizardContext'
-import { WIZARD_STEPS, WizardStep } from './state/types'
+import { isStepDone, StepState, WIZARD_STEPS, WizardStep } from './state/types'
 
-type StepDisplayState = 'done' | 'active' | 'todo'
+type StepDisplayState = 'done' | 'skipped' | 'active' | 'todo'
 
 function getStepDisplayState(
   stepId: WizardStep,
   activeStep: WizardStep,
-  isCompleted: boolean
+  stepState: StepState
 ): StepDisplayState {
-  if (isCompleted) return 'done'
+  if (stepState.status === 'completed') return 'done'
+  if (stepState.status === 'skipped') return 'skipped'
   if (stepId === activeStep) return 'active'
 
   return 'todo'
 }
 
-const circleStyles: Record<StepDisplayState, Record<string, string>> = {
+type TextColor = ComponentProps<typeof Text>['color']
+
+// Emphasis keys off the active step, not the display state: a completed step
+// the user navigates back to is both active and "done", and must stay
+// highlighted.
+function getLabelColor(
+  isActive: boolean,
+  displayState: StepDisplayState
+): TextColor {
+  if (isActive) return 'orange'
+  if (displayState === 'todo' || displayState === 'skipped') return 'gray'
+
+  return undefined
+}
+
+// Skipped and todo circles share the muted look; the circle content (minus
+// icon vs step number) is what tells them apart.
+const mutedCircleStyle: CSSProperties = {
+  backgroundColor: 'var(--gray-3)',
+  border: '2px solid var(--gray-6)',
+  color: 'var(--gray-10)',
+}
+
+const circleStyles: Record<StepDisplayState, CSSProperties> = {
   done: {
     backgroundColor: 'var(--orange-9)',
     border: '2px solid var(--orange-9)',
     color: 'white',
   },
+  skipped: mutedCircleStyle,
   active: {
     backgroundColor: 'var(--color-panel)',
     border: '2px solid var(--orange-9)',
     color: 'var(--orange-11)',
   },
-  todo: {
-    backgroundColor: 'var(--gray-3)',
-    border: '2px solid var(--gray-6)',
-    color: 'var(--gray-10)',
-  },
+  todo: mutedCircleStyle,
+}
+
+function getCircleContent(displayState: StepDisplayState, number: number) {
+  if (displayState === 'done') return <CheckIcon size={15} />
+  if (displayState === 'skipped') return <MinusIcon size={15} />
+
+  return number
 }
 
 function StepCircle({
@@ -59,7 +87,7 @@ function StepCircle({
         ...circleStyles[displayState],
       }}
     >
-      {displayState === 'done' ? <CheckIcon size={15} /> : number}
+      {getCircleContent(displayState, number)}
     </Flex>
   )
 }
@@ -81,11 +109,10 @@ export function Stepper() {
       <Flex align="center" width="100%" maxWidth="860px" mx="auto">
         {WIZARD_STEPS.map((stepId, index) => {
           const config = STEP_CONFIG[stepId]
-          const isCompleted = state.steps[stepId].status === 'completed'
           const displayState = getStepDisplayState(
             stepId,
             state.activeStep,
-            isCompleted
+            state.steps[stepId]
           )
           const isClickable = isStepReachable(state, stepId)
           const isLast = index === WIZARD_STEPS.length - 1
@@ -94,7 +121,7 @@ export function Stepper() {
             <Fragment key={stepId}>
               <button
                 type="button"
-                aria-label={`Step ${index + 1}: ${config.label}`}
+                aria-label={`Step ${index + 1}: ${config.label}${displayState === 'skipped' ? ' (skipped)' : ''}`}
                 aria-current={stepId === state.activeStep ? 'step' : undefined}
                 disabled={!isClickable}
                 onClick={() => dispatch({ type: 'goToStep', stepId })}
@@ -102,7 +129,7 @@ export function Stepper() {
                   all: 'unset',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 9,
+                  gap: 8,
                   flexShrink: 0,
                   cursor: isClickable ? 'pointer' : 'default',
                 }}
@@ -110,8 +137,11 @@ export function Stepper() {
                 <StepCircle displayState={displayState} number={index + 1} />
                 <Text
                   size="1"
-                  weight={stepId === state.activeStep ? 'bold' : 'medium'}
-                  color={displayState === 'todo' ? 'gray' : undefined}
+                  weight="medium"
+                  color={getLabelColor(
+                    stepId === state.activeStep,
+                    displayState
+                  )}
                   css={{ whiteSpace: 'nowrap' }}
                 >
                   {config.label}
@@ -122,9 +152,11 @@ export function Stepper() {
                   flexGrow="1"
                   css={{
                     height: 2,
-                    minWidth: 24,
-                    margin: '0 14px',
-                    backgroundColor: isCompleted
+                    minWidth: 8,
+                    margin: '0 8px',
+                    // Skipped counts as progress too, so the rail stays
+                    // continuous past a skipped step.
+                    backgroundColor: isStepDone(state.steps[stepId])
                       ? 'var(--orange-8)'
                       : 'var(--gray-5)',
                   }}

@@ -34,7 +34,7 @@ import { HTTP_METRICS_CONFIG } from '@/views/Generator/TestOptions/httpThreshold
 
 import { STEP_CONFIG } from '../../constants'
 import { useSetupWizard } from '../../state/SetupWizardContext'
-import { WIZARD_STEPS, WizardStep } from '../../state/types'
+import { isStepDone, WIZARD_STEPS, WizardStep } from '../../state/types'
 import { useWizardNavigation } from '../../state/useWizardNavigation'
 import { StepFrame } from '../../StepFrame'
 
@@ -435,7 +435,7 @@ function AssistantRecap() {
               {label}
             </Text>
             <Text size="2" color="gray">
-              {stepState.status === 'completed' ? stepState.summary : '-'}
+              {isStepDone(stepState) ? stepState.summary : '-'}
             </Text>
           </Flex>
         )

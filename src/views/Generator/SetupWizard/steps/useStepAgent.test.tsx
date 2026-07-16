@@ -68,16 +68,16 @@ beforeEach(() => {
 })
 
 describe('useStepAgent', () => {
-  it('keeps the step completed when skipping mid-run unmounts it', async () => {
+  it('keeps the step skipped when skipping mid-run unmounts it', async () => {
     renderWizard()
 
     // Skip is clicked while the agent is still running; the same handler advances
     // to the next step, unmounting this one. The unmount must not re-abort the
-    // step the skip just completed.
+    // step the skip just finished.
     await userEvent.click(screen.getByRole('button', { name: 'Skip step' }))
 
     expect(screen.getByTestId('after-hosts').textContent).toBe(
-      'autocorrelation:completed'
+      'autocorrelation:skipped'
     )
     expect(window.studio.app.trackEvent).toHaveBeenCalledWith({
       event: 'test_setup_wizard_step_finished',

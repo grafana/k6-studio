@@ -134,7 +134,7 @@ describe('AutocorrelationStep', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Skip step' }))
 
     expect(screen.getByTestId('probe').textContent).toBe(
-      'parameterization:completed'
+      'parameterization:skipped'
     )
   })
 

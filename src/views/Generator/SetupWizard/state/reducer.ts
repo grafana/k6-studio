@@ -6,6 +6,7 @@ import {
   StepState,
   WizardAction,
   WizardState,
+  isStepDone,
 } from './types'
 
 const notStarted: StepState = { status: 'not-started' }
@@ -23,27 +24,28 @@ export const initialWizardState: WizardState = {
 }
 
 /**
- * A completed step can always be revisited; otherwise a step is reachable
- * when every step before it is completed (i.e. it is the next step in line).
+ * A done (completed or skipped) step can always be revisited; otherwise a
+ * step is reachable when every step before it is done (i.e. it is the next
+ * step in line).
  */
 export function isStepReachable(
   state: WizardState,
   stepId: WizardStep
 ): boolean {
-  if (state.steps[stepId].status === 'completed') {
+  if (isStepDone(state.steps[stepId])) {
     return true
   }
 
   const index = WIZARD_STEPS.indexOf(stepId)
-  const completedPrefixLength = WIZARD_STEPS.findIndex(
-    (step) => state.steps[step].status !== 'completed'
+  const donePrefixLength = WIZARD_STEPS.findIndex(
+    (step) => !isStepDone(state.steps[step])
   )
 
-  if (completedPrefixLength === -1) {
+  if (donePrefixLength === -1) {
     return true
   }
 
-  return index <= completedPrefixLength
+  return index <= donePrefixLength
 }
 
 function withStepState(
@@ -76,6 +78,14 @@ export function wizardReducer(
     case 'stepRunCompleted':
       return withStepState(state, action.stepId, {
         status: 'completed',
+        result: action.result,
+        log: action.log,
+        summary: action.summary,
+      })
+
+    case 'stepRunSkipped':
+      return withStepState(state, action.stepId, {
+        status: 'skipped',
         result: action.result,
         log: action.log,
         summary: action.summary,
@@ -123,11 +133,11 @@ export function wizardReducer(
     case 'continue': {
       const index = WIZARD_STEPS.indexOf(state.activeStep)
 
-      // Advance only when the active step and everything before it are
-      // completed, so resetting an earlier step blocks finishing the wizard
-      // through still-completed later steps.
-      const reachedInOrder = WIZARD_STEPS.slice(0, index + 1).every(
-        (step) => state.steps[step].status === 'completed'
+      // Advance only when the active step and everything before it are done,
+      // so resetting an earlier step blocks finishing the wizard through
+      // still-done later steps.
+      const reachedInOrder = WIZARD_STEPS.slice(0, index + 1).every((step) =>
+        isStepDone(state.steps[step])
       )
 
       if (!reachedInOrder) {

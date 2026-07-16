@@ -53,6 +53,25 @@ describe('Stepper', () => {
     ).toHaveProperty('disabled', true)
   })
 
+  it('marks a skipped step distinctly from a completed one', () => {
+    renderStepper({
+      activeStep: 'autocorrelation',
+      steps: {
+        ...initialWizardState.steps,
+        hosts: {
+          status: 'skipped',
+          result: { step: 'hosts', suggestions: [] },
+          log: [],
+          summary: 'Step skipped',
+        },
+      },
+    })
+
+    expect(
+      screen.getByRole('button', { name: 'Step 1: Hosts (skipped)' })
+    ).toBeDefined()
+  })
+
   it('navigates to a completed step when clicked', async () => {
     renderStepper({
       activeStep: 'autocorrelation',

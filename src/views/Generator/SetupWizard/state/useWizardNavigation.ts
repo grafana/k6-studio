@@ -1,5 +1,5 @@
 import { useSetupWizard } from './SetupWizardContext'
-import { WIZARD_STEPS } from './types'
+import { isStepDone, WIZARD_STEPS } from './types'
 
 export function useWizardNavigation() {
   const { state, dispatch } = useSetupWizard()
@@ -8,7 +8,7 @@ export function useWizardNavigation() {
   return {
     activeStep: state.activeStep,
     isLastStep: activeIndex === WIZARD_STEPS.length - 1,
-    isStepCompleted: state.steps[state.activeStep].status === 'completed',
+    isStepDone: isStepDone(state.steps[state.activeStep]),
     goBack: () => dispatch({ type: 'back' }),
     goNext: () => dispatch({ type: 'continue' }),
   }

@@ -5,7 +5,7 @@ import { useGeneratorStore } from '@/store/generator'
 import { ParameterizationRule } from '@/types/rules'
 
 import { useStepState } from '../../state/SetupWizardContext'
-import { ParamSuggestionMeta } from '../../state/types'
+import { isStepDone, ParamSuggestionMeta } from '../../state/types'
 import { useWizardNavigation } from '../../state/useWizardNavigation'
 import { StepFrame } from '../../StepFrame'
 import { WizardFooter } from '../../WizardFooter'
@@ -65,10 +65,7 @@ function CompletedParameterizationStep({ onRerun }: { onRerun: () => void }) {
   const stepState = useStepState('parameterization')
   const { goBack, goNext } = useWizardNavigation()
 
-  if (
-    stepState.status !== 'completed' ||
-    stepState.result.step !== 'parameterization'
-  ) {
+  if (!isStepDone(stepState) || stepState.result.step !== 'parameterization') {
     return null
   }
 
@@ -102,7 +99,7 @@ export function ParameterizationStep() {
     goNext()
   }
 
-  if (stepState.status === 'completed') {
+  if (isStepDone(stepState)) {
     return <CompletedParameterizationStep onRerun={restart} />
   }
 

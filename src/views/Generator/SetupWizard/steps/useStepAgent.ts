@@ -99,7 +99,7 @@ export function useStepAgent<TTools extends ToolSet>({
 
     trackFinished('skipped')
     dispatch({
-      type: 'stepRunCompleted',
+      type: 'stepRunSkipped',
       stepId,
       result,
       log: agent.actionsLog.entries,

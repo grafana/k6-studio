@@ -4,7 +4,7 @@ import { SuggestionListPanel } from '@/components/SuggestionList/SuggestionListP
 import { useGeneratorStore } from '@/store/generator'
 
 import { useSetupWizard, useStepState } from '../../state/SetupWizardContext'
-import { HostSuggestion } from '../../state/types'
+import { HostSuggestion, isStepDone } from '../../state/types'
 import { useWizardNavigation } from '../../state/useWizardNavigation'
 import { StepFrame } from '../../StepFrame'
 import { WizardFooter } from '../../WizardFooter'
@@ -86,7 +86,7 @@ function CompletedHostsStep({ onRerun }: { onRerun: () => void }) {
   const allowlist = useGeneratorStore((store) => store.allowlist)
   const { goBack, goNext } = useWizardNavigation()
 
-  if (stepState.status !== 'completed' || stepState.result.step !== 'hosts') {
+  if (!isStepDone(stepState) || stepState.result.step !== 'hosts') {
     return null
   }
 
@@ -127,7 +127,7 @@ export function HostsStep() {
     goNext()
   }
 
-  if (stepState.status === 'completed') {
+  if (isStepDone(stepState)) {
     return <CompletedHostsStep onRerun={restart} />
   }
 

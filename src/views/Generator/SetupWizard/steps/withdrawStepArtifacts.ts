@@ -1,6 +1,7 @@
 import { useGeneratorStore } from '@/store/generator'
 
 import {
+  isStepDone,
   StepState,
   WizardAction,
   WizardState,
@@ -15,7 +16,9 @@ import {
  * steps after the host selection changes.
  */
 export function withdrawStepArtifacts(stepState: StepState) {
-  if (stepState.status !== 'completed') {
+  // Skipped runs commit artifacts too (e.g. the hosts fallback allowlist),
+  // so they withdraw the same way completed runs do.
+  if (!isStepDone(stepState)) {
     return
   }
 
@@ -51,9 +54,11 @@ export function withdrawStepArtifacts(stepState: StepState) {
     }
 
     case 'thresholds': {
-      const committedIds = new Set(Object.keys(result.rationaleById))
+      // Everything beyond the pre-existing snapshot belongs to the step:
+      // the committed suggestions and any rows the user added while on it.
+      const preexistingIds = new Set(result.preexistingIds)
       store.setThresholds(
-        store.thresholds.filter((threshold) => !committedIds.has(threshold.id))
+        store.thresholds.filter((threshold) => preexistingIds.has(threshold.id))
       )
       return
     }

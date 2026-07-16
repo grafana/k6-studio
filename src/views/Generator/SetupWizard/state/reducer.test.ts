@@ -195,6 +195,61 @@ describe('wizardReducer', () => {
     })
   })
 
+  it('records a skipped run as skipped, not completed', () => {
+    const skipped = wizardReducer(
+      { ...initialWizardState, screen: 'wizard' },
+      {
+        type: 'stepRunSkipped',
+        stepId: 'hosts',
+        result: { step: 'hosts', suggestions: [] },
+        log: [],
+        summary: 'Step skipped, kept the first-party host',
+      }
+    )
+
+    expect(skipped.steps.hosts).toEqual({
+      status: 'skipped',
+      result: { step: 'hosts', suggestions: [] },
+      log: [],
+      summary: 'Step skipped, kept the first-party host',
+    })
+  })
+
+  it('continue advances past a skipped step', () => {
+    const state = wizardReducer(
+      { ...initialWizardState, screen: 'wizard' },
+      {
+        type: 'stepRunSkipped',
+        stepId: 'hosts',
+        result: { step: 'hosts', suggestions: [] },
+        log: [],
+        summary: 'Step skipped',
+      }
+    )
+
+    const next = wizardReducer(state, { type: 'continue' })
+
+    expect(next.activeStep).toBe('autocorrelation')
+  })
+
+  it('goToStep jumps back to a skipped step', () => {
+    const withSkipped = wizardReducer(
+      { ...initialWizardState, screen: 'wizard' },
+      {
+        type: 'stepRunSkipped',
+        stepId: 'hosts',
+        result: { step: 'hosts', suggestions: [] },
+        log: [],
+        summary: 'Step skipped',
+      }
+    )
+    const onNext = wizardReducer(withSkipped, { type: 'continue' })
+
+    const back = wizardReducer(onNext, { type: 'goToStep', stepId: 'hosts' })
+
+    expect(back.activeStep).toBe('hosts')
+  })
+
   it('resets a step back to not-started', () => {
     const state = stateWithCompleted('hosts')
 

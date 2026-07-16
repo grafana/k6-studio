@@ -17,6 +17,7 @@ import {
 } from '@/views/Generator/AutoCorrelation/types'
 
 import { useSetupWizard, useStepState } from '../../state/SetupWizardContext'
+import { isStepDone } from '../../state/types'
 import { useWizardNavigation } from '../../state/useWizardNavigation'
 import { StepFrame, StepHeader } from '../../StepFrame'
 import { WizardFooter } from '../../WizardFooter'
@@ -48,10 +49,7 @@ function CompletedStep() {
   const rules = useGeneratorStore((store) => store.rules)
   const toggleEnableRule = useGeneratorStore((store) => store.toggleEnableRule)
 
-  if (
-    stepState.status !== 'completed' ||
-    stepState.result.step !== 'autocorrelation'
-  ) {
+  if (!isStepDone(stepState) || stepState.result.step !== 'autocorrelation') {
     return null
   }
 
@@ -236,12 +234,12 @@ export function AutocorrelationStep() {
   }
 
   const handleSkip = () => {
-    // Skip completes the step and navigates away in one commit; mark it so the
-    // unmount cleanup does not clobber the just-completed step back to aborted.
+    // Skip finishes the step and navigates away in one commit; mark it so the
+    // unmount cleanup does not clobber the just-skipped step back to aborted.
     terminatedRef.current = true
     trackFinished('skipped')
     dispatch({
-      type: 'stepRunCompleted',
+      type: 'stepRunSkipped',
       stepId: 'autocorrelation',
       result: { step: 'autocorrelation', entries: [] },
       log: [],
@@ -263,7 +261,7 @@ export function AutocorrelationStep() {
     dispatch({ type: 'stepRunReset', stepId: 'autocorrelation' })
   }
 
-  if (stepState.status === 'completed') {
+  if (isStepDone(stepState)) {
     return <CompletedStep />
   }
 
