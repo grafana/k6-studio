@@ -91,6 +91,10 @@ export function AssistantAuthGate({ children }: AssistantAuthGateProps) {
     return (
       <GateLayout>
         <GateSpinner label="Waiting for approval" />
+        <Text size="2" color="gray">
+          Finish signing in on the browser tab we opened, then come back to k6
+          Studio.
+        </Text>
         {signIn.verificationCode !== null && (
           <Text size="2" color="gray">
             Verification code{' '}

@@ -1,6 +1,7 @@
-import { Badge, Button, Text } from '@radix-ui/themes'
+import { Badge, Text } from '@radix-ui/themes'
 import { useEffect } from 'react'
 
+import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { View } from '@/components/Layout/View'
 import { FileLocation } from '@/handlers/fs/types'
 import { ScriptPreview } from '@/hooks/useScriptPreview'
@@ -11,7 +12,6 @@ import { basename } from '@/utils/path'
 import { ChoiceScreen } from './ChoiceScreen'
 import { initialWizardState } from './state/reducer'
 import { useSetupWizard, SetupWizardProvider } from './state/SetupWizardContext'
-import { WIZARD_STEPS } from './state/types'
 import { WizardShell } from './WizardShell'
 
 export type SetupWizardOutcome = 'completed' | 'manual'
@@ -64,20 +64,6 @@ function ExperimentalChip() {
     <Badge color="orange" variant="soft" size="1">
       Experimental
     </Badge>
-  )
-}
-
-function StepIndicator() {
-  const { state } = useSetupWizard()
-
-  if (state.screen !== 'wizard') {
-    return null
-  }
-
-  return (
-    <Text size="1" color="gray">
-      Step {WIZARD_STEPS.indexOf(state.activeStep) + 1} of {WIZARD_STEPS.length}
-    </Text>
   )
 }
 
@@ -162,18 +148,16 @@ function SetupWizardView({
         </>
       }
       actions={
-        <>
-          <StepIndicator />
-          <Button
-            variant="ghost"
-            color="gray"
-            size="1"
-            onClick={handleClose}
-            css={{ margin: 0 }}
-          >
-            Close
-          </Button>
-        </>
+        <ButtonWithTooltip
+          variant="ghost"
+          color="gray"
+          size="1"
+          tooltip="Close guided setup and open the generator. Your changes from finished steps are kept."
+          onClick={handleClose}
+          css={{ margin: 0 }}
+        >
+          Close
+        </ButtonWithTooltip>
       }
       loading={isLoading}
     >

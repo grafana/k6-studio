@@ -23,7 +23,7 @@ export const STEP_CONFIG: Record<WizardStep, StepConfig> = {
     hint: 'Choose what to test',
     title: 'Select hosts',
     description:
-      'The Assistant identified which hosts carry the load you care about. Include or exclude any before continuing.',
+      'The Assistant will identify which hosts carry the load you care about. Include or exclude any before continuing.',
     icon: NetworkIcon,
   },
   autocorrelation: {
@@ -31,7 +31,7 @@ export const STEP_CONFIG: Record<WizardStep, StepConfig> = {
     hint: 'Handle dynamic values',
     title: 'Autocorrelation',
     description:
-      "Dynamic values like tokens and IDs change every run. The Assistant created rules to extract and reuse them so your script won't break.",
+      "Dynamic values like tokens and IDs change every run. The Assistant will extract and reuse them so your script won't break.",
     icon: LinkIcon,
   },
   parameterization: {
@@ -39,7 +39,7 @@ export const STEP_CONFIG: Record<WizardStep, StepConfig> = {
     hint: 'Extract values into variables',
     title: 'Parameterization',
     description:
-      'Hard-coded values like credentials and search terms are baked into your recording. The Assistant extracted them into variables you can edit in one place.',
+      'Hard-coded values like credentials and search terms are baked into your recording. The Assistant will pull them into variables you can edit in one place.',
     icon: DatabaseIcon,
   },
   thresholds: {
@@ -47,7 +47,7 @@ export const STEP_CONFIG: Record<WizardStep, StepConfig> = {
     hint: 'Set pass/fail criteria',
     title: 'Thresholds',
     description:
-      'Pass/fail criteria for your test. The Assistant tuned these to the latency it observed - edit any value inline.',
+      'Pass/fail criteria for your test. The Assistant will tune these to the latency it observes. Edit any value inline.',
     icon: GaugeIcon,
   },
   runTest: {

@@ -1,3 +1,4 @@
+import { Theme } from '@radix-ui/themes'
 import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -35,7 +36,7 @@ describe('SetupWizard', () => {
   })
 
   it('tracks when the wizard is opened', () => {
-    render(<SetupWizard {...defaultProps} />)
+    render(<SetupWizard {...defaultProps} />, { wrapper: Theme })
 
     expect(trackEvent).toHaveBeenCalledWith({
       event: UsageEventName.TestSetupWizardOpened,
@@ -43,7 +44,7 @@ describe('SetupWizard', () => {
   })
 
   it('tracks dismissal and exits with the manual outcome', async () => {
-    render(<SetupWizard {...defaultProps} />)
+    render(<SetupWizard {...defaultProps} />, { wrapper: Theme })
 
     await userEvent.click(
       screen.getByRole('button', { name: /Open generator/ })
@@ -56,13 +57,13 @@ describe('SetupWizard', () => {
   })
 
   it('titles a fresh run "New HTTP test"', () => {
-    render(<SetupWizard {...defaultProps} />)
+    render(<SetupWizard {...defaultProps} />, { wrapper: Theme })
 
     expect(screen.getByText('New HTTP test')).toBeDefined()
   })
 
   it('labels only the guided card as experimental on the choice screen', () => {
-    render(<SetupWizard {...defaultProps} />)
+    render(<SetupWizard {...defaultProps} />, { wrapper: Theme })
 
     // The manual option is not experimental, so the screen itself carries no
     // label; the guided card does.
@@ -70,19 +71,23 @@ describe('SetupWizard', () => {
   })
 
   it('shows the experimental chip in the header once inside guided setup', () => {
-    render(<SetupWizard {...defaultProps} startInGuidedSetup />)
+    render(<SetupWizard {...defaultProps} startInGuidedSetup />, {
+      wrapper: Theme,
+    })
 
     expect(screen.getAllByText('Experimental')).toHaveLength(1)
   })
 
   it('titles a generator relaunch "Configure HTTP test"', () => {
-    render(<SetupWizard {...defaultProps} startInGuidedSetup />)
+    render(<SetupWizard {...defaultProps} startInGuidedSetup />, {
+      wrapper: Theme,
+    })
 
     expect(screen.getByText('Configure HTTP test')).toBeDefined()
   })
 
   it('exits to the generator when cancelled', async () => {
-    render(<SetupWizard {...defaultProps} />)
+    render(<SetupWizard {...defaultProps} />, { wrapper: Theme })
 
     await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
@@ -90,13 +95,13 @@ describe('SetupWizard', () => {
   })
 
   it('enters the wizard from the choice screen', async () => {
-    render(<SetupWizard {...defaultProps} />)
+    render(<SetupWizard {...defaultProps} />, { wrapper: Theme })
 
     await userEvent.click(
       screen.getByRole('button', { name: /Start guided setup/ })
     )
 
-    expect(screen.getByText('Step 1 of 5')).toBeDefined()
+    expect(screen.getByRole('button', { name: /Step 1: Hosts/ })).toBeDefined()
   })
 
   // Merely opening the wizard proves nothing; the flag is set when a step
@@ -104,7 +109,7 @@ describe('SetupWizard', () => {
   // generator or leave it dirty.
   it('does not mark the generator just for entering guided setup', async () => {
     useGeneratorStore.setState({ wizardUsed: false })
-    render(<SetupWizard {...defaultProps} />)
+    render(<SetupWizard {...defaultProps} />, { wrapper: Theme })
 
     await userEvent.click(
       screen.getByRole('button', { name: /Start guided setup/ })
@@ -115,7 +120,9 @@ describe('SetupWizard', () => {
 
   it('does not mark the generator when relaunched straight into guided setup', () => {
     useGeneratorStore.setState({ wizardUsed: false })
-    render(<SetupWizard {...defaultProps} startInGuidedSetup />)
+    render(<SetupWizard {...defaultProps} startInGuidedSetup />, {
+      wrapper: Theme,
+    })
 
     expect(useGeneratorStore.getState().wizardUsed).toBe(false)
   })

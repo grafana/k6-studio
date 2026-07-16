@@ -3,6 +3,7 @@ import { ArrowRightIcon, CheckIcon, SettingsIcon } from 'lucide-react'
 import { ReactNode } from 'react'
 
 import grotMagic from '@/assets/grot-magic.svg'
+import { ExternalLink } from '@/components/ExternalLink'
 
 interface ChoiceCardProps {
   visual: ReactNode
@@ -96,8 +97,11 @@ export function ChoiceScreen({
           How do you want to configure this test?
         </Heading>
         <Text size="2" color="gray" align="center">
-          Turn your recording into a load test. Let the Grafana Assistant guide
-          you through the setup, or configure every rule yourself.
+          Turn your recording into a load test. Let{' '}
+          <ExternalLink href="https://grafana.com/docs/grafana-cloud/machine-learning/assistant/">
+            Grafana Assistant
+          </ExternalLink>{' '}
+          guide you through the setup, or configure every rule yourself.
         </Text>
       </Flex>
       <Flex
@@ -139,7 +143,7 @@ export function ChoiceScreen({
           description="Jump straight into the generator and build your rules, parameters and options by hand."
           bullets={[
             'Full control over every rule',
-            'Familiar generator workspace',
+            'Skip the analysis, start right away',
             'Best when you know the recording',
           ]}
           action={
