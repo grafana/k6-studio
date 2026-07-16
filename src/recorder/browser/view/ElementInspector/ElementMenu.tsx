@@ -127,13 +127,11 @@ function TextInputAssertion({
   onAddAssertion,
 }: TextInputAssertionProps) {
   const handleAddAssertion = () => {
-    // Whether the control is multiline can only be read from the live DOM
-    // (tag name or `aria-multiline`), so a remote control defaults to
-    // single-line; the user can still submit and edit the expected value.
     const multiline =
-      input.kind === 'live' &&
-      (isHTMLTextAreaElement(input.element) ||
-        input.element.getAttribute('aria-multiline') === 'true')
+      input.kind === 'live'
+        ? isHTMLTextAreaElement(input.element) ||
+          input.element.getAttribute('aria-multiline') === 'true'
+        : input.isMultilineTextBox
 
     onAddAssertion({
       type: 'text-input',
@@ -232,9 +230,10 @@ export function ElementMenu({
     onSelectAssertion({
       type: 'text',
       target: getTarget(element),
-      // A remote element has no live textContent to prefill from, so the
-      // assertion starts empty; the user can still type the expected text.
-      text: element.kind === 'live' ? (element.element.textContent ?? '') : '',
+      text:
+        element.kind === 'live'
+          ? (element.element.textContent ?? '')
+          : element.state.textContent,
     })
   }
 

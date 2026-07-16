@@ -7,7 +7,7 @@ import {
 import { BrowserEventTargetSchema } from '@/schemas/recording'
 import { ElementRole, getElementRoles } from '@/utils/dom/aria'
 import { findAssociatedElement } from '@/utils/dom/dom'
-import { isHTMLInputElement } from '@/utils/dom/realm'
+import { isHTMLInputElement, isHTMLTextAreaElement } from '@/utils/dom/realm'
 import { getElementDetails } from '@/utils/dom/selectors'
 
 export const ElementRoleSchema = z.object({
@@ -26,9 +26,11 @@ export const SerializedElementStateSchema = z.object({
   target: BrowserEventTargetSchema,
   roles: z.array(ElementRoleSchema),
   bounds: BoundsSchema,
+  textContent: z.string(),
   checkedState: z.enum(['checked', 'unchecked', 'indeterminate']),
   textBoxValue: z.string(),
   isNativeCheckbox: z.boolean(),
+  isMultilineTextBox: z.boolean(),
 })
 
 export type SerializedElementState = z.infer<
@@ -41,10 +43,11 @@ export type SerializedElementState = z.infer<
  * frame boundaries as plain, serializable data.
  *
  * A label wrapping a checkbox/radio/textbox has no checked state or value of
- * its own, so `checkedState`, `textBoxValue`, and `isNativeCheckbox` are read
- * from the associated control when `element` is a label, falling back to
- * `element` itself otherwise. `target` and `roles` always describe `element`
- * as inspected, since that is what the user pointed at.
+ * its own, so `checkedState`, `textBoxValue`, `isNativeCheckbox`, and
+ * `isMultilineTextBox` are read from the associated control when `element` is
+ * a label, falling back to `element` itself otherwise. `target`, `roles`, and
+ * `textContent` always describe `element` as inspected, since that is what
+ * the user pointed at.
  */
 export function serializeElementState(
   element: Element
@@ -61,10 +64,16 @@ export function serializeElementState(
       width: bounds.width,
       height: bounds.height,
     },
+    textContent: element.textContent ?? '',
     checkedState: getCheckedState(controlElement),
     textBoxValue: getTextBoxValue(controlElement),
     isNativeCheckbox:
       isHTMLInputElement(controlElement) && controlElement.type === 'checkbox',
+    // Mirrors how the live menu decides `multiline` for a text-input
+    // assertion (see TextInputAssertion in ElementMenu.tsx).
+    isMultilineTextBox:
+      isHTMLTextAreaElement(controlElement) ||
+      controlElement.getAttribute('aria-multiline') === 'true',
   }
 }
 

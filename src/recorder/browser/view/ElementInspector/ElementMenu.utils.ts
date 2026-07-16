@@ -38,6 +38,7 @@ export interface RemoteLabeledControl {
   checkedState: SerializedElementState['checkedState']
   textBoxValue: string
   isNativeCheckbox: boolean
+  isMultilineTextBox: boolean
 }
 
 /**
@@ -118,6 +119,7 @@ export function getRemoteAssociatedControl(
     checkedState: associatedControl.checkedState,
     textBoxValue: associatedControl.textBoxValue,
     isNativeCheckbox: associatedControl.isNativeCheckbox,
+    isMultilineTextBox: associatedControl.isMultilineTextBox,
   }
 }
 

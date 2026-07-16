@@ -69,6 +69,68 @@ describe('serializeElementState', () => {
     expect(state.textBoxValue).toBe('hello world')
   })
 
+  it('captures the text content of the element itself', () => {
+    const div = document.createElement('div')
+    div.textContent = 'Some text'
+    document.body.append(div)
+
+    const state = serializeElementState(div)
+
+    expect(state.textContent).toBe('Some text')
+  })
+
+  it('captures an empty text content for an element without text', () => {
+    const div = document.createElement('div')
+    document.body.append(div)
+
+    const state = serializeElementState(div)
+
+    expect(state.textContent).toBe('')
+  })
+
+  it('reports a textarea as a multiline text box', () => {
+    const textarea = document.createElement('textarea')
+    document.body.append(textarea)
+
+    const state = serializeElementState(textarea)
+
+    expect(state.isMultilineTextBox).toBe(true)
+  })
+
+  it('reports an aria-multiline textbox as a multiline text box', () => {
+    const div = document.createElement('div')
+    div.setAttribute('role', 'textbox')
+    div.setAttribute('aria-multiline', 'true')
+    document.body.append(div)
+
+    const state = serializeElementState(div)
+
+    expect(state.isMultilineTextBox).toBe(true)
+  })
+
+  it('reports a single-line text input as not multiline', () => {
+    const textInput = document.createElement('input')
+    textInput.type = 'text'
+    document.body.append(textInput)
+
+    const state = serializeElementState(textInput)
+
+    expect(state.isMultilineTextBox).toBe(false)
+  })
+
+  it('resolves multiline-ness through an associated label', () => {
+    const label = document.createElement('label')
+    const textarea = document.createElement('textarea')
+    textarea.id = 'notes'
+    label.setAttribute('for', 'notes')
+
+    document.body.append(label, textarea)
+
+    const state = serializeElementState(label)
+
+    expect(state.isMultilineTextBox).toBe(true)
+  })
+
   it('captures viewport bounds from getBoundingClientRect', () => {
     const div = document.createElement('div')
     document.body.append(div)

@@ -161,14 +161,58 @@ describe('ElementMenu with a remote element', () => {
     expect(onSelectAssertion).toHaveBeenCalledWith({
       type: 'text-input',
       target: inputState.target,
-      // A remote control's multiline-ness can't be read without live DOM
-      // access, so it degrades to single-line.
       multiline: false,
       expected: 'hello',
     })
   })
 
-  it('reports an empty text assertion, since a remote element has no live textContent', () => {
+  it('reports a multiline text-input assertion for a textarea control', () => {
+    document.body.innerHTML =
+      '<label id="label"></label><textarea id="notes">hello</textarea>'
+
+    const label = document.querySelector('#label')
+    const textarea = document.querySelector('#notes')
+
+    if (label === null || textarea === null) {
+      throw new Error('expected #label and #notes elements')
+    }
+
+    const [labelState] = serializeElementChain(label)
+    const [textareaState] = serializeElementChain(textarea)
+
+    if (labelState === undefined || textareaState === undefined) {
+      throw new Error('expected serialized states')
+    }
+
+    const remote = toRemoteTrackedElement(
+      labelState,
+      [],
+      null,
+      { left: 0, top: 0 },
+      textareaState
+    )
+
+    const onSelectAssertion = vi.fn<(data: AssertionData) => void>()
+
+    const { getByText } = render(
+      <ElementMenu
+        element={remote}
+        onSelectAssertion={onSelectAssertion}
+        onAddWaitFor={vi.fn()}
+      />
+    )
+
+    fireEvent.click(getByText('Add value assertion'))
+
+    expect(onSelectAssertion).toHaveBeenCalledWith({
+      type: 'text-input',
+      target: textareaState.target,
+      multiline: true,
+      expected: 'hello',
+    })
+  })
+
+  it('prefills the text assertion from the serialized text content', () => {
     document.body.innerHTML = '<div id="target">Some text</div>'
     const target = document.querySelector('#target')
 
@@ -202,7 +246,7 @@ describe('ElementMenu with a remote element', () => {
     expect(onSelectAssertion).toHaveBeenCalledWith({
       type: 'text',
       target: state.target,
-      text: '',
+      text: 'Some text',
     })
   })
 })

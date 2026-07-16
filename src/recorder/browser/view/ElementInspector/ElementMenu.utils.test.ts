@@ -95,6 +95,7 @@ describe('getRemoteAssociatedControl', () => {
       checkedState: checkboxState.checkedState,
       textBoxValue: checkboxState.textBoxValue,
       isNativeCheckbox: checkboxState.isNativeCheckbox,
+      isMultilineTextBox: checkboxState.isMultilineTextBox,
     })
   })
 })
