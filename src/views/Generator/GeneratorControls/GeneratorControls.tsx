@@ -6,18 +6,52 @@ import {
   SaveIcon,
   WandSparklesIcon,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
-import { RunInCloudButton } from '@/components/RunInCloudDialog/RunInCloudButton'
+import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
+import { TITLE_GROUP_MIN_WIDTH } from '@/components/Layout/ViewHeading'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
+import { useElementWidth } from '@/hooks/useElementWidth'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { ScriptPreview } from '@/hooks/useScriptPreview'
 import { StudioFile } from '@/types'
 
 import { useScriptExport } from '../Generator.hooks'
 import { ValidatorDialog } from '../ValidatorDialog'
+
+import { getValidateTooltip } from './GeneratorControls.utils'
+
+// The header row (ViewHeading) is the container. Labels collapse in two
+// stages as it tightens; between stages the toolbar holds its min-width so
+// the file name truncates down to its floor first.
+//
+// The widths are measured from rendered content, not the window: a breakpoint
+// is the labels' width plus the title floor and row chrome. Changing the
+// minimum window size needs no retuning here; the only invariant is that the
+// narrowest possible row (min window minus activity bar and max sidebar)
+// stays at or above the fully collapsed floor
+// (COLLAPSED_ROW_WIDTH + TITLE_GROUP_MIN_WIDTH).
+const ACTION_LABELS_WIDTH = 620
+const RUN_LABEL_WIDTH = 330
+const COLLAPSED_ROW_WIDTH = 240
+// The header row's padding and the gaps around the two groups.
+const ROW_CHROME_WIDTH = 40
+
+const whenActionsCollapse = `@container (max-width: ${ACTION_LABELS_WIDTH + TITLE_GROUP_MIN_WIDTH + ROW_CHROME_WIDTH - 1}px)`
+const whenRunCollapses = `@container (max-width: ${RUN_LABEL_WIDTH + TITLE_GROUP_MIN_WIDTH + ROW_CHROME_WIDTH - 1}px)`
+
+const toolbarStageStyles = {
+  flex: '1 1 0',
+  minWidth: ACTION_LABELS_WIDTH,
+  [whenActionsCollapse]: { minWidth: RUN_LABEL_WIDTH },
+  [whenRunCollapses]: { minWidth: COLLAPSED_ROW_WIDTH },
+}
+
+const actionLabelStyles = {
+  [whenActionsCollapse]: { display: 'none' },
+}
 
 interface GeneratorControlsProps {
   file: StudioFile
@@ -39,6 +73,14 @@ export function GeneratorControls({
   const proxyStatus = useProxyStatus()
   const isScriptExportable = script.valid && !!script.preview
 
+  // Tooltips should only appear once a button is icon-only. Whether that
+  // happened is read back from the CSS outcome (the label span's width), so
+  // there is no second copy of the breakpoints to drift.
+  const actionsLabelRef = useRef<HTMLSpanElement>(null)
+  const runLabelRef = useRef<HTMLSpanElement>(null)
+  const actionsCollapsed = useElementWidth(actionsLabelRef) === 0
+  const runCollapsed = useElementWidth(runLabelRef) === 0
+
   const handleExportScript = useScriptExport(file.path)
 
   const handleDelete = useDeleteFile({
@@ -47,7 +89,7 @@ export function GeneratorControls({
   })
 
   return (
-    <Flex align="center" gap="2" ml="2">
+    <Flex align="center" justify="end" gap="2" ml="2" css={toolbarStageStyles}>
       <Flex gap="4" align="center">
         <Tooltip content={!isDirty ? 'Changes saved' : 'Save changes'}>
           <IconButton
@@ -73,32 +115,46 @@ export function GeneratorControls({
       <Flex gap="4" align="center" pl="2">
         <ButtonWithTooltip
           variant="ghost"
-          tooltip={
-            !isScriptExportable
-              ? 'Fix script errors to enable validation'
-              : proxyStatus !== 'online'
-                ? 'Start proxy to enable validation'
-                : ''
-          }
+          aria-label="Validate"
+          tooltip={getValidateTooltip(
+            isScriptExportable,
+            proxyStatus === 'online',
+            actionsCollapsed
+          )}
           onClick={() => setIsValidatorDialogOpen(true)}
           disabled={!isScriptExportable || proxyStatus !== 'online'}
         >
-          <CircleCheckBigIcon /> Validate
+          <CircleCheckBigIcon />
+          <span ref={actionsLabelRef} css={actionLabelStyles}>
+            Validate
+          </span>
         </ButtonWithTooltip>
         <ButtonWithTooltip
           variant="ghost"
-          tooltip="Reconfigure this test with the Assistant"
+          aria-label="Configure with Assistant"
+          tooltip={actionsCollapsed ? 'Configure with Assistant' : ''}
           onClick={onConfigureWithAssistant}
         >
-          <WandSparklesIcon /> Configure with Assistant
+          <WandSparklesIcon />
+          <span css={actionLabelStyles}>Configure with Assistant</span>
         </ButtonWithTooltip>
-        <RunInCloudButton
+        <ButtonWithTooltip
           variant="solid"
+          aria-label="Run in Grafana Cloud"
+          tooltip={runCollapsed ? 'Run in Grafana Cloud' : ''}
           disabled={!isScriptExportable}
           onClick={() => {
             setIsRunInCloudDialogOpen(true)
           }}
-        />
+        >
+          <GrafanaIcon />
+          <span
+            ref={runLabelRef}
+            css={{ [whenRunCollapses]: { display: 'none' } }}
+          >
+            Run in Grafana Cloud
+          </span>
+        </ButtonWithTooltip>
       </Flex>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger>
