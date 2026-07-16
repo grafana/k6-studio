@@ -49,7 +49,7 @@ export function useThresholdsAgent() {
       const stats = computeResponseTimeStats(requests)
 
       void run.start(
-        `${systemPrompt}\n\nObserved statistics:\n${JSON.stringify(stats)}`
+        `${systemPrompt}\n\nObserved statistics:\n${JSON.stringify(stats)}${buildExistingThresholdsContext()}`
       )
       run.actionsLog.addEntry({
         type: 'info',
@@ -57,11 +57,33 @@ export function useThresholdsAgent() {
       })
     },
     cleanup: cleanupCommittedThresholds,
-    skip: {
-      result: { step: 'thresholds', rationaleById: {} },
+    skip: () => ({
+      result: {
+        step: 'thresholds',
+        rationaleById: {},
+        preexistingIds: useGeneratorStore
+          .getState()
+          .thresholds.map((threshold) => threshold.id),
+      },
       summary: 'Step skipped, no thresholds suggested',
-    },
+    }),
   })
+
+  // On older generators the test may already define thresholds; without this
+  // the agent happily suggests duplicates of them.
+  function buildExistingThresholdsContext() {
+    const existing = useGeneratorStore.getState().thresholds
+
+    if (existing.length === 0) {
+      return ''
+    }
+
+    const summary = existing.map(
+      ({ metric, statistic, condition, value }) =>
+        `${metric} ${statistic} ${condition} ${value}`
+    )
+    return `\n\nThe test already defines these thresholds. Do not duplicate them; only suggest complementary ones:\n${JSON.stringify(summary)}`
+  }
 
   function handleToolCall(toolCall: ThresholdsToolCall): unknown {
     if (isRecordingSearchToolCall(toolCall)) {
@@ -163,6 +185,8 @@ export function useThresholdsAgent() {
             proposal.rationale,
           ])
         ),
+        // Snapshot taken before the commit above appended the suggestions.
+        preexistingIds: thresholds.map((threshold) => threshold.id),
       },
       log: agent.actionsLog.entries,
       summary: `Suggested ${proposals.length} threshold${proposals.length === 1 ? '' : 's'} tuned to the observed latency`,

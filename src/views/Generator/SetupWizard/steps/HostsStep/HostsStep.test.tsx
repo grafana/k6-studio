@@ -196,7 +196,7 @@ describe('HostsStep', () => {
       },
       thresholds: {
         status: 'completed',
-        result: { step: 'thresholds', rationaleById: {} },
+        result: { step: 'thresholds', rationaleById: {}, preexistingIds: [] },
         log: [],
         summary: 'Suggested thresholds',
       },

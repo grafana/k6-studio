@@ -3,6 +3,7 @@ import { act, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useGeneratorStore } from '@/store/generator'
+import { createThreshold } from '@/test/factories/threshold'
 
 import { initialWizardState } from '../../state/reducer'
 import {
@@ -25,13 +26,14 @@ type OnToolCall = (toolCall: StepToolCall) => unknown
 const agentMock = vi.hoisted(() => ({
   status: 'running',
   onToolCall: undefined as OnToolCall | undefined,
+  start: vi.fn(),
 }))
 
 vi.mock('@/utils/assistant/useAssistantAgent', () => ({
   useAssistantAgent: (options: { onToolCall: OnToolCall }) => {
     agentMock.onToolCall = options.onToolCall
     return {
-      start: vi.fn(),
+      start: agentMock.start,
       stop: vi.fn(),
       reset: vi.fn(),
       status: agentMock.status,
@@ -54,11 +56,29 @@ const completedHosts: StepState = {
 
 function StateProbe() {
   const { state } = useSetupWizard()
+  const thresholdsStep = state.steps.thresholds
 
-  return <div data-testid="probe">{state.steps.thresholds.status}</div>
+  if (thresholdsStep === undefined) {
+    return null
+  }
+
+  return (
+    <>
+      <div data-testid="probe">{thresholdsStep.status}</div>
+      <div data-testid="result">
+        {JSON.stringify(
+          thresholdsStep.status === 'completed' ? thresholdsStep.result : null
+        )}
+      </div>
+    </>
+  )
 }
 
-function App() {
+function App({
+  thresholdsStep = { status: 'running' },
+}: {
+  thresholdsStep?: StepState
+}) {
   const state: WizardState = {
     ...initialWizardState,
     screen: 'wizard',
@@ -66,7 +86,7 @@ function App() {
     steps: {
       ...initialWizardState.steps,
       hosts: completedHosts,
-      thresholds: { status: 'running' },
+      thresholds: thresholdsStep,
     },
   }
 
@@ -152,6 +172,56 @@ describe('useThresholdsAgent completion', () => {
 
     // No usage event fires for an unknown outcome.
     expect(window.studio.app.trackEvent).not.toHaveBeenCalled()
+  })
+
+  it('snapshots pre-existing thresholds and keeps them out of the step', () => {
+    useGeneratorStore.setState({
+      thresholds: [createThreshold({ id: 'pre-1' })],
+    })
+
+    const { rerender } = render(<App />)
+
+    act(() => {
+      void agentMock.onToolCall!({
+        type: 'tool-call',
+        toolName: 'suggestThresholds',
+        toolCallId: 't1',
+        input: { thresholds: [suggestion] },
+      })
+    })
+    act(() => {
+      void agentMock.onToolCall!({
+        type: 'tool-call',
+        toolName: 'finish',
+        toolCallId: 't2',
+        input: { outcome: 'success' },
+      })
+    })
+
+    agentMock.status = 'completed'
+    rerender(<App />)
+
+    // Both survive in the store; the result records which one pre-dates the
+    // step so the completed view and withdrawal leave it alone.
+    expect(useGeneratorStore.getState().thresholds).toHaveLength(2)
+    const result: unknown = JSON.parse(
+      screen.getByTestId('result').textContent ?? 'null'
+    )
+    expect(result).toMatchObject({ preexistingIds: ['pre-1'] })
+  })
+
+  it('tells the agent about thresholds the test already defines', () => {
+    useGeneratorStore.setState({
+      thresholds: [createThreshold({ id: 'pre-1', statistic: 'p(99)' })],
+    })
+
+    // Starting from not-started lets the auto-start effect kick off the run.
+    render(<App thresholdsStep={{ status: 'not-started' }} />)
+
+    expect(agentMock.start).toHaveBeenCalled()
+    const prompt: unknown = agentMock.start.mock.calls.at(-1)![0]
+    expect(prompt).toContain('already defines')
+    expect(prompt).toContain('p(99)')
   })
 
   it('commits proposals when finish reports success', () => {

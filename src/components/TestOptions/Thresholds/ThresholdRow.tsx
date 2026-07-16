@@ -20,6 +20,7 @@ import { FieldGroup, ControlledSelect } from '@/components/Form'
 
 import { MetricsConfig } from './createMetricsConfig'
 import {
+  RowControl,
   THRESHOLD_CONDITIONS_OPTIONS,
   ThresholdLikeRow,
 } from './Thresholds.utils'
@@ -31,9 +32,11 @@ interface ThresholdFormShape {
 type ThresholdRowProps<M extends string> = {
   index: number
   field: FieldArrayWithId<ThresholdFormShape, 'thresholds', 'id'>
-  remove?: UseFieldArrayRemove
+  remove: UseFieldArrayRemove
   metricsConfig: MetricsConfig<M>
   getRowAnnotation?: (id: string) => string | undefined
+  getRowControl?: (id: string) => RowControl
+  columnCount: number
 }
 
 export function ThresholdRow<M extends string>({
@@ -42,6 +45,8 @@ export function ThresholdRow<M extends string>({
   remove,
   metricsConfig,
   getRowAnnotation,
+  getRowControl,
+  columnCount,
 }: ThresholdRowProps<M>) {
   const {
     register,
@@ -71,6 +76,15 @@ export function ThresholdRow<M extends string>({
 
   const annotation =
     threshold?.id !== undefined ? getRowAnnotation?.(threshold.id) : undefined
+
+  // Absent getRowControl means the classic layout with both controls; with it,
+  // each row renders exactly one control in a shared column.
+  const rowControl =
+    getRowControl !== undefined && threshold?.id !== undefined
+      ? getRowControl(threshold.id)
+      : undefined
+  const showToggle = rowControl !== 'remove'
+  const showRemove = getRowControl === undefined || rowControl === 'remove'
 
   return (
     <>
@@ -169,23 +183,25 @@ export function ThresholdRow<M extends string>({
             />
           </Flex>
         </Table.Cell>
-        <Table.Cell align="center" justify="center">
-          <Flex align="center" justify="center" height="100%">
-            <Controller
-              control={control}
-              name={`thresholds.${index}.enabled`}
-              render={({ field: enabledField }) => (
-                <Switch
-                  size="1"
-                  checked={enabledField.value}
-                  aria-label="Enable threshold"
-                  onCheckedChange={enabledField.onChange}
-                />
-              )}
-            />
-          </Flex>
-        </Table.Cell>
-        {remove !== undefined && (
+        {showToggle && (
+          <Table.Cell align="center" justify="center">
+            <Flex align="center" justify="center" height="100%">
+              <Controller
+                control={control}
+                name={`thresholds.${index}.enabled`}
+                render={({ field: enabledField }) => (
+                  <Switch
+                    size="1"
+                    checked={enabledField.value}
+                    aria-label="Enable threshold"
+                    onCheckedChange={enabledField.onChange}
+                  />
+                )}
+              />
+            </Flex>
+          </Table.Cell>
+        )}
+        {showRemove && (
           <Table.Cell align="center" justify="center">
             <Flex align="center" justify="center" height="100%">
               <IconButton
@@ -203,7 +219,7 @@ export function ThresholdRow<M extends string>({
       {annotation !== undefined && (
         <Table.Row>
           <Table.Cell
-            colSpan={remove !== undefined ? 7 : 6}
+            colSpan={columnCount}
             css={{
               height: 'auto',
               paddingTop: 0,

@@ -6,6 +6,10 @@ import type {
 } from '@/schemas/generator'
 import { getLogicalOperatorLabelAndIcon } from '@/utils/operatorLabels'
 
+/** The single control a threshold row offers when rows are not removable and
+ * toggleable at once. */
+export type RowControl = 'toggle' | 'remove'
+
 export interface ThresholdLikeRow {
   id: string
   metric: string
