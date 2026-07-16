@@ -8,6 +8,7 @@ import { client } from './routing'
 import { configureStorage } from './storage'
 import { isInFrame } from './utils'
 import { initializeView } from './view'
+import { attachFrameHighlights } from './view/frameHighlights'
 import {
   attachInspectionDetection,
   attachTextSelectionDetection,
@@ -43,6 +44,7 @@ if (isInFrame()) {
   agent.announce()
   attachInspectionDetection()
   attachTextSelectionDetection()
+  attachFrameHighlights(client, getOwnFramePath)
 } else {
   useInBrowserUIStore.subscribe((state, previous) => {
     const active = state.tool !== null
