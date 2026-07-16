@@ -81,7 +81,9 @@ const createWindow = async () => {
     y,
     width,
     height,
-    minWidth: 800,
+    // Keeps the narrowest view row (with the sidebar at its max) above the
+    // header's fully collapsed floor; see GeneratorControls' breakpoints.
+    minWidth: 1000,
     minHeight: 600,
     show: false,
     icon,
