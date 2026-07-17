@@ -77,8 +77,11 @@ export function GeneratorControls({
   const proxyStatus = useProxyStatus()
   const isScriptExportable = script.valid && !!script.preview
   // The wizard configures the test from the recording's requests, so it needs
-  // a recording to work with.
+  // a selected recording that actually contains some. Raw requests, not the
+  // allowlist-filtered set: before the wizard's hosts step runs, the allowlist
+  // is typically empty.
   const hasRecording = useGeneratorStore((store) => store.recordingPath !== '')
+  const hasRequests = useGeneratorStore((store) => store.requests.length > 0)
 
   // Tooltips should only appear once a button is icon-only. Whether that
   // happened is read back from the CSS outcome (the label span's width), so
@@ -139,8 +142,12 @@ export function GeneratorControls({
         <ButtonWithTooltip
           variant="ghost"
           aria-label="Configure with Assistant"
-          tooltip={getConfigureTooltip(hasRecording, actionsCollapsed)}
-          disabled={!hasRecording}
+          tooltip={getConfigureTooltip(
+            hasRecording,
+            hasRequests,
+            actionsCollapsed
+          )}
+          disabled={!hasRecording || !hasRequests}
           onClick={onConfigureWithAssistant}
         >
           <WandSparklesIcon />

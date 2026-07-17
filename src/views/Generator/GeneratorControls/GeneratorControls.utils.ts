@@ -21,9 +21,11 @@ export function getValidateTooltip(
  */
 export function getConfigureTooltip(
   hasRecording: boolean,
+  hasRequests: boolean,
   isCompact: boolean
 ): string {
   if (!hasRecording) return 'Select a recording to configure with the Assistant'
+  if (!hasRequests) return 'The selected recording has no requests to analyze'
   if (isCompact) return 'Configure with Assistant'
 
   return ''
