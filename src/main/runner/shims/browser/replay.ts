@@ -20,6 +20,31 @@ function isTopLevelFrame() {
   }
 }
 
+// Serialization options must match between the top frame and child frames:
+// with `recordCrossOriginIframes`, each frame serializes its own document and
+// rrweb stitches the events together in the top frame's stream.
+const RECORD_OPTIONS = {
+  blockSelector: "link[rel='modulepreload']",
+  inlineImages: true,
+  inlineStylesheet: true,
+  collectFonts: true,
+  slimDOMOptions: true,
+  // The browser runs with web security enabled, so the top frame's serializer
+  // can't reach into cross-origin iframe documents. Instead rrweb records
+  // inside each frame (this script is a context init script, so it runs in
+  // every frame) and forwards child events to the top frame over postMessage.
+  recordCrossOriginIframes: true,
+} as const
+
+if (trackingServerUrl !== null && !isTopLevelFrame()) {
+  // Child frame: serialize locally and let rrweb forward events to the top
+  // frame. The emit callback is required by the API but never called here.
+  record({
+    ...RECORD_OPTIONS,
+    emit() {},
+  })
+}
+
 if (trackingServerUrl !== null && isTopLevelFrame()) {
   let buffer: BrowserReplayEvent[] = [
     {
@@ -66,11 +91,7 @@ if (trackingServerUrl !== null && isTopLevelFrame()) {
   }, 200)
 
   record({
-    blockSelector: "link[rel='modulepreload']",
-    inlineImages: true,
-    inlineStylesheet: true,
-    collectFonts: true,
-    slimDOMOptions: true,
+    ...RECORD_OPTIONS,
     emit(event) {
       buffer.push(event)
     },
