@@ -250,6 +250,22 @@ describe('wizardReducer', () => {
     expect(back.activeStep).toBe('hosts')
   })
 
+  it('ignores a run start for a step that is not active', () => {
+    // A late start (e.g. an effect flushing after the user already navigated
+    // away) must not orphan a 'running' state on an inactive step.
+    const state: WizardState = {
+      ...stateWithCompleted('hosts'),
+      activeStep: 'hosts',
+    }
+
+    const next = wizardReducer(state, {
+      type: 'stepRunStarted',
+      stepId: 'autocorrelation',
+    })
+
+    expect(next.steps.autocorrelation).toEqual({ status: 'not-started' })
+  })
+
   it('goToStep does not leave a step while it is running', () => {
     const base: WizardState = {
       ...stateWithCompleted('hosts', 'autocorrelation'),

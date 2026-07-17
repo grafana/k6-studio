@@ -86,6 +86,13 @@ export function wizardReducer(
     }
 
     case 'stepRunStarted':
+      // A run can only start on the step the user is looking at. A late start
+      // (an effect flushing after navigation already moved on) would orphan a
+      // 'running' state that no mounted step reconciles.
+      if (action.stepId !== state.activeStep) {
+        return state
+      }
+
       return withStepState(state, action.stepId, { status: 'running' })
 
     case 'stepRunCompleted':
