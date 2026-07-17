@@ -25,10 +25,7 @@ export function UnsavedChangesDialog({
           </Dialog.Close>
         </Box>
         <Box mb="5">
-          <Text>
-            You have unsaved changes in the generator which will be lost upon
-            leaving.
-          </Text>
+          <Text>You have unsaved changes which will be lost upon leaving.</Text>
         </Box>
 
         <Flex justify="end" gap="2">
