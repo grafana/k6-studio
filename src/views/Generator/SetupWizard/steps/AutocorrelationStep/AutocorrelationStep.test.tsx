@@ -290,7 +290,9 @@ describe('AutocorrelationStep', () => {
   it('commits rules and switches to the completed view when the run settles', async () => {
     footerContext.ruleEntries = [ruleEntry]
 
-    renderStep()
+    // A settle always follows a started run; the reducer ignores completions
+    // for steps that are not running.
+    renderStep({ autocorrelation: { status: 'running' } })
 
     await userEvent.click(screen.getByRole('button', { name: 'settle-run' }))
 
@@ -305,7 +307,7 @@ describe('AutocorrelationStep', () => {
   it('marks the generator as wizard-configured when the run settles', async () => {
     footerContext.ruleEntries = [ruleEntry]
 
-    renderStep()
+    renderStep({ autocorrelation: { status: 'running' } })
 
     await userEvent.click(screen.getByRole('button', { name: 'settle-run' }))
 

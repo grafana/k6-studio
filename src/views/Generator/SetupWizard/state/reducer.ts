@@ -95,7 +95,14 @@ export function wizardReducer(
 
       return withStepState(state, action.stepId, { status: 'running' })
 
+    // Completions, failures and aborts only make sense for a live run; a late
+    // dispatch (a settle racing the user's skip, a stale unmount cleanup) must
+    // not overwrite the outcome that is already recorded.
     case 'stepRunCompleted':
+      if (state.steps[action.stepId].status !== 'running') {
+        return state
+      }
+
       return withStepState(state, action.stepId, {
         status: 'completed',
         result: action.result,
@@ -104,6 +111,13 @@ export function wizardReducer(
       })
 
     case 'stepRunSkipped':
+      // Skipping is also legal from the recovery states (proxy offline,
+      // interrupted run), but must not overwrite a run that settled an
+      // instant before the click.
+      if (isStepDone(state.steps[action.stepId])) {
+        return state
+      }
+
       return withStepState(state, action.stepId, {
         status: 'skipped',
         result: action.result,
@@ -112,12 +126,20 @@ export function wizardReducer(
       })
 
     case 'stepRunFailed':
+      if (state.steps[action.stepId].status !== 'running') {
+        return state
+      }
+
       return withStepState(state, action.stepId, {
         status: 'error',
         message: action.message,
       })
 
     case 'stepRunAborted':
+      if (state.steps[action.stepId].status !== 'running') {
+        return state
+      }
+
       return withStepState(state, action.stepId, { status: 'aborted' })
 
     case 'stepRunReset':

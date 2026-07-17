@@ -327,18 +327,75 @@ describe('wizardReducer', () => {
     expect(next.steps.thresholds).toEqual({ status: 'not-started' })
   })
 
-  it('records failures and aborts', () => {
+  it('records failures and aborts of a live run', () => {
+    const base: WizardState = { ...initialWizardState, screen: 'wizard' }
+
     const failed = wizardReducer(
-      { ...initialWizardState, screen: 'wizard' },
+      wizardReducer(base, { type: 'stepRunStarted', stepId: 'hosts' }),
       { type: 'stepRunFailed', stepId: 'hosts', message: 'boom' }
     )
     expect(failed.steps.hosts).toEqual({ status: 'error', message: 'boom' })
 
-    const aborted = wizardReducer(failed, {
+    const aborted = wizardReducer(
+      wizardReducer(failed, { type: 'stepRunStarted', stepId: 'hosts' }),
+      { type: 'stepRunAborted', stepId: 'hosts' }
+    )
+    expect(aborted.steps.hosts).toEqual({ status: 'aborted' })
+  })
+
+  it('a late settle does not overwrite a skip', () => {
+    const running = wizardReducer(
+      { ...initialWizardState, screen: 'wizard' },
+      { type: 'stepRunStarted', stepId: 'hosts' }
+    )
+    const skipped = wizardReducer(running, {
+      type: 'stepRunSkipped',
+      stepId: 'hosts',
+      result: { step: 'hosts', suggestions: [] },
+      log: [],
+      summary: 'Step skipped',
+    })
+
+    const next = wizardReducer(skipped, {
+      type: 'stepRunCompleted',
+      stepId: 'hosts',
+      result: { step: 'hosts', suggestions: [] },
+      log: [],
+      summary: 'done',
+    })
+
+    expect(next.steps.hosts.status).toBe('skipped')
+  })
+
+  it('a late skip does not overwrite a settled run', () => {
+    const state: WizardState = {
+      ...stateWithCompleted('hosts'),
+      activeStep: 'hosts',
+    }
+
+    const next = wizardReducer(state, {
+      type: 'stepRunSkipped',
+      stepId: 'hosts',
+      result: { step: 'hosts', suggestions: [] },
+      log: [],
+      summary: 'Step skipped',
+    })
+
+    expect(next.steps.hosts.status).toBe('completed')
+  })
+
+  it('a stale abort does not overwrite a settled run', () => {
+    const state: WizardState = {
+      ...stateWithCompleted('hosts'),
+      activeStep: 'hosts',
+    }
+
+    const next = wizardReducer(state, {
       type: 'stepRunAborted',
       stepId: 'hosts',
     })
-    expect(aborted.steps.hosts).toEqual({ status: 'aborted' })
+
+    expect(next.steps.hosts.status).toBe('completed')
   })
 })
 
