@@ -62,6 +62,31 @@ if (trackingServerUrl !== null && isTopLevelFrame()) {
     },
   ]
 
+  // The periodic sender below loses whatever is still buffered when the
+  // document tears down. That reliably includes cross-origin iframe content:
+  // a child frame's snapshot arrives over postMessage after the parent's own
+  // events, so a test that closes the page right after load drops it every
+  // time. keepalive lets the request outlive the document (best effort, the
+  // browser caps keepalive bodies at 64KB).
+  window.addEventListener('pagehide', () => {
+    if (buffer.length === 0) {
+      return
+    }
+
+    const events = buffer
+
+    buffer = []
+
+    void fetch(`${trackingServerUrl}/session-replay`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ events }),
+      keepalive: true,
+    }).catch(() => {
+      // The events are lost either way once the document is gone.
+    })
+  })
+
   setTimeout(async function send() {
     if (buffer.length > 0) {
       const events = buffer
