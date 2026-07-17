@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
 import { ParameterizationRuleSchema } from '@/schemas/generator'
+import { createProxyData, createRequest } from '@/test/factories/proxyData'
 
 import {
   AiParameter,
   aiParameterToRule,
+  getNonStringTargetError,
   mergeVariables,
 } from './parameterization.utils'
 
@@ -85,6 +87,74 @@ describe('aiParameterToRule', () => {
     const second = aiParameterToRule(parameter)
 
     expect(first.rule.id).not.toBe(second.rule.id)
+  })
+})
+
+describe('getNonStringTargetError', () => {
+  const requests = [
+    createProxyData({
+      request: createRequest({
+        method: 'POST',
+        url: 'http://example.com/api/login',
+        path: '/api/login',
+        headers: [['content-type', 'application/json']],
+        content:
+          '{"email":"user@example.com","calories":2000,"newsletter":false}',
+      }),
+    }),
+  ]
+
+  function jsonParameter(path: string): AiParameter {
+    return { ...parameter, selector: { type: 'json', from: 'body', path } }
+  }
+
+  it('rejects a json target that is a number in the recording', () => {
+    expect(
+      getNonStringTargetError(jsonParameter('calories'), requests)
+    ).toContain('number')
+  })
+
+  it('rejects a json target that is a boolean in the recording', () => {
+    expect(
+      getNonStringTargetError(jsonParameter('newsletter'), requests)
+    ).toContain('boolean')
+  })
+
+  it('accepts a json target that is a string in the recording', () => {
+    expect(getNonStringTargetError(jsonParameter('email'), requests)).toBeNull()
+  })
+
+  it('normalizes JSONPath-style paths before checking', () => {
+    expect(
+      getNonStringTargetError(jsonParameter('$.calories'), requests)
+    ).toContain('number')
+  })
+
+  it('ignores non-json selectors', () => {
+    expect(
+      getNonStringTargetError(
+        { ...parameter, selector: { type: 'regex', from: 'url', regex: 'x' } },
+        requests
+      )
+    ).toBeNull()
+  })
+
+  it('accepts when no recorded request matches the location', () => {
+    expect(
+      getNonStringTargetError(
+        {
+          ...jsonParameter('calories'),
+          location: { method: 'POST', path: '/api/other', in: 'body' },
+        },
+        requests
+      )
+    ).toBeNull()
+  })
+
+  it('accepts when the path does not exist in matching bodies', () => {
+    expect(
+      getNonStringTargetError(jsonParameter('missing.path'), requests)
+    ).toBeNull()
   })
 })
 

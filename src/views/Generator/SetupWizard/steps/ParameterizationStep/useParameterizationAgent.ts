@@ -20,6 +20,7 @@ import {
 } from './constants'
 import {
   aiParameterToRule,
+  getNonStringTargetError,
   mergeVariables,
   ParameterizationProposal,
 } from './parameterization.utils'
@@ -93,6 +94,14 @@ export function useParameterizationAgent() {
     switch (toolCall.toolName) {
       case 'addParameter': {
         const { parameter } = addParameterInputSchema.parse(toolCall.input)
+
+        // Codegen only supports replacing string values; a proposal aimed at
+        // a recorded number or boolean is bounced back to the model.
+        const typeError = getNonStringTargetError(parameter, requests)
+        if (typeError !== null) {
+          return { error: typeError }
+        }
+
         const proposal = aiParameterToRule(parameter)
         proposalsRef.current = [...proposalsRef.current, proposal]
         agent.actionsLog.addEntry({

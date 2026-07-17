@@ -67,6 +67,7 @@ Do NOT parameterize values that are correlated session state (tokens or IDs extr
 
 ## addParameter input constraints
 
+- Only string values can be parameterized. Skip values that are JSON numbers or booleans (e.g. "count": 20, "enabled": true) - replacing those is not supported.
 - variableName must contain only letters, digits, and underscores (e.g. "username", "max_calories").
 - A "json" selector always has from: "body". For values in the URL or query string use a "regex" or "begin-end" selector with from: "url"; for header values use from: "headers".
 - A "json" selector path is a plain object path like "user.email" or "items[0].id". NEVER use JSONPath syntax - no "$." prefix.

@@ -3,6 +3,7 @@ import { act, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useGeneratorStore } from '@/store/generator'
+import { createProxyData, createRequest } from '@/test/factories/proxyData'
 import { jsonRule } from '@/test/fixtures/parameterizationRules'
 
 import { initialWizardState } from '../../state/reducer'
@@ -146,6 +147,63 @@ describe('useParameterizationAgent completion', () => {
 
     // No usage event fires for an unknown outcome.
     expect(window.studio.app.trackEvent).not.toHaveBeenCalled()
+  })
+
+  it('rejects a proposal targeting a non-string json value', () => {
+    useGeneratorStore.setState({
+      requests: [
+        createProxyData({
+          request: createRequest({
+            method: 'POST',
+            url: 'http://example.com/api/login',
+            path: '/api/login',
+            headers: [['content-type', 'application/json']],
+            content: '{"calories":2000}',
+          }),
+        }),
+      ],
+      allowlist: ['example.com'],
+    })
+
+    const { rerender } = render(<App />)
+
+    let result: unknown
+    act(() => {
+      result = agentMock.onToolCall!({
+        type: 'tool-call',
+        toolName: 'addParameter',
+        toolCallId: 't1',
+        input: {
+          parameter: {
+            field: 'calories',
+            location: { method: 'POST', path: '/api/login', in: 'body' },
+            recordedValue: '2000',
+            selector: { type: 'json', from: 'body', path: 'calories' },
+            variableName: 'calories',
+          },
+        },
+      })
+    })
+
+    expect(result).toEqual({
+      error:
+        'The recorded value at "calories" is of type number. Parameterization only supports string values; skip this field.',
+    })
+
+    act(() => {
+      void agentMock.onToolCall!({
+        type: 'tool-call',
+        toolName: 'finish',
+        toolCallId: 't2',
+        input: { outcome: 'success' },
+      })
+    })
+    agentMock.status = 'completed'
+    rerender(<App />)
+
+    // The rejected proposal must not leave a rule or variable behind.
+    expect(useGeneratorStore.getState().rules).toEqual([])
+    expect(useGeneratorStore.getState().variables).toEqual([])
   })
 
   it('completes with no proposals when finish reports success', () => {

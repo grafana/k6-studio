@@ -1,5 +1,8 @@
 import { z } from 'zod'
 
+import { getJsonObjectFromPath } from '@/rules/selectors/json'
+import { isJsonReqResp, matchFilter } from '@/rules/utils'
+import { ProxyData } from '@/types'
 import { ParameterizationRule } from '@/types/rules'
 import { Variable } from '@/types/testData'
 
@@ -28,6 +31,41 @@ function normalizeSelector(
   }
 
   return { ...selector, path: selector.path.replace(/^\$\.?/, '') }
+}
+
+/**
+ * The script builder writes replaced values back as JSON strings, so a rule
+ * targeting a recorded number or boolean would change the body's types and
+ * break the request. Returns a model-facing error for such proposals, or null
+ * when the target is a string (or cannot be found to prove otherwise).
+ */
+export function getNonStringTargetError(
+  parameter: AiParameter,
+  requests: ProxyData[]
+): string | null {
+  const selector = normalizeSelector(parameter.selector)
+
+  if (selector.type !== 'json') {
+    return null
+  }
+
+  const nonStringTarget = requests
+    .map(({ request }): unknown => {
+      const isCandidate =
+        matchFilter(request, { path: parameter.location.path }) &&
+        isJsonReqResp(request)
+
+      return isCandidate
+        ? getJsonObjectFromPath(request.content ?? '', selector.path)
+        : undefined
+    })
+    .find((value) => value !== undefined && typeof value !== 'string')
+
+  if (nonStringTarget === undefined) {
+    return null
+  }
+
+  return `The recorded value at "${selector.path}" is of type ${typeof nonStringTarget}. Parameterization only supports string values; skip this field.`
 }
 
 export function aiParameterToRule(
