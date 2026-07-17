@@ -1,37 +1,46 @@
 import { useChat } from '@ai-sdk/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { z } from 'zod'
 
+import { useActionsLog } from '@/components/Assistant/useActionsLog'
 import { UsageEventName } from '@/services/usageTracking/types'
 import {
   selectFilteredRequests,
   selectGeneratorData,
   useGeneratorStore,
 } from '@/store/generator'
-import type { AiCorrelationRule } from '@/types/autoCorrelation'
 import { createTerminalToolGuard } from '@/utils/assistant/chat'
+import { IPCChatTransport } from '@/utils/assistant/IPCChatTransport'
+import {
+  getRequestDetails,
+  getRequestsMetadata,
+  searchRequests,
+} from '@/utils/assistant/searchToolHandlers'
+import { prepareRequestsForAI } from '@/utils/assistant/stripRequestData'
+import { serializeToolDefinitions } from '@/utils/assistant/tools'
 import { exhaustive } from '@/utils/typescript'
 import { validateScript } from '@/utils/validateScript'
 
 import { generateScriptPreview } from '../Generator.utils'
 
-import { systemPrompt } from './constants'
+import { systemPrompt, tools } from './constants'
 import type {
   CorrelationStatus,
   Message,
   SuggestedRuleEntry,
   ToolCall,
 } from './types'
-import { useActionsLog } from './useActionsLog'
 import { computeAddRuleResult } from './utils/computeAddRuleResult'
-import { IPCChatTransport } from './utils/IPCChatTransport'
-import {
-  getRequestDetails,
-  getRequestsMetadata,
-  searchRequests,
-} from './utils/searchTools'
-import { prepareRequestsForAI } from './utils/stripRequestData'
+import { parseAiCorrelationRule } from './utils/parseAiCorrelationRule'
 import { summarizeValidationForAI } from './utils/summarizeValidationForAI'
 import { validationMatchesRecording } from './utils/validationMatchesRecording'
+
+// The finish tool's input arrives unvalidated (tool definitions are plain
+// JSON schemas with no validator), so the outcome must be re-parsed before it
+// becomes the correlation status or a usage-event key.
+const finishInputSchema = z.object({
+  outcome: z.enum(['success', 'partial-success', 'failure']),
+})
 
 const outcomeEvents = {
   success: UsageEventName.AutocorrelationSucceeded,
@@ -61,7 +70,10 @@ export const useGenerateRules = ({
 
   const recording = useGeneratorStore(selectFilteredRequests)
   const generator = useGeneratorStore(selectGeneratorData)
-  const transport = useMemo(() => new IPCChatTransport(), [])
+  const transport = useMemo(
+    () => new IPCChatTransport({ tools: serializeToolDefinitions(tools) }),
+    []
+  )
   const finishGuard = useMemo(() => createTerminalToolGuard('finish'), [])
   const actionsLog = useActionsLog()
 
@@ -103,6 +115,25 @@ export const useGenerateRules = ({
       })
       console.error(error)
     },
+    onFinish: ({ message }) => {
+      // A turn that ends with tool calls either settled via finish or
+      // continues automatically. A prose-only finish means the assistant
+      // stopped without the finish tool and the run would otherwise show
+      // "Correlating..." forever.
+      const hasToolCalls = message.parts.some(
+        (part) => part.type === 'dynamic-tool' || part.type.startsWith('tool-')
+      )
+
+      if (
+        !hasToolCalls &&
+        LOADING_STATES.includes(correlationStatusRef.current)
+      ) {
+        setCorrelationStatusAndRef('error')
+        window.studio.app.trackEvent({
+          event: UsageEventName.AutocorrelationErrored,
+        })
+      }
+    },
     onToolCall: async ({ toolCall }) => {
       if (toolCall.dynamic) {
         return
@@ -114,7 +145,24 @@ export const useGenerateRules = ({
       }
 
       setCorrelationStatusAndRef(toolCallToStep(toolCallWithType))
-      const toolResult = await handleToolCall(toolCallWithType)
+
+      // A handler failure (e.g. the model sent malformed tool input) must
+      // still produce a tool output: throwing here leaves the tool call
+      // unanswered and wedges the AI SDK stream. The assistant reacts to the
+      // returned error itself (retry, another tool, or finish); a run it
+      // gives up on lands in the error state via onFinish or finish(failure).
+      let toolResult: unknown
+      try {
+        toolResult = await handleToolCall(toolCallWithType)
+      } catch (toolError) {
+        console.error(toolError)
+        toolResult = {
+          error:
+            toolError instanceof Error
+              ? toolError.message
+              : 'Tool execution failed',
+        }
+      }
 
       void addToolOutput({
         tool: toolCall.toolName,
@@ -183,17 +231,20 @@ export const useGenerateRules = ({
       }
 
       case 'finish': {
+        // Throws on an off-enum outcome; the wrapper returns the error to the
+        // model so it can retry with a valid one.
+        const { outcome } = finishInputSchema.parse(toolCall.input)
         window.studio.app.trackEvent({
-          event: outcomeEvents[toolCall.input.outcome],
+          event: outcomeEvents[outcome],
         })
         const outcomeType =
-          toolCall.input.outcome === 'failure'
+          outcome === 'failure'
             ? 'outcome-failure'
-            : toolCall.input.outcome === 'partial-success'
+            : outcome === 'partial-success'
               ? 'outcome-partial'
               : 'outcome-success'
         actionsLog.markLastReasoningAsOutcome(outcomeType)
-        return toolCall.input.outcome
+        return outcome
       }
 
       default:
@@ -201,9 +252,17 @@ export const useGenerateRules = ({
     }
   }
 
-  function addRule(rule: AiCorrelationRule) {
+  function addRule(ruleInput: unknown) {
+    // Tool input arrives unvalidated (buildToolSet uses jsonSchema with no
+    // validator), so re-parse to apply schema defaults and surface a malformed
+    // rule as a retryable tool error rather than throwing downstream.
+    const parsed = parseAiCorrelationRule(ruleInput)
+    if (!parsed.ok) {
+      return parsed.error
+    }
+
     const currentRules = ruleEntriesRef.current.map((entry) => entry.rule)
-    const result = computeAddRuleResult(rule, currentRules, recording)
+    const result = computeAddRuleResult(parsed.rule, currentRules, recording)
 
     if (!result.ok) return result.reason
 
@@ -368,8 +427,12 @@ function toolCallToStep(toolCall: ToolCall): CorrelationStatus {
     case 'addRuleJson':
     case 'addRuleHeaderName':
       return 'creating-rules'
-    case 'finish':
-      return toolCall.input.outcome
+    case 'finish': {
+      // An off-enum outcome must not become the status; stay on the
+      // 'finalizing' loading state while the error round-trips to the model.
+      const parsed = finishInputSchema.safeParse(toolCall.input)
+      return parsed.success ? parsed.data.outcome : 'finalizing'
+    }
     default:
       return exhaustive(toolName)
   }

@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
 
+import { StrippedProxyData } from '@/utils/assistant/stripRequestData'
+
 import { compareResponseValues } from './compareValues'
-import { StrippedProxyData } from './stripRequestData'
 
 const createMockData = (
   headers: [string, string][] = [],

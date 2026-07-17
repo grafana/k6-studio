@@ -1,6 +1,8 @@
+import { Callout, IconButton } from '@radix-ui/themes'
 import log from 'electron-log/renderer'
+import { WandSparklesIcon, XIcon } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useBlocker, useNavigate } from 'react-router-dom'
+import { useBlocker, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
@@ -22,8 +24,30 @@ import {
 } from './Generator.hooks'
 import { GeneratorControls } from './GeneratorControls'
 import { GeneratorTabs } from './GeneratorTabs'
+import { SetupWizard } from './SetupWizard'
+import { SetupWizardOutcome } from './SetupWizard/SetupWizard'
 import { TestRuleContainer } from './TestRuleContainer'
 import { UnsavedChangesDialog } from './UnsavedChangesDialog'
+
+function buildSetupSummary(store: {
+  allowlist: string[]
+  rules: Array<{ type: string }>
+  thresholds: unknown[]
+}): string {
+  const correlationCount = store.rules.filter(
+    (rule) => rule.type === 'correlation'
+  ).length
+  const parameterCount = store.rules.filter(
+    (rule) => rule.type === 'parameterization'
+  ).length
+
+  return [
+    `${store.allowlist.length} hosts`,
+    `${correlationCount} correlation rules`,
+    `${parameterCount} parameters`,
+    `${store.thresholds.length} thresholds`,
+  ].join(' · ')
+}
 
 interface GeneratorProps {
   file: StudioFile
@@ -38,6 +62,7 @@ export function Generator({ file, content }: GeneratorProps) {
 
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const [savedData, setSavedData] = useState<GeneratorFileData>(content.data)
+  const [setupSummary, setSetupSummary] = useState<string | null>(null)
 
   const setRecordingPath = useGeneratorStore((store) => store.setRecordingPath)
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
@@ -49,6 +74,11 @@ export function Generator({ file, content }: GeneratorProps) {
 
   const showToast = useToast()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const wizardMode = searchParams.get('mode')
+  const isSetupMode = wizardMode === 'setup' || wizardMode === 'guided'
+  const startInGuidedSetup = wizardMode === 'guided'
 
   const filePath = file.path
   const scriptPreview = useScriptPreview(filePath)
@@ -189,6 +219,47 @@ export function Generator({ file, content }: GeneratorProps) {
     blocker.reset?.()
   }
 
+  // `replace` keeps the dirty blocker from firing on wizard-internal
+  // navigation (it only blocks non-REPLACE history actions).
+  const handleExitSetupMode = (outcome: SetupWizardOutcome) => {
+    if (outcome === 'completed') {
+      setSetupSummary(buildSetupSummary(useGeneratorStore.getState()))
+    }
+
+    setSearchParams({}, { replace: true })
+  }
+
+  // `replace` avoids the dirty blocker; the wizard opens straight in guided
+  // setup when re-entered from the generator.
+  const handleConfigureWithAssistant = () => {
+    setSearchParams({ mode: 'guided' }, { replace: true })
+  }
+
+  const unsavedChangesDialog = (
+    <UnsavedChangesDialog
+      open={blocker.state === 'blocked' || (isAppClosing && isDirty)}
+      onSave={handleSaveGeneratorDialog}
+      onDiscard={handleDiscardGeneratorDialog}
+      onCancel={handleCancelGeneratorDialog}
+    />
+  )
+
+  if (isSetupMode) {
+    return (
+      <>
+        <SetupWizard
+          isLoading={isLoading}
+          startInGuidedSetup={startInGuidedSetup}
+          script={scriptPreview}
+          scriptName={file.fileName}
+          onSaveGenerator={handleSaveGenerator}
+          onExit={handleExitSetupMode}
+        />
+        {unsavedChangesDialog}
+      </>
+    )
+  }
+
   return (
     <View
       title="Generator"
@@ -203,12 +274,41 @@ export function Generator({ file, content }: GeneratorProps) {
         <GeneratorControls
           file={file}
           onSave={handleSaveGenerator}
+          onConfigureWithAssistant={handleConfigureWithAssistant}
           isDirty={isDirty}
           script={scriptPreview}
         />
       }
       loading={isLoading}
     >
+      {setupSummary !== null && (
+        <Callout.Root
+          color="green"
+          m="2"
+          role="status"
+          css={{ position: 'relative', paddingRight: 'var(--space-7)' }}
+        >
+          <Callout.Icon>
+            <WandSparklesIcon size={16} />
+          </Callout.Icon>
+          <Callout.Text>Configured with Assistant: {setupSummary}</Callout.Text>
+          <IconButton
+            size="1"
+            variant="ghost"
+            color="gray"
+            aria-label="Dismiss"
+            onClick={() => setSetupSummary(null)}
+            css={{
+              position: 'absolute',
+              top: '50%',
+              right: 'var(--space-3)',
+              transform: 'translateY(-50%)',
+            }}
+          >
+            <XIcon size={14} />
+          </IconButton>
+        </Callout.Root>
+      )}
       <Group {...sidebarLayout}>
         <Panel id="main" minSize={580}>
           <Group orientation="vertical" {...mainLayout}>
@@ -239,12 +339,7 @@ export function Generator({ file, content }: GeneratorProps) {
           </>
         )}
       </Group>
-      <UnsavedChangesDialog
-        open={blocker.state === 'blocked' || (isAppClosing && isDirty)}
-        onSave={handleSaveGeneratorDialog}
-        onDiscard={handleDiscardGeneratorDialog}
-        onCancel={handleCancelGeneratorDialog}
-      />
+      {unsavedChangesDialog}
     </View>
   )
 }

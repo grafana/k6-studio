@@ -13,6 +13,9 @@ export const GeneratorFileDataSchema = z.object({
   allowlist: z.string().array(),
   includeStaticAssets: z.boolean(),
   scriptName: z.string().default('my-script.js'),
+  // True when the test setup wizard configured this generator, either at
+  // creation or by re-running it later. Used for adoption reporting.
+  wizardUsed: z.boolean().default(false),
 })
 
 export type GeneratorSchema = z.infer<typeof GeneratorFileDataSchema>

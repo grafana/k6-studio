@@ -30,9 +30,18 @@ export function migrate(
   return {
     ...generator,
     version: '3.0',
+    // The wizard did not exist when v2 files were written.
+    wizardUsed: false,
     recordingPath: generator.recordingPath
       ? `../Recordings/${generator.recordingPath}`
       : generator.recordingPath,
+    options: {
+      ...generator.options,
+      thresholds: generator.options.thresholds.map((threshold) => ({
+        ...threshold,
+        enabled: true,
+      })),
+    },
     testData: {
       ...generator.testData,
       files: generator.testData.files.map((file) => ({

@@ -46,6 +46,7 @@ export const useGeneratorStore = create<GeneratorStore>()(
       allowlist,
       includeStaticAssets,
       scriptName,
+      wizardUsed,
     }) =>
       set((state) => {
         state.selectedRuleId = null
@@ -75,6 +76,7 @@ export const useGeneratorStore = create<GeneratorStore>()(
 
         state.includeStaticAssets = includeStaticAssets
         state.scriptName = scriptName
+        state.wizardUsed = wizardUsed
         // rules
         state.rules = rules
         state.previewOriginalRequests = false
