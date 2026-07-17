@@ -6,10 +6,19 @@ import {
   observeWindowsForLayoutShift,
 } from '@/utils/dom/layout'
 
-import { toTrackedElement } from './ElementInspector/utils'
+import { getFrameAgent, TextSelectionPayload } from '../messaging/frames'
+
+import {
+  finalizeRemoteBounds,
+  toRemoteTrackedElement,
+  toTrackedElement,
+} from './ElementInspector/utils'
 import { toTopFrameBounds } from './frameGeometry'
 import { readSelection } from './inspection'
-import { TextSelection } from './TextSelectionPopover.types'
+import {
+  RemoteTextSelection,
+  TextSelection,
+} from './TextSelectionPopover.types'
 
 function measureRange(range: Range) {
   // The range may live inside an iframe; translate its rects into the top
@@ -24,6 +33,40 @@ function measureRange(range: Range) {
   }
 }
 
+/**
+ * Builds a remote selection from a relayed `text-selection` payload: the
+ * element chain's head becomes the tracked element (the remaining entries are
+ * its ancestors), and the bounds/highlights are finalized once from the
+ * payload's own rects, the relay offset, and the top scroll. Returns null for
+ * a payload with an empty element chain, which shouldn't happen in practice
+ * but would otherwise leave the selection with no element to anchor on.
+ */
+export function buildRemoteSelection(
+  payload: TextSelectionPayload
+): RemoteTextSelection | null {
+  const [elementState, ...ancestors] = payload.elements
+
+  if (elementState === undefined) {
+    return null
+  }
+
+  return {
+    kind: 'remote',
+    text: payload.text,
+    element: toRemoteTrackedElement(
+      elementState,
+      ancestors,
+      payload.framePath,
+      payload.offset
+    ),
+    framePath: payload.framePath,
+    bounds: finalizeRemoteBounds(payload.bounds, payload.offset),
+    highlights: payload.highlights.map((rect) =>
+      finalizeRemoteBounds(rect, payload.offset)
+    ),
+  }
+}
+
 export function useTextSelection() {
   const isSelecting = useRef(false)
 
@@ -34,6 +77,7 @@ export function useTextSelection() {
   const buildSelection = useCallback(
     (range: Range, commonAncestor: Element) => {
       setSelection({
+        kind: 'live',
         text: range.toString(),
         element: toTrackedElement(commonAncestor),
         range,
@@ -105,7 +149,27 @@ export function useTextSelection() {
     }
   }, [buildSelection])
 
-  const selectionRange = selection?.range ?? null
+  // Selections made in a cross-origin child frame can't reach the bridge
+  // above, so they're relayed to the top frame over the frame agent instead
+  // (see attachTextSelectionDetection).
+  useEffect(() => {
+    const unsubscribe = getFrameAgent()?.onTextSelection((payload) => {
+      const remote = buildRemoteSelection(payload)
+
+      if (remote !== null) {
+        setSelection(remote)
+      }
+    })
+
+    return () => {
+      unsubscribe?.()
+    }
+  }, [])
+
+  // Only a live selection has a range to re-measure; a remote selection's
+  // bounds/highlights were already finalized once from the payload and can't
+  // be recomputed without live DOM access.
+  const selectionRange = selection?.kind === 'live' ? selection.range : null
 
   useEffect(() => {
     if (selectionRange === null) {
@@ -114,8 +178,8 @@ export function useTextSelection() {
 
     const recompute = () => {
       setSelection((selection) =>
-        selection === null
-          ? null
+        selection === null || selection.kind !== 'live'
+          ? selection
           : { ...selection, ...measureRange(selection.range) }
       )
     }

@@ -17,11 +17,13 @@ import { AssertionData, CheckAssertionData } from './assertions/types'
 import {
   findAssociatedControl,
   getCheckedState,
-  isNative,
-  LabeledControl,
+  getRemoteAssociatedControl,
   getTextBoxValue,
+  isNative,
+  isNativeRemote,
+  LabeledControl,
 } from './ElementMenu.utils'
-import { TrackedElement } from './utils'
+import { getTarget, InspectedElement } from './utils'
 import { WaitForData } from './waitConditions/types'
 
 function ToolbarRoot(props: ComponentProps<typeof Toolbar.Root>) {
@@ -91,11 +93,19 @@ function CheckboxAssertion({
   onAddAssertion,
 }: CheckboxCategoryProps) {
   function handleAddCheckAssertion() {
+    const isInputNative =
+      input.kind === 'live'
+        ? isNative(role, input.element)
+        : isNativeRemote(role, input.isNativeCheckbox)
+
     onAddAssertion({
       type: 'check',
       target: input.target,
-      inputType: isNative(role, input.element) ? 'native' : 'aria',
-      expected: getCheckedState(input.element),
+      inputType: isInputNative ? 'native' : 'aria',
+      expected:
+        input.kind === 'live'
+          ? getCheckedState(input.element)
+          : input.checkedState,
     })
   }
 
@@ -117,13 +127,20 @@ function TextInputAssertion({
   onAddAssertion,
 }: TextInputAssertionProps) {
   const handleAddAssertion = () => {
+    const multiline =
+      input.kind === 'live'
+        ? isHTMLTextAreaElement(input.element) ||
+          input.element.getAttribute('aria-multiline') === 'true'
+        : input.isMultilineTextBox
+
     onAddAssertion({
       type: 'text-input',
       target: input.target,
-      multiline:
-        isHTMLTextAreaElement(input.element) ||
-        input.element.getAttribute('aria-multiline') === 'true',
-      expected: getTextBoxValue(input.element),
+      multiline,
+      expected:
+        input.kind === 'live'
+          ? getTextBoxValue(input.element)
+          : input.textBoxValue,
     })
   }
 
@@ -186,7 +203,7 @@ function RoleAssertions({ role, input, onAddAssertion }: RoleCategoryProps) {
 }
 
 interface ElementMenuProps {
-  element: TrackedElement
+  element: InspectedElement
   onSelectAssertion: (data: AssertionData) => void
   onAddWaitFor: (data: WaitForData) => void
 }
@@ -196,12 +213,15 @@ export function ElementMenu({
   onSelectAssertion,
   onAddWaitFor,
 }: ElementMenuProps) {
-  const associatedElement = findAssociatedControl(element)
+  const associatedElement =
+    element.kind === 'live'
+      ? findAssociatedControl(element)
+      : getRemoteAssociatedControl(element)
 
   const handleAddVisibilityAssertion = () => {
     onSelectAssertion({
       type: 'visibility',
-      target: element.target,
+      target: getTarget(element),
       state: 'visible',
     })
   }
@@ -209,14 +229,17 @@ export function ElementMenu({
   const handleAddTextAssertion = () => {
     onSelectAssertion({
       type: 'text',
-      target: element.target,
-      text: element.element.textContent ?? '',
+      target: getTarget(element),
+      text:
+        element.kind === 'live'
+          ? (element.element.textContent ?? '')
+          : element.state.textContent,
     })
   }
 
   const handleAddWaitFor = () => {
     onAddWaitFor({
-      target: element.target,
+      target: getTarget(element),
     })
   }
 

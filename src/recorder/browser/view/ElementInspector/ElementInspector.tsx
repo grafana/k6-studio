@@ -7,7 +7,7 @@ import { Overlay } from '@/components/Browser/Overlay'
 import { Tooltip } from '@/components/primitives/Tooltip'
 import { ElementRole } from '@/utils/dom/aria'
 
-import { getFramePathForElement, withFrames } from '../../frames'
+import { withFrames } from '../../frames'
 import { getTabId } from '../../utils'
 import { Anchor } from '../Anchor'
 import { useEscape } from '../hooks/useEscape'
@@ -16,7 +16,7 @@ import { useStudioClient } from '../StudioClientProvider'
 import { AssertionEditor } from './assertions/AssertionEditor'
 import { AssertionData } from './assertions/types'
 import { useInspectedElement } from './ElementInspector.hooks'
-import { toAssertion } from './ElementInspector.utils'
+import { getFramesForElement, toAssertion } from './ElementInspector.utils'
 import { ElementMenu } from './ElementMenu'
 import { ElementPopover } from './ElementPopover'
 import { useElementHighlight } from './hooks'
@@ -88,7 +88,7 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
   }
 
   const handleAssertionSubmit = (assertion: AssertionData) => {
-    const frames = element ? getFramePathForElement(element.element) : []
+    const frames = getFramesForElement(element)
 
     client.send({
       type: 'record-events',
@@ -115,7 +115,7 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
   }
 
   const handleAddWaitFor = (data: WaitForData) => {
-    const frames = element ? getFramePathForElement(element.element) : []
+    const frames = getFramesForElement(element)
 
     client.send({
       type: 'record-events',
@@ -141,7 +141,12 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
     return null
   }
 
-  if (pinned === null) {
+  // Hover previews only come from same-origin detection: remote picks are
+  // pinned as soon as they arrive (see useInspectedElement), so this branch
+  // never actually sees a remote element. Guarded here rather than assumed,
+  // so a future remote hover source degrades to no preview instead of
+  // crashing on the DOM-only fields below.
+  if (pinned === null && element.kind === 'live') {
     return (
       <Tooltip.Root open={true}>
         <Tooltip.Trigger asChild>
@@ -168,6 +173,10 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
         </Tooltip.Portal>
       </Tooltip.Root>
     )
+  }
+
+  if (pinned === null) {
+    return null
   }
 
   return (

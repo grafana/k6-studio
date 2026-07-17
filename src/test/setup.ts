@@ -35,6 +35,16 @@ if (
   HTMLElement.prototype.releasePointerCapture = vi.fn()
 }
 
+if (typeof globalThis.CSS === 'undefined' || !globalThis.CSS.escape) {
+  // jsdom does not implement the CSS Object Model's `CSS.escape`, which
+  // `@medv/finder` (used to generate element selectors) relies on. Real
+  // browsers provide it, so this only backfills the test environment.
+  globalThis.CSS = {
+    ...globalThis.CSS,
+    escape: (value: string) => value.replace(/([^\w-])/g, '\\$1'),
+  } as typeof CSS
+}
+
 if (typeof window !== 'undefined') {
   // jsdom logs "Not implemented: window.getComputedStyle(elt, pseudoElt)" when
   // pseudo-element styles are requested (e.g. by Playwright's injectedScript

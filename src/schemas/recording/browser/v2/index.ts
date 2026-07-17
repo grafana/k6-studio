@@ -21,7 +21,7 @@ const ElementSelectorSchema = z.object({
   role: RoleElementSelectorSchema.optional(),
 })
 
-const BrowserEventTargetSchema = z.object({
+export const BrowserEventTargetSchema = z.object({
   selectors: ElementSelectorSchema,
   aria: AriaDetailsSchema.optional(),
 })

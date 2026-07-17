@@ -25,14 +25,13 @@ import { configureOptions, getDebugTarget } from './runner/utils'
 
 export type K6Process = ChildProcessWithoutNullStreams
 
-// Disable web security and site isolation so cross-origin (and nested) iframes
-// render in the same process, where the generated test's frameLocator chains can
-// reach them. The validator is authoring-only, so this matches the recorder.
+// Disable site isolation so cross-origin (and nested) iframes render in the
+// same process, where the generated test's frameLocator chains can reach them.
+// Web security stays on so SPA IdP logins keep their Origin headers.
 // K6_BROWSER_ARGS is split on every comma by k6, so each flag must be comma-free
 // (hence `disable-features=site-per-process` alone, not the recorder's
 // `IsolateOrigins,site-per-process`).
 const VALIDATOR_BROWSER_SECURITY_ARGS = [
-  'disable-web-security',
   'disable-features=site-per-process',
   'disable-site-isolation-trials',
 ]

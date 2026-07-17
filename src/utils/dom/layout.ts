@@ -9,9 +9,10 @@ import { forEachOwningFrame } from './frameChain'
  * Accumulated offset of `frameWindow`'s frame relative to `rootWindow`'s
  * viewport, or the top frame's viewport when `rootWindow` is null. Zero when the
  * element is already in the root frame. Walks up the iframe chain adding each
- * owning `<iframe>`'s position, which is readable across origins because the
- * recorder disables web security and site isolation. Used to translate element
- * rects and points that originate inside (possibly nested) iframes.
+ * owning `<iframe>`'s position; this is best-effort since the owning element is
+ * only reliably readable for same-origin frames (see `forEachOwningFrame`).
+ * Used to translate element rects and points that originate inside (possibly
+ * nested) iframes.
  */
 export function getFrameOffset(
   frameWindow: Window | null,

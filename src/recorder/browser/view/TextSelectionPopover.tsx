@@ -11,12 +11,30 @@ import { TextAssertionEditor } from './ElementInspector/assertions/TextAssertion
 import { TextAssertionData } from './ElementInspector/assertions/types'
 import { ElementPopover } from './ElementInspector/ElementPopover'
 import { useElementHighlight, usePinnedElement } from './ElementInspector/hooks'
+import { getTarget } from './ElementInspector/utils'
 import { useGlobalClass } from './GlobalStyles'
 import { useEscape } from './hooks/useEscape'
 import { usePreventClick } from './hooks/usePreventClick'
 import { useStudioClient } from './StudioClientProvider'
 import { useTextSelection } from './TextSelectionPopover.hooks'
 import { TextSelection } from './TextSelectionPopover.types'
+
+/**
+ * Expansion stays within the same frame, so a live selection's element gives
+ * the right frame chain by walking the live DOM. A remote selection has no
+ * live element to walk, so its own relayed frame path is used instead.
+ */
+function getSelectionFrames(selection: TextSelection | null) {
+  if (selection === null) {
+    return []
+  }
+
+  if (selection.kind === 'live') {
+    return getFramePathForElement(selection.element.element)
+  }
+
+  return selection.framePath ?? []
+}
 
 interface TextSelectionPopoverContentProps {
   selection: TextSelection
@@ -33,7 +51,7 @@ function TextSelectionPopoverContent({
 
   const [assertion, setAssertion] = useState<TextAssertionData>({
     type: 'text',
-    target: selection.element.target,
+    target: getTarget(selection.element),
     text: selection.text,
   })
 
@@ -48,7 +66,7 @@ function TextSelectionPopoverContent({
   const handleSubmit = (assertion: TextAssertionData) => {
     onAdd({
       ...assertion,
-      target: targetElement.target,
+      target: getTarget(targetElement),
     })
 
     onClose()
@@ -92,11 +110,7 @@ export function TextSelectionPopover({ onClose }: TextSelectionPopoverProps) {
   })
 
   const handleAdd = (assertion: TextAssertionData) => {
-    // Expansion stays within the same frame, so the selection's element gives
-    // the right frame chain.
-    const frames = selection
-      ? getFramePathForElement(selection.element.element)
-      : []
+    const frames = getSelectionFrames(selection)
 
     client.send({
       type: 'record-events',

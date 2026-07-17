@@ -3,6 +3,8 @@ import { BrowserEvent, BrowserEventTarget } from '@/schemas/recording'
 import { forEachOwningFrame } from '@/utils/dom/frameChain'
 import { getCssSelector, getElementDetails } from '@/utils/dom/selectors'
 
+import { FrameAgent, getFrameAgent } from './messaging/frames'
+
 /**
  * Walks from `start` up to the top frame, collecting details for each owning
  * `<iframe>` element along the way. The result is ordered outermost first, so it
@@ -26,22 +28,86 @@ export function buildFramePath(
   return path
 }
 
-function safeFramePath(start: Window): BrowserEventTarget[] {
+/**
+ * Wraps a frame path lookup with a negative cache: once the lookup resolves
+ * null (an ancestor never answered) or rejects, every later call
+ * short-circuits to an empty path instead of paying the full request timeout
+ * again. An unresponsive ancestor stays unresponsive for this document's
+ * lifetime; the recorder script is re-injected per document, so the cache
+ * resets naturally on navigation.
+ */
+export function createNegativeCachedResolver(
+  resolve: () => Promise<BrowserEventTarget[] | null>
+): () => Promise<BrowserEventTarget[]> {
+  let ancestorUnresponsive = false
+
+  return async () => {
+    if (ancestorUnresponsive) {
+      return []
+    }
+
+    const path = await resolve().catch(() => null)
+
+    if (path === null) {
+      ancestorUnresponsive = true
+      return []
+    }
+
+    return path
+  }
+}
+
+const resolveEventFramePath = createNegativeCachedResolver(() =>
+  getOwnFramePath()
+)
+
+/**
+ * The chain of iframe locators from the top frame down to the current frame,
+ * outermost first. Empty when running in the top frame or when the chain can't
+ * be determined. Same-origin chains resolve synchronously via frameElement;
+ * cross-origin frames ask their ancestors over postMessage, with unanswered
+ * lookups negative-cached so one silent ancestor can't stall every event.
+ */
+export function getFramePathAsync(): Promise<BrowserEventTarget[]> {
+  return resolveEventFramePath()
+}
+
+/**
+ * Composition seam for getOwnFramePath: tries the synchronous walk first, then
+ * the postMessage protocol for cross-origin frames, then gives up with null
+ * rather than a wrong, shallow path.
+ */
+export async function resolveOwnFramePath(
+  walk: () => BrowserEventTarget[],
+  agent: FrameAgent | null
+): Promise<BrowserEventTarget[] | null> {
   try {
-    return buildFramePath(start, getElementDetails)
+    return walk()
   } catch {
-    return []
+    // Cross-origin chain; ask the ancestors instead.
+  }
+
+  if (agent === null) {
+    return null
+  }
+
+  try {
+    return (await agent.requestFramePath()) ?? null
+  } catch {
+    return null
   }
 }
 
 /**
- * The chain of iframe locators from the top frame down to the current frame,
- * outermost first. Empty when running in the top frame. Relies on the recorder
- * launching the browser with web security and site isolation disabled so that
- * `window.frameElement` is readable across origins.
+ * Like getFramePathAsync but distinguishes "top frame" ([]) from "unknown"
+ * (null), so a parent answering a child's request over the frame agent doesn't
+ * claim a wrong, shallow position in the frame tree.
  */
-export function getFramePath(): BrowserEventTarget[] {
-  return safeFramePath(window)
+export function getOwnFramePath(): Promise<BrowserEventTarget[] | null> {
+  return resolveOwnFramePath(
+    () => buildFramePath(window, getElementDetails),
+    getFrameAgent()
+  )
 }
 
 /**
@@ -50,7 +116,14 @@ export function getFramePath(): BrowserEventTarget[] {
  * an iframe). Empty when the element is in the top frame.
  */
 export function getFramePathForElement(element: Element): BrowserEventTarget[] {
-  return safeFramePath(element.ownerDocument.defaultView ?? window)
+  try {
+    return buildFramePath(
+      element.ownerDocument.defaultView ?? window,
+      getElementDetails
+    )
+  } catch {
+    return []
+  }
 }
 
 /**

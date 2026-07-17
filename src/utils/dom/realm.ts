@@ -85,3 +85,9 @@ export function isHTMLIFrameElement(
 ): node is HTMLIFrameElement {
   return isHtmlElement(node, 'iframe')
 }
+
+export function isHTMLFrameElement(
+  node: Node | null | undefined
+): node is HTMLFrameElement {
+  return isHtmlElement(node, 'frame')
+}

@@ -3,13 +3,20 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Bounds, Position } from '@/components/Browser/types'
 import { isHTMLIFrameElement } from '@/utils/dom/realm'
 
+import { ElementPickPayload, getFrameAgent } from '../../messaging/frames'
 import { toTopFramePosition } from '../frameGeometry'
 import { useGlobalClass } from '../GlobalStyles'
 import { useHighlightDebounce } from '../hooks/useHighlightDebounce'
 import { usePreventClick } from '../hooks/usePreventClick'
 
 import { usePinnedElement } from './hooks'
-import { toTrackedElement, TrackedElement } from './utils'
+import {
+  finalizeRemotePosition,
+  InspectedElement,
+  LiveTrackedElement,
+  toRemoteTrackedElement,
+  toTrackedElement,
+} from './utils'
 
 function isInsideBounds(
   position: Position,
@@ -42,9 +49,10 @@ export function useInspectedElement() {
    *    the selection and removed when the user contracts the selection. If the
    *    stack is empty, then no element is pinned.
    */
-  const [hoveredEl, setHoveredEl] = useState<TrackedElement | null>(null)
+  const [hoveredEl, setHoveredEl] = useState<LiveTrackedElement | null>(null)
 
-  const { selected, pinned, pin, unpin, expand, contract } = usePinnedElement()
+  const { selected, pinned, pin, unpin, expand, contract } =
+    usePinnedElement<InspectedElement>()
 
   useGlobalClass('inspecting')
 
@@ -163,6 +171,44 @@ export function useInspectedElement() {
     )
   }
 
+  // Picks made in a cross-origin child frame can't reach the bridge above, so
+  // they're relayed to the top frame over the frame agent instead (see
+  // attachInspectionDetection). Kept in a ref for the same reason as
+  // hoverRef/pickRef: the subscription below is only set up once.
+  const remotePickRef = useRef<(payload: ElementPickPayload) => void>(() => {})
+
+  remotePickRef.current = (payload) => {
+    if (pinned !== null) {
+      reset()
+
+      return
+    }
+
+    const [elementState, ...ancestors] = payload.elements
+
+    if (elementState === undefined) {
+      return
+    }
+
+    const remote = toRemoteTrackedElement(
+      elementState,
+      ancestors,
+      payload.framePath,
+      payload.offset,
+      payload.associatedControl
+    )
+
+    const position = finalizeRemotePosition(payload.position, payload.offset)
+
+    // Mirrors pinElement's own bounds check for the live case.
+    if (!isInsideBounds(position, remote.bounds)) {
+      return
+    }
+
+    setMousePosition(position)
+    pin(remote)
+  }
+
   useEffect(() => {
     window.__K6_STUDIO_INSPECTION__ = {
       hover: (element) => hoverRef.current(element),
@@ -172,6 +218,16 @@ export function useInspectedElement() {
 
     return () => {
       delete window.__K6_STUDIO_INSPECTION__
+    }
+  }, [])
+
+  useEffect(() => {
+    const unsubscribe = getFrameAgent()?.onElementPick((payload) => {
+      remotePickRef.current(payload)
+    })
+
+    return () => {
+      unsubscribe?.()
     }
   }, [])
 

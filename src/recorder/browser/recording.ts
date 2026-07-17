@@ -1,7 +1,5 @@
 import { nanoid } from 'nanoid'
 
-import { BrowserEvent } from '@/schemas/recording'
-
 import {
   findAssociatedElement,
   findInteractiveElement,
@@ -12,7 +10,8 @@ import {
 } from '../../utils/dom/dom'
 import { getElementDetails } from '../../utils/dom/selectors'
 
-import { getFramePath, withFrames } from './frames'
+import { createSequentialEmitter } from './emitQueue'
+import { getFramePathAsync } from './frames'
 import { eventManager } from './manager'
 import { BrowserExtensionClient } from './messaging'
 import { getTabId } from './utils'
@@ -55,18 +54,17 @@ export function startRecording(
     }
   }
 
-  function recordEvents(events: BrowserEvent[] | BrowserEvent) {
-    const list = Array.isArray(events) ? events : [events]
+  const { emit: recordEvents, flush } = createSequentialEmitter(
+    getFramePathAsync,
+    (events) => {
+      client.send({
+        type: 'record-events',
+        events,
+      })
+    }
+  )
 
-    // All events captured in this listener happened in the current frame, so
-    // they share the same frame path.
-    const frames = getFramePath()
-
-    client.send({
-      type: 'record-events',
-      events: list.map((event) => withFrames(event, frames)),
-    })
-  }
+  window.addEventListener('pagehide', flush)
 
   const manager = eventManager
 
