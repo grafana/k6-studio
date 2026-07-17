@@ -10,6 +10,8 @@ import { safeParseReplayEvent } from '@/main/runner/rrweb'
 import { DebuggerState } from '@/views/Validator/types'
 
 import {
+  getCurrentReplayPageId,
+  NULL_PAGE_ID,
   serializeNode,
   type SerializedAttribute,
   type SerializedElement,
@@ -36,8 +38,6 @@ const VOID_ELEMENTS = new Set([
   'track',
   'wbr',
 ])
-
-const NULL_PAGE_ID = 'NO_PAGE_ID'
 
 const nodeLineStyle = css`
   display: flex;
@@ -313,7 +313,11 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
 
   const serializeDom = useCallback(
     (player: Replayer, autoExpand = false) => {
-      const pageId = currentPageIdRef.current
+      // Resolve from the event timeline so seeks/scrubs stay in sync. rrweb does
+      // not re-emit page-start CustomEvents while applying events synchronously.
+      const pageId = getCurrentReplayPageId(player)
+      currentPageIdRef.current = pageId
+
       const documentElement = player.iframe.contentDocument?.documentElement
 
       if (documentElement === undefined) {
@@ -386,6 +390,9 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
         return
       }
 
+      // Live playback still emits page-start; use it to expand defaults on
+      // navigation. pageId itself is resolved from the timeline in serializeDom
+      // so scrubbing backwards cannot leave a stale later pageId in node keys.
       shouldAutoExpandRef.current = true
       currentPageIdRef.current = data.data.payload.pageId
     }

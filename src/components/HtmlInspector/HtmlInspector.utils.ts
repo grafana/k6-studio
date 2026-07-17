@@ -1,4 +1,9 @@
+import type { eventWithTime } from '@rrweb/types'
 import { Replayer } from 'rrweb'
+
+import { safeParseReplayEvent } from '@/main/runner/rrweb'
+
+export const NULL_PAGE_ID = 'NO_PAGE_ID'
 
 interface SerializedNodeBase {
   key: string
@@ -36,6 +41,43 @@ export type SerializedNode =
   | SerializedElement
 
 const RRWEB_ATTR_PREFIX = /^(rr-|rr_|rrweb)/
+
+/**
+ * Resolve the active pageId for a replay timestamp.
+ *
+ * rrweb skips Custom events while seeking (`applyEventsSynchronously`), so
+ * `page-start` handlers do not re-run on scrub. Callers must derive pageId from
+ * the event timeline instead of relying on the last emitted CustomEvent.
+ */
+export function getPageIdAtTimestamp(
+  events: eventWithTime[],
+  timestamp: number
+): string {
+  let pageId = NULL_PAGE_ID
+
+  for (const event of events) {
+    if (event.timestamp > timestamp) {
+      break
+    }
+
+    const parsed = safeParseReplayEvent(event)
+
+    if (!parsed.success || parsed.data.data.tag !== 'page-start') {
+      continue
+    }
+
+    pageId = parsed.data.data.payload.pageId
+  }
+
+  return pageId
+}
+
+export function getCurrentReplayPageId(player: Replayer): string {
+  const { events } = player.service.state.context
+  const timestamp = player.getMetaData().startTime + player.getCurrentTime()
+
+  return getPageIdAtTimestamp(events, timestamp)
+}
 
 export function serializeNode(
   player: Replayer,
