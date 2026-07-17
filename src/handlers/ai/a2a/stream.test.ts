@@ -262,6 +262,46 @@ describe('createA2AStream', () => {
     expect(session.activeStreamContentType).toBeUndefined()
   })
 
+  it('closes an open block when the stream ends without a terminal event', async () => {
+    // The server dropping the SSE connection mid-generation must not leave
+    // the opened reasoning block unbalanced in front of finish(stop).
+    const sseStream = encodeSSE([
+      {
+        jsonrpc: '2.0',
+        id: 1,
+        result: {
+          kind: 'artifact-update',
+          taskId: 't1',
+          contextId: 'c1',
+          artifact: {
+            name: 'message.content.delta',
+            artifactId: 'msg-1',
+            parts: [
+              {
+                kind: 'data',
+                data: { delta: 'partial thought', contentType: 'thinking' },
+              },
+            ],
+          },
+        },
+      },
+    ])
+
+    const cleanup = vi.fn()
+    const session = createSessionWithStream(sseStream)
+    const stream = createA2AStream(session, cleanup)
+    const parts = await collectStreamParts(stream)
+
+    const endIndex = parts.findIndex((p) => p.type === 'reasoning-end')
+    const finishIndex = parts.findIndex((p) => p.type === 'finish')
+    expect(endIndex).toBeGreaterThan(-1)
+    expect(endIndex).toBeLessThan(finishIndex)
+    expect(parts[finishIndex]).toEqual(
+      expect.objectContaining({ type: 'finish', finishReason: 'stop' })
+    )
+    expect(cleanup).toHaveBeenCalled()
+  })
+
   it('emits all tool calls when multiple same-name tools are interleaved', async () => {
     const sseStream = encodeSSEChunked([
       {

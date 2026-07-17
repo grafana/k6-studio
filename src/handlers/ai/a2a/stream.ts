@@ -73,8 +73,12 @@ export function createA2AStream(
         const { done, value } = await session.reader.read()
 
         if (done) {
+          // The reader closing mid-block (e.g. the server dropping the SSE
+          // connection) must not leave the block unbalanced in front of the
+          // finish part.
+          flushOpenContentBlock(controller)
+
           if (emittedToolCalls) {
-            flushOpenContentBlock(controller)
             controller.enqueue(FINISH_TOOL_CALLS)
           } else {
             controller.enqueue(FINISH_STOP)
