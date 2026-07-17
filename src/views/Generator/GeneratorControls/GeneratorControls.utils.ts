@@ -14,3 +14,17 @@ export function getValidateTooltip(
 
   return ''
 }
+
+/**
+ * Tooltip for the Configure with Assistant button, following the same rules
+ * as the Validate one: the disabled reason wins, then the compact label.
+ */
+export function getConfigureTooltip(
+  hasRecording: boolean,
+  isCompact: boolean
+): string {
+  if (!hasRecording) return 'Select a recording to configure with the Assistant'
+  if (isCompact) return 'Configure with Assistant'
+
+  return ''
+}

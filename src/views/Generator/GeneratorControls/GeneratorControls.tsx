@@ -16,12 +16,16 @@ import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { useElementWidth } from '@/hooks/useElementWidth'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { ScriptPreview } from '@/hooks/useScriptPreview'
+import { useGeneratorStore } from '@/store/generator'
 import { StudioFile } from '@/types'
 
 import { useScriptExport } from '../Generator.hooks'
 import { ValidatorDialog } from '../ValidatorDialog'
 
-import { getValidateTooltip } from './GeneratorControls.utils'
+import {
+  getConfigureTooltip,
+  getValidateTooltip,
+} from './GeneratorControls.utils'
 
 // The header row (ViewHeading) is the container. Labels collapse in two
 // stages as it tightens; between stages the toolbar holds its min-width so
@@ -72,6 +76,9 @@ export function GeneratorControls({
   const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
   const proxyStatus = useProxyStatus()
   const isScriptExportable = script.valid && !!script.preview
+  // The wizard configures the test from the recording's requests, so it needs
+  // a recording to work with.
+  const hasRecording = useGeneratorStore((store) => store.recordingPath !== '')
 
   // Tooltips should only appear once a button is icon-only. Whether that
   // happened is read back from the CSS outcome (the label span's width), so
@@ -132,7 +139,8 @@ export function GeneratorControls({
         <ButtonWithTooltip
           variant="ghost"
           aria-label="Configure with Assistant"
-          tooltip={actionsCollapsed ? 'Configure with Assistant' : ''}
+          tooltip={getConfigureTooltip(hasRecording, actionsCollapsed)}
+          disabled={!hasRecording}
           onClick={onConfigureWithAssistant}
         >
           <WandSparklesIcon />
