@@ -425,18 +425,35 @@ describe('FrameAgent handshake and tool state', () => {
     expect(sent).toHaveLength(2)
   })
 
-  it('stops retrying the handshake after the attempt limit', () => {
+  it('continues slow handshake retries after the initial attempt limit until acknowledged', () => {
     const parentWin = new FakeFrameWindow()
-    const { agent } = createAgent({ parentWindow: parentWin })
+    const { win, agent } = createAgent({ parentWindow: parentWin })
 
-    const sent: unknown[] = []
-    parentWin.addEventListener('message', (event) => sent.push(event.data))
+    const sent: Array<{ message: { type: string; id: string } }> = []
+    parentWin.addEventListener('message', (event) => {
+      sent.push(event.data as { message: { type: string; id: string } })
+    })
 
     agent.announce()
 
     vi.advanceTimersByTime(60_000)
 
-    expect(sent).toHaveLength(5)
+    expect(sent.length).toBeGreaterThan(5)
+
+    win.deliverFrom(
+      parentWin,
+      envelope({
+        type: 'handshake-ack',
+        id: sent[0]?.message.id ?? '',
+        toolActive: true,
+      })
+    )
+
+    const countAfterAck = sent.length
+
+    vi.advanceTimersByTime(60_000)
+
+    expect(sent.length).toBe(countAfterAck)
   })
 
   it('acknowledges a child handshake with the current tool state', () => {

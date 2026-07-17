@@ -141,6 +141,7 @@ function addFrameHopOffset(
 
 const HANDSHAKE_RETRY_MS = 100
 const MAX_HANDSHAKE_ATTEMPTS = 5
+const SLOW_HANDSHAKE_RETRY_MS = 2000
 
 const FrameEnvelopeSchema = z.object({
   source: z.literal(PROTOCOL_SOURCE),
@@ -399,7 +400,7 @@ export class FrameAgent {
   }
 
   #sendHandshake(attempt: number) {
-    if (this.#handshakeId === null || attempt >= MAX_HANDSHAKE_ATTEMPTS) {
+    if (this.#handshakeId === null) {
       return
     }
 
@@ -408,12 +409,14 @@ export class FrameAgent {
       id: this.#handshakeId,
     })
 
-    this.#handshakeTimer = setTimeout(
-      () => {
-        this.#sendHandshake(attempt + 1)
-      },
-      HANDSHAKE_RETRY_MS * 2 ** attempt
-    )
+    const delay =
+      attempt + 1 >= MAX_HANDSHAKE_ATTEMPTS
+        ? SLOW_HANDSHAKE_RETRY_MS
+        : HANDSHAKE_RETRY_MS * 2 ** attempt
+
+    this.#handshakeTimer = setTimeout(() => {
+      this.#sendHandshake(attempt + 1)
+    }, delay)
   }
 
   /** The child frame whose contentWindow sent a message, if it is ours. */
