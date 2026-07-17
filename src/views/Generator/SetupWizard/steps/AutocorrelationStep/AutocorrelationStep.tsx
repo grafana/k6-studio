@@ -261,6 +261,17 @@ export function AutocorrelationStep() {
     dispatch({ type: 'stepRunReset', stepId: 'autocorrelation' })
   }
 
+  // The embedded flow's error screens close via this handler while the reducer
+  // still says 'running'; record the abort first so the running-navigation
+  // lock does not swallow the back action.
+  const handleEmbeddedClose = () => {
+    if (stepState.status === 'running') {
+      trackFinished('aborted')
+      dispatch({ type: 'stepRunAborted', stepId: 'autocorrelation' })
+    }
+    goBack()
+  }
+
   if (isStepDone(stepState)) {
     return <CompletedStep />
   }
@@ -311,7 +322,7 @@ export function AutocorrelationStep() {
           <AutoCorrelation
             skipIntroduction
             hideRules
-            close={goBack}
+            close={handleEmbeddedClose}
             onStatusChange={handleStatusChange}
             onSettled={handleSettled}
             // The footer renders through a portal so it spans the full step

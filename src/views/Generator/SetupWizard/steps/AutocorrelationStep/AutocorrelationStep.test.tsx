@@ -34,10 +34,12 @@ vi.mock('@/views/Generator/AutoCorrelation/AutoCorrelation', () => ({
     footer,
     onSettled,
     onStatusChange,
+    close,
   }: {
     footer?: (context: AutoCorrelationFooterContext) => React.ReactNode
     onSettled?: (context: AutoCorrelationFooterContext) => void
     onStatusChange?: (status: string) => void
+    close: () => void
   }) => (
     <div data-testid="auto-correlation">
       {footer?.(footerContext)}
@@ -46,6 +48,9 @@ vi.mock('@/views/Generator/AutoCorrelation/AutoCorrelation', () => ({
       </button>
       <button type="button" onClick={() => onStatusChange?.('not-started')}>
         reset-run
+      </button>
+      <button type="button" onClick={close}>
+        close-run
       </button>
     </div>
   ),
@@ -155,6 +160,16 @@ describe('AutocorrelationStep', () => {
       'disabled',
       false
     )
+  })
+
+  it('settles the run before navigating when the embedded flow closes itself', async () => {
+    renderStep({ autocorrelation: { status: 'running' } })
+
+    // The error screens' Close ends the run; the step must record the abort
+    // first so the running-navigation lock does not swallow the back action.
+    await userEvent.click(screen.getByRole('button', { name: 'close-run' }))
+
+    expect(screen.getByTestId('probe').textContent).toBe('hosts:aborted')
   })
 
   it('aborts a running step when navigating away mid-run', () => {

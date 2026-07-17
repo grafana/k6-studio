@@ -2,6 +2,9 @@ import { Button, Flex } from '@radix-ui/themes'
 import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react'
 import { ReactNode } from 'react'
 
+import { isNavigationLocked } from './state/reducer'
+import { useSetupWizard } from './state/SetupWizardContext'
+
 interface WizardFooterProps {
   canContinue: boolean
   onBack: () => void
@@ -18,6 +21,11 @@ export function WizardFooter({
   onSkip,
   children,
 }: WizardFooterProps) {
+  const { state } = useSetupWizard()
+  // Going back mid-run would unmount the step and kill the run; Skip stays
+  // available since it settles the run deliberately.
+  const backDisabled = isNavigationLocked(state)
+
   return (
     <Flex
       flexShrink="0"
@@ -33,6 +41,7 @@ export function WizardFooter({
       <Button
         variant="ghost"
         color="gray"
+        disabled={backDisabled}
         onClick={onBack}
         css={{ marginLeft: 0 }}
       >

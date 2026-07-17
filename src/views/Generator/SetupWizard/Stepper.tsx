@@ -3,7 +3,7 @@ import { CheckIcon, MinusIcon } from 'lucide-react'
 import { ComponentProps, CSSProperties, Fragment } from 'react'
 
 import { STEP_CONFIG } from './constants'
-import { isStepReachable } from './state/reducer'
+import { isNavigationLocked, isStepReachable } from './state/reducer'
 import { useSetupWizard } from './state/SetupWizardContext'
 import { isStepDone, StepState, WIZARD_STEPS, WizardStep } from './state/types'
 
@@ -94,6 +94,7 @@ function StepCircle({
 
 export function Stepper() {
   const { state, dispatch } = useSetupWizard()
+  const navigationLocked = isNavigationLocked(state)
 
   return (
     <Flex
@@ -114,7 +115,9 @@ export function Stepper() {
             state.activeStep,
             state.steps[stepId]
           )
-          const isClickable = isStepReachable(state, stepId)
+          const isClickable =
+            isStepReachable(state, stepId) &&
+            (!navigationLocked || stepId === state.activeStep)
           const isLast = index === WIZARD_STEPS.length - 1
 
           return (

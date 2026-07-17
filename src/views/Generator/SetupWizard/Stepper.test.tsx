@@ -72,6 +72,21 @@ describe('Stepper', () => {
     ).toBeDefined()
   })
 
+  it('disables navigation to other steps while the active step is running', () => {
+    renderStepper({
+      activeStep: 'autocorrelation',
+      steps: {
+        ...initialWizardState.steps,
+        hosts: completed,
+        autocorrelation: { status: 'running' },
+      },
+    })
+
+    expect(
+      screen.getByRole('button', { name: 'Step 1: Hosts' })
+    ).toHaveProperty('disabled', true)
+  })
+
   it('navigates to a completed step when clicked', async () => {
     renderStepper({
       activeStep: 'autocorrelation',

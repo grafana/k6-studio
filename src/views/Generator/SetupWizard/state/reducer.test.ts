@@ -250,6 +250,37 @@ describe('wizardReducer', () => {
     expect(back.activeStep).toBe('hosts')
   })
 
+  it('goToStep does not leave a step while it is running', () => {
+    const base: WizardState = {
+      ...stateWithCompleted('hosts', 'autocorrelation'),
+      activeStep: 'autocorrelation',
+    }
+    const running = wizardReducer(base, {
+      type: 'stepRunStarted',
+      stepId: 'autocorrelation',
+    })
+
+    const next = wizardReducer(running, { type: 'goToStep', stepId: 'hosts' })
+
+    expect(next.activeStep).toBe('autocorrelation')
+  })
+
+  it('back does not leave a step while it is running', () => {
+    const base: WizardState = {
+      ...stateWithCompleted('hosts', 'autocorrelation'),
+      activeStep: 'autocorrelation',
+    }
+    const running = wizardReducer(base, {
+      type: 'stepRunStarted',
+      stepId: 'autocorrelation',
+    })
+
+    const next = wizardReducer(running, { type: 'back' })
+
+    expect(next.activeStep).toBe('autocorrelation')
+    expect(next.screen).toBe('wizard')
+  })
+
   it('resets a step back to not-started', () => {
     const state = stateWithCompleted('hosts')
 

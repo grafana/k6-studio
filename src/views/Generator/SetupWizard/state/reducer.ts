@@ -48,6 +48,15 @@ export function isStepReachable(
   return index <= donePrefixLength
 }
 
+/**
+ * Leaving a running step unmounts it, which kills the in-flight run and drops
+ * a previously done step's outcome. Navigation away is locked until the run
+ * settles (finish, stop, or skip).
+ */
+export function isNavigationLocked(state: WizardState): boolean {
+  return state.steps[state.activeStep].status === 'running'
+}
+
 function withStepState(
   state: WizardState,
   stepId: WizardStep,
@@ -65,6 +74,10 @@ export function wizardReducer(
       return { ...state, screen: 'wizard', activeStep: 'hosts' }
 
     case 'goToStep': {
+      if (isNavigationLocked(state) && action.stepId !== state.activeStep) {
+        return state
+      }
+
       if (!isStepReachable(state, action.stepId)) {
         return state
       }
@@ -118,6 +131,10 @@ export function wizardReducer(
     }
 
     case 'back': {
+      if (isNavigationLocked(state)) {
+        return state
+      }
+
       const index = WIZARD_STEPS.indexOf(state.activeStep)
 
       if (index === 0) {
