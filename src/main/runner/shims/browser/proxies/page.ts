@@ -47,9 +47,13 @@ export function pageProxy(target: Page): ProxyOptions<Page> {
     fn: (...args: Args) => Promise<Return>
   ): (...args: Args) => Promise<Return> {
     return async (...args) => {
-      await target.evaluate(() => {
-        return window.__K6_FLUSH_EVENTS__?.()
-      })
+      try {
+        await target.evaluate(() => {
+          return window.__K6_FLUSH_EVENTS__?.()
+        })
+      } catch {
+        // Ignore errors from flushing events so that the main action always runs
+      }
 
       return await fn(...args)
     }
