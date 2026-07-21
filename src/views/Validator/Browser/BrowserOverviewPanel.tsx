@@ -12,7 +12,7 @@ import { DebugSession } from '../types'
 interface BrowserOverviewPanelProps {
   script: string
   session: DebugSession
-  highlightedLocator: HighlightedLocator | null
+  highlightedLocator: HighlightedLocator | Element | null
 }
 
 export function BrowserOverviewPanel({

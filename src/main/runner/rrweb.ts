@@ -11,6 +11,7 @@ const RecordingEndEventSchema = z.object({
 const PageStartEventSchema = z.object({
   tag: z.literal('page-start'),
   payload: z.object({
+    pageId: z.string(),
     title: z.string(),
     href: z.string(),
     width: z.number(),
@@ -40,7 +41,7 @@ const CustomReplayEventSchema = z.discriminatedUnion('tag', [
 ])
 
 const RrwebCustomEventSchema = z.object({
-  type: z.nativeEnum(EventType),
+  type: z.enum(EventType),
   data: CustomReplayEventSchema,
   timestamp: z.number(),
 })
@@ -56,6 +57,10 @@ type CustomReplayEventMap = {
 
 export function parseReplayEvent(event: unknown) {
   return RrwebCustomEventSchema.parse(event)
+}
+
+export function safeParseReplayEvent(event: unknown) {
+  return RrwebCustomEventSchema.safeParse(event)
 }
 
 interface CreateReplayEventOptions<T extends keyof CustomReplayEventMap> {
