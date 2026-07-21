@@ -50,6 +50,7 @@ export function TimelineSlider({
   const theme = useTheme()
 
   const latestValueRef = useRef(0)
+  const isPointerDraggingRef = useRef(false)
 
   const handleSeek = useCallback(
     (newTime: number, commit = true) => {
@@ -66,10 +67,24 @@ export function TimelineSlider({
 
       latestValueRef.current = value
 
-      handleSeek(value, false)
+      // Pointer drags scrub until release; keyboard changes commit immediately
+      // because onLostPointerCapture does not run for keyboard interaction.
+      handleSeek(value, !isPointerDraggingRef.current)
     },
     [handleSeek]
   )
+
+  const handlePointerDown = useCallback(() => {
+    isPointerDraggingRef.current = true
+  }, [])
+
+  const handleLostPointerCapture = useCallback(() => {
+    isPointerDraggingRef.current = false
+
+    // We can't use onValueCommit because of a 3+ years old bug in Radix UI
+    // that causes it not to fire when the mouse is released outside the slider.
+    handleSeek(latestValueRef.current, true)
+  }, [handleSeek])
 
   return (
     <SliderPrimitive.Root
@@ -96,11 +111,8 @@ export function TimelineSlider({
       step={0.001}
       disabled={disabled}
       onValueChange={handleValueChange}
-      onLostPointerCapture={() => {
-        // We can't use onValueCommit because of a 3+ years old bug in Radix UI
-        // that causes it not to fire when the mouse is released outside the slider.
-        handleSeek(latestValueRef.current, true)
-      }}
+      onPointerDown={handlePointerDown}
+      onLostPointerCapture={handleLostPointerCapture}
     >
       <div>
         <SliderPrimitive.Track
