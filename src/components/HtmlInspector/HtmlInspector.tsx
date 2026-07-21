@@ -11,7 +11,6 @@ import { DebuggerState } from '@/views/Validator/types'
 
 import {
   getCurrentReplayPageId,
-  NULL_PAGE_ID,
   serializeNode,
   type SerializedAttribute,
   type SerializedElement,
@@ -287,7 +286,6 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
   const setHighlightedLocator = useHighlightLocator()
   const [domRoot, setDomRoot] = useState<SerializedNode | null>(null)
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set())
-  const currentPageIdRef = useRef<string>(NULL_PAGE_ID)
   const shouldAutoExpandRef = useRef(false)
 
   const expandDefaultNodes = useCallback((domRoot: SerializedNode) => {
@@ -316,7 +314,6 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
       // Resolve from the event timeline so seeks/scrubs stay in sync. rrweb does
       // not re-emit page-start CustomEvents while applying events synchronously.
       const pageId = getCurrentReplayPageId(player)
-      currentPageIdRef.current = pageId
 
       const documentElement = player.iframe.contentDocument?.documentElement
 
@@ -339,8 +336,6 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
   useEffect(() => {
     if (!player) {
       setDomRoot(null)
-
-      currentPageIdRef.current = NULL_PAGE_ID
 
       return
     }
@@ -394,7 +389,6 @@ export function HtmlInspector({ sessionState }: HtmlInspectorProps) {
       // navigation. pageId itself is resolved from the timeline in serializeDom
       // so scrubbing backwards cannot leave a stale later pageId in node keys.
       shouldAutoExpandRef.current = true
-      currentPageIdRef.current = data.data.payload.pageId
     }
 
     serializeDom(player, true)
