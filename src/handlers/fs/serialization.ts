@@ -5,7 +5,7 @@ import {
   deserializeGenerator,
   serializeGenerator,
 } from '@/handlers/generator/serialization'
-import { BrowserTestFileDataSchema } from '@/schemas/browserTest'
+import { BrowserTestFileCodec } from '@/schemas/browserTest'
 import { RecordingSchema } from '@/schemas/recording'
 import { StudioFileType } from '@/types'
 import { DataFilePreview } from '@/types/testData'
@@ -32,7 +32,7 @@ export function serializeContent(
       return JSON.stringify(serializeGenerator(filePath, content.data), null, 2)
 
     case 'browser-test':
-      return JSON.stringify(content.data, null, 2)
+      return BrowserTestFileCodec.encode(content.data)
 
     case 'script':
       return content.data
@@ -60,7 +60,7 @@ export async function deserializeContent(
     case 'browser-test':
       return {
         type: 'browser-test',
-        data: BrowserTestFileDataSchema.parse(JSON.parse(raw)),
+        data: BrowserTestFileCodec.decode(raw),
         isExternal: isExternalBrowserTest(filePath),
       }
 

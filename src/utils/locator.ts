@@ -11,6 +11,7 @@ import {
 } from '@/schemas/locator'
 import { BrowserEventTarget, ElementSelector } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
+import { newSyntheticKey } from '@/utils/zod'
 
 function hasNonEmptyString(value: string | undefined): value is string {
   return value !== undefined && value.trim() !== ''
@@ -176,6 +177,7 @@ export function isLocatorEqual(a: ElementLocator, b: ElementLocator): boolean {
 
 export function toLocatorOptions(selector: ElementSelector): LocatorOptions {
   return {
+    key: newSyntheticKey(),
     current: getElementLocator(selector).type,
     values: {
       css: getCssLocator(selector),

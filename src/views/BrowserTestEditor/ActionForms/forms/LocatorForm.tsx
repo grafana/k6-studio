@@ -33,7 +33,7 @@ interface LocatorFormProps {
 }
 
 export function LocatorForm({
-  state: { current, values },
+  state: { key, current, values },
   onChange,
   suggestedRoles,
 }: LocatorFormProps): ReactElement {
@@ -41,7 +41,7 @@ export function LocatorForm({
   const { frames, onChange: onChangeFrames } = useFrameChain()
 
   const chain = frames ?? []
-  const elementOptions: LocatorOptions = { current, values }
+  const elementOptions: LocatorOptions = { key, current, values }
 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 
@@ -132,7 +132,7 @@ export function LocatorForm({
           hoveredTarget ?? expandedTarget ?? 'element',
           frameKeys,
           frames,
-          { current, values }
+          { key, current, values }
         )
       )
     }, 100)
@@ -144,6 +144,7 @@ export function LocatorForm({
     isPopoverOpen,
     hoveredTarget,
     expandedTarget,
+    key,
     current,
     values,
     frames,
@@ -206,7 +207,11 @@ export function LocatorForm({
       ? target.options.values
       : { ...target.options.values, [type]: initializeLocatorValues(type) }
 
-    updateTarget(target.key, { current: type, values: nextValues })
+    updateTarget(target.key, {
+      key: target.options.key,
+      current: type,
+      values: nextValues,
+    })
   }
 
   const handleLocatorChange = (
@@ -217,6 +222,7 @@ export function LocatorForm({
       addTypeToMap(prev, target.key, target.options.current)
     )
     updateTarget(target.key, {
+      key: target.options.key,
       current: target.options.current,
       values: {
         ...target.options.values,

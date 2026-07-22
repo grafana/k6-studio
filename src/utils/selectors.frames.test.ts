@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
 import { LocatorOptions } from '@/schemas/locator'
+import { newSyntheticKey } from '@/utils/zod'
 
 import { findElementsByFrameChain } from './selectors'
 
 const cssFrame = (selector: string): LocatorOptions => ({
+  key: newSyntheticKey(),
   current: 'css',
   values: { css: { type: 'css', selector } },
 })

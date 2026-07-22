@@ -4,8 +4,14 @@ import {
   buildClickAction,
   buildToBeCheckedAction,
 } from '@/test/factories/browserActions'
+import { SyntheticKey } from '@/utils/zod'
 
 import { convertActionsToTest, convertEventsToTest } from './test'
+
+// A fixed stand-in key: these fixtures don't exercise key behavior, and
+// generating one via newSyntheticKey() would consume the mocked
+// crypto.randomUUID() counter that convertActionsToTest's node IDs rely on.
+const fixtureKey = 'fixture-key' as SyntheticKey
 
 describe('convertEventsToTest', () => {
   it('should not wait for navigation when submit-form is not followed by an implicit navigation', () => {
@@ -196,6 +202,7 @@ describe('convertActionsToTest', () => {
           method: 'locator.click',
           id: '2',
           locator: {
+            key: fixtureKey,
             current: 'css',
             values: {
               css: {
@@ -286,6 +293,7 @@ describe('convertActionsToTest', () => {
           inputType: 'aria',
           checked: true,
           locator: {
+            key: fixtureKey,
             current: 'css',
             values: { css: { type: 'css', selector: '[role="checkbox"]' } },
           },
