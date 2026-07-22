@@ -45,7 +45,7 @@ export function Recorder() {
   const [recorderState, setRecorderState] = useState<RecorderState>('idle')
   const showToast = useToast()
 
-  const browserEvents = useListenBrowserEvent()
+  const browserEvents = useListenBrowserEvent(group?.id)
 
   // Debounce the proxy data to avoid disappearing static asset requests
   // when recording
@@ -120,19 +120,16 @@ export function Recorder() {
       }
 
       // Temporary solution to avoid having to update `proxyDataToHar`.
-      const grouped = proxyData.map((data) => {
-        const group = groups.find((g) => g.id === data.group) ?? {
-          id: DEFAULT_GROUP_NAME,
-          name: DEFAULT_GROUP_NAME,
-        }
+      const grouped = proxyData.map((data) => ({
+        ...data,
+        group: resolveGroupName(groups, data.group),
+      }))
+      const groupedBrowserEvents = browserEvents.map((event) => ({
+        ...event,
+        group: resolveGroupName(groups, event.group),
+      }))
 
-        return {
-          ...data,
-          group: group.name,
-        }
-      })
-
-      const har = proxyDataToHar(grouped, browserEvents)
+      const har = proxyDataToHar(grouped, groupedBrowserEvents)
       const prefix = getHostNameFromURL(startUrl) ?? 'Recording'
       const fileName = await window.studio.har.saveFile(har, prefix)
 
@@ -256,6 +253,12 @@ export function Recorder() {
         />
       </View>
     </RecordingContext>
+  )
+}
+
+function resolveGroupName(groups: Group[], groupId?: string): string {
+  return (
+    groups.find((group) => group.id === groupId)?.name ?? DEFAULT_GROUP_NAME
   )
 }
 

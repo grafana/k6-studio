@@ -17,7 +17,7 @@ export function RecordingPreviewer({ file, content }: RecordingPreviewerProps) {
   const proxyData = content.data
   const browserEvents = content.browserEvents
 
-  const groups = useProxyDataGroups(proxyData)
+  const groups = useProxyDataGroups(proxyData, browserEvents)
 
   return (
     <View

@@ -3,12 +3,14 @@ import { Flex, ScrollArea } from '@radix-ui/themes'
 import { BrowserEventList } from '@/components/BrowserEventList'
 import { ElementLocator, LocatorOptions } from '@/schemas/locator'
 import { BrowserEvent } from '@/schemas/recording'
+import { Group } from '@/types'
 
 interface BrowserEventLogProps {
   events: BrowserEvent[]
+  groups?: Group[]
 }
 
-export function BrowserEventLog({ events }: BrowserEventLogProps) {
+export function BrowserEventLog({ events, groups }: BrowserEventLogProps) {
   const handleNavigate = (url: string) => {
     window.studio.browserRemote.navigateTo(url)
   }
@@ -25,6 +27,7 @@ export function BrowserEventLog({ events }: BrowserEventLogProps) {
       <ScrollArea>
         <BrowserEventList
           events={events}
+          groups={groups}
           onNavigate={handleNavigate}
           onHighlight={handleHighlight}
         />

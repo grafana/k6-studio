@@ -80,7 +80,7 @@ export function RecordingInspector({
         />
       </Tabs.Content>
       <Tabs.Content value="browser-events" css={styles.content}>
-        <BrowserEventLog events={browserEvents} />
+        <BrowserEventLog events={browserEvents} groups={groups} />
       </Tabs.Content>
     </Tabs.Root>
   )

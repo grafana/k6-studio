@@ -2,10 +2,23 @@ import { renderHook } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 
 import { DEFAULT_GROUP_NAME } from '@/constants'
+import { BrowserEvent } from '@/schemas/recording'
 import { createProxyData } from '@/test/factories/proxyData'
 import { ProxyData } from '@/types'
 
 import { useProxyDataGroups } from './useProxyDataGroups'
+
+function createBrowserEvent(overrides: {
+  timestamp: number
+  group?: string
+}): BrowserEvent {
+  return {
+    type: 'tab-opened',
+    eventId: crypto.randomUUID(),
+    tab: 'tab1',
+    ...overrides,
+  }
+}
 
 describe('useProxyDataGroups', () => {
   it('should return unique group names from proxy data', () => {
@@ -42,5 +55,21 @@ describe('useProxyDataGroups', () => {
     const { result } = renderHook(() => useProxyDataGroups(proxyData))
 
     expect(result.current).toEqual([])
+  })
+
+  it('should merge group names from browser events in chronological order', () => {
+    const proxyData: ProxyData[] = [createProxyData({ group: 'Group1' })]
+    const browserEvents: BrowserEvent[] = [
+      createBrowserEvent({ group: 'Group2', timestamp: 1 }),
+    ]
+
+    const { result } = renderHook(() =>
+      useProxyDataGroups(proxyData, browserEvents)
+    )
+
+    expect(result.current).toEqual([
+      { id: 'Group1', name: 'Group1' },
+      { id: 'Group2', name: 'Group2' },
+    ])
   })
 })

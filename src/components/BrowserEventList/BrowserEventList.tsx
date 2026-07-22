@@ -1,9 +1,12 @@
 import { css } from '@emotion/react'
+import { useMemo } from 'react'
 
 import { Flex } from '@/components/primitives/Flex'
 import { Table } from '@/components/primitives/Table'
+import { Group } from '@/components/WebLogView/Group'
 import { ElementLocator, LocatorOptions } from '@/schemas/locator'
 import { BrowserEvent } from '@/schemas/recording'
+import { Group as GroupType } from '@/types'
 import { toFrameOptions } from '@/utils/locator'
 
 import { EventDescription } from './EventDescription'
@@ -11,6 +14,7 @@ import { EventIcon } from './EventIcon'
 
 interface BrowserEventListProps {
   events: BrowserEvent[]
+  groups?: GroupType[]
   onNavigate: (url: string) => void
   onHighlight: (
     locator: ElementLocator | null,
@@ -20,9 +24,56 @@ interface BrowserEventListProps {
 
 export function BrowserEventList({
   events,
+  groups = [],
   onNavigate,
   onHighlight,
 }: BrowserEventListProps) {
+  const grouped = useMemo(() => {
+    return groups
+      .map((group) => ({
+        group,
+        events: events.filter((event) => event.group === group.id),
+      }))
+      .filter((item) => item.events.length > 0)
+  }, [events, groups])
+
+  // No events are assigned to a group (e.g. recordings saved before this
+  // feature existed), fall back to a single flat list.
+  if (grouped.length === 0) {
+    return (
+      <EventTable
+        events={events}
+        onNavigate={onNavigate}
+        onHighlight={onHighlight}
+      />
+    )
+  }
+
+  return (
+    <>
+      {grouped.map(({ group, events }) => (
+        <Group key={group.id} group={group} length={events.length}>
+          <EventTable
+            events={events}
+            onNavigate={onNavigate}
+            onHighlight={onHighlight}
+          />
+        </Group>
+      ))}
+    </>
+  )
+}
+
+interface EventTableProps {
+  events: BrowserEvent[]
+  onNavigate: (url: string) => void
+  onHighlight: (
+    locator: ElementLocator | null,
+    frames?: LocatorOptions[]
+  ) => void
+}
+
+function EventTable({ events, onNavigate, onHighlight }: EventTableProps) {
   return (
     <Table.Root
       css={css`

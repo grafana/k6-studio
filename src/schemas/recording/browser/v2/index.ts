@@ -29,6 +29,7 @@ const BrowserEventTargetSchema = z.object({
 const BrowserEventBaseSchema = z.object({
   eventId: z.string(),
   timestamp: z.number(),
+  group: z.string().optional(),
 })
 
 // Events that target an element also record the chain of iframe elements from
