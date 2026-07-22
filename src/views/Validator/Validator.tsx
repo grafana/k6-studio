@@ -24,13 +24,15 @@ interface ValidatorProps {
 
 export function Validator({ file, content }: ValidatorProps) {
   const [showRunInCloudDialog, setShowRunInCloudDialog] = useState(false)
-  const [scriptContent, setScriptContent] = useState<string>(content.data)
+
+  const [savedScript, setSavedScript] = useState(content.data)
+  const [scriptContent, setScriptContent] = useState(content.data)
 
   const showToast = useToast()
   const handleSelectExternalScript = useOpenExternalScript()
   const navigate = useNavigate()
 
-  const isDirty = scriptContent !== content.data
+  const isDirty = scriptContent !== savedScript
 
   const saveFile = useSaveFile({
     menuItems: {
@@ -46,6 +48,8 @@ export function Validator({ file, content }: ValidatorProps) {
     }),
     filters: [{ name: 'k6 Script', extensions: ['js'] }],
     onSave: async (location) => {
+      setSavedScript(scriptContent)
+
       await queryClient.invalidateQueries({
         queryKey: ['script', location.path],
       })
@@ -67,10 +71,15 @@ export function Validator({ file, content }: ValidatorProps) {
     void saveFile({ saveAs: false })
   }
 
-  const { session, startDebugging, stopDebugging } = useDebugSession({
-    type: 'file',
-    path: file.path,
-  })
+  const { session, startDebugging, stopDebugging } = useDebugSession(
+    isDirty
+      ? {
+          type: 'raw',
+          content: scriptContent,
+          name: file.path,
+        }
+      : { type: 'file', path: file.path }
+  )
 
   const isRunning = session?.state === 'running'
 
