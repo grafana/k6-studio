@@ -1,5 +1,5 @@
 import { Flex, Popover } from '@radix-ui/themes'
-import { ReactElement, ReactNode, useEffect, useRef, useState } from 'react'
+import { ReactElement, ReactNode, useEffect, useState } from 'react'
 
 import { LocatorSummary } from '@/components/Browser/Locator'
 import {
@@ -33,7 +33,7 @@ interface LocatorFormProps {
 }
 
 export function LocatorForm({
-  state: { key, current, values },
+  state: elementOptions,
   onChange,
   suggestedRoles,
 }: LocatorFormProps): ReactElement {
@@ -41,24 +41,13 @@ export function LocatorForm({
   const { frames, onChange: onChangeFrames } = useFrameChain()
 
   const chain = frames ?? []
-  const elementOptions: LocatorOptions = { key, current, values }
 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 
-  // Stable key per frame. Index keys would shift when a non-last frame is
-  // removed, reassigning expansion and validation state to a different frame.
-  // The keys are maintained alongside add/remove, which are the only ways the
-  // chain length changes while the popover is open.
-  const nextKey = useRef(chain.length)
-  const [frameKeys, setFrameKeys] = useState<number[]>(() =>
-    chain.map((_, index) => index)
-  )
-  const frameKeyAt = (index: number) => frameKeys[index] ?? index
-
   // Which accordion row is open (null = all collapsed). The open row is the one
-  // being edited; frames are addressed by their stable key.
+  // being edited; frames and the element are addressed by their own synthetic key.
   const [expandedTarget, setExpandedTarget] = useState<LocatorTargetKey | null>(
-    'element'
+    elementOptions.key
   )
   const [hoveredTarget, setHoveredTarget] = useState<LocatorTargetKey | null>(
     null
@@ -71,12 +60,14 @@ export function LocatorForm({
     new Map<LocatorTargetKey, Set<ElementLocator['type']>>()
   )
 
+  const isElement = (key: LocatorTargetKey) => key === elementOptions.key
+
   const optionsFor = (key: LocatorTargetKey): LocatorOptions => {
-    if (key === 'element') {
+    if (isElement(key)) {
       return elementOptions
     }
 
-    return chain[frameKeys.indexOf(key)] ?? elementOptions
+    return chain.find((frame) => frame.key === key) ?? elementOptions
   }
 
   const getTargetValidation = (
@@ -90,23 +81,18 @@ export function LocatorForm({
     return validateLocator(getCurrentLocator(options))
   }
 
-  const toTarget = <Key extends LocatorTargetKey>(
-    key: Key,
-    options: LocatorOptions
-  ): LocatorTarget<Key> => {
-    const validation = getTargetValidation(key, options)
+  const toTarget = (options: LocatorOptions): LocatorTarget => {
+    const validation = getTargetValidation(options.key, options)
 
     return {
-      key,
+      key: options.key,
       options,
       error: validation.isValid ? null : (validation.message ?? null),
     }
   }
 
-  const frameTargets = chain.map((frame, index) =>
-    toTarget(frameKeyAt(index), frame)
-  )
-  const elementTarget = toTarget('element', elementOptions)
+  const frameTargets = chain.map(toTarget)
+  const elementTarget = toTarget(elementOptions)
 
   // The badge surfaces the first problem anywhere in the chain: the element
   // first, then frames outermost-first (prefixed so the tooltip says which).
@@ -129,10 +115,9 @@ export function LocatorForm({
     const debounce = setTimeout(() => {
       highlightSelector(
         resolveHighlight(
-          hoveredTarget ?? expandedTarget ?? 'element',
-          frameKeys,
+          hoveredTarget ?? expandedTarget ?? elementOptions.key,
           frames,
-          { key, current, values }
+          elementOptions
         )
       )
     }, 100)
@@ -144,11 +129,8 @@ export function LocatorForm({
     isPopoverOpen,
     hoveredTarget,
     expandedTarget,
-    key,
-    current,
-    values,
+    elementOptions,
     frames,
-    frameKeys,
     highlightSelector,
   ])
 
@@ -160,7 +142,7 @@ export function LocatorForm({
 
   const handlePointerEnter = () => {
     highlightSelector(
-      resolveHighlight('element', frameKeys, frames, elementOptions)
+      resolveHighlight(elementOptions.key, frames, elementOptions)
     )
   }
 
@@ -173,17 +155,13 @@ export function LocatorForm({
   }
 
   const updateTarget = (key: LocatorTargetKey, value: LocatorOptions) => {
-    if (key === 'element') {
+    if (isElement(key)) {
       onChange(value)
 
       return
     }
 
-    const index = frameKeys.indexOf(key)
-
-    onChangeFrames?.(
-      chain.map((frame, position) => (position === index ? value : frame))
-    )
+    onChangeFrames?.(chain.map((frame) => (frame.key === key ? value : frame)))
   }
 
   // Editing a type and moving on (switching type, collapsing, or closing) marks
@@ -246,26 +224,22 @@ export function LocatorForm({
   }
 
   const handleAddFrame = () => {
-    const key = nextKey.current++
+    const newFrame = cssLocatorOptions('')
 
-    setFrameKeys((prev) => [key, ...prev])
-    setExpandedTarget(key)
-    onChangeFrames?.([cssLocatorOptions(''), ...chain])
+    setExpandedTarget(newFrame.key)
+    onChangeFrames?.([newFrame, ...chain])
   }
 
-  const handleRemoveFrame = (key: number) => {
-    const index = frameKeys.indexOf(key)
-
-    setFrameKeys((prev) => prev.filter((existing) => existing !== key))
+  const handleRemoveFrame = (key: LocatorTargetKey) => {
     setTouchedTypes((prev) => deleteFromMap(prev, key))
     setDirtyTypes((prev) => deleteFromMap(prev, key))
 
     if (expandedTarget === key) {
-      setExpandedTarget('element')
+      setExpandedTarget(elementOptions.key)
     }
 
     onChangeFrames?.(
-      emptyToUndefined(chain.filter((_, position) => position !== index))
+      emptyToUndefined(chain.filter((frame) => frame.key !== key))
     )
   }
 
@@ -273,7 +247,7 @@ export function LocatorForm({
     setIsPopoverOpen(open)
 
     if (open) {
-      setExpandedTarget('element')
+      setExpandedTarget(elementOptions.key)
       setHoveredTarget(null)
 
       return
@@ -284,9 +258,8 @@ export function LocatorForm({
     // frames, whose errors then show on the badge.
     setTouchedTypes((prev) => {
       return chain.reduce(
-        (next, frame, index) =>
-          addTypeToMap(next, frameKeyAt(index), frame.current),
-        addTypeToMap(prev, 'element', current)
+        (next, frame) => addTypeToMap(next, frame.key, frame.current),
+        addTypeToMap(prev, elementOptions.key, elementOptions.current)
       )
     })
   }
@@ -298,7 +271,7 @@ export function LocatorForm({
       <LocatorEditor
         state={target.options}
         fieldErrors={validation.isValid ? undefined : validation.fieldErrors}
-        suggestedRoles={target.key === 'element' ? suggestedRoles : undefined}
+        suggestedRoles={isElement(target.key) ? suggestedRoles : undefined}
         onTypeChange={(type) => handleTypeChange(target, type)}
         onLocatorChange={(locator) => handleLocatorChange(target, locator)}
         onFieldBlur={() => handleFieldBlur(target)}
@@ -348,14 +321,13 @@ export function LocatorForm({
 // frames before it, the element within the full chain.
 function resolveHighlight(
   target: LocatorTargetKey,
-  frameKeys: number[],
   frames: LocatorOptions[] | undefined,
   element: LocatorOptions
 ): HighlightedLocator {
   const chain = frames ?? []
 
-  if (target !== 'element') {
-    const index = frameKeys.indexOf(target)
+  if (target !== element.key) {
+    const index = chain.findIndex((frame) => frame.key === target)
     const frame = chain[index]
 
     if (frame !== undefined) {
