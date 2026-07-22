@@ -8,6 +8,7 @@ declare global {
   // whether you're running in development or production).
   const MAIN_WINDOW_VITE_DEV_SERVER_URL: string
   const MAIN_WINDOW_VITE_NAME: string
+  // Empty string in builds compiled without Sentry credentials (e.g. smoke builds)
   const SENTRY_DSN: string
 
   namespace NodeJS {

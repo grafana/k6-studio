@@ -10,13 +10,16 @@ import {
 interface State {
   requests: ProxyData[]
   recordingPath: string
+  recordingError: unknown
   allowlist: string[]
   showAllowlistDialog: boolean
   includeStaticAssets: boolean
 }
 
 interface Actions {
-  setRecording: (recording: ProxyData[], path: string) => void
+  setRecordingPath: (path: string) => void
+  setRecording: (recording: ProxyData[]) => void
+  setRecordingError: (error: unknown) => void
   resetRecording: () => void
   setAllowlist: (value: string[]) => void
   setIncludeStaticAssets: (value: boolean) => void
@@ -41,10 +44,15 @@ export const createRecordingSlice: ImmerStateCreator<RecordingSliceStore> = (
   },
   requests: [],
   recordingPath: '',
+  recordingError: null,
   allowlist: [],
   includeStaticAssets: false,
   showAllowlistDialog: false,
-  setRecording: (requests: ProxyData[], path: string) =>
+  setRecordingPath: (path: string) =>
+    set((state) => {
+      state.recordingPath = path
+    }),
+  setRecording: (requests: ProxyData[]) =>
     set((state) => {
       if (shouldResetAllowList({ requests, allowList: state.allowlist })) {
         state.allowlist = []
@@ -61,11 +69,18 @@ export const createRecordingSlice: ImmerStateCreator<RecordingSliceStore> = (
       }
 
       state.requests = requests
-      state.recordingPath = path
 
       const { requestJsonPaths, responseJsonPaths } =
         extractUniqueJsonPaths(requests)
-      state.metadata = { requestJsonPaths, responseJsonPaths }
+
+      state.metadata = {
+        requestJsonPaths,
+        responseJsonPaths,
+      }
+    }),
+  setRecordingError: (error: unknown) =>
+    set((state) => {
+      state.recordingError = error
     }),
   resetRecording: () =>
     set((state) => {

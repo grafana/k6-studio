@@ -9,7 +9,7 @@ import {
   TestIdLocator,
   TitleLocator,
 } from '@/schemas/locator'
-import { ElementSelector } from '@/schemas/recording'
+import { BrowserEventTarget, ElementSelector } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 
 function hasNonEmptyString(value: string | undefined): value is string {
@@ -187,4 +187,11 @@ export function toLocatorOptions(selector: ElementSelector): LocatorOptions {
       title: getTitleLocator(selector) ?? undefined,
     },
   }
+}
+
+// Converts a recorded event's iframe chain into locator options for each frame.
+export function toFrameOptions(
+  frames: BrowserEventTarget[] | undefined
+): LocatorOptions[] | undefined {
+  return frames?.map((frame) => toLocatorOptions(frame.selectors))
 }

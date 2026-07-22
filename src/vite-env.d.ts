@@ -7,3 +7,5 @@ declare const GRAFANA_COM_URL: string
 declare const K6_TESTING_OVERRIDE: string
 
 declare const TARGET_PLATFORM: NodeJS.Platform
+
+declare const DEV_GIT_BRANCH: string | undefined

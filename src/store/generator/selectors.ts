@@ -24,10 +24,14 @@ export function selectIsRulePreviewable(state: GeneratorStore) {
 }
 
 export function selectHasRecording(state: GeneratorStore) {
-  return selectFilteredRequests(state).length > 0
+  return (
+    state.recordingError === null && selectFilteredRequests(state).length > 0
+  )
 }
 
-export function selectFilteredRequests(state: GeneratorStore) {
+export function selectFilteredRequests(
+  state: Pick<GeneratorStore, 'requests' | 'allowlist' | 'includeStaticAssets'>
+) {
   const allowedRequests = state.requests.filter((request) => {
     return state.allowlist.includes(request.request.host)
   })
@@ -51,6 +55,7 @@ export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
     allowlist,
     includeStaticAssets,
     scriptName,
+    wizardUsed,
   } = state
 
   return {
@@ -70,6 +75,7 @@ export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
     allowlist,
     includeStaticAssets,
     scriptName,
+    wizardUsed,
   }
 }
 

@@ -4,19 +4,8 @@ import { PlusIcon } from 'lucide-react'
 import { useCreateTestActions } from '@/hooks/useCreateTestActions'
 
 export function CreateTestButton() {
-  const {
-    handleCreateHTTPTest,
-    handleCreateBrowserTest,
-    isBrowserEditorEnabled,
-  } = useCreateTestActions()
-
-  if (!isBrowserEditorEnabled) {
-    return (
-      <Button size="1" variant="soft" onClick={() => handleCreateHTTPTest()}>
-        <PlusIcon /> Create test
-      </Button>
-    )
-  }
+  const { handleCreateHTTPTest, handleCreateBrowserTest } =
+    useCreateTestActions()
 
   return (
     <DropdownMenu.Root>

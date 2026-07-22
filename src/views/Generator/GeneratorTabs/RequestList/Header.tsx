@@ -8,9 +8,9 @@ import { RecordingSelector } from '../../RecordingSelector'
 interface HeaderProps {
   filter: string
   filterAllData?: boolean
-  onChangeRecording: () => void
   setFilter: (filter: string) => void
   setFilterAllData: (filterAllData: boolean) => void
+  onChangeRecording: (newPath: string) => void
 }
 
 export function Header({
@@ -30,7 +30,16 @@ export function Header({
 
   return (
     <Flex justify="between" align="center" px="2" py="1" gap="2">
-      <RecordingSelector onChangeRecording={onChangeRecording} />
+      <Flex gap="2" align="center">
+        <Text size="2" weight="medium" as="label" htmlFor="recording-selector">
+          Recording
+        </Text>
+        <RecordingSelector
+          id="recording-selector"
+          onChangeRecording={onChangeRecording}
+        />
+      </Flex>
+
       <Flex justify="end" align="center" gap="4">
         <Text
           as="label"

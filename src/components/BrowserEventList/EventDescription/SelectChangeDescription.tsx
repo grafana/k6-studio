@@ -41,7 +41,11 @@ export function SelectChangeDescription({
         </div>
       </Tooltip>{' '}
       from{' '}
-      <Selector selectors={event.target.selectors} onHighlight={onHighlight} />
+      <Selector
+        selectors={event.target.selectors}
+        frames={event.frames}
+        onHighlight={onHighlight}
+      />
     </>
   )
 }

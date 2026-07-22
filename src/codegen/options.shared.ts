@@ -6,6 +6,7 @@ type ThresholdShape = {
   condition: string
   value: number
   stopTest: boolean
+  enabled?: boolean
 }
 
 type AbortableThreshold = {
@@ -16,17 +17,19 @@ type AbortableThreshold = {
 export function generateThresholds<T extends ThresholdShape>(
   thresholds: readonly T[]
 ) {
-  return thresholds.reduce<Record<string, Array<string | AbortableThreshold>>>(
-    (acc, { metric, statistic, condition, value, stopTest }) => {
-      const expression = `${statistic}${condition}${value}`
-      const entry: string | AbortableThreshold = stopTest
-        ? { threshold: expression, abortOnFail: true }
-        : expression
-      acc[metric] = [...(acc[metric] ?? []), entry]
-      return acc
-    },
-    {}
-  )
+  return thresholds
+    .filter((threshold) => threshold.enabled !== false)
+    .reduce<Record<string, Array<string | AbortableThreshold>>>(
+      (acc, { metric, statistic, condition, value, stopTest }) => {
+        const expression = `${statistic}${condition}${value}`
+        const entry: string | AbortableThreshold = stopTest
+          ? { threshold: expression, abortOnFail: true }
+          : expression
+        acc[metric] = [...(acc[metric] ?? []), entry]
+        return acc
+      },
+      {}
+    )
 }
 
 export function generateCloudOptions({

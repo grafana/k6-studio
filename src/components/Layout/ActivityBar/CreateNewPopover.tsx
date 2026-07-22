@@ -8,11 +8,8 @@ import { getRoutePath } from '@/routeMap'
 
 export function CreateNewPopover() {
   const navigate = useNavigate()
-  const {
-    handleCreateHTTPTest,
-    handleCreateBrowserTest,
-    isBrowserEditorEnabled,
-  } = useCreateTestActions()
+  const { handleCreateHTTPTest, handleCreateBrowserTest } =
+    useCreateTestActions()
 
   return (
     <DropdownMenu.Root>
@@ -36,14 +33,12 @@ export function CreateNewPopover() {
           description="Create a test from HTTP requests using rules"
           onClick={() => handleCreateHTTPTest()}
         />
-        {isBrowserEditorEnabled && (
-          <RichDropdownMenuItem
-            label="Browser test"
-            icon={<MonitorIcon />}
-            description="Create a test simulating browser interactions"
-            onClick={() => handleCreateBrowserTest()}
-          />
-        )}
+        <RichDropdownMenuItem
+          label="Browser test"
+          icon={<MonitorIcon />}
+          description="Create a test simulating browser interactions"
+          onClick={() => handleCreateBrowserTest()}
+        />
       </DropdownMenu.Content>
     </DropdownMenu.Root>
   )

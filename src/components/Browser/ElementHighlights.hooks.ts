@@ -1,11 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
-import { ElementLocator } from '@/schemas/locator'
-import { findElementsByLocator } from '@/utils/selectors'
+import { ElementLocator, LocatorOptions } from '@/schemas/locator'
+import {
+  collectLayoutShiftWindows,
+  observeWindowsForLayoutShift,
+} from '@/utils/dom/layout'
+import { isElement } from '@/utils/dom/realm'
+import { findElementsByFrameChain } from '@/utils/selectors'
 
 import { Bounds } from './types'
-import { getElementBounds } from './utils'
+import { getElementBoundsWithin } from './utils'
 
 interface Highlight {
   id: number
@@ -15,7 +20,8 @@ interface Highlight {
 
 export function useHighlightedElements(
   root: HTMLElement | null,
-  target: ElementLocator | Element | null
+  target: ElementLocator | Element | null,
+  frames?: LocatorOptions[]
 ) {
   const idCounter = useRef(0)
   const [highlights, setHighlights] = useState<Highlight[] | null>(null)
@@ -27,60 +33,50 @@ export function useHighlightedElements(
       return
     }
 
-    const toHighlight = (element: Element) => {
-      const bounds = getElementBounds(element)
+    const rootWindow = root.ownerDocument.defaultView
 
-      return {
-        id: idCounter.current++,
-        element,
-        bounds,
+    const toHighlight = (element: Element) => ({
+      id: idCounter.current++,
+      element,
+      bounds: getElementBoundsWithin(element, rootWindow),
+    })
+
+    const resolveElements = (): Element[] => {
+      if (isElement(target)) {
+        return [target]
+      }
+
+      try {
+        return findElementsByFrameChain(root, frames, target)
+      } catch {
+        return []
       }
     }
 
-    const { Element } = root.ownerDocument.defaultView ?? window
+    const elements = resolveElements()
 
-    if (target instanceof Element) {
-      setHighlights([toHighlight(target)])
+    setHighlights(elements.map(toHighlight))
 
-      return
-    }
-
-    try {
-      const elements = findElementsByLocator(root, target)
-      const highlights = elements.map((element) => toHighlight(element))
-
-      setHighlights(highlights)
-    } catch {
-      setHighlights([])
-    }
-  }, [root, target])
-
-  useEffect(() => {
-    if (root === null || target === null) {
-      return
-    }
-
-    const observer = new ResizeObserver(() => {
-      setHighlights((highlights) => {
-        if (highlights === null) {
-          return null
-        }
-
-        return highlights.map((highlight) => {
-          return {
+    const recompute = () => {
+      setHighlights(
+        (highlights) =>
+          highlights?.map((highlight) => ({
             ...highlight,
-            bounds: getElementBounds(highlight.element),
-          }
-        })
-      })
-    })
-
-    observer.observe(document.body)
-
-    return () => {
-      observer.disconnect()
+            bounds: getElementBoundsWithin(highlight.element, rootWindow),
+          })) ?? null
+      )
     }
-  }, [root, target])
+
+    // A highlighted element can live inside a (nested) iframe that scrolls or
+    // resizes independently of the top document, so recompute bounds on a shift
+    // in any document an element belongs to.
+    const windows = collectLayoutShiftWindows(
+      rootWindow,
+      ...elements.map((element) => element.ownerDocument.defaultView)
+    )
+
+    return observeWindowsForLayoutShift(windows, recompute)
+  }, [root, target, frames])
 
   return useDebouncedValue({
     value: highlights,

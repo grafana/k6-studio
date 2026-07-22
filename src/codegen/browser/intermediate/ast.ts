@@ -76,11 +76,28 @@ export interface RoleLocatorOptionsExpression {
   }
 }
 
+export interface TraceExpression {
+  type: 'TraceExpression'
+  traceId: string
+  target: Expression
+}
+
 export interface NewRoleLocatorExpression {
   type: 'NewRoleLocatorExpression'
   role: Expression
   page: Expression
   options: Expression | null
+}
+
+export interface NewFrameLocatorExpression {
+  type: 'NewFrameLocatorExpression'
+  parent: Expression
+  selector: Expression
+}
+
+export interface ContentFrameExpression {
+  type: 'ContentFrameExpression'
+  target: Expression
 }
 
 export interface GotoExpression {
@@ -220,7 +237,12 @@ export type Assertion =
 export interface ExpectExpression {
   type: 'ExpectExpression'
   actual: Expression
-  expected: Assertion
+}
+
+export interface AssertExpression {
+  type: 'AssertExpression'
+  expect: Expression
+  assertion: Assertion
 }
 
 export type Expression =
@@ -238,6 +260,8 @@ export type Expression =
   | NewAltTextLocatorExpression
   | NewCssLocatorExpression
   | NewTestIdLocatorExpression
+  | NewFrameLocatorExpression
+  | ContentFrameExpression
   | GotoExpression
   | ReloadExpression
   | ClearExpression
@@ -248,11 +272,13 @@ export type Expression =
   | SelectOptionValueExpression
   | SelectOptionsExpression
   | ExpectExpression
+  | AssertExpression
   | WaitForExpression
   | WaitForOptionsExpression
   | WaitForNavigationExpression
   | WaitForTimeoutExpression
   | PromiseAllExpression
+  | TraceExpression
 
 export interface VariableDeclaration {
   type: 'VariableDeclaration'

@@ -37,6 +37,7 @@ export function createGeneratorData(
       files: [],
     },
     version: '3.0',
+    wizardUsed: false,
     ...data,
   }
 }
@@ -66,8 +67,15 @@ export function createGeneratorState(
     scriptName: 'script.js',
     setScriptName: vi.fn(),
 
+    wizardUsed: false,
+    setWizardUsed: vi.fn(),
+
     recordingPath: '',
+    recordingError: null,
+    setRecordingPath: vi.fn(),
+    setRecordingError: vi.fn(),
     setGeneratorFile: vi.fn(),
+    resetGeneratorFile: vi.fn(),
     resetRecording: vi.fn(),
     setRecording: vi.fn(),
 

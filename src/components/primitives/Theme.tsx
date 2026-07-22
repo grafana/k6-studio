@@ -75,10 +75,7 @@ function toStyles(colors: { [key: string]: string }) {
 const styles = css`
   --studio-color-scheme: light;
 
-  --studio-font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI (Custom)', Roboto,
-    'Helvetica Neue', 'Open Sans (Custom)', system-ui, sans-serif,
-    'Apple Color Emoji', 'Segoe UI Emoji';
+  --studio-font-family: InterVariable;
 
   --studio-foreground: var(--gray-12);
   --studio-background: white;
@@ -163,7 +160,6 @@ const styles = css`
   }
 
   font-family: var(--studio-font-family);
-  background-color: var(--studio-background);
   color: var(--studio-foreground);
 
   & :focus-visible {
@@ -312,6 +308,12 @@ const getStyles = (root: boolean, includeColors: boolean) => {
   if (!root) {
     return css`
       :host {
+        all: revert;
+      }
+
+      :host [data-ksix-studio] {
+        background-color: transparent;
+
         ${includeColors ? getColors() : ''}
 
         ${styles};

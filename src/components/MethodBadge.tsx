@@ -1,10 +1,8 @@
 import { Text } from '@radix-ui/themes'
 import { ComponentProps, ReactNode } from 'react'
 
-import { Method } from '@/types'
-
 interface MethodBadgeProps {
-  method: Method
+  method: string
   children: ReactNode
 }
 
@@ -17,7 +15,7 @@ export function MethodBadge({ method, children }: MethodBadgeProps) {
   )
 }
 
-function methodColor(method: Method): ComponentProps<typeof Text>['color'] {
+function methodColor(method: string): ComponentProps<typeof Text>['color'] {
   switch (method) {
     case 'GET':
       return 'green'

@@ -7,6 +7,7 @@ import { Overlay } from '@/components/Browser/Overlay'
 import { Tooltip } from '@/components/primitives/Tooltip'
 import { ElementRole } from '@/utils/dom/aria'
 
+import { getFramePathForElement, withFrames } from '../../frames'
 import { getTabId } from '../../utils'
 import { Anchor } from '../Anchor'
 import { useEscape } from '../hooks/useEscape'
@@ -87,17 +88,22 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
   }
 
   const handleAssertionSubmit = (assertion: AssertionData) => {
+    const frames = element ? getFramePathForElement(element.element) : []
+
     client.send({
       type: 'record-events',
       events: [
-        {
-          type: 'assert',
-          eventId: nanoid(),
-          timestamp: Date.now(),
-          tab: getTabId(),
-          target: assertion.target,
-          assertion: toAssertion(assertion),
-        },
+        withFrames(
+          {
+            type: 'assert',
+            eventId: nanoid(),
+            timestamp: Date.now(),
+            tab: getTabId(),
+            target: assertion.target,
+            assertion: toAssertion(assertion),
+          },
+          frames
+        ),
       ],
     })
 
@@ -109,17 +115,22 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
   }
 
   const handleAddWaitFor = (data: WaitForData) => {
+    const frames = element ? getFramePathForElement(element.element) : []
+
     client.send({
       type: 'record-events',
       events: [
-        {
-          type: 'wait-for',
-          eventId: nanoid(),
-          timestamp: Date.now(),
-          tab: getTabId(),
-          target: data.target,
-          options: data.options,
-        },
+        withFrames(
+          {
+            type: 'wait-for',
+            eventId: nanoid(),
+            timestamp: Date.now(),
+            tab: getTabId(),
+            target: data.target,
+            options: data.options,
+          },
+          frames
+        ),
       ],
     })
 

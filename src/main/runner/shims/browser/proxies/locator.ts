@@ -4,6 +4,7 @@ import { ElementLocator } from '@/schemas/locator'
 
 import { ProxyOptions } from '../utils'
 
+import { frameLocatorProxy } from './frameLocator'
 import { isLocatorMethod } from './utils'
 
 declare module 'k6/browser' {
@@ -159,6 +160,10 @@ export function locatorProxy(
         }
       },
     },
-    proxies: {},
+    proxies: {
+      contentFrame(target) {
+        return frameLocatorProxy(target)
+      },
+    },
   }
 }

@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { AiHandler, StreamChatRequest } from './types'
 
-import { handleStreamChat } from './index'
+import { handleAbortStreamChat, handleStreamChat } from './index'
 
 vi.mock('electron', () => ({
   ipcMain: { on: vi.fn(), handle: vi.fn() },
@@ -13,6 +13,8 @@ vi.mock('electron', () => ({
 vi.mock('ai', () => ({
   convertToModelMessages: vi.fn(() => []),
   streamText: vi.fn(),
+  jsonSchema: vi.fn((schema: unknown) => schema),
+  tool: vi.fn((definition: unknown) => definition),
 }))
 
 vi.mock('@sentry/electron/main', () => ({
@@ -31,10 +33,6 @@ vi.mock('./a2a/assistantAuth', () => ({
   initialize: vi.fn(),
 }))
 
-vi.mock('./tools', () => ({
-  tools: {},
-}))
-
 function createMockEvent() {
   return {
     sender: { send: vi.fn() },
@@ -48,6 +46,7 @@ function createRequest(
     id: 'test-request-id',
     trigger: 'submit-message',
     messages: [],
+    tools: [],
     ...overrides,
   }
 }
@@ -133,6 +132,103 @@ describe('handleStreamChat', () => {
 
     expect(secondItem).not.toHaveProperty('statusCode')
     expect(secondItem).toEqual({ id: '2' })
+  })
+
+  it('rebuilds the renderer-provided tool definitions into a ToolSet', async () => {
+    const { streamText } = await import('ai')
+    vi.mocked(streamText).mockClear()
+    vi.mocked(streamText).mockReturnValue({} as never)
+
+    const { streamMessages } = await import('./streamMessages')
+    vi.mocked(streamMessages).mockResolvedValue()
+
+    const event = createMockEvent()
+    const request = createRequest({
+      tools: [
+        {
+          name: 'suggestHosts',
+          description: 'Suggest hosts',
+          inputSchema: { type: 'object' },
+        },
+      ],
+    })
+
+    await handleStreamChat(event, request)
+
+    expect(streamText).toHaveBeenCalledOnce()
+    const tools = vi.mocked(streamText).mock.calls[0]![0].tools
+
+    expect(Object.keys(tools ?? {})).toEqual(['suggestHosts'])
+    expect(tools?.suggestHosts).toMatchObject({
+      description: 'Suggest hosts',
+      inputSchema: { type: 'object' },
+    })
+  })
+
+  it('rejects malformed tool definitions with an error chunk', async () => {
+    const { streamText } = await import('ai')
+    vi.mocked(streamText).mockClear()
+
+    const event = createMockEvent()
+    const request = createRequest({
+      tools: [{ name: '', description: 'bad' }] as never,
+    })
+
+    await handleStreamChat(event, request)
+
+    expect(streamText).not.toHaveBeenCalled()
+
+    const send = vi.mocked(event.sender.send)
+    const chunkChannel: string = AiHandler.StreamChatChunk
+    const chunkCall = send.mock.calls.find(
+      ([channel]) => channel === chunkChannel
+    )
+
+    expect(chunkCall?.[1]).toMatchObject({
+      id: 'test-request-id',
+      chunk: { type: 'error' },
+    })
+  })
+
+  it('keeps the newest stream on a chatId abortable after an earlier one ends', async () => {
+    const { streamText } = await import('ai')
+    const { streamMessages } = await import('./streamMessages')
+
+    // Capture the abort signal handed to each streamText call.
+    const signals: AbortSignal[] = []
+    vi.mocked(streamText).mockImplementation(
+      (options: { abortSignal?: AbortSignal }) => {
+        if (options.abortSignal) {
+          signals.push(options.abortSignal)
+        }
+        return {} as unknown as ReturnType<typeof streamText>
+      }
+    )
+
+    // First stream on chatId "c" hangs until we release it.
+    let releaseFirst = () => {}
+    const firstDone = new Promise<void>((resolve) => {
+      releaseFirst = resolve
+    })
+    // Second stream (same chatId) stays pending.
+    vi.mocked(streamMessages)
+      .mockReturnValueOnce(firstDone)
+      .mockReturnValueOnce(new Promise<void>(() => {}))
+
+    const request = createRequest({ id: 'c' })
+    const firstCall = handleStreamChat(createMockEvent(), request)
+    const secondCall = handleStreamChat(createMockEvent(), request)
+    void secondCall
+
+    // The first stream finishes; its finally must not remove the second
+    // stream's controller from the registry.
+    releaseFirst()
+    await firstCall
+
+    handleAbortStreamChat(createMockEvent(), { id: 'c' })
+
+    expect(signals).toHaveLength(2)
+    expect(signals[1]?.aborted).toBe(true)
   })
 
   it('sends Unknown error when catch receives a non-Error value', async () => {

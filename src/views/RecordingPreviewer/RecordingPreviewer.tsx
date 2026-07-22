@@ -26,7 +26,7 @@ export function RecordingPreviewer({ file, content }: RecordingPreviewerProps) {
       actions={
         <RecordingPreviewControls
           file={file}
-          isExternal={content.isExternal}
+          requests={proxyData}
           browserEvents={browserEvents}
         />
       }

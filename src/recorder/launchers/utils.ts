@@ -49,6 +49,12 @@ const FEATURES_TO_DISABLE = [
   'OptimizationHintsFetching',
   'OptimizationTargetPrediction',
   'OptimizationHints',
+  // Keep cross-origin iframes in the same process as their parent so that the
+  // recording script (injected via CDP) runs inside them and can walk up to the
+  // top frame. Combined with --disable-web-security this lets us record events
+  // and compute frame paths across origins.
+  'IsolateOrigins',
+  'site-per-process',
 ]
 
 interface GetBrowserLaunchArgsOptions {

@@ -4,6 +4,7 @@ export function isLocatorMethod(method: string) {
     case 'contentFrame':
     case 'filter':
     case 'first':
+    case 'frameLocator':
     case 'getByAltText':
     case 'getByLabel':
     case 'getByPlaceholder':

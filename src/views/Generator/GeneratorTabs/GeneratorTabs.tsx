@@ -22,16 +22,17 @@ interface GeneratorTabsProps {
   script: ScriptPreviewType
   selectedRequest: ProxyData | null
   onSelectRequest: (request: ProxyData | null) => void
+  onChangeRecording: (newPath: string) => void
 }
 
 export function GeneratorTabs({
   script,
   selectedRequest,
   onSelectRequest,
+  onChangeRecording,
 }: GeneratorTabsProps) {
   const [tab, setTab] = useState('requests')
   const filteredRequests = useGeneratorStore(selectFilteredRequests)
-
   const hasRecording = useGeneratorStore(selectHasRecording)
 
   return (
@@ -82,8 +83,9 @@ export function GeneratorTabs({
         >
           <RequestList
             requests={filteredRequests}
-            onSelectRequest={onSelectRequest}
             selectedRequest={selectedRequest}
+            onSelectRequest={onSelectRequest}
+            onChangeRecording={onChangeRecording}
           />
         </Tabs.Content>
         <Tabs.Content

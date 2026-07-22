@@ -79,7 +79,10 @@ export function trackLog(entry: LogEntry) {
     })
 }
 
-function beginAction(action: AnyBrowserDebugEvent | undefined | null) {
+function beginAction(
+  action: AnyBrowserDebugEvent | undefined | null,
+  traceId?: string
+) {
   if (TRACKING_SERVER_URL === null) {
     return null
   }
@@ -91,7 +94,7 @@ function beginAction(action: AnyBrowserDebugEvent | undefined | null) {
   return client.begin({
     type: 'action',
     state: 'begin',
-    eventId: client.nextId(),
+    eventId: traceId ?? client.nextId(),
     timestamp: {
       started: Date.now(),
     },
@@ -133,6 +136,7 @@ type ProxyFn<T extends AnyFunction> = (
 ) => ProxyOptions<Unwrap<ReturnType<T>>> | null
 
 export interface ProxyOptions<T extends object> {
+  traceId?: string
   target: T
   tracking: {
     [P in keyof T]?: T[P] extends AnyFunction ? TrackingFn<T[P]> : never
@@ -176,12 +180,24 @@ function getTrackingMethod<T extends object>(
 }
 
 export function createProxy<T extends object>({
+  traceId,
   target,
   tracking,
   proxies,
 }: ProxyOptions<T>): T {
   return new Proxy(target, {
     get(target, property) {
+      if (property === '$trace') {
+        return (traceId: string) => {
+          return createProxy({
+            traceId,
+            target,
+            tracking,
+            proxies,
+          })
+        }
+      }
+
       const method = property as keyof T
       const original = target[method] as (
         ...args: ArgsOf<T[keyof T]>
@@ -202,7 +218,7 @@ export function createProxy<T extends object>({
       // values based on the provided configuration.
       return function (...args: ArgsOf<T[keyof T]>): unknown {
         const action = track?.(...args)
-        const eventId = beginAction(action)
+        const eventId = beginAction(action, traceId)
 
         const handleSuccess = (result: unknown) => {
           endAction(eventId, {
@@ -233,6 +249,7 @@ export function createProxy<T extends object>({
         }
 
         const handleError = (error: unknown) => {
+          console.error('Error in proxied method:', error)
           endAction(eventId, {
             type: 'error',
             error: String(error),

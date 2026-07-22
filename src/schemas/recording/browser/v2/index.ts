@@ -31,6 +31,19 @@ const BrowserEventBaseSchema = z.object({
   timestamp: z.number(),
 })
 
+// Events that target an element also record the chain of iframe elements from
+// the top frame down to the frame the element lives in, outermost first. Absent
+// or empty means the top frame. Page-level events (navigation, reload) have no
+// element target and so no frame scope; they extend the base directly.
+const TargetedEventBaseSchema = BrowserEventBaseSchema.extend({
+  frames: BrowserEventTargetSchema.array().optional(),
+})
+
+const TabOpenedEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('tab-opened'),
+  tab: z.string(),
+})
+
 const NavigateToPageEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('navigate-to-page'),
   tab: z.string(),
@@ -48,7 +61,7 @@ const ReloadPageEventSchema = BrowserEventBaseSchema.extend({
   url: z.string(),
 })
 
-const ClickEventSchema = BrowserEventBaseSchema.extend({
+const ClickEventSchema = TargetedEventBaseSchema.extend({
   type: z.literal('click'),
   tab: z.string(),
   target: BrowserEventTargetSchema,
@@ -61,7 +74,7 @@ const ClickEventSchema = BrowserEventBaseSchema.extend({
   }),
 })
 
-const InputChangeEventSchema = BrowserEventBaseSchema.extend({
+const InputChangeEventSchema = TargetedEventBaseSchema.extend({
   type: z.literal('input-change'),
   tab: z.string(),
   target: BrowserEventTargetSchema,
@@ -69,14 +82,14 @@ const InputChangeEventSchema = BrowserEventBaseSchema.extend({
   sensitive: z.boolean(),
 })
 
-const CheckChangeEventSchema = BrowserEventBaseSchema.extend({
+const CheckChangeEventSchema = TargetedEventBaseSchema.extend({
   type: z.literal('check-change'),
   tab: z.string(),
   target: BrowserEventTargetSchema,
   checked: z.boolean(),
 })
 
-const RadioChangeEventSchema = BrowserEventBaseSchema.extend({
+const RadioChangeEventSchema = TargetedEventBaseSchema.extend({
   type: z.literal('radio-change'),
   tab: z.string(),
   target: BrowserEventTargetSchema,
@@ -84,7 +97,7 @@ const RadioChangeEventSchema = BrowserEventBaseSchema.extend({
   value: z.string(),
 })
 
-const SelectChangeEventSchema = BrowserEventBaseSchema.extend({
+const SelectChangeEventSchema = TargetedEventBaseSchema.extend({
   type: z.literal('select-change'),
   tab: z.string(),
   target: BrowserEventTargetSchema,
@@ -92,7 +105,7 @@ const SelectChangeEventSchema = BrowserEventBaseSchema.extend({
   multiple: z.boolean(),
 })
 
-const SubmitFormEventSchema = BrowserEventBaseSchema.extend({
+const SubmitFormEventSchema = TargetedEventBaseSchema.extend({
   type: z.literal('submit-form'),
   tab: z.string(),
   form: BrowserEventTargetSchema,
@@ -136,14 +149,14 @@ const AssertionSchema = z.discriminatedUnion('type', [
   TextInputAssertionSchema,
 ])
 
-const AssertEventSchema = BrowserEventBaseSchema.extend({
+const AssertEventSchema = TargetedEventBaseSchema.extend({
   type: z.literal('assert'),
   tab: z.string(),
   target: BrowserEventTargetSchema,
   assertion: AssertionSchema,
 })
 
-const WaitForEventSchema = BrowserEventBaseSchema.extend({
+const WaitForEventSchema = TargetedEventBaseSchema.extend({
   type: z.literal('wait-for'),
   tab: z.string(),
   target: BrowserEventTargetSchema,
@@ -163,6 +176,7 @@ const WaitForEventSchema = BrowserEventBaseSchema.extend({
 })
 
 export const BrowserEventSchema = z.discriminatedUnion('type', [
+  TabOpenedEventSchema,
   NavigateToPageEventSchema,
   ReloadPageEventSchema,
   ClickEventSchema,
@@ -187,6 +201,7 @@ export type RoleElementSelector = z.infer<typeof RoleElementSelectorSchema>
 export type ElementSelector = z.infer<typeof ElementSelectorSchema>
 export type CheckState = z.infer<typeof CheckStateSchema>
 
+export type TabOpenedEvent = z.infer<typeof TabOpenedEventSchema>
 export type NavigateToPageEvent = z.infer<typeof NavigateToPageEventSchema>
 export type ReloadPageEvent = z.infer<typeof ReloadPageEventSchema>
 export type ClickEvent = z.infer<typeof ClickEventSchema>

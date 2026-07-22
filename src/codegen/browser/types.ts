@@ -12,6 +12,14 @@ export interface NodeRef {
   nodeId: NodeId
 }
 
+export interface TraceNode extends NodeBase {
+  type: 'trace'
+  traceId: string
+  inputs: {
+    previous: NodeRef
+  }
+}
+
 export interface PageNode extends NodeBase {
   type: 'page'
 }
@@ -19,6 +27,9 @@ export interface PageNode extends NodeBase {
 export interface LocatorNode extends NodeBase {
   type: 'locator'
   locator: ElementLocator
+  // Chain of iframe locators from the page down to the frame the element lives
+  // in, outermost first. Empty or absent means the top frame.
+  frames?: ElementLocator[]
   inputs: {
     page: NodeRef
   }
@@ -121,12 +132,19 @@ export type AssertionOperation =
   | HasValueAssertion
   | HasValuesAssertion
 
+export interface ExpectNode extends NodeBase {
+  type: 'expect'
+  inputs: {
+    locator: NodeRef
+  }
+}
+
 export interface AssertNode extends NodeBase {
   type: 'assert'
   operation: AssertionOperation
   inputs: {
     previous?: NodeRef
-    locator: NodeRef
+    expect: NodeRef
   }
 }
 
@@ -160,6 +178,7 @@ export interface WaitForTimeoutNode extends NodeBase {
 }
 
 export type TestNode =
+  | TraceNode
   | PageNode
   | GotoNode
   | ReloadNode
@@ -169,6 +188,7 @@ export type TestNode =
   | TypeTextNode
   | SelectOptionsNode
   | CheckNode
+  | ExpectNode
   | AssertNode
   | WaitForNode
   | WaitForTimeoutNode

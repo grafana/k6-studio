@@ -68,6 +68,7 @@ export function BrowserTestPreview({
             interactive
             initialPage={{
               title: 'k6 Studio',
+              pageId: '',
               href: '',
               width: 1280,
               height: 720,
@@ -121,6 +122,7 @@ export function BrowserTestPreview({
               position={state.position}
               aria={state.aria}
               locator={state.locator}
+              frames={state.frames}
               onClose={() => onStateChange(null)}
               onAddAction={onAddAction}
             />

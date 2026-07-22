@@ -1,7 +1,7 @@
 import { css } from '@emotion/react'
 import { ComponentProps, forwardRef } from 'react'
 
-import { ElementLocator } from '@/schemas/locator'
+import { ElementLocator, LocatorOptions } from '@/schemas/locator'
 
 import { useHighlightedElements } from './ElementHighlights.hooks'
 import { Overlay } from './Overlay'
@@ -33,13 +33,18 @@ const ElementOutline = forwardRef<HTMLDivElement, ElementHighlightProps>(
 interface ElementHighlightsProps {
   root: HTMLElement | null
   target: ElementLocator | Element | null
+  frames?: LocatorOptions[]
 }
 
 /**
  * Highlights elements when hovering over selectors inside k6 Studio.
  */
-export function ElementHighlights({ root, target }: ElementHighlightsProps) {
-  const highlights = useHighlightedElements(root, target)
+export function ElementHighlights({
+  root,
+  target,
+  frames,
+}: ElementHighlightsProps) {
+  const highlights = useHighlightedElements(root, target, frames)
 
   if (highlights === null) {
     return null

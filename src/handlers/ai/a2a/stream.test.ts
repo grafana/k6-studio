@@ -170,6 +170,138 @@ describe('createA2AStream', () => {
     expect(cleanup).not.toHaveBeenCalled()
   })
 
+  it('closes a block opened by a trailing delta before finish(tool-calls)', async () => {
+    // A thinking delta can slip in after step.complete cleared the stream
+    // trackers; the re-opened block must be closed before the stream finishes,
+    // or the stale tracker makes the next round emit a delta with no start.
+    const sseStream = encodeSSEChunked([
+      {
+        jsonrpc: '2.0',
+        id: 1,
+        result: {
+          kind: 'artifact-update',
+          taskId: 't1',
+          contextId: 'c1',
+          artifact: {
+            name: 'step.toolCall',
+            artifactId: 'art-1',
+            parts: [
+              {
+                kind: 'data',
+                data: {
+                  toolId: 'tool-1',
+                  toolName: 'searchRequests',
+                  inputs: { query: 'login' },
+                },
+              },
+            ],
+          },
+        },
+      },
+      {
+        jsonrpc: '2.0',
+        id: 2,
+        result: {
+          kind: 'artifact-update',
+          taskId: 't1',
+          contextId: 'c1',
+          artifact: {
+            name: 'step.complete',
+            artifactId: 'complete-1',
+            parts: [{ kind: 'data', data: { stopReason: 'tool_use' } }],
+          },
+        },
+      },
+      {
+        jsonrpc: '2.0',
+        id: 3,
+        result: {
+          kind: 'artifact-update',
+          taskId: 't1',
+          contextId: 'c1',
+          artifact: {
+            name: 'message.content.delta',
+            artifactId: 'trailing-1',
+            parts: [
+              {
+                kind: 'data',
+                data: { delta: 'trailing thought', contentType: 'thinking' },
+              },
+            ],
+          },
+        },
+      },
+      {
+        jsonrpc: '2.0',
+        id: 4,
+        result: {
+          type: 'REMOTE_TOOL_REQUEST',
+          data: {
+            requestId: 'req-1',
+            chatId: 'chat-1',
+            toolName: 'searchRequests',
+            toolInput: { query: 'login' },
+          },
+        },
+      },
+    ])
+
+    const session = createSessionWithStream(sseStream)
+    const stream = createA2AStream(session, vi.fn())
+    const parts = await collectStreamParts(stream)
+
+    const starts = parts.filter((p) => p.type === 'reasoning-start')
+    const ends = parts.filter((p) => p.type === 'reasoning-end')
+    expect(starts).toHaveLength(1)
+    expect(ends).toHaveLength(1)
+
+    const finishIndex = parts.findIndex((p) => p.type === 'finish')
+    expect(parts.indexOf(ends[0]!)).toBeLessThan(finishIndex)
+    // The trackers must not leak into the next round's stream.
+    expect(session.activeStreamArtifactId).toBeUndefined()
+    expect(session.activeStreamContentType).toBeUndefined()
+  })
+
+  it('closes an open block when the stream ends without a terminal event', async () => {
+    // The server dropping the SSE connection mid-generation must not leave
+    // the opened reasoning block unbalanced in front of finish(stop).
+    const sseStream = encodeSSE([
+      {
+        jsonrpc: '2.0',
+        id: 1,
+        result: {
+          kind: 'artifact-update',
+          taskId: 't1',
+          contextId: 'c1',
+          artifact: {
+            name: 'message.content.delta',
+            artifactId: 'msg-1',
+            parts: [
+              {
+                kind: 'data',
+                data: { delta: 'partial thought', contentType: 'thinking' },
+              },
+            ],
+          },
+        },
+      },
+    ])
+
+    const cleanup = vi.fn()
+    const session = createSessionWithStream(sseStream)
+    const stream = createA2AStream(session, cleanup)
+    const parts = await collectStreamParts(stream)
+
+    const endIndex = parts.findIndex((p) => p.type === 'reasoning-end')
+    const finishIndex = parts.findIndex((p) => p.type === 'finish')
+    expect(endIndex).toBeGreaterThan(-1)
+    expect(endIndex).toBeLessThan(finishIndex)
+    expect(parts[finishIndex]).toEqual(
+      expect.objectContaining({ type: 'finish', finishReason: 'stop' })
+    )
+    expect(cleanup).toHaveBeenCalled()
+  })
+
   it('emits all tool calls when multiple same-name tools are interleaved', async () => {
     const sseStream = encodeSSEChunked([
       {

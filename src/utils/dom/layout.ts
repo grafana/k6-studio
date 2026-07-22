@@ -39,6 +39,38 @@ export function getFrameOffset(
 }
 
 /**
+ * Every window from each content window up through its parent chain, plus
+ * `rootWindow`. Intermediate frames are included so scroll listeners cover the
+ * full path from a nested element to the overlay root, not just the endpoints.
+ */
+export function collectLayoutShiftWindows(
+  rootWindow: Window | null,
+  ...contentWindows: Array<Window | null | undefined>
+): Set<Window> {
+  const windows = new Set<Window>()
+
+  if (rootWindow !== null) {
+    windows.add(rootWindow)
+  }
+
+  for (const contentWindow of contentWindows) {
+    let win = contentWindow ?? null
+
+    while (win !== null && win !== rootWindow) {
+      windows.add(win)
+
+      if (win === win.parent) {
+        break
+      }
+
+      win = win.parent
+    }
+  }
+
+  return windows
+}
+
+/**
  * Recomputes layout-derived state (e.g. a highlight overlay) when any of the
  * given windows scrolls or its document resizes. Scroll neither fires a
  * ResizeObserver nor bubbles across iframe boundaries, so each window is

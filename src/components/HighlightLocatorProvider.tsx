@@ -1,10 +1,18 @@
 import { createContext, ReactNode, useContext, useState } from 'react'
 
-import { ElementLocator } from '@/schemas/locator'
+import { ElementLocator, LocatorOptions } from '@/schemas/locator'
 
-type SetHighlightedLocator = (locator: ElementLocator | null) => void
+export type HighlightTarget = HighlightedLocator | Element | null
+type SetHighlightedLocator = (locator: HighlightTarget) => void
 
-const stateContext = createContext<ElementLocator | null | undefined>(undefined)
+export interface HighlightedLocator {
+  locator: ElementLocator
+  // Chain of iframe locators (outermost first) the element lives in. Absent for
+  // top-frame elements.
+  frames?: LocatorOptions[]
+}
+
+const stateContext = createContext<HighlightTarget | undefined>(undefined)
 const dispatchContext = createContext<SetHighlightedLocator | undefined>(
   undefined
 )
@@ -17,7 +25,7 @@ export function HighlightLocatorProvider({
   children,
 }: HighlightLocatorProviderProps) {
   const [highlightedLocator, setHighlightedLocator] =
-    useState<ElementLocator | null>(null)
+    useState<HighlightTarget>(null)
 
   return (
     <stateContext.Provider value={highlightedLocator}>

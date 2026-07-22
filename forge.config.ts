@@ -7,12 +7,19 @@ import { FusesPlugin } from '@electron-forge/plugin-fuses'
 import { VitePlugin } from '@electron-forge/plugin-vite'
 import type { ForgeConfig, ForgeMakeResult } from '@electron-forge/shared-types'
 import { FuseV1Options, FuseVersion } from '@electron/fuses'
+import { execFileSync } from 'node:child_process'
+import fs from 'node:fs'
 import path from 'path'
 
 import { CUSTOM_APP_PROTOCOL } from './src/main/deepLinks.constants'
 import { getPlatform, getArch } from './src/utils/electron'
 import { windowsSign } from './windowsSign'
 import { spawnSignFile } from './windowsSignHook'
+
+// Apple signing credentials are present only in release. Their absence marks a
+// creds-free build (e.g. the smoke-test workflow), which skips osxSign/notarize
+// and instead gets a deep ad-hoc signature from the postPackage hook.
+const hasAppleSigningCreds = Boolean(process.env.APPLE_API_KEY)
 
 function getPlatformSpecificResources() {
   // on mac we are using a single image to build both architectures so we
@@ -25,6 +32,42 @@ function getPlatformSpecificResources() {
   }
 
   return [path.join('./resources/', getPlatform(), getArch())]
+}
+
+function getPostPackageHook() {
+  // Release signs with a real Developer ID via osxSign and notarizes, producing
+  // a valid signature. Creds-free builds (smoke tests) need a valid signature
+  // too: on Apple Silicon an app with an invalid signature is killed on launch,
+  // and the integrity fuse enforces a signed asar hash. The fuses plugin rewrites
+  // the binary after packaging, invalidating any earlier signature, so apply a
+  // deep ad-hoc signature as the final step. Config hooks run after plugin hooks,
+  // so this lands after the fuse flip. No-op off macOS or when releasing.
+  if (getPlatform() !== 'mac' || hasAppleSigningCreds) {
+    return undefined
+  }
+
+  return (
+    _forgeConfig: ForgeConfig,
+    { outputPaths }: { outputPaths: string[] }
+  ) => {
+    for (const outputPath of outputPaths) {
+      const appBundle = fs
+        .readdirSync(outputPath)
+        .find((entry) => entry.endsWith('.app'))
+
+      if (appBundle) {
+        execFileSync('codesign', [
+          '--force',
+          '--deep',
+          '--sign',
+          '-',
+          path.join(outputPath, appBundle),
+        ])
+      }
+    }
+
+    return Promise.resolve()
+  }
 }
 
 function getPostMakeHook() {
@@ -55,6 +98,7 @@ function getPostMakeHook() {
 const config: ForgeConfig = {
   // this is an hack for signing windows binaries: https://github.com/grafana/k6-studio/pull/869#discussion_r2454584477
   hooks: {
+    postPackage: getPostPackageHook(),
     postMake: getPostMakeHook(),
   },
   packagerConfig: {
@@ -69,19 +113,32 @@ const config: ForgeConfig = {
       './resources/k6-testing.js',
       ...getPlatformSpecificResources(),
     ],
-    windowsSign,
-    osxSign: {
-      optionsForFile: () => {
-        return {
-          entitlements: './entitlements.plist',
+    // Windows signing relies on the Azure Trusted Signing tool. Only enable it
+    // when SIGNTOOL_PATH is present (release), otherwise the hook rejects and a
+    // creds-free `package` (smoke builds) would fail.
+    windowsSign: process.env.SIGNTOOL_PATH ? windowsSign : undefined,
+    // Sign with the keychain Developer ID only in release. Creds-free smoke
+    // builds skip this and get a deep ad-hoc signature from the postPackage hook
+    // instead -- signing here as well would race the fuse flip and leave an
+    // invalid signature the OS refuses to launch.
+    osxSign: hasAppleSigningCreds
+      ? {
+          optionsForFile: () => {
+            return {
+              entitlements: './entitlements.plist',
+            }
+          },
         }
-      },
-    },
-    osxNotarize: {
-      appleApiKey: process.env.APPLE_API_KEY ?? '',
-      appleApiKeyId: process.env.APPLE_API_KEY_ID ?? '',
-      appleApiIssuer: process.env.APPLE_API_ISSUER ?? '',
-    },
+      : undefined,
+    // Notarization uploads to Apple and requires real credentials, so only run
+    // it when they are present. Smoke builds skip it.
+    osxNotarize: hasAppleSigningCreds
+      ? {
+          appleApiKey: process.env.APPLE_API_KEY ?? '',
+          appleApiKeyId: process.env.APPLE_API_KEY_ID ?? '',
+          appleApiIssuer: process.env.APPLE_API_ISSUER ?? '',
+        }
+      : undefined,
     protocols: [
       {
         name: CUSTOM_APP_PROTOCOL,
@@ -127,7 +184,7 @@ const config: ForgeConfig = {
         {
           // Entry doesn't really matter here.
           entry: 'src/recorder/browser/index.ts',
-          config: 'vite.browser.config.mts',
+          config: 'vite.browser.config.ts',
         },
         {
           // Entry doesn't really matter here.

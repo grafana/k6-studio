@@ -14,9 +14,9 @@ import { getStudioFileFromPath } from '@/main/file'
 import { getTempScriptName } from '@/main/script'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
-import { showSaveDialog } from '@/utils/dialog'
+import { showOpenDialog, showSaveDialog } from '@/utils/dialog'
 import { browserWindowFromEvent } from '@/utils/electron'
-import { readFile, writeFile } from '@/utils/fs'
+import { exists, readFile, writeFile } from '@/utils/fs'
 import * as path from '@/utils/path'
 import { isExternalScript } from '@/utils/workspace'
 
@@ -55,6 +55,24 @@ export function initialize() {
   ipcMain.handle(FsHandler.GetTempScriptPath, () => {
     return path.join(app.getPath('temp'), getTempScriptName())
   })
+
+  ipcMain.handle(
+    FsHandler.ShowOpenDialog,
+    async (event, filters: FileFilter[]) => {
+      const browserWindow = browserWindowFromEvent(event)
+
+      const result = await showOpenDialog(browserWindow, {
+        properties: ['openFile'],
+        filters,
+      })
+
+      if (result.canceled || !result.filePaths[0]) {
+        return undefined
+      }
+
+      return result.filePaths[0]
+    }
+  )
 
   ipcMain.handle(
     FsHandler.ShowSaveAsDialog,
@@ -138,6 +156,13 @@ export function initialize() {
       const raw = await readFile(filePath, { encoding: 'utf-8', flag: 'r' })
 
       return deserializeContent(filePath, raw, file.type)
+    }
+  )
+
+  ipcMain.handle(
+    FsHandler.Exists,
+    async (_, filePath: string): Promise<boolean> => {
+      return exists(filePath)
     }
   )
 }

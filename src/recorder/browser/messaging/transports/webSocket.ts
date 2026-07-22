@@ -66,6 +66,7 @@ export class WebSocketTransport extends Transport {
   }
 
   dispose() {
+    this.#disposed = true
     this.#socket?.close()
     this.#socket = null
   }

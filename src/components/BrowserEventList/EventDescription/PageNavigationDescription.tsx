@@ -1,20 +1,24 @@
 import { css } from '@emotion/react'
-import { forwardRef, MouseEvent } from 'react'
+import { MouseEvent } from 'react'
 
 import { Tooltip } from '@/components/primitives/Tooltip'
 import { NavigateToPageEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 import { useIsRecording } from '@/views/Recorder/RecordingContext'
 
+const ellipsis = css`
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+`
+
 interface RemoteLinkProps {
   url: string
   onClick: (url: string) => void
 }
 
-const RemoteLink = forwardRef<HTMLElement, RemoteLinkProps>(function RemoteLink(
-  { url, onClick },
-  ref
-) {
+function RemoteLink({ url, onClick }: RemoteLinkProps) {
   const isRecording = useIsRecording()
 
   const handleClick = (ev: MouseEvent<HTMLAnchorElement>) => {
@@ -23,12 +27,10 @@ const RemoteLink = forwardRef<HTMLElement, RemoteLinkProps>(function RemoteLink(
     onClick(url)
   }
 
-  const element = <strong ref={ref}>{url}</strong>
-
   if (!isRecording) {
     return (
       <Tooltip asChild content={url}>
-        {element}
+        <strong css={ellipsis}>{url}</strong>
       </Tooltip>
     )
   }
@@ -36,20 +38,24 @@ const RemoteLink = forwardRef<HTMLElement, RemoteLinkProps>(function RemoteLink(
   return (
     <Tooltip asChild content={url}>
       <a
-        css={css`
-          cursor: pointer;
+        css={[
+          ellipsis,
+          css`
+            font-weight: bold;
+            cursor: pointer;
 
-          &:hover {
-            text-decoration: underline;
-          }
-        `}
+            &:hover {
+              text-decoration: underline;
+            }
+          `,
+        ]}
         onClick={handleClick}
       >
-        {element}
+        {url}
       </a>
     </Tooltip>
   )
-})
+}
 
 interface PageNavigationDescriptionProps {
   event: NavigateToPageEvent

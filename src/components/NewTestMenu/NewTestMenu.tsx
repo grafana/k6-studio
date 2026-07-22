@@ -4,26 +4,8 @@ import { PlusIcon } from 'lucide-react'
 import { useCreateTestActions } from '@/hooks/useCreateTestActions'
 
 export function NewTestMenu() {
-  const {
-    handleCreateHTTPTest,
-    handleCreateBrowserTest,
-    isBrowserEditorEnabled,
-  } = useCreateTestActions()
-
-  if (!isBrowserEditorEnabled) {
-    return (
-      <Tooltip content="New generator" side="right">
-        <IconButton
-          aria-label="New generator"
-          variant="ghost"
-          size="1"
-          onClick={() => handleCreateHTTPTest()}
-        >
-          <PlusIcon />
-        </IconButton>
-      </Tooltip>
-    )
-  }
+  const { handleCreateHTTPTest, handleCreateBrowserTest } =
+    useCreateTestActions()
 
   return (
     <DropdownMenu.Root>
