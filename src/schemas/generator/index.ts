@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
-import { exhaustive } from '../../utils/typescript'
-import { migrationCodec } from '../../utils/zod'
+import { exhaustive } from '@/utils/typescript'
+import { jsonCodec, migrationCodec } from '@/utils/zod'
 
 import * as v0 from './v0'
 import * as v1 from './v1'
@@ -30,15 +30,13 @@ export function migrate(generator: z.infer<typeof AnyGeneratorSchema>) {
   }
 }
 
-export const GeneratorFileDataSchema = AnyGeneratorSchema.transform(migrate)
-
-export const GeneratorFileCodec = migrationCodec(
-  AnyGeneratorSchema,
-  v3.GeneratorFileDataSchema,
-  migrate
+export const GeneratorFileCodec = jsonCodec(
+  migrationCodec(AnyGeneratorSchema, v3.GeneratorFileDataSchema, migrate)
 )
 
 export * from './v3/rules'
 export * from './v3/testData'
 export * from './v3/testOptions'
 export * from './v3/thresholds'
+
+export { GeneratorFileDataSchema } from './v3'

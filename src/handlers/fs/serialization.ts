@@ -29,7 +29,7 @@ export function serializeContent(
 ): string {
   switch (content.type) {
     case 'generator':
-      return JSON.stringify(serializeGenerator(filePath, content.data), null, 2)
+      return serializeGenerator(filePath, content.data)
 
     case 'browser-test':
       return BrowserTestFileCodec.encode(content.data)

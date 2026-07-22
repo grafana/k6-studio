@@ -1,4 +1,4 @@
-import { GeneratorFileDataSchema } from '@/schemas/generator'
+import { GeneratorFileCodec } from '@/schemas/generator'
 import { GeneratorFileData } from '@/types/generator'
 import * as path from '@/utils/path'
 
@@ -15,7 +15,7 @@ export function deserializeGenerator(
   filePath: string,
   data: string
 ): GeneratorFileData {
-  const generator = GeneratorFileDataSchema.parse(JSON.parse(data))
+  const generator = GeneratorFileCodec.decode(data)
   const generatorDir = path.dirname(filePath)
 
   return {
@@ -50,10 +50,10 @@ export function deserializeGenerator(
 export function serializeGenerator(
   filePath: string,
   generator: GeneratorFileData
-): GeneratorFileData {
+) {
   const generatorDir = path.dirname(filePath)
 
-  return {
+  return GeneratorFileCodec.encode({
     ...generator,
     recordingPath: toRelative(generatorDir, generator.recordingPath),
     testData: {
@@ -79,5 +79,5 @@ export function serializeGenerator(
 
       return rule
     }),
-  }
+  })
 }

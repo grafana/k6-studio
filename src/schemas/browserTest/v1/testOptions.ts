@@ -1,11 +1,11 @@
 import { z } from 'zod'
 
 import { LoadZoneSchema } from '@/schemas/generator/v2/loadZone'
-import { LoadProfileExecutorOptionsSchema } from '@/schemas/generator/v2/testOptions'
 import {
   ThresholdConditionSchema,
   ThresholdStatisticSchema,
 } from '@/schemas/generator/v2/thresholds'
+import { LoadProfileExecutorOptionsSchema } from '@/schemas/generator/v3/testOptions'
 
 export const BrowserThresholdMetricSchema = z.enum([
   'browser_data_sent',
