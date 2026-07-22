@@ -6,6 +6,8 @@ import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
+import { ElementLocator, LocatorOptions } from '@/schemas/locator'
+import { BrowserEvent } from '@/schemas/recording'
 import { ProxyData, Group as GroupType } from '@/types'
 
 import { RequestsSection } from './RequestsSection'
@@ -14,6 +16,7 @@ import { RecorderState } from './types'
 interface RequestLogProps {
   recorderState?: RecorderState | undefined
   requests: ProxyData[]
+  browserEvents?: BrowserEvent[]
   groups: GroupType[]
   onUpdateGroup?: (group: GroupType) => void
   onCreateGroup?: (name: string) => void
@@ -23,6 +26,7 @@ interface RequestLogProps {
 export function RequestLog({
   recorderState,
   requests,
+  browserEvents,
   groups,
   onUpdateGroup,
   onResetRecording,
@@ -40,6 +44,17 @@ export function RequestLog({
     }
   }, [recorderState])
 
+  const handleNavigateBrowserEvent = (url: string) => {
+    window.studio.browserRemote.navigateTo(url)
+  }
+
+  const handleHighlightBrowserEvent = (
+    locator: ElementLocator | null,
+    frames?: LocatorOptions[]
+  ) => {
+    window.studio.browserRemote.highlightElement(locator, frames)
+  }
+
   return (
     <Group>
       <Panel id="requests" minSize={200}>
@@ -47,12 +62,15 @@ export function RequestLog({
           <div css={{ flexGrow: 0, minHeight: 0 }}>
             <RequestsSection
               proxyData={requests}
+              browserEvents={browserEvents}
               noDataElement={noDataElement}
               selectedRequestId={selectedRequest?.id}
               autoScroll={recorderState !== undefined}
               groups={groups}
               onSelectRequest={setSelectedRequest}
               onUpdateGroup={onUpdateGroup}
+              onNavigateBrowserEvent={handleNavigateBrowserEvent}
+              onHighlightBrowserEvent={handleHighlightBrowserEvent}
               resetProxyData={onResetRecording}
             />
           </div>

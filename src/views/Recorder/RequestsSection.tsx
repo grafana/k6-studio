@@ -8,6 +8,8 @@ import { WebLogView } from '@/components/WebLogView'
 import { Filter } from '@/components/WebLogView/Filter'
 import { useFilterRequests } from '@/components/WebLogView/Filter.hooks'
 import { useAutoScroll } from '@/hooks/useAutoScroll'
+import { ElementLocator, LocatorOptions } from '@/schemas/locator'
+import { BrowserEvent } from '@/schemas/recording'
 import { Group, ProxyData } from '@/types'
 import { groupProxyData } from '@/utils/groups'
 
@@ -15,6 +17,7 @@ import { ClearRequestsButton } from './ClearRequestsButton'
 
 interface RequestsSectionProps {
   proxyData: ProxyData[]
+  browserEvents?: BrowserEvent[]
   groups: Group[]
   selectedRequestId?: string
   autoScroll?: boolean
@@ -22,11 +25,17 @@ interface RequestsSectionProps {
   actions?: ReactNode
   onSelectRequest: (data: ProxyData | null) => void
   onUpdateGroup?: (group: Group) => void
+  onNavigateBrowserEvent?: (url: string) => void
+  onHighlightBrowserEvent?: (
+    locator: ElementLocator | null,
+    frames?: LocatorOptions[]
+  ) => void
   resetProxyData?: () => void
 }
 
 export function RequestsSection({
   proxyData,
+  browserEvents = [],
   selectedRequestId,
   noDataElement,
   autoScroll = false,
@@ -34,6 +43,8 @@ export function RequestsSection({
   actions,
   onSelectRequest,
   onUpdateGroup,
+  onNavigateBrowserEvent,
+  onHighlightBrowserEvent,
   resetProxyData,
 }: RequestsSectionProps) {
   const [includeStaticAssets, setIncludeStaticAssets] = useLocalStorage(
@@ -106,10 +117,13 @@ export function RequestsSection({
         <div ref={ref} css={{ minWidth: '500px' }}>
           <WebLogView
             requests={filteredRequests}
+            browserEvents={browserEvents}
             groups={groups}
             selectedRequestId={selectedRequestId}
             onSelectRequest={onSelectRequest}
             onUpdateGroup={onUpdateGroup}
+            onNavigateBrowserEvent={onNavigateBrowserEvent}
+            onHighlightBrowserEvent={onHighlightBrowserEvent}
             filter={filter}
           />
         </div>

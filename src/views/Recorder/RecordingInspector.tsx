@@ -1,11 +1,8 @@
 import { css } from '@emotion/react'
-import { Badge, Tabs } from '@radix-ui/themes'
 
-import { Flex } from '@/components/primitives/Flex'
 import { BrowserEvent } from '@/schemas/recording'
 import { Group, ProxyData } from '@/types'
 
-import { BrowserEventLog } from './BrowserEventLog'
 import { RequestLog } from './RequestLog'
 import { RecorderState } from './types'
 
@@ -23,6 +20,8 @@ const styles = {
   content: css`
     flex: 1 1 0;
     min-height: 0;
+    display: flex;
+    flex-direction: column;
   `,
 }
 
@@ -36,52 +35,16 @@ export function RecordingInspector({
   onResetRecording,
 }: RecordingInspectorProps) {
   return (
-    <Tabs.Root
-      defaultValue="requests"
-      css={css`
-        flex: 1 1 0;
-        display: flex;
-        flex-direction: column;
-      `}
-    >
-      <Tabs.List>
-        <Tabs.Trigger value="requests">
-          <Flex align="center" gap="1">
-            Requests
-            <Badge radius="full" color="gray" highContrast>
-              {requests.length}
-            </Badge>
-          </Flex>
-        </Tabs.Trigger>
-        <Tabs.Trigger
-          value="browser-events"
-          disabled={browserEvents.length === 0}
-        >
-          <Flex align="center" gap="1">
-            Browser events
-            <Badge
-              radius="full"
-              color="gray"
-              highContrast={browserEvents.length > 0}
-            >
-              {browserEvents.length}
-            </Badge>
-          </Flex>
-        </Tabs.Trigger>
-      </Tabs.List>
-      <Tabs.Content value="requests" css={styles.content}>
-        <RequestLog
-          recorderState={recorderState}
-          groups={groups}
-          requests={requests}
-          onCreateGroup={onCreateGroup}
-          onUpdateGroup={onUpdateGroup}
-          onResetRecording={onResetRecording}
-        />
-      </Tabs.Content>
-      <Tabs.Content value="browser-events" css={styles.content}>
-        <BrowserEventLog events={browserEvents} groups={groups} />
-      </Tabs.Content>
-    </Tabs.Root>
+    <div css={styles.content}>
+      <RequestLog
+        recorderState={recorderState}
+        groups={groups}
+        requests={requests}
+        browserEvents={browserEvents}
+        onCreateGroup={onCreateGroup}
+        onUpdateGroup={onUpdateGroup}
+        onResetRecording={onResetRecording}
+      />
+    </div>
   )
 }

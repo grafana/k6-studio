@@ -62,6 +62,8 @@ export type ProxyDataWithResponse = ProxyData & { response: Response }
 export interface Group {
   id: string
   name: string
+  /** Timestamp (ms) marking the start of this group's time range. */
+  startedDateTime: number
   isEditing?: boolean
 }
 

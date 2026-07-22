@@ -20,6 +20,7 @@ import {
   Segment,
   stringEndsWithSpace,
 } from './SearchResults.utils'
+import { REQUEST_TABLE_COLUMN_COUNT } from './WebLogView.utils'
 
 const PREVIEWABLE_MATCH_KEYS = [
   'request.content',
@@ -106,7 +107,7 @@ export function SearchResults({
 
   return (
     <Table.Row>
-      <Table.Cell colSpan={5}>
+      <Table.Cell colSpan={REQUEST_TABLE_COLUMN_COUNT}>
         {visibleResults.map((result, excerptIndex) => (
           <Flex
             key={excerptIndex}

@@ -33,9 +33,9 @@ describe('useProxyDataGroups', () => {
     const { result } = renderHook(() => useProxyDataGroups(proxyData))
 
     expect(result.current).toEqual([
-      { id: 'Group1', name: 'Group1' },
-      { id: 'Group2', name: 'Group2' },
-      { id: 'Group3', name: 'Group3' },
+      { id: 'Group1', name: 'Group1', startedDateTime: 0 },
+      { id: 'Group2', name: 'Group2', startedDateTime: 0 },
+      { id: 'Group3', name: 'Group3', startedDateTime: 0 },
     ])
   })
 
@@ -45,7 +45,7 @@ describe('useProxyDataGroups', () => {
     const { result } = renderHook(() => useProxyDataGroups(proxyData))
 
     expect(result.current).toEqual([
-      { id: DEFAULT_GROUP_NAME, name: DEFAULT_GROUP_NAME },
+      { id: DEFAULT_GROUP_NAME, name: DEFAULT_GROUP_NAME, startedDateTime: 0 },
     ])
   })
 
@@ -68,8 +68,8 @@ describe('useProxyDataGroups', () => {
     )
 
     expect(result.current).toEqual([
-      { id: 'Group1', name: 'Group1' },
-      { id: 'Group2', name: 'Group2' },
+      { id: 'Group1', name: 'Group1', startedDateTime: 0 },
+      { id: 'Group2', name: 'Group2', startedDateTime: 1 },
     ])
   })
 })

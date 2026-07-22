@@ -17,7 +17,12 @@ export interface RowProps {
   filter?: string
 }
 
-export function Row({ data, onSelectRequest, isSelected, filter }: RowProps) {
+export function RequestRow({
+  data,
+  onSelectRequest,
+  isSelected,
+  filter,
+}: RowProps) {
   return (
     <>
       <TableRow

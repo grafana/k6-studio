@@ -2,6 +2,8 @@ import { GroupedProxyData, ProxyData } from '@/types'
 import { getContentType } from '@/utils/headers'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 
+export const REQUEST_TABLE_COLUMN_COUNT = 5
+
 export function removeQueryStringFromUrl(url: string) {
   return url.split('?')[0]
 }

@@ -30,7 +30,7 @@ import { RecordingInspector } from './RecordingInspector'
 import { RecorderState } from './types'
 
 const INITIAL_GROUPS: Group[] = [
-  { id: crypto.randomUUID(), name: DEFAULT_GROUP_NAME },
+  { id: crypto.randomUUID(), name: DEFAULT_GROUP_NAME, startedDateTime: 0 },
 ]
 
 export function Recorder() {
@@ -291,6 +291,7 @@ function createGroupOrEditLast(
     {
       id: crypto.randomUUID(),
       name,
+      startedDateTime: Date.now(),
       isEditing: true,
     },
   ]
