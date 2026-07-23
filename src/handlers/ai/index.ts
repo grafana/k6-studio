@@ -1,15 +1,27 @@
 import { captureException } from '@sentry/electron/main'
-import { convertToModelMessages, ModelMessage, streamText } from 'ai'
+import {
+  convertToModelMessages,
+  jsonSchema,
+  ModelMessage,
+  streamText,
+  tool,
+  ToolSet,
+} from 'ai'
 import { ipcMain, IpcMainEvent } from 'electron'
 import log from 'electron-log/main'
+import { z } from 'zod'
 
 import { stripUndefined } from '@/utils/object'
 
 import * as assistantAuth from './a2a/assistantAuth'
 import { GrafanaAssistantLanguageModel } from './grafanaAssistantProvider'
 import { streamMessages } from './streamMessages'
-import { tools } from './tools'
-import { AiHandler, StreamChatRequest, AbortStreamChatRequest } from './types'
+import {
+  AiHandler,
+  StreamChatRequest,
+  AbortStreamChatRequest,
+  RemoteToolDefinitionSchema,
+} from './types'
 
 const grafanaAssistantModel = new GrafanaAssistantLanguageModel()
 
@@ -36,7 +48,7 @@ export async function handleStreamChat(
     const response = streamText({
       model: grafanaAssistantModel,
       messages,
-      tools,
+      tools: buildToolSet(request.tools),
       abortSignal: abortController.signal,
       providerOptions: {
         grafanaAssistant: {
@@ -65,8 +77,31 @@ export async function handleStreamChat(
       id: request.id,
     })
   } finally {
-    activeAbortControllers.delete(request.id)
+    // A newer stream can reuse this chatId (the id is the stable chat id, and
+    // the wizard's multi-round tool loops resend on it). Only remove our own
+    // entry, or we would strand the newer stream's controller and kill Stop.
+    if (activeAbortControllers.get(request.id) === abortController) {
+      activeAbortControllers.delete(request.id)
+    }
   }
+}
+
+// The renderer owns tool definitions; they arrive over IPC as JSON schemas
+// and are validated before being rebuilt into an AI SDK ToolSet.
+const requestToolsSchema = z.array(RemoteToolDefinitionSchema)
+
+function buildToolSet(toolDefinitions: unknown): ToolSet {
+  const definitions = requestToolsSchema.parse(toolDefinitions)
+
+  return Object.fromEntries(
+    definitions.map((definition) => [
+      definition.name,
+      tool({
+        description: definition.description,
+        inputSchema: jsonSchema(definition.inputSchema),
+      }),
+    ])
+  )
 }
 
 // AI SDK's Zod schema rejects `undefined` in tool-result outputs.
@@ -89,7 +124,7 @@ function sanitizeModelMessages(messages: ModelMessage[]): ModelMessage[] {
   })
 }
 
-function handleAbortStreamChat(
+export function handleAbortStreamChat(
   _event: IpcMainEvent,
   request: AbortStreamChatRequest
 ) {

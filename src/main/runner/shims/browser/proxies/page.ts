@@ -43,6 +43,26 @@ export function pageProxy(target: Page): ProxyOptions<Page> {
     })
   }
 
+  function flushReplayEvents<Args extends unknown[], Return>(
+    fn: (...args: Args) => Promise<Return>
+  ): (...args: Args) => Promise<Return> {
+    return async (...args) => {
+      try {
+        await target.evaluate(() => {
+          return window.__K6_FLUSH_EVENTS__?.()
+        })
+      } catch {
+        // Ignore errors from flushing events so that the main action always runs
+      }
+
+      return await fn(...args)
+    }
+  }
+
+  target.goto = flushReplayEvents(target.goto.bind(target))
+  target.close = flushReplayEvents(target.close.bind(target))
+  target.reload = flushReplayEvents(target.reload.bind(target))
+
   return {
     target,
     tracking: {

@@ -1,0 +1,288 @@
+import { useChat } from '@ai-sdk/react'
+import { act, renderHook } from '@testing-library/react'
+import { tool } from 'ai'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { z } from 'zod'
+
+import { useAssistantAgent } from './useAssistantAgent'
+
+vi.mock('@ai-sdk/react', () => ({ useChat: vi.fn() }))
+
+const tools = {
+  doWork: tool({
+    description: 'Do some work',
+    inputSchema: z.object({ value: z.string() }),
+  }),
+  finish: tool({
+    description: 'Finish the run',
+    inputSchema: z.object({ outcome: z.enum(['success', 'failure']) }),
+  }),
+}
+
+interface CapturedChatOptions {
+  onToolCall?: (input: { toolCall: Record<string, unknown> }) => Promise<void>
+  onError?: (error: Error) => void
+  onFinish?: (input: { message: { parts: { type: string }[] } }) => void
+}
+
+describe('useAssistantAgent', () => {
+  const trackEvent = vi.fn()
+  const sendMessage = vi.fn()
+  const addToolOutput = vi.fn()
+  const stopGeneration = vi.fn()
+  let capturedOptions: CapturedChatOptions = {}
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.stubGlobal('studio', { app: { trackEvent } })
+    vi.mocked(useChat).mockImplementation((options) => {
+      capturedOptions = options as CapturedChatOptions
+
+      return {
+        sendMessage,
+        error: undefined,
+        messages: [],
+        addToolOutput,
+        status: 'ready',
+        stop: stopGeneration,
+        clearError: vi.fn(),
+        setMessages: vi.fn(),
+      } as unknown as ReturnType<typeof useChat>
+    })
+  })
+
+  function renderAgent(onToolCall: (toolCall: unknown) => unknown = vi.fn()) {
+    return renderHook(() => useAssistantAgent({ tools, onToolCall }))
+  }
+
+  it('starts in the not-started state', () => {
+    const { result } = renderAgent()
+
+    expect(result.current.status).toBe('not-started')
+  })
+
+  it('tracks and sends the initial message on start', () => {
+    const { result } = renderAgent()
+
+    act(() => {
+      void result.current.start('prompt text')
+    })
+
+    expect(result.current.status).toBe('running')
+    expect(sendMessage).toHaveBeenCalledWith({ text: 'prompt text' })
+  })
+
+  it('executes tool calls and forwards their output', async () => {
+    const onToolCall = vi.fn().mockReturnValue({ ok: true })
+    renderAgent(onToolCall)
+
+    await act(() =>
+      capturedOptions.onToolCall!({
+        toolCall: { toolName: 'doWork', toolCallId: 'call-1', input: {} },
+      })
+    )
+
+    expect(onToolCall).toHaveBeenCalledWith(
+      expect.objectContaining({ toolName: 'doWork', type: 'tool-call' })
+    )
+    expect(addToolOutput).toHaveBeenCalledWith({
+      tool: 'doWork',
+      toolCallId: 'call-1',
+      output: { ok: true },
+    })
+  })
+
+  it('returns an error output instead of throwing when a handler fails', async () => {
+    const onToolCall = vi.fn().mockImplementation(() => {
+      throw new Error('invalid parameter input')
+    })
+    renderAgent(onToolCall)
+
+    await act(() =>
+      capturedOptions.onToolCall!({
+        toolCall: { toolName: 'doWork', toolCallId: 'call-1', input: {} },
+      })
+    )
+
+    expect(addToolOutput).toHaveBeenCalledWith({
+      tool: 'doWork',
+      toolCallId: 'call-1',
+      output: { error: 'invalid parameter input' },
+    })
+  })
+
+  it('does not complete when the finish handler fails', async () => {
+    const onToolCall = vi.fn().mockImplementation(() => {
+      throw new Error('boom')
+    })
+    const { result } = renderAgent(onToolCall)
+
+    act(() => {
+      void result.current.start('prompt')
+    })
+    await act(() =>
+      capturedOptions.onToolCall!({
+        toolCall: {
+          toolName: 'finish',
+          toolCallId: 'call-2',
+          input: { outcome: 'success' },
+        },
+      })
+    )
+
+    expect(result.current.status).toBe('running')
+  })
+
+  it('ignores dynamic tool calls', async () => {
+    const onToolCall = vi.fn()
+    renderAgent(onToolCall)
+
+    await act(() =>
+      capturedOptions.onToolCall!({
+        toolCall: { toolName: 'doWork', toolCallId: 'call-1', dynamic: true },
+      })
+    )
+
+    expect(onToolCall).not.toHaveBeenCalled()
+    expect(addToolOutput).not.toHaveBeenCalled()
+  })
+
+  it('completes when the finish tool is called', async () => {
+    const { result } = renderAgent()
+
+    act(() => {
+      void result.current.start('prompt')
+    })
+    await act(() =>
+      capturedOptions.onToolCall!({
+        toolCall: {
+          toolName: 'finish',
+          toolCallId: 'call-2',
+          input: { outcome: 'success' },
+        },
+      })
+    )
+
+    expect(result.current.status).toBe('completed')
+  })
+
+  it('completes on a custom terminal tool', async () => {
+    const { result } = renderHook(() =>
+      useAssistantAgent({
+        tools,
+        terminalTool: 'doWork',
+        onToolCall: vi.fn(),
+      })
+    )
+
+    act(() => {
+      void result.current.start('prompt')
+    })
+    await act(() =>
+      capturedOptions.onToolCall!({
+        toolCall: { toolName: 'doWork', toolCallId: 'call-1', input: {} },
+      })
+    )
+
+    expect(result.current.status).toBe('completed')
+  })
+
+  it('errors when the run finishes without any tool call', () => {
+    const { result } = renderAgent()
+
+    act(() => {
+      void result.current.start('prompt text')
+    })
+
+    // The assistant replied with prose only (refusal, clarification) and the
+    // stream finished: nothing will auto-send and no terminal tool fired.
+    act(() => {
+      capturedOptions.onFinish?.({
+        message: { parts: [{ type: 'text' }] },
+      })
+    })
+
+    expect(result.current.status).toBe('error')
+  })
+
+  it('keeps running when the finished turn continues with tool calls', () => {
+    const { result } = renderAgent()
+
+    act(() => {
+      void result.current.start('prompt text')
+    })
+
+    act(() => {
+      capturedOptions.onFinish?.({
+        message: { parts: [{ type: 'text' }, { type: 'tool-doWork' }] },
+      })
+    })
+
+    expect(result.current.status).toBe('running')
+  })
+
+  it('stays completed when the terminal tool ran before the finish', async () => {
+    const { result } = renderAgent()
+
+    act(() => {
+      void result.current.start('prompt text')
+    })
+
+    await act(() =>
+      capturedOptions.onToolCall!({
+        toolCall: { toolName: 'finish', toolCallId: 'call-1', input: {} },
+      })
+    )
+
+    act(() => {
+      capturedOptions.onFinish?.({
+        message: { parts: [{ type: 'tool-finish' }] },
+      })
+    })
+
+    expect(result.current.status).toBe('completed')
+  })
+
+  it('moves to the error state and tracks it on chat errors', () => {
+    const { result } = renderAgent()
+
+    act(() => {
+      capturedOptions.onError!(new Error('boom'))
+    })
+
+    expect(result.current.status).toBe('error')
+  })
+
+  it('only aborts while running', () => {
+    const { result } = renderAgent()
+
+    act(() => {
+      result.current.stop()
+    })
+    expect(result.current.status).toBe('not-started')
+    expect(stopGeneration).not.toHaveBeenCalled()
+
+    act(() => {
+      void result.current.start('prompt')
+    })
+    act(() => {
+      result.current.stop()
+    })
+
+    expect(result.current.status).toBe('aborted')
+    expect(stopGeneration).toHaveBeenCalledOnce()
+  })
+
+  it('resets back to not-started', () => {
+    const { result } = renderAgent()
+
+    act(() => {
+      void result.current.start('prompt')
+    })
+    act(() => {
+      result.current.reset()
+    })
+
+    expect(result.current.status).toBe('not-started')
+  })
+})

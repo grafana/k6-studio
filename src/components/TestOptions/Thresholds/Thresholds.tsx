@@ -9,12 +9,19 @@ import { useControlledForm } from '../useControlledForm'
 
 import { MetricsConfig } from './createMetricsConfig'
 import { ThresholdRow } from './ThresholdRow'
-import type { ThresholdLikeRow } from './Thresholds.utils'
+import type { RowControl, ThresholdLikeRow } from './Thresholds.utils'
 
 interface ThresholdsProps<M extends string> {
   value: Array<ThresholdLikeRow & { metric: M }>
   onChange: (next: Array<ThresholdLikeRow & { metric: M }>) => void
   metricsConfig: MetricsConfig<M>
+  /** Returns an annotation rendered beneath the row with the given threshold id. */
+  getRowAnnotation?: (id: string) => string | undefined
+  /**
+   * Picks the single control a row gets: 'toggle' to enable/disable, or
+   * 'remove' to delete. When absent, every row gets both.
+   */
+  getRowControl?: (id: string) => RowControl
   // Resolver is contravariant in TFieldValues so callers with narrower schemas
   // cannot assign to a concrete form type. Use any to accept all resolvers.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -25,8 +32,12 @@ export function Thresholds<M extends string>({
   value,
   onChange,
   metricsConfig,
+  getRowAnnotation,
+  getRowControl,
   resolver,
 }: ThresholdsProps<M>) {
+  // One control column when getRowControl picks per row, two otherwise.
+  const columnCount = getRowControl !== undefined ? 6 : 7
   type Row = ThresholdLikeRow & { metric: M }
   type FormShape = { thresholds: Row[] }
 
@@ -69,6 +80,7 @@ export function Thresholds<M extends string>({
       condition: '<',
       value: 0,
       stopTest: false,
+      enabled: true,
     }
     append(newRow)
   }
@@ -87,22 +99,25 @@ export function Thresholds<M extends string>({
         <Table.Root size="1" variant="surface" layout="fixed">
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeaderCell width="210px">
+              <Table.ColumnHeaderCell width="170px">
                 Metric
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="160px">
+              <Table.ColumnHeaderCell width="145px">
                 Statistic
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="100px">
+              <Table.ColumnHeaderCell width="90px">
                 Condition
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="145px">
+              <Table.ColumnHeaderCell width="125px">
                 Value
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="80px">
+              <Table.ColumnHeaderCell width="75px">
                 Stop Test
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="59px" />
+              <Table.ColumnHeaderCell width="48px" />
+              {getRowControl === undefined && (
+                <Table.ColumnHeaderCell width="48px" />
+              )}
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -113,10 +128,13 @@ export function Thresholds<M extends string>({
                 index={index}
                 remove={remove}
                 metricsConfig={metricsConfig}
+                getRowAnnotation={getRowAnnotation}
+                getRowControl={getRowControl}
+                columnCount={columnCount}
               />
             ))}
             <Table.Row>
-              <Table.RowHeaderCell colSpan={7} justify="center">
+              <Table.RowHeaderCell colSpan={columnCount} justify="center">
                 <Button variant="ghost" onClick={handleAddThreshold}>
                   Add threshold
                 </Button>

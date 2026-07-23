@@ -1510,6 +1510,7 @@ it('emits options with thresholds, ramping-vus stages, and cloud loadZones', asy
           condition: '<',
           value: 1000,
           stopTest: false,
+          enabled: true,
         },
       ],
       cloud: {

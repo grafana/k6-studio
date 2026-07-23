@@ -7,6 +7,7 @@ import type { BrowserReplayEvent } from '../../schema'
 declare global {
   interface Window {
     __K6_SESSION_REPLAY_TRACKING_SERVER_URL__: string | null
+    __K6_FLUSH_EVENTS__?: () => Promise<void>
   }
 }
 
@@ -27,6 +28,7 @@ if (trackingServerUrl !== null && isTopLevelFrame()) {
       data: {
         tag: 'page-start',
         payload: {
+          pageId: crypto.randomUUID(),
           title: document.title,
           href: window.location.href,
           width: window.innerWidth,
@@ -37,10 +39,9 @@ if (trackingServerUrl !== null && isTopLevelFrame()) {
     },
   ]
 
-  setTimeout(async function send() {
+  const flushEvents = async () => {
     if (buffer.length > 0) {
       const events = buffer
-
       buffer = []
 
       const url = `${trackingServerUrl}/session-replay`
@@ -61,6 +62,10 @@ if (trackingServerUrl !== null && isTopLevelFrame()) {
         buffer = [...events, ...buffer]
       }
     }
+  }
+
+  setTimeout(async function send() {
+    await flushEvents()
 
     setTimeout(send, 200)
   }, 200)
@@ -75,4 +80,6 @@ if (trackingServerUrl !== null && isTopLevelFrame()) {
       buffer.push(event)
     },
   })
+
+  window.__K6_FLUSH_EVENTS__ = flushEvents
 }

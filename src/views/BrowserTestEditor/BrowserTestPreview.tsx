@@ -68,6 +68,7 @@ export function BrowserTestPreview({
             interactive
             initialPage={{
               title: 'k6 Studio',
+              pageId: '',
               href: '',
               width: 1280,
               height: 720,

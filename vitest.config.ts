@@ -18,6 +18,7 @@ export default defineConfig({
     'import.meta.vitest': 'undefined',
     __APP_VERSION__: JSON.stringify('0.0.0-vitest'),
     K6_TESTING_OVERRIDE: JSON.stringify(''),
+    GRAFANA_COM_URL: JSON.stringify('https://grafana.com'),
   },
   resolve: {
     tsconfigPaths: true,

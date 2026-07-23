@@ -30,6 +30,7 @@ export const BrowserThresholdSchema = z.object({
     .number({ message: 'Invalid value' })
     .min(0, { message: 'Invalid value' }),
   stopTest: z.boolean().default(false),
+  enabled: z.boolean().default(true),
 })
 
 export const BrowserThresholdDataSchema = z.object({

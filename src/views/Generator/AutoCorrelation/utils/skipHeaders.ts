@@ -1,4 +1,4 @@
-import { shouldSkipCookie } from './skipCookies'
+import { shouldSkipCookie } from '@/utils/assistant/skipCookies'
 
 // Standard, server-generated response headers that a client never extracts
 // and replays, so they can never be correlation sources or targets.

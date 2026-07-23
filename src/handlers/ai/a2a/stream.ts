@@ -4,7 +4,7 @@ import log from 'electron-log/main'
 import { isAbortError } from '@/utils/errors'
 
 import { LOG_PREFIX, NO_USAGE } from './constants'
-import { processA2AEvent } from './eventMapper'
+import { closeActiveContentBlock, processA2AEvent } from './eventMapper'
 import type { ActiveA2ASession } from './session'
 
 const FINISH_TOOL_CALLS: LanguageModelV2StreamPart = {
@@ -50,6 +50,20 @@ export function createA2AStream(
     new CountQueuingStrategy({ highWaterMark: 256 })
   )
 
+  // A trailing thinking delta can re-open a content block after step.complete
+  // already cleared the trackers. The session survives tool-calls finishes, so
+  // an unclosed block would leak a stale tracker into the next round's stream
+  // and make its first delta skip the start event.
+  function flushOpenContentBlock(
+    controller: ReadableStreamDefaultController<LanguageModelV2StreamPart>
+  ): void {
+    for (const part of closeActiveContentBlock(session)) {
+      controller.enqueue(part)
+    }
+    session.activeStreamArtifactId = undefined
+    session.activeStreamContentType = undefined
+  }
+
   async function readLoop(
     controller: ReadableStreamDefaultController<LanguageModelV2StreamPart>
   ): Promise<void> {
@@ -59,6 +73,11 @@ export function createA2AStream(
         const { done, value } = await session.reader.read()
 
         if (done) {
+          // The reader closing mid-block (e.g. the server dropping the SSE
+          // connection) must not leave the block unbalanced in front of the
+          // finish part.
+          flushOpenContentBlock(controller)
+
           if (emittedToolCalls) {
             controller.enqueue(FINISH_TOOL_CALLS)
           } else {
@@ -101,6 +120,7 @@ export function createA2AStream(
         // Check after processing events, not just at loop top,
         // because the reader may block waiting for server data.
         if (session.readyToFinishForTools && emittedToolCalls) {
+          flushOpenContentBlock(controller)
           controller.enqueue(FINISH_TOOL_CALLS)
           controller.close()
           return
