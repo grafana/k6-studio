@@ -32,7 +32,7 @@ export function BrowserTestOptionsButton({
         // Merge so inactive-branch fields (e.g. user's stages while
         // shared-iterations is active) survive an executor switch. Codegen
         // reads only the active branch, so shadow fields are ignored.
-        ...options.loadProfile,
+        ...prev.loadProfile,
         ...newLoadProfile,
       },
     }))

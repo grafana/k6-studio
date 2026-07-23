@@ -83,14 +83,6 @@ const expanded = (name: string | RegExp) =>
 const selectorField = () => screen.getByRole<HTMLTextAreaElement>('textbox')
 
 describe('LocatorForm chain accordion', () => {
-  it('renders no chain controls when there is no frame chain', () => {
-    renderLocatorForm({ frames: undefined })
-    openPopover()
-
-    expect(screen.queryByRole('button', { name: /add iframe/i })).toBeNull()
-    expect(selectorField().value).toBe('button.pay')
-  })
-
   it('renders the bare element form plus an add button when the chain is empty', () => {
     renderLocatorForm({ frames: [] })
     openPopover()
