@@ -14,12 +14,6 @@ export function ToContainTextActionBody({
   action,
   onChange,
 }: ToContainTextActionBodyProps) {
-  const handleChangeLocator = (
-    locator: LocatorToContainTextAction['locator']
-  ) => {
-    onChange({ ...action, locator })
-  }
-
   const handleChangeExpected = (expected: string) => {
     onChange({ ...action, expected })
   }
@@ -32,7 +26,7 @@ export function ToContainTextActionBody({
       width="100%"
     >
       Expect
-      <LocatorForm state={action.locator} onChange={handleChangeLocator} />
+      <LocatorForm action={action} onChange={onChange} />
       to contain text
       <FillValueForm value={action.expected} onChange={handleChangeExpected} />
     </Grid>

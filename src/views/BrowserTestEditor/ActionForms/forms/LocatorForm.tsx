@@ -6,6 +6,7 @@ import {
   HighlightedLocator,
   useHighlightLocator,
 } from '@/components/HighlightLocatorProvider'
+import { AnyLocatableAction } from '@/schemas/browserTest/v1/actions'
 import {
   cssLocatorOptions,
   ElementLocator,
@@ -16,7 +17,6 @@ import {
 import { emptyToUndefined } from '@/utils/list'
 import { exhaustive } from '@/utils/typescript'
 
-import { useFrameChain } from '../../FrameChainContext'
 import { ValuePopoverBadge } from '../components'
 
 import {
@@ -26,21 +26,23 @@ import {
 } from './LocatorChainList'
 import { LocatorEditor } from './LocatorEditor'
 
-interface LocatorFormProps {
-  state: LocatorOptions
-  onChange: (value: LocatorOptions) => void
+interface LocatorFormProps<Action extends AnyLocatableAction> {
+  action: Action
   suggestedRoles?: string[]
+  onChange: (value: Action) => void
 }
 
-export function LocatorForm({
-  state: elementOptions,
-  onChange,
+export function LocatorForm<Action extends AnyLocatableAction>({
+  action,
   suggestedRoles,
-}: LocatorFormProps): ReactElement {
+  onChange,
+}: LocatorFormProps<Action>): ReactElement {
   const highlightSelector = useHighlightLocator()
-  const { frames, onChange: onChangeFrames } = useFrameChain()
 
-  const chain = frames ?? []
+  const elementOptions = action.locator
+
+  const frames = action.frames
+  const chain = action.frames ?? []
 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 
@@ -156,12 +158,18 @@ export function LocatorForm({
 
   const updateTarget = (key: LocatorTargetKey, value: LocatorOptions) => {
     if (isElement(key)) {
-      onChange(value)
+      onChange({
+        ...action,
+        locator: value,
+      })
 
       return
     }
 
-    onChangeFrames?.(chain.map((frame) => (frame.key === key ? value : frame)))
+    onChange({
+      ...action,
+      frames: chain.map((frame) => (frame.key === key ? value : frame)),
+    })
   }
 
   // Editing a type and moving on (switching type, collapsing, or closing) marks
@@ -227,7 +235,11 @@ export function LocatorForm({
     const newFrame = cssLocatorOptions('')
 
     setExpandedTarget(newFrame.key)
-    onChangeFrames?.([newFrame, ...chain])
+
+    onChange({
+      ...action,
+      frames: [...chain, newFrame],
+    })
   }
 
   const handleRemoveFrame = (key: LocatorTargetKey) => {
@@ -238,9 +250,10 @@ export function LocatorForm({
       setExpandedTarget(elementOptions.key)
     }
 
-    onChangeFrames?.(
-      emptyToUndefined(chain.filter((frame) => frame.key !== key))
-    )
+    onChange({
+      ...action,
+      frames: emptyToUndefined(chain.filter((frame) => frame.key !== key)),
+    })
   }
 
   const handlePopoverOpenChange = (open: boolean) => {
@@ -298,7 +311,7 @@ export function LocatorForm({
         // would pop its tooltip open the moment the popover appears.
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
-        {onChangeFrames === undefined ? (
+        {action.frames === undefined ? (
           renderEditor(elementTarget)
         ) : (
           <LocatorChainList

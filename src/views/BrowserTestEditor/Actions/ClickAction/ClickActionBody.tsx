@@ -13,10 +13,6 @@ interface ClickActionBodyProps {
 }
 
 export function ClickActionBody({ action, onChange }: ClickActionBodyProps) {
-  const handleChangeLocator = (locator: LocatorClickAction['locator']) => {
-    onChange({ ...action, locator })
-  }
-
   const handleChangeButton = (button: LocatorClickButton) => {
     onChange({
       ...action,
@@ -53,7 +49,7 @@ export function ClickActionBody({ action, onChange }: ClickActionBodyProps) {
         onChange={handleChangeButton}
       />
       click on
-      <LocatorForm state={action.locator} onChange={handleChangeLocator} />
+      <LocatorForm action={action} onChange={onChange} />
       <ClickOptionsForm
         options={action.options}
         onChange={handleChangeOptions}
