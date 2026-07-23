@@ -1,6 +1,7 @@
 import { z } from 'zod/v4'
 
 import { exhaustive } from '@/utils/typescript'
+import { newSyntheticKey, syntheticKey } from '@/utils/zod'
 
 const CssLocatorSchema = z.object({
   type: z.literal('css'),
@@ -82,6 +83,7 @@ const LocatorTypeSchema = z.union([
 ])
 
 export const LocatorOptionsSchema = z.object({
+  key: syntheticKey(),
   current: LocatorTypeSchema,
   values: z.object({
     css: CssLocatorSchema.optional(),
@@ -108,7 +110,11 @@ export type LocatorOptions = z.infer<typeof LocatorOptionsSchema>
 
 /** Locator options for a plain CSS selector. */
 export function cssLocatorOptions(selector: string): LocatorOptions {
-  return { current: 'css', values: { css: { type: 'css', selector } } }
+  return {
+    key: newSyntheticKey(),
+    current: 'css',
+    values: { css: { type: 'css', selector } },
+  }
 }
 
 /** An empty locator value of the given type. */

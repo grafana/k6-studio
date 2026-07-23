@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { syntheticKey } from '@/utils/zod'
+
 import { LoadZoneSchema } from './loadZone'
 import { ThresholdSchema } from './thresholds'
 
@@ -44,7 +46,7 @@ export const SharedIterationsOptionsSchema = CommonOptionsSchema.extend({
 })
 
 export const RampingStageSchema = z.object({
-  id: z.string().optional(),
+  key: syntheticKey(),
   target: z.number().nonnegative().int(),
   duration: z
     .string()

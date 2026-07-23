@@ -2,6 +2,16 @@ import { z } from 'zod/v4'
 
 import { LocatorOptionsSchema } from '@/schemas/locator'
 
+// NaN is not supported by JSON, so we encode it as null and decode null back to NaN.
+const JsonNumberCodec = z.codec(z.number().nullable(), z.number(), {
+  encode(value) {
+    return isNaN(value) ? null : value
+  },
+  decode(value) {
+    return value === null ? NaN : value
+  },
+})
+
 function safe<T>(schema: z.ZodType<T>) {
   return schema.optional().catch(undefined)
 }
@@ -38,13 +48,7 @@ const PageWaitForNavigationActionSchema = ActionBaseSchema.extend({
 
 const PageWaitForTimeoutActionSchema = ActionBaseSchema.extend({
   method: z.literal('page.waitForTimeout'),
-  // NaN is converted to null by `JSON.stringify` so we type this
-  // as nullable and transform it back to NaN to allow invalid data
-  // to be saved.
-  timeout: z
-    .number()
-    .nullable()
-    .transform((value) => value ?? NaN),
+  timeout: JsonNumberCodec,
 })
 
 const PageCloseActionSchema = ActionBaseSchema.extend({

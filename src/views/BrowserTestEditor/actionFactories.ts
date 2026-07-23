@@ -3,6 +3,7 @@ import {
   LocatorToHaveValueAction,
 } from '@/schemas/browserTest'
 import { LocatorOptions } from '@/schemas/locator'
+import { newSyntheticKey } from '@/utils/zod'
 
 interface LocatorFactoryOptions {
   locator?: LocatorOptions
@@ -20,6 +21,7 @@ export function createCheckAction({
     id: crypto.randomUUID(),
     method: 'locator.check',
     locator: locator ?? {
+      key: newSyntheticKey(),
       current: 'role',
       values: {
         role: {
@@ -41,6 +43,7 @@ export function createUncheckAction({
     id: crypto.randomUUID(),
     method: 'locator.uncheck',
     locator: locator ?? {
+      key: newSyntheticKey(),
       current: 'role',
       values: {
         role: {
@@ -62,6 +65,7 @@ export function createClearAction({
     id: crypto.randomUUID(),
     method: 'locator.clear',
     locator: locator ?? {
+      key: newSyntheticKey(),
       current: 'role',
       values: {
         role: {
@@ -83,6 +87,7 @@ export function createClickAction({
     id: crypto.randomUUID(),
     method: 'locator.click',
     locator: locator ?? {
+      key: newSyntheticKey(),
       current: 'role',
       values: {
         role: {
@@ -105,6 +110,7 @@ export function createFillAction({
     method: 'locator.fill',
     value: '',
     locator: locator ?? {
+      key: newSyntheticKey(),
       current: 'role',
       values: {
         role: {
@@ -127,6 +133,7 @@ export function createSelectOptionAction({
     method: 'locator.selectOption',
     values: [{ value: '' }],
     locator: locator ?? {
+      key: newSyntheticKey(),
       current: 'role',
       values: {
         role: {
@@ -148,6 +155,7 @@ export function createWaitForAction({
     id: crypto.randomUUID(),
     method: 'locator.waitFor',
     locator: locator ?? {
+      key: newSyntheticKey(),
       current: 'role',
       values: {
         role: {
@@ -171,6 +179,7 @@ export function createToBeCheckedAction({
     checked: true,
     inputType: 'native',
     locator: locator ?? {
+      key: newSyntheticKey(),
       current: 'role',
       values: {
         role: {
@@ -203,6 +212,7 @@ export function createToHaveValueAction({
       },
     },
     locator: locator ?? {
+      key: newSyntheticKey(),
       current: 'role',
       values: {
         role: {
@@ -225,6 +235,7 @@ export function createToBeVisibleAction({
     method: 'locator.toBeVisible',
     visible: true,
     locator: locator ?? {
+      key: newSyntheticKey(),
       current: 'role',
       values: {
         role: {
@@ -252,6 +263,7 @@ export function createToContainTextAction({
     method: 'locator.toContainText',
     expected,
     locator: locator ?? {
+      key: newSyntheticKey(),
       current: 'role',
       values: {
         role: {

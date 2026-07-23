@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, it, vi } from 'vitest'
 
 import { defaultBrowserTestOptions } from '@/schemas/browserTest'
+import { newSyntheticKey } from '@/utils/zod'
 
 import { emitScript } from './codegen'
 
@@ -1497,8 +1498,8 @@ it('emits options with thresholds, ramping-vus stages, and cloud loadZones', asy
       loadProfile: {
         executor: 'ramping-vus',
         stages: [
-          { id: 's1', target: 5, duration: '30s' },
-          { id: 's2', target: 0, duration: '15s' },
+          { key: newSyntheticKey(), target: 5, duration: '30s' },
+          { key: newSyntheticKey(), target: 0, duration: '15s' },
         ],
       },
       thresholds: [

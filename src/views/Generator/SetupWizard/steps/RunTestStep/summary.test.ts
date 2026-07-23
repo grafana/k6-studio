@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { createThreshold } from '@/test/factories/threshold'
+import { newSyntheticKey } from '@/utils/zod'
 import { HTTP_METRICS_CONFIG } from '@/views/Generator/TestOptions/httpThresholdMetrics'
 
 import {
@@ -27,9 +28,9 @@ describe('getLoadSummary', () => {
     const summary = getLoadSummary({
       executor: 'ramping-vus',
       stages: [
-        { target: 20, duration: '1m' },
-        { target: 20, duration: '3m30s' },
-        { target: 0, duration: '1m' },
+        { key: newSyntheticKey(), target: 20, duration: '1m' },
+        { key: newSyntheticKey(), target: 20, duration: '3m30s' },
+        { key: newSyntheticKey(), target: 0, duration: '1m' },
       ],
     })
 
@@ -39,7 +40,7 @@ describe('getLoadSummary', () => {
   it('omits the duration when every stage lasts zero seconds', () => {
     const summary = getLoadSummary({
       executor: 'ramping-vus',
-      stages: [{ target: 20, duration: '0s' }],
+      stages: [{ key: newSyntheticKey(), target: 20, duration: '0s' }],
     })
 
     expect(summary).toBe('Up to 20 virtual users')
@@ -140,9 +141,9 @@ describe('buildStageSegments', () => {
     const segments = buildStageSegments({
       executor: 'ramping-vus',
       stages: [
-        { target: 50, duration: '1m' },
-        { target: 50, duration: '3m30s' },
-        { target: 0, duration: '1m' },
+        { key: newSyntheticKey(), target: 50, duration: '1m' },
+        { key: newSyntheticKey(), target: 50, duration: '3m30s' },
+        { key: newSyntheticKey(), target: 0, duration: '1m' },
       ],
     })
 

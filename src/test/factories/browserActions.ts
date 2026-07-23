@@ -2,6 +2,7 @@ import {
   LocatorClickAction,
   LocatorToBeCheckedAction,
 } from '@/schemas/browserTest'
+import { newSyntheticKey } from '@/utils/zod'
 
 export function buildClickAction(
   overrides: Partial<LocatorClickAction> = {}
@@ -10,6 +11,7 @@ export function buildClickAction(
     id: crypto.randomUUID(),
     method: 'locator.click',
     locator: {
+      key: newSyntheticKey(),
       current: 'role',
       values: {
         role: {
@@ -32,6 +34,7 @@ export function buildToBeCheckedAction(
     checked: true,
     inputType: 'native',
     locator: {
+      key: newSyntheticKey(),
       current: 'css',
       values: { css: { type: 'css', selector: 'input[type="checkbox"]' } },
     },

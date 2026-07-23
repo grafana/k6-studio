@@ -8,6 +8,7 @@ import {
   TestOptions,
   Threshold,
 } from '@/types/testOptions'
+import { newSyntheticKey } from '@/utils/zod'
 
 import {
   generateCloudOptions,
@@ -41,6 +42,7 @@ describe('Code generation - options', () => {
       executor: 'ramping-vus',
       stages: [
         {
+          key: newSyntheticKey(),
           duration: '1',
           target: 1,
         },

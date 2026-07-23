@@ -27,7 +27,9 @@ export type GeneratorSchema = z.infer<typeof GeneratorFileDataSchema>
 export function migrate(
   generator: z.infer<typeof GeneratorFileDataSchema>
 ): v3.GeneratorSchema {
-  return {
+  // By running the migrated generator through the v3 schema we ensure that
+  // synthetic keys are generated. It's a lot simpler than mapping them manually.
+  return v3.GeneratorFileDataSchema.parse({
     ...generator,
     version: '3.0',
     // The wizard did not exist when v2 files were written.
@@ -65,5 +67,5 @@ export function migrate(
 
       return rule
     }),
-  }
+  })
 }
