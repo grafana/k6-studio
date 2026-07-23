@@ -13,6 +13,7 @@ import { ProxySettings } from '@/types/settings'
 import { showOpenDialog } from '@/utils/dialog'
 import { createWriteStream } from '@/utils/fs'
 import { K6Client } from '@/utils/k6/client'
+import { K6TestOptions } from '@/utils/k6/schema'
 import { createTrackingServer } from '@/utils/k6/tracking'
 import * as path from '@/utils/path'
 import { readResource } from '@/utils/resources'
@@ -80,6 +81,17 @@ export const showScriptSelectDialog = async (browserWindow: BrowserWindow) => {
 
 export const getTempScriptName = () => {
   return `.${Math.random().toString(36).substring(7)}${TEMP_SCRIPT_SUFFIX}`
+}
+
+export const analyzeScript = async (
+  scriptPath: string
+): Promise<K6TestOptions> => {
+  const options = await new K6Client().inspect({ scriptPath }).catch((err) => {
+    log.error('Failed to inspect script', err)
+    return null
+  })
+
+  return options ?? {}
 }
 
 interface RunScriptOptions {

@@ -29,6 +29,7 @@ export function Validator({ file, content }: ValidatorProps) {
 
   const [savedScript, setSavedScript] = useState(content.data)
   const [scriptContent, setScriptContent] = useState(content.data)
+  const [options, setOptions] = useState(content.options)
 
   const showToast = useToast()
   const handleSelectExternalScript = useOpenExternalScript()
@@ -46,11 +47,12 @@ export function Validator({ file, content }: ValidatorProps) {
       type: 'script' as const,
       data: scriptContent,
       isExternal: content.isExternal ?? false,
-      options: content.options ?? {},
+      options,
     }),
     filters: [{ name: 'k6 Script', extensions: ['js'] }],
     onSave: async (location) => {
       setSavedScript(scriptContent)
+      setOptions(await window.studio.script.analyzeScript(location.path))
 
       await queryClient.invalidateQueries({
         queryKey: ['script', location.path],
@@ -78,20 +80,15 @@ export function Validator({ file, content }: ValidatorProps) {
     onSave: () => saveFile({ saveAs: false }),
   })
 
-  const { session, startDebugging, stopDebugging } = useDebugSession(
-    isDirty
-      ? {
-          type: 'raw',
-          content: scriptContent,
-          name: file.path,
-        }
-      : { type: 'file', path: file.path }
-  )
+  const { session, startDebugging, stopDebugging } = useDebugSession({
+    type: 'file',
+    path: file.path,
+  })
 
   const isRunning = session?.state === 'running'
 
-  const scenarios = content.options?.scenarios
-    ? Object.keys(content.options.scenarios)
+  const scenarios = options.scenarios
+    ? Object.keys(options.scenarios)
     : ['default']
 
   async function handleDebugScript(scenarioName?: string) {
@@ -153,7 +150,7 @@ export function Validator({ file, content }: ValidatorProps) {
         <Debugger
           file={file}
           script={scriptContent}
-          options={content.options}
+          options={options}
           session={session}
           onDebugScript={handleDebugScript}
           onScriptChange={setScriptContent}

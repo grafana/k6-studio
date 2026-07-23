@@ -3,7 +3,7 @@ import log from 'electron-log/main'
 
 import { SCRIPTS_PATH } from '@/constants/workspace'
 import { waitForProxy } from '@/main/proxy'
-import { showScriptSelectDialog, runScript } from '@/main/script'
+import { analyzeScript, showScriptSelectDialog, runScript } from '@/main/script'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent } from '@/utils/electron'
@@ -13,7 +13,11 @@ import { TestRun } from '@/utils/k6/testRun'
 import * as path from '@/utils/path'
 import { isExternalScript } from '@/utils/workspace'
 
-import { ScriptHandler } from './types'
+import {
+  RunScriptFromGeneratorOptions,
+  RunScriptOptions,
+  ScriptHandler,
+} from './types'
 
 export function initialize() {
   let currentTestRun: TestRun | null
@@ -32,9 +36,15 @@ export function initialize() {
     return scriptPath
   })
 
+  ipcMain.handle(ScriptHandler.Analyze, async (_, scriptPath: string) => {
+    console.info(`${ScriptHandler.Analyze} event received`)
+
+    return analyzeScript(scriptPath)
+  })
+
   ipcMain.handle(
     ScriptHandler.Run,
-    async (event, scriptPath: string, scenarioName?: string) => {
+    async (event, { path: scriptPath, scenario }: RunScriptOptions) => {
       console.info(`${ScriptHandler.Run} event received`)
 
       const browserWindow = browserWindowFromEvent(event)
@@ -52,7 +62,7 @@ export function initialize() {
           scriptPath: resolvedScriptPath,
           proxySettings: k6StudioState.appSettings.proxy,
           usageReport: k6StudioState.appSettings.telemetry.usageReport,
-          scenarioName,
+          scenarioName: scenario,
         })
 
         trackEvent({
@@ -75,30 +85,28 @@ export function initialize() {
     }
   )
 
-  ipcMain.on(ScriptHandler.Stop, () => {
-    console.info(`${ScriptHandler.Stop} event received`)
-    if (currentTestRun) {
-      currentTestRun.stop().catch((error) => {
-        log.error('Failed to stop the test run', error)
-      })
-
-      currentTestRun = null
-    }
-  })
-
   ipcMain.handle(
     ScriptHandler.RunFromGenerator,
-    async (event, script: string, scriptPath: string, shouldTrack = true) => {
+    async (
+      event,
+      {
+        content,
+        path,
+        scenario,
+        shouldTrack = true,
+      }: RunScriptFromGeneratorOptions
+    ) => {
       console.info(`${ScriptHandler.RunFromGenerator} event received`)
 
       const browserWindow = browserWindowFromEvent(event)
 
       try {
-        await writeFile(scriptPath, script)
+        await writeFile(path, content)
 
         currentTestRun = await runScript({
           browserWindow,
-          scriptPath,
+          scriptPath: path,
+          scenarioName: scenario,
           proxySettings: k6StudioState.appSettings.proxy,
           usageReport: k6StudioState.appSettings.telemetry.usageReport,
         })
@@ -122,12 +130,23 @@ export function initialize() {
 
         throw error
       } finally {
-        await unlink(scriptPath).catch(() => {
+        await unlink(path).catch(() => {
           // Best case effort cleanup.
         })
       }
     }
   )
+
+  ipcMain.on(ScriptHandler.Stop, () => {
+    console.info(`${ScriptHandler.Stop} event received`)
+    if (currentTestRun) {
+      currentTestRun.stop().catch((error) => {
+        log.error('Failed to stop the test run', error)
+      })
+
+      currentTestRun = null
+    }
+  })
 
   ipcMain.handle(
     ScriptHandler.Save,

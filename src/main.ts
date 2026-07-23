@@ -141,13 +141,19 @@ const createWindow = async () => {
   mainWindow.on('close', (event) => {
     mainWindow.webContents.send('app:close')
 
-    const isGeneratorRoute =
+    const fileExtension =
       k6StudioState.currentClientRoute.startsWith('/file/') &&
-      decodeURIComponent(
-        k6StudioState.currentClientRoute.slice('/file/'.length)
-      ).endsWith('.k6g')
+      path.extname(
+        decodeURIComponent(
+          k6StudioState.currentClientRoute.slice('/file/'.length)
+        )
+      )
 
-    if (isGeneratorRoute && !k6StudioState.wasAppClosedByClient) {
+    if (
+      fileExtension &&
+      ['.k6g', '.js', '.ts'].includes(fileExtension) &&
+      !k6StudioState.wasAppClosedByClient
+    ) {
       event.preventDefault()
     }
 
