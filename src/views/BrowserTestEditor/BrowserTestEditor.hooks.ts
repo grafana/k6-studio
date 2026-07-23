@@ -1,4 +1,3 @@
-import { arrayMove } from '@dnd-kit/sortable'
 import { debounce, isEqual } from 'lodash-es'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -157,47 +156,6 @@ export function useBrowserTestState({ actions, options }: BrowserTestFile) {
     options: initialOptions,
   })
 
-  const addAction = (action: AnyBrowserAction) => {
-    setTest((prev) => ({
-      ...prev,
-      actions: [...prev.actions, action],
-    }))
-  }
-
-  const updateAction = (updatedAction: AnyBrowserAction) => {
-    setTest((test) => ({
-      ...test,
-      actions: test.actions.map((action) =>
-        action.id === updatedAction.id ? updatedAction : action
-      ),
-    }))
-  }
-
-  const removeAction = (id: string) => {
-    setTest((test) => ({
-      ...test,
-      actions: test.actions.filter((action) => action.id !== id),
-    }))
-  }
-
-  const reorderActions = useCallback((activeId: string, overId: string) => {
-    setTest((test) => {
-      const prev = test.actions
-
-      const oldIndex = prev.findIndex((action) => action.id === activeId)
-      const newIndex = prev.findIndex((action) => action.id === overId)
-
-      if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
-        return test
-      }
-
-      return {
-        ...test,
-        actions: arrayMove(prev, oldIndex, newIndex),
-      }
-    })
-  }, [])
-
   const markAsSaved = useCallback(() => {
     setSavedTest(test)
   }, [test])
@@ -215,12 +173,6 @@ export function useBrowserTestState({ actions, options }: BrowserTestFile) {
   return {
     isDirty,
     test,
-    actions: test.actions,
-    options: test.options,
-    addAction,
-    updateAction,
-    removeAction,
-    reorderActions,
     onChange: setTest,
     markAsSaved,
   }

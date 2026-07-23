@@ -14,7 +14,7 @@ import { useBrowserActionState } from './ValidationProvider'
 
 interface EditableActionProps {
   action: AnyBrowserAction
-  onRemove: (actionId: string) => void
+  onRemove: (action: AnyBrowserAction) => void
   onChange: (action: AnyBrowserAction) => void
   dragHandle?: ReactNode
 }
@@ -52,7 +52,7 @@ export function EditableAction({
   const { isValidating, state } = useBrowserActionState(action.id)
 
   const handleRemove = () => {
-    onRemove(action.id)
+    onRemove(action)
   }
 
   const editor = getActionEditorForAction(action)
