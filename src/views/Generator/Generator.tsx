@@ -2,15 +2,17 @@ import { Callout, IconButton } from '@radix-ui/themes'
 import log from 'electron-log/renderer'
 import { WandSparklesIcon, XIcon } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useBlocker, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
+import { UnsavedChangesDialog } from '@/components/UnsavedChangesDialog'
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
 import { GeneratorContent } from '@/handlers/fs/types'
 import { useSaveFile } from '@/hooks/useSaveFile'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
+import { useUnsavedChangesPrompt } from '@/hooks/useUnsavedChangesPrompt'
 import { getViewPath } from '@/routeMap'
 import { useGeneratorStore, selectGeneratorData } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
@@ -27,7 +29,6 @@ import { GeneratorTabs } from './GeneratorTabs'
 import { SetupWizard } from './SetupWizard'
 import { SetupWizardOutcome } from './SetupWizard/SetupWizard'
 import { TestRuleContainer } from './TestRuleContainer'
-import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 
 function buildSetupSummary(store: {
   allowlist: string[]
@@ -126,15 +127,6 @@ export function Generator({ file, content }: GeneratorProps) {
   const isDirty = useIsGeneratorDirty(savedData)
   const isDirtyRef = useRef(isDirty)
 
-  const [isAppClosing, setIsAppClosing] = useState(false)
-
-  const blocker = useBlocker(({ historyAction }) => {
-    // Don't block navigation when redirecting home from invalid generator
-    // TODO(router): Action enum is not exported from react-router-dom
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-    return isDirty && historyAction !== 'REPLACE'
-  })
-
   useEffect(() => {
     return () => {
       resetGeneratorFile()
@@ -165,16 +157,6 @@ export function Generator({ file, content }: GeneratorProps) {
   }, [harError, showToast])
 
   useEffect(() => {
-    return window.studio.app.onApplicationClose(() => {
-      if (isDirty || blocker.state === 'blocked') {
-        setIsAppClosing(true)
-        return
-      }
-      window.studio.app.closeApplication()
-    })
-  })
-
-  useEffect(() => {
     isDirtyRef.current = isDirty
   }, [isDirty])
 
@@ -182,41 +164,14 @@ export function Generator({ file, content }: GeneratorProps) {
     return saveFile({ saveAs: false })
   }, [saveFile])
 
+  const unsavedChangesPrompt = useUnsavedChangesPrompt({
+    isDirty,
+    onSave: handleSaveGenerator,
+  })
+
   const handleChangeRecording = (newPath: string) => {
     setSelectedRequest(null)
     setRecordingPath(newPath)
-  }
-
-  const handleSaveGeneratorDialog = async () => {
-    const location = await handleSaveGenerator()
-
-    if (location === undefined) {
-      setIsAppClosing(false)
-
-      return
-    }
-
-    if (isAppClosing) {
-      return window.studio.app.closeApplication()
-    }
-
-    blocker.proceed?.()
-  }
-
-  const handleDiscardGeneratorDialog = () => {
-    if (isAppClosing) {
-      return window.studio.app.closeApplication()
-    }
-
-    blocker.proceed?.()
-  }
-
-  const handleCancelGeneratorDialog = () => {
-    if (isAppClosing) {
-      return window.studio.app.closeApplication()
-    }
-
-    blocker.reset?.()
   }
 
   // `replace` keeps the dirty blocker from firing on wizard-internal
@@ -235,15 +190,6 @@ export function Generator({ file, content }: GeneratorProps) {
     setSearchParams({ mode: 'guided' }, { replace: true })
   }
 
-  const unsavedChangesDialog = (
-    <UnsavedChangesDialog
-      open={blocker.state === 'blocked' || (isAppClosing && isDirty)}
-      onSave={handleSaveGeneratorDialog}
-      onDiscard={handleDiscardGeneratorDialog}
-      onCancel={handleCancelGeneratorDialog}
-    />
-  )
-
   if (isSetupMode) {
     return (
       <>
@@ -255,7 +201,7 @@ export function Generator({ file, content }: GeneratorProps) {
           onSaveGenerator={handleSaveGenerator}
           onExit={handleExitSetupMode}
         />
-        {unsavedChangesDialog}
+        <UnsavedChangesDialog {...unsavedChangesPrompt} />
       </>
     )
   }
@@ -339,7 +285,7 @@ export function Generator({ file, content }: GeneratorProps) {
           </>
         )}
       </Group>
-      {unsavedChangesDialog}
+      <UnsavedChangesDialog {...unsavedChangesPrompt} />
     </View>
   )
 }

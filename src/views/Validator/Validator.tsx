@@ -5,9 +5,11 @@ import { useNavigate } from 'react-router-dom'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
+import { UnsavedChangesDialog } from '@/components/UnsavedChangesDialog'
 import { ScriptContent } from '@/handlers/fs/types'
 import { useOpenExternalScript } from '@/hooks/useOpenExternalScript'
 import { useSaveFile } from '@/hooks/useSaveFile'
+import { useUnsavedChangesPrompt } from '@/hooks/useUnsavedChangesPrompt'
 import { getViewPath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
@@ -70,6 +72,11 @@ export function Validator({ file, content }: ValidatorProps) {
   const handleSave = () => {
     void saveFile({ saveAs: false })
   }
+
+  const unsavedChangesPrompt = useUnsavedChangesPrompt({
+    isDirty,
+    onSave: () => saveFile({ saveAs: false }),
+  })
 
   const { session, startDebugging, stopDebugging } = useDebugSession(
     isDirty
@@ -157,6 +164,7 @@ export function Validator({ file, content }: ValidatorProps) {
         script={{ type: 'file', path: file.path }}
         onOpenChange={setShowRunInCloudDialog}
       />
+      <UnsavedChangesDialog {...unsavedChangesPrompt} />
     </View>
   )
 }

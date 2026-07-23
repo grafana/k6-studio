@@ -2,18 +2,18 @@ import { Box, Button, Dialog, Flex, IconButton, Text } from '@radix-ui/themes'
 import { XIcon } from 'lucide-react'
 
 export function UnsavedChangesDialog({
-  open,
+  isOpen,
   onSave,
   onDiscard,
   onCancel,
 }: {
-  open: boolean
+  isOpen: boolean
   onSave: () => void
   onDiscard: () => void
   onCancel: () => void
 }) {
   return (
-    <Dialog.Root open={open} onOpenChange={onCancel}>
+    <Dialog.Root open={isOpen} onOpenChange={onCancel}>
       <Dialog.Content size="3" maxWidth="450px" css={{ position: 'relative' }}>
         <Dialog.Title>Save before leaving?</Dialog.Title>
 
