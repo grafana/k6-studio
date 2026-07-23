@@ -1,11 +1,13 @@
-import { act, renderHook } from '@testing-library/react'
+import { act, renderHook, RenderHookResult } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import {
+  BrowserThreshold,
   defaultBrowserTestOptions,
   type BrowserTestFile,
 } from '@/schemas/browserTest'
 import { createBrowserTestFile } from '@/test/factories/browserTest'
+import { LoadProfileExecutorOptions, LoadZoneData } from '@/types/testOptions'
 import { newSyntheticKey } from '@/utils/zod'
 
 import { useBrowserTestState } from './BrowserTestEditor.hooks'
@@ -14,6 +16,46 @@ const baseFile: BrowserTestFile = {
   version: '1.0',
   actions: [],
   options: defaultBrowserTestOptions,
+}
+
+type BrowserTestStateResult = RenderHookResult<
+  ReturnType<typeof useBrowserTestState>,
+  BrowserTestFile
+>['result']
+
+// Mirrors the merge logic that lives in `BrowserTestOptionsButton`, since the
+// hook only exposes a generic `onChange` over the whole test now.
+function setLoadProfile(
+  result: BrowserTestStateResult,
+  loadProfile: LoadProfileExecutorOptions
+) {
+  result.current.onChange((prev) => ({
+    ...prev,
+    options: {
+      ...prev.options,
+      loadProfile: { ...prev.options.loadProfile, ...loadProfile },
+    },
+  }))
+}
+
+function setThresholds(
+  result: BrowserTestStateResult,
+  thresholds: BrowserThreshold[]
+) {
+  result.current.onChange((prev) => ({
+    ...prev,
+    options: { ...prev.options, thresholds },
+  }))
+}
+
+function setLoadZones(result: BrowserTestStateResult, loadZones: LoadZoneData) {
+  result.current.onChange((prev) => ({
+    ...prev,
+    options: {
+      ...prev.options,
+      cloud: { ...prev.options.cloud, loadZones },
+    },
+  }))
 }
 
 describe('useBrowserTestState', () => {
@@ -28,7 +70,7 @@ describe('useBrowserTestState', () => {
   it('setLoadProfile updates options and marks dirty', () => {
     const { result } = renderHook(() => useBrowserTestState(baseFile))
     act(() => {
-      result.current.setLoadProfile({
+      setLoadProfile(result, {
         executor: 'shared-iterations',
         vus: 5,
         iterations: 10,
@@ -56,7 +98,7 @@ describe('useBrowserTestState', () => {
       },
     ]
     act(() => {
-      result.current.setThresholds(next)
+      setThresholds(result, next)
     })
     expect(result.current.options.thresholds).toEqual(next)
   })
@@ -64,7 +106,7 @@ describe('useBrowserTestState', () => {
   it('setLoadZones replaces load zones', () => {
     const { result } = renderHook(() => useBrowserTestState(baseFile))
     act(() => {
-      result.current.setLoadZones({
+      setLoadZones(result, {
         distribution: 'manual',
         zones: [{ id: '1', loadZone: 'amazon:us:columbus', percent: 100 }],
       })
@@ -100,7 +142,7 @@ describe('useBrowserTestState options round-trip', () => {
       enabled: true,
     }
     act(() => {
-      result.current.setThresholds([newThreshold])
+      setThresholds(result, [newThreshold])
     })
     expect(result.current.options.thresholds).toEqual([newThreshold])
     expect(result.current.isDirty).toBe(true)
@@ -128,7 +170,7 @@ describe('useBrowserTestState options round-trip', () => {
     }
     const { result } = renderHook(() => useBrowserTestState(before))
     act(() => {
-      result.current.setLoadProfile({
+      setLoadProfile(result, {
         executor: 'shared-iterations',
         vus: 5,
       })
@@ -157,13 +199,13 @@ describe('useBrowserTestState options round-trip', () => {
     const { result } = renderHook(() => useBrowserTestState(before))
 
     act(() => {
-      result.current.setLoadProfile({
+      setLoadProfile(result, {
         executor: 'ramping-vus',
         stages: customStages,
       })
     })
     act(() => {
-      result.current.setLoadProfile({
+      setLoadProfile(result, {
         executor: 'shared-iterations',
         vus: 2,
         iterations: 5,

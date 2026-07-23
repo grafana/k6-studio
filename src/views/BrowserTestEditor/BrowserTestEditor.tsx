@@ -15,7 +15,7 @@ import {
 } from '@/components/Validator/LogsSection'
 import { useSaveFile } from '@/hooks/useSaveFile'
 import { getViewPath } from '@/routeMap'
-import { BrowserTestFile } from '@/schemas/browserTest'
+import { BrowserTestFile, BrowserTestOptions } from '@/schemas/browserTest'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 
@@ -116,6 +116,17 @@ export function BrowserTestEditor({
     void saveFile({ saveAs: false })
   }
 
+  const handleOptionsChange = (
+    callback: (prev: BrowserTestOptions) => BrowserTestOptions
+  ) => {
+    test.onChange((prev) => {
+      return {
+        ...prev,
+        options: callback(prev.options),
+      }
+    })
+  }
+
   return (
     <HighlightLocatorProvider>
       <PlayerContextProvider>
@@ -181,9 +192,7 @@ export function BrowserTestEditor({
                             optionsButton={
                               <BrowserTestOptionsButton
                                 options={test.options}
-                                onLoadProfileChange={test.setLoadProfile}
-                                onThresholdsChange={test.setThresholds}
-                                onLoadZonesChange={test.setLoadZones}
+                                onChange={handleOptionsChange}
                               />
                             }
                           />

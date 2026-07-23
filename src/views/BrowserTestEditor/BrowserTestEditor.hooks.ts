@@ -12,10 +12,9 @@ import {
   AnyBrowserAction,
   BrowserTestFile,
   BrowserTestOptions,
-  BrowserThreshold,
 } from '@/schemas/browserTest'
 import { StudioFile } from '@/types'
-import { LoadProfileExecutorOptions, LoadZoneData } from '@/types/testOptions'
+import { LoadProfileExecutorOptions } from '@/types/testOptions'
 import { getInitialStages } from '@/utils/generator'
 import { stripUndefined } from '@/utils/object'
 
@@ -148,91 +147,81 @@ export function useBrowserTestState({ actions, options }: BrowserTestFile) {
     loadProfile: withSeededStages(options.loadProfile),
   }
 
-  const [actionState, setActionState] = useState(actions)
-  const [optionsState, setOptionsState] =
-    useState<BrowserTestOptions>(initialOptions)
+  const [test, setTest] = useState({
+    actions,
+    options: initialOptions,
+  })
 
-  const [savedActions, setSavedActions] = useState(actions)
-  const [savedOptions, setSavedOptions] =
-    useState<BrowserTestOptions>(initialOptions)
+  const [savedTest, setSavedTest] = useState({
+    actions,
+    options: initialOptions,
+  })
 
   const addAction = (action: AnyBrowserAction) => {
-    setActionState([...actionState, action])
+    setTest((prev) => ({
+      ...prev,
+      actions: [...prev.actions, action],
+    }))
   }
 
   const updateAction = (updatedAction: AnyBrowserAction) => {
-    setActionState(
-      actionState.map((action) =>
+    setTest((test) => ({
+      ...test,
+      actions: test.actions.map((action) =>
         action.id === updatedAction.id ? updatedAction : action
-      )
-    )
+      ),
+    }))
   }
 
   const removeAction = (id: string) => {
-    setActionState(actionState.filter((action) => action.id !== id))
+    setTest((test) => ({
+      ...test,
+      actions: test.actions.filter((action) => action.id !== id),
+    }))
   }
 
   const reorderActions = useCallback((activeId: string, overId: string) => {
-    setActionState((prev) => {
+    setTest((test) => {
+      const prev = test.actions
+
       const oldIndex = prev.findIndex((action) => action.id === activeId)
       const newIndex = prev.findIndex((action) => action.id === overId)
+
       if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
-        return prev
+        return test
       }
-      return arrayMove(prev, oldIndex, newIndex)
+
+      return {
+        ...test,
+        actions: arrayMove(prev, oldIndex, newIndex),
+      }
     })
   }, [])
 
-  const setLoadProfile = useCallback(
-    (loadProfile: LoadProfileExecutorOptions) =>
-      setOptionsState((prev) => ({
-        ...prev,
-        // Merge so inactive-branch fields (e.g. user's stages while
-        // shared-iterations is active) survive an executor switch. Codegen
-        // reads only the active branch, so shadow fields are inert.
-        loadProfile: {
-          ...prev.loadProfile,
-          ...loadProfile,
-        },
-      })),
-    []
-  )
-
-  const setThresholds = useCallback(
-    (thresholds: BrowserThreshold[]) =>
-      setOptionsState((prev) => ({ ...prev, thresholds })),
-    []
-  )
-
-  const setLoadZones = useCallback(
-    (loadZones: LoadZoneData) =>
-      setOptionsState((prev) => ({ ...prev, cloud: { loadZones } })),
-    []
-  )
-
   const markAsSaved = useCallback(() => {
-    setSavedActions(actionState)
-    setSavedOptions(optionsState)
-  }, [actionState, optionsState])
+    setSavedTest(test)
+  }, [test])
 
   const isDirty = useMemo(() => {
     return (
-      !isEqual(stripUndefined(actionState), stripUndefined(savedActions)) ||
-      !isEqual(stripUndefined(optionsState), stripUndefined(savedOptions))
+      !isEqual(
+        stripUndefined(test.actions),
+        stripUndefined(savedTest.actions)
+      ) ||
+      !isEqual(stripUndefined(test.options), stripUndefined(savedTest.options))
     )
-  }, [actionState, savedActions, optionsState, savedOptions])
+  }, [test, savedTest])
 
   return {
-    actions: actionState,
+    isDirty,
+    test,
+    actions: test.actions,
+    options: test.options,
     addAction,
     updateAction,
     removeAction,
     reorderActions,
-    options: optionsState,
-    setLoadProfile,
-    setThresholds,
-    setLoadZones,
-    isDirty,
+    onChange: setTest,
     markAsSaved,
   }
 }
