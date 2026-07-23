@@ -311,20 +311,16 @@ export function LocatorForm<Action extends AnyLocatableAction>({
         // would pop its tooltip open the moment the popover appears.
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
-        {action.frames === undefined ? (
-          renderEditor(elementTarget)
-        ) : (
-          <LocatorChainList
-            frames={frameTargets}
-            element={elementTarget}
-            expanded={expandedTarget}
-            onExpandedChange={handleExpandedChange}
-            onHoverTarget={setHoveredTarget}
-            onAddFrame={handleAddFrame}
-            onRemoveFrame={handleRemoveFrame}
-            renderEditor={renderEditor}
-          />
-        )}
+        <LocatorChainList
+          frames={frameTargets}
+          element={elementTarget}
+          expanded={expandedTarget}
+          onExpandedChange={handleExpandedChange}
+          onHoverTarget={setHoveredTarget}
+          onAddFrame={handleAddFrame}
+          onRemoveFrame={handleRemoveFrame}
+          renderEditor={renderEditor}
+        />
       </Popover.Content>
     </Popover.Root>
   )
