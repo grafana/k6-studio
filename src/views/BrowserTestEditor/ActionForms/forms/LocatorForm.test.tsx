@@ -8,6 +8,7 @@ import {
   useHighlightedLocator,
 } from '@/components/HighlightLocatorProvider'
 import { cssLocatorOptions, LocatorOptions } from '@/schemas/locator'
+import { newSyntheticKey, SyntheticKey } from '@/utils/zod'
 
 import { FrameChainProvider } from '../../FrameChainContext'
 
@@ -132,22 +133,28 @@ describe('LocatorForm chain accordion', () => {
   })
 
   it('edits the element locator by default', () => {
+    const locator = cssLocatorOptions('button.pay')
     const { onElementChange, onFramesChange } = renderLocatorForm({
+      locator,
       frames: [cssLocatorOptions('#outer')],
     })
     openPopover()
 
     fireEvent.change(selectorField(), { target: { value: 'button.buy' } })
 
-    expect(onElementChange).toHaveBeenCalledWith(
-      cssLocatorOptions('button.buy')
-    )
+    // Editing keeps the original locator's key — only its value changes.
+    expect(onElementChange).toHaveBeenCalledWith({
+      ...cssLocatorOptions('button.buy'),
+      key: locator.key,
+    })
     expect(onFramesChange).not.toHaveBeenCalled()
   })
 
   it('expanding a frame row switches the editor to that frame', () => {
+    const outer = cssLocatorOptions('#outer')
+    const inner = cssLocatorOptions('#inner')
     const { onElementChange, onFramesChange } = renderLocatorForm({
-      frames: [cssLocatorOptions('#outer'), cssLocatorOptions('#inner')],
+      frames: [outer, inner],
     })
     openPopover()
 
@@ -160,8 +167,8 @@ describe('LocatorForm chain accordion', () => {
     fireEvent.change(selectorField(), { target: { value: '#outer-edited' } })
 
     expect(onFramesChange).toHaveBeenCalledWith([
-      cssLocatorOptions('#outer-edited'),
-      cssLocatorOptions('#inner'),
+      { ...cssLocatorOptions('#outer-edited'), key: outer.key },
+      inner,
     ])
     expect(onElementChange).not.toHaveBeenCalled()
   })
@@ -177,31 +184,36 @@ describe('LocatorForm chain accordion', () => {
   })
 
   it('add iframe appends an empty css frame and opens it', () => {
-    const { onFramesChange } = renderLocatorForm({
-      frames: [cssLocatorOptions('#outer')],
-    })
+    const outer = cssLocatorOptions('#outer')
+    const { onFramesChange } = renderLocatorForm({ frames: [outer] })
     openPopover()
 
     fireEvent.click(screen.getByRole('button', { name: /add iframe/i }))
 
+    // The new frame gets its own fresh key — only its content is asserted.
     expect(onFramesChange).toHaveBeenCalledWith([
-      cssLocatorOptions(''),
-      cssLocatorOptions('#outer'),
+      {
+        key: expect.any(String) as SyntheticKey,
+        current: 'css',
+        values: { css: { type: 'css', selector: '' } },
+      },
+      outer,
     ])
     expect(expanded(/^iframe 1/)).toBe('true')
     expect(selectorField().value).toBe('')
   })
 
   it('removing the open frame opens the element row', () => {
+    const outer = cssLocatorOptions('#outer')
     const { onFramesChange } = renderLocatorForm({
-      frames: [cssLocatorOptions('#outer'), cssLocatorOptions('#inner')],
+      frames: [outer, cssLocatorOptions('#inner')],
     })
     openPopover()
 
     fireEvent.click(row('iframe 2: #inner'))
     fireEvent.click(screen.getByRole('button', { name: 'Remove iframe 2' }))
 
-    expect(onFramesChange).toHaveBeenCalledWith([cssLocatorOptions('#outer')])
+    expect(onFramesChange).toHaveBeenCalledWith([outer])
     expect(expanded('element: button.pay')).toBe('true')
     expect(selectorField().value).toBe('button.pay')
   })
@@ -273,23 +285,21 @@ describe('LocatorForm highlight scoping', () => {
   }
 
   it('highlights the element scoped to the full chain when opened', () => {
-    renderLocatorForm({
-      frames: [cssLocatorOptions('#outer'), cssLocatorOptions('#inner')],
-    })
+    const frames = [cssLocatorOptions('#outer'), cssLocatorOptions('#inner')]
+    renderLocatorForm({ frames })
     openPopover()
 
     settleHighlight()
 
     expect(probe()).toEqual({
       locator: { type: 'css', selector: 'button.pay' },
-      frames: [cssLocatorOptions('#outer'), cssLocatorOptions('#inner')],
+      frames,
     })
   })
 
   it('highlights a frame scoped to the frames before it when hovered', () => {
-    renderLocatorForm({
-      frames: [cssLocatorOptions('#outer'), cssLocatorOptions('#inner')],
-    })
+    const frames = [cssLocatorOptions('#outer'), cssLocatorOptions('#inner')]
+    renderLocatorForm({ frames })
     openPopover()
 
     fireEvent.pointerEnter(row('iframe 2: #inner'))
@@ -298,14 +308,13 @@ describe('LocatorForm highlight scoping', () => {
 
     expect(probe()).toEqual({
       locator: { type: 'css', selector: '#inner' },
-      frames: [cssLocatorOptions('#outer')],
+      frames: [frames[0]],
     })
   })
 
   it('highlights the open frame with no parents after expanding the first frame', () => {
-    renderLocatorForm({
-      frames: [cssLocatorOptions('#outer'), cssLocatorOptions('#inner')],
-    })
+    const frames = [cssLocatorOptions('#outer'), cssLocatorOptions('#inner')]
+    renderLocatorForm({ frames })
     openPopover()
 
     fireEvent.click(row('iframe 1: #outer'))
@@ -321,6 +330,7 @@ describe('LocatorForm highlight scoping', () => {
 
 describe('LocatorForm suggested roles', () => {
   const roleLocator = (role: string): LocatorOptions => ({
+    key: newSyntheticKey(),
     current: 'role',
     values: { role: { type: 'role', role, options: { exact: false } } },
   })

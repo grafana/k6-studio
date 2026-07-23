@@ -6,6 +6,7 @@ import {
   type BrowserTestFile,
 } from '@/schemas/browserTest'
 import { createBrowserTestFile } from '@/test/factories/browserTest'
+import { newSyntheticKey } from '@/utils/zod'
 
 import { useBrowserTestState } from './BrowserTestEditor.hooks'
 
@@ -142,8 +143,8 @@ describe('useBrowserTestState options round-trip', () => {
 
   it('isDirty clears after markAsSaved when switching executors and back', () => {
     const customStages = [
-      { target: 10, duration: '2m' as const },
-      { target: 30, duration: '4m' as const },
+      { key: newSyntheticKey(), target: 10, duration: '2m' as const },
+      { key: newSyntheticKey(), target: 30, duration: '4m' as const },
     ]
     const before: BrowserTestFile = {
       version: '1.0',

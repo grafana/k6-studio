@@ -3,6 +3,7 @@ import { useFormContext, useFieldArray } from 'react-hook-form'
 
 import { Table } from '@/components/Table'
 import { LoadProfileExecutorOptions } from '@/types/testOptions'
+import { newSyntheticKey } from '@/utils/zod'
 
 import { Stage } from './Stage'
 
@@ -16,6 +17,9 @@ export function VUStages() {
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'stages',
+    // Stages already carry their own synthetic key; reuse it instead of
+    // having react-hook-form generate a separate tracking id.
+    keyName: 'key',
   })
 
   return (
@@ -33,9 +37,8 @@ export function VUStages() {
 
         <Table.Body>
           {fields.map((stage, index) => (
-            <Table.Row key={index}>
+            <Table.Row key={stage.key}>
               <Stage
-                key={stage.id}
                 index={index}
                 register={register}
                 handleRemove={() => remove(index)}
@@ -48,7 +51,13 @@ export function VUStages() {
               <Box>
                 <Button
                   variant="ghost"
-                  onClick={() => append({ target: 20, duration: '1m' })}
+                  onClick={() =>
+                    append({
+                      key: newSyntheticKey(),
+                      target: 20,
+                      duration: '1m',
+                    })
+                  }
                 >
                   Add stage
                 </Button>

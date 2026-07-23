@@ -19,6 +19,11 @@ export function generateOptions({
   const options = omit(loadProfile, ['executor'])
   const data = {
     ...options,
+    // Stages carry a synthetic key for editor bookkeeping only; it has no
+    // meaning to k6 and must not leak into the generated script.
+    ...(loadProfile.executor === 'ramping-vus' && {
+      stages: loadProfile.stages.map((stage) => omit(stage, ['key'])),
+    }),
     ...(cloud && generateCloudOptions(cloud)),
     ...(thresholds.length > 0 && {
       thresholds: generateThresholds(thresholds),

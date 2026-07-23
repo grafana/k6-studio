@@ -14,13 +14,12 @@ import {
   LocatorSummary,
 } from '@/components/Browser/Locator'
 import { getCurrentLocator, LocatorOptions } from '@/schemas/locator'
+import { SyntheticKey } from '@/utils/zod'
 
-export type LocatorTargetKey = number | 'element'
+export type LocatorTargetKey = SyntheticKey
 
-export interface LocatorTarget<
-  Key extends LocatorTargetKey = LocatorTargetKey,
-> {
-  key: Key
+export interface LocatorTarget {
+  key: LocatorTargetKey
   options: LocatorOptions
   error: string | null
 }
@@ -36,13 +35,13 @@ const slideUp = keyframes`
 `
 
 interface LocatorChainListProps {
-  frames: Array<LocatorTarget<number>>
-  element: LocatorTarget<'element'>
+  frames: LocatorTarget[]
+  element: LocatorTarget
   expanded: LocatorTargetKey | null
   onExpandedChange: (target: LocatorTargetKey | null) => void
   onHoverTarget: (target: LocatorTargetKey | null) => void
   onAddFrame: () => void
-  onRemoveFrame: (key: number) => void
+  onRemoveFrame: (key: LocatorTargetKey) => void
   renderEditor: (target: LocatorTarget) => ReactNode
 }
 
@@ -116,7 +115,7 @@ export function LocatorChainList({
         <ChainRow
           target={element}
           label="element"
-          isOpen={expanded === 'element'}
+          isOpen={expanded === element.key}
           isNested={frames.length > 0}
           onHoverTarget={onHoverTarget}
           renderEditor={renderEditor}
@@ -229,17 +228,14 @@ function ChainRow({
   )
 }
 
-// Accordion values are strings; map the element/frame keys onto them.
+// Accordion values are strings; synthetic keys already are, so this just
+// carries the "nothing expanded" sentinel.
 const NONE = ''
 
 function toValue(target: LocatorTargetKey | null): string {
-  return target === null ? NONE : String(target)
+  return target ?? NONE
 }
 
 function fromValue(value: string): LocatorTargetKey | null {
-  if (value === NONE) {
-    return null
-  }
-
-  return value === 'element' ? 'element' : Number(value)
+  return value === NONE ? null : (value as LocatorTargetKey)
 }

@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useGeneratorStore } from '@/store/generator'
 import { createProxyData, createRequest } from '@/test/factories/proxyData'
 import { createThreshold } from '@/test/factories/threshold'
+import { newSyntheticKey } from '@/utils/zod'
 
 import { initialWizardState } from '../../state/reducer'
 import { SetupWizardProvider } from '../../state/SetupWizardContext'
@@ -113,9 +114,9 @@ beforeEach(() => {
     includeStaticAssets: true,
     executor: 'ramping-vus',
     stages: [
-      { target: 20, duration: '1m' },
-      { target: 20, duration: '3m30s' },
-      { target: 0, duration: '1m' },
+      { key: newSyntheticKey(), target: 20, duration: '1m' },
+      { key: newSyntheticKey(), target: 20, duration: '3m30s' },
+      { key: newSyntheticKey(), target: 0, duration: '1m' },
     ],
     thresholds: [
       createThreshold({ statistic: 'p(95)', condition: '<', value: 300 }),
