@@ -54,10 +54,7 @@ export function useUnsavedChangesPrompt({
   }
 
   const handleCancel = () => {
-    if (isAppClosing) {
-      return window.studio.app.closeApplication()
-    }
-
+    setIsAppClosing(false)
     blocker.reset?.()
   }
 

@@ -18,7 +18,6 @@ interface ReactMonacoEditorProps extends EditorProps {
   searchString?: string
   searchIndex?: number
   onCopy?: (event: ClipboardEvent) => void
-  enableK6Types?: boolean
 }
 
 export function ReactMonacoEditor({
