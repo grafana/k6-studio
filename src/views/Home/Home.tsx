@@ -13,17 +13,17 @@ import {
 import { Link } from 'react-router-dom'
 
 import { ExternalLink } from '@/components/ExternalLink'
-import { useCreateGenerator } from '@/hooks/useCreateGenerator'
+import { useCreateTestActions } from '@/hooks/useCreateTestActions'
 import { useOpenExternalScript } from '@/hooks/useOpenExternalScript'
 import { getRoutePath } from '@/routeMap'
 
 import { NavigationCard } from './NavigationCard'
 
 export function Home() {
-  const createNewGenerator = useCreateGenerator()
   const handleOpenScript = useOpenExternalScript()
 
-  const handleCreateNewGenerator = () => createNewGenerator()
+  const { handleCreateHTTPTest, handleCreateBrowserTest } =
+    useCreateTestActions()
 
   return (
     <Flex direction="column" height="100%" position="relative">
@@ -75,11 +75,11 @@ export function Home() {
             description="Create ready-to-run k6 scripts for HTTP or browser testing."
           >
             <Flex gap="6">
-              <Button variant="ghost" onClick={handleCreateNewGenerator}>
+              <Button variant="ghost" onClick={() => handleCreateHTTPTest()}>
                 <ServerCogIcon />
                 HTTP
               </Button>
-              <Button variant="ghost">
+              <Button variant="ghost" onClick={() => handleCreateBrowserTest()}>
                 <MonitorIcon />
                 Browser
               </Button>
