@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useBlocker } from 'react-router-dom'
 
 interface UseUnsavedChangesPromptOptions {
@@ -10,7 +10,9 @@ export function useUnsavedChangesPrompt({
   isDirty,
   onSave,
 }: UseUnsavedChangesPromptOptions) {
-  const [isAppClosing, setIsAppClosing] = useState(false)
+  const [isCloseRequested, setIsCloseRequested] = useState(false)
+
+  const isConfirmed = useRef(false)
 
   const blocker = useBlocker(({ historyAction }) => {
     // Don't block navigation when redirecting (e.g. away from an invalid file)
@@ -22,23 +24,29 @@ export function useUnsavedChangesPrompt({
   useEffect(() => {
     return window.studio.app.onApplicationClose(() => {
       if (isDirty || blocker.state === 'blocked') {
-        setIsAppClosing(true)
+        setIsCloseRequested(true)
         return
       }
+
       window.studio.app.closeApplication()
     })
-  })
+  }, [isDirty, blocker.state])
 
   const handleSave = async () => {
+    isConfirmed.current = true
+
     const result = await onSave()
 
     if (result === undefined) {
-      setIsAppClosing(false)
+      // The user chose to cancel through a save dialog, so we don't want to close the app
+      isConfirmed.current = false
+
+      handleCancel()
 
       return
     }
 
-    if (isAppClosing) {
+    if (isCloseRequested) {
       return window.studio.app.closeApplication()
     }
 
@@ -46,7 +54,9 @@ export function useUnsavedChangesPrompt({
   }
 
   const handleDiscard = () => {
-    if (isAppClosing) {
+    isConfirmed.current = true
+
+    if (isCloseRequested) {
       return window.studio.app.closeApplication()
     }
 
@@ -54,12 +64,16 @@ export function useUnsavedChangesPrompt({
   }
 
   const handleCancel = () => {
-    setIsAppClosing(false)
+    if (isConfirmed.current) {
+      return
+    }
+
+    setIsCloseRequested(false)
     blocker.reset?.()
   }
 
   return {
-    isOpen: blocker.state === 'blocked' || (isAppClosing && isDirty),
+    isOpen: blocker.state === 'blocked' || (isCloseRequested && isDirty),
     onSave: handleSave,
     onDiscard: handleDiscard,
     onCancel: handleCancel,
