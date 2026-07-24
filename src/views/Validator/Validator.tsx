@@ -31,6 +31,8 @@ export function Validator({ file, content }: ValidatorProps) {
   const [scriptContent, setScriptContent] = useState(content.data)
   const [options, setOptions] = useState(content.options)
 
+  const [starting, setStarting] = useState(false)
+
   const showToast = useToast()
   const handleSelectExternalScript = useOpenExternalScript()
   const navigate = useNavigate()
@@ -85,17 +87,29 @@ export function Validator({ file, content }: ValidatorProps) {
     path: file.path,
   })
 
-  const isRunning = session?.state === 'running'
+  const isRunning = starting || session?.state === 'running'
 
   const scenarios = options.scenarios
     ? Object.keys(options.scenarios)
     : ['default']
 
   async function handleDebugScript(scenarioName?: string) {
-    await startDebugging(scenarioName)
+    setStarting(true)
+
+    if (isDirty) {
+      await saveFile({ saveAs: false })
+    }
+
+    await startDebugging(scenarioName).finally(() => {
+      setStarting(false)
+    })
   }
 
-  function handleRunInCloud() {
+  async function handleRunInCloud() {
+    if (isDirty) {
+      await saveFile({ saveAs: false })
+    }
+
     setShowRunInCloudDialog(true)
   }
 
