@@ -94,15 +94,17 @@ export function Validator({ file, content }: ValidatorProps) {
     : ['default']
 
   async function handleDebugScript(scenarioName?: string) {
-    setStarting(true)
+    try {
+      setStarting(true)
 
-    if (isDirty) {
-      await saveFile({ saveAs: false })
-    }
+      if (isDirty) {
+        await saveFile({ saveAs: false })
+      }
 
-    await startDebugging(scenarioName).finally(() => {
+      await startDebugging(scenarioName)
+    } finally {
       setStarting(false)
-    })
+    }
   }
 
   async function handleRunInCloud() {
