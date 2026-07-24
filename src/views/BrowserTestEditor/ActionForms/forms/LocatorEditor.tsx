@@ -4,7 +4,7 @@ import { ReactElement } from 'react'
 import { FieldGroup } from '@/components/Form'
 import {
   ElementLocator,
-  getCurrentLocator,
+  initializeLocatorValues,
   LocatorOptions,
 } from '@/schemas/locator'
 import { exhaustive } from '@/utils/typescript'
@@ -19,6 +19,7 @@ import {
   GetByTextForm,
   GetByTitleForm,
 } from './locators'
+import { FieldErrors } from './locators/validation'
 
 const LOCATOR_TYPES: Record<ElementLocator['type'], string> = {
   role: 'ARIA Role',
@@ -31,35 +32,54 @@ const LOCATOR_TYPES: Record<ElementLocator['type'], string> = {
   css: 'CSS selector',
 }
 
-interface LocatorEditorProps {
-  state: LocatorOptions
-  fieldErrors?: Record<string, string>
+interface LocatorEditorProps<Locator extends LocatorOptions> {
+  isTouched: boolean
+  locator: Locator
+  fieldErrors: FieldErrors
   suggestedRoles?: string[]
-  onTypeChange: (type: LocatorOptions['current']) => void
-  onLocatorChange: (locator: ElementLocator) => void
-  onFieldBlur: () => void
+  onChange: (newState: Locator) => void
+  onFieldBlur: (locator: Locator) => void
 }
 
 /**
  * The "Get by" type selector plus the fields for the selected locator type.
  * Fully controlled; validation state lives in the owner.
  */
-export function LocatorEditor({
-  state,
+export function LocatorEditor<Locator extends LocatorOptions>({
+  isTouched,
+  locator,
   fieldErrors,
   suggestedRoles,
-  onTypeChange,
-  onLocatorChange,
+  onChange,
   onFieldBlur,
-}: LocatorEditorProps): ReactElement {
+}: LocatorEditorProps<Locator>): ReactElement {
+  const handleTypeChange = (type: ElementLocator['type']) => {
+    if (type in LOCATOR_TYPES === false) {
+      return
+    }
+
+    onChange({
+      ...locator,
+      current: type,
+      values: {
+        ...locator.values,
+        [type]: locator.values[type] ?? initializeLocatorValues(type),
+      },
+    })
+  }
+
+  const handleFieldBlur = () => {
+    onFieldBlur(locator)
+  }
+
   return (
     <Grid gap="3" flexGrow="1" columns="auto auto 1fr">
       <FieldGroup name="locator-type" label="Get by" labelSize="1" mb="0">
         <RadioGroup.Root
           size="1"
           name="locator-type"
-          value={state.current}
-          onValueChange={onTypeChange}
+          value={locator.current}
+          onValueChange={handleTypeChange}
         >
           {Object.entries(LOCATOR_TYPES)
             // TODO: temporarily hide 'text' until codegen support is added
@@ -74,106 +94,135 @@ export function LocatorEditor({
 
       <Separator orientation="vertical" size="4" decorative />
       <LocatorFieldsForm
-        locator={getCurrentLocator(state)}
+        locator={locator}
+        isTouched={isTouched}
         errors={fieldErrors}
-        onChange={onLocatorChange}
-        onBlur={onFieldBlur}
         suggestedRoles={suggestedRoles}
+        onChange={onChange}
+        onBlur={handleFieldBlur}
       />
     </Grid>
   )
 }
 
-interface LocatorFieldsFormProps {
-  locator: ElementLocator
-  errors?: Record<string, string>
-  onChange: (locator: ElementLocator) => void
-  onBlur?: () => void
+interface LocatorFieldsFormProps<Locator extends LocatorOptions> {
+  isTouched: boolean
+  locator: Locator
+  errors: FieldErrors
   suggestedRoles?: string[]
+  onChange: (locator: Locator) => void
+  onBlur?: () => void
 }
 
-function LocatorFieldsForm({
+function LocatorFieldsForm<Locator extends LocatorOptions>({
+  isTouched,
   locator,
   errors,
+  suggestedRoles,
   onChange,
   onBlur,
-  suggestedRoles,
-}: LocatorFieldsFormProps) {
-  switch (locator.type) {
+}: LocatorFieldsFormProps<Locator>) {
+  const handleLocatorChange = (newLocator: ElementLocator) => {
+    onChange({
+      ...locator,
+      values: {
+        ...locator.values,
+        [newLocator.type]: newLocator,
+      },
+    })
+  }
+
+  switch (locator.current) {
     case 'role':
       return (
         <GetByRoleForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
+          locator={locator.values.role}
+          isTouched={isTouched}
+          errors={errors.role}
+          onChange={handleLocatorChange}
           onBlur={onBlur}
           suggestedRoles={suggestedRoles}
         />
       )
+
     case 'css':
       return (
         <GetByCssForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
+          locator={locator.values.css}
+          isTouched={isTouched}
+          errors={errors.css}
+          onChange={handleLocatorChange}
           onBlur={onBlur}
         />
       )
+
     case 'testid':
       return (
         <GetByTestIdForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
+          locator={locator.values.testid}
+          isTouched={isTouched}
+          errors={errors.testid}
+          onChange={handleLocatorChange}
           onBlur={onBlur}
         />
       )
+
     case 'label':
       return (
         <GetByLabelForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
+          locator={locator.values.label}
+          isTouched={isTouched}
+          errors={errors.label}
+          onChange={handleLocatorChange}
           onBlur={onBlur}
         />
       )
+
     case 'placeholder':
       return (
         <GetByPlaceholderForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
+          locator={locator.values.placeholder}
+          isTouched={isTouched}
+          errors={errors.placeholder}
+          onChange={handleLocatorChange}
           onBlur={onBlur}
         />
       )
+
     case 'title':
       return (
         <GetByTitleForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
+          locator={locator.values.title}
+          isTouched={isTouched}
+          errors={errors.title}
+          onChange={handleLocatorChange}
           onBlur={onBlur}
         />
       )
+
     case 'alt':
       return (
         <GetByAltTextForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
+          locator={locator.values.alt}
+          isTouched={isTouched}
+          errors={errors.alt}
+          onChange={handleLocatorChange}
           onBlur={onBlur}
         />
       )
+
     case 'text':
       return (
         <GetByTextForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
+          locator={locator.values.text}
+          isTouched={isTouched}
+          errors={errors.text}
+          onChange={handleLocatorChange}
           onBlur={onBlur}
         />
       )
+
     default:
-      return exhaustive(locator)
+      return exhaustive(locator.current)
   }
 }

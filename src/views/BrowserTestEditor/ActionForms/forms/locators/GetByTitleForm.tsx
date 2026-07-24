@@ -4,15 +4,19 @@ import { ElementLocator, TitleLocator } from '@/schemas/locator'
 import { TextFieldWithExactToggle } from '../../components'
 import { toFieldErrors } from '../utils'
 
+import { FieldErrors } from './validation'
+
 interface GetByTitleFormProps {
-  locator: TitleLocator
-  errors?: Record<string, string>
+  locator: TitleLocator | undefined
+  isTouched: boolean
+  errors: FieldErrors['title'] | undefined
   onChange: (locator: ElementLocator) => void
   onBlur?: () => void
 }
 
 export function GetByTitleForm({
-  locator,
+  locator = { type: 'title', title: '', options: { exact: false } },
+  isTouched,
   errors,
   onChange,
   onBlur,
@@ -23,7 +27,7 @@ export function GetByTitleForm({
       label="Title"
       labelSize="1"
       mb="0"
-      errors={toFieldErrors('title', errors?.['title'])}
+      errors={toFieldErrors('title', isTouched && errors?.title)}
     >
       <TextFieldWithExactToggle
         name="title"

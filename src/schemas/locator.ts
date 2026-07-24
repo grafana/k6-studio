@@ -146,6 +146,7 @@ export type ParentLocatorOptions = z.infer<typeof ParentLocatorOptionsSchema>
 export type TargetLocatorOptions = z.infer<typeof TargetLocatorOptionsSchema>
 
 export type LocatorOptions = z.infer<typeof LocatorOptionsSchema>
+export type TempLocatorOptionsType = TargetLocatorOptions | ParentLocatorOptions
 
 export function targetLocatorOptions(
   selector: ElementLocator = { type: 'css', selector: '' },

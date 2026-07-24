@@ -6,6 +6,8 @@ import { ElementLocator, RoleLocator } from '@/schemas/locator'
 import { ComboBox, TextFieldWithExactToggle } from '../../components'
 import { toFieldErrors } from '../utils'
 
+import { FieldErrors } from './validation'
+
 const DEFAULT_ROLES = [
   'button',
   'link',
@@ -24,19 +26,25 @@ function toRoleOptions(roles: string[]) {
 }
 
 interface GetByRoleFormProps {
-  locator: RoleLocator
-  errors?: Record<string, string>
+  locator: RoleLocator | undefined
+  isTouched: boolean
+  errors: FieldErrors['role'] | undefined
+  suggestedRoles?: string[]
   onChange: (locator: ElementLocator) => void
   onBlur?: () => void
-  suggestedRoles?: string[]
 }
 
 export function GetByRoleForm({
-  locator,
+  isTouched,
   errors,
-  onChange,
+  suggestedRoles = DEFAULT_ROLES,
+  locator = {
+    type: 'role',
+    role: suggestedRoles[0] ?? '',
+    options: { exact: false },
+  },
   onBlur,
-  suggestedRoles,
+  onChange,
 }: GetByRoleFormProps) {
   return (
     <Flex direction="column" gap="2" align="stretch">
@@ -45,25 +53,23 @@ export function GetByRoleForm({
         label="Element role"
         labelSize="1"
         mb="0"
-        errors={toFieldErrors('role', errors?.['role'])}
+        errors={toFieldErrors('role', isTouched && errors?.role)}
       >
         <ComboBox
           id="role"
           value={locator.role}
-          options={toRoleOptions(suggestedRoles ?? DEFAULT_ROLES)}
+          options={toRoleOptions(suggestedRoles)}
           onChange={(value) => {
-            onChange({ ...locator, role: value.trim() })
+            onChange({
+              ...locator,
+              role: value.trim(),
+            })
+
             onBlur?.()
           }}
         />
       </FieldGroup>
-      <FieldGroup
-        name="name"
-        label="Name (optional)"
-        labelSize="1"
-        mb="0"
-        errors={toFieldErrors('name', errors?.['name'])}
-      >
+      <FieldGroup name="name" label="Name (optional)" labelSize="1" mb="0">
         <TextFieldWithExactToggle
           name="name"
           value={locator.options?.name || ''}

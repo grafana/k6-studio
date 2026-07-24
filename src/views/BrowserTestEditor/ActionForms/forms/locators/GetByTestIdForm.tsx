@@ -5,15 +5,19 @@ import { ElementLocator, TestIdLocator } from '@/schemas/locator'
 
 import { toFieldErrors } from '../utils'
 
+import { FieldErrors } from './validation'
+
 interface GetByTestIdFormProps {
-  locator: TestIdLocator
-  errors?: Record<string, string>
+  locator: TestIdLocator | undefined
+  isTouched: boolean
+  errors: FieldErrors['testid'] | undefined
   onChange: (locator: ElementLocator) => void
   onBlur?: () => void
 }
 
 export function GetByTestIdForm({
-  locator,
+  locator = { type: 'testid', testId: '' },
+  isTouched,
   errors,
   onChange,
   onBlur,
@@ -24,7 +28,7 @@ export function GetByTestIdForm({
       label="Test ID"
       labelSize="1"
       mb="0"
-      errors={toFieldErrors('test-id', errors?.['test-id'])}
+      errors={toFieldErrors('test-id', isTouched && errors?.testId)}
     >
       <TextField.Root
         size="1"
