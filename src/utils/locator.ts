@@ -2,6 +2,7 @@ import {
   AltLocator,
   CssLocator,
   ElementLocator,
+  FrameLocatorOptions,
   LabelLocator,
   LocatorOptions,
   PlaceholderLocator,
@@ -176,7 +177,7 @@ export function isLocatorEqual(a: ElementLocator, b: ElementLocator): boolean {
   }
 }
 
-export function toLocatorOptions(selector: ElementSelector): LocatorOptions {
+function toLocatorOptions(selector: ElementSelector): LocatorOptions {
   return {
     key: newSyntheticKey(),
     current: getElementLocator(selector).type,
@@ -192,21 +193,25 @@ export function toLocatorOptions(selector: ElementSelector): LocatorOptions {
   }
 }
 
-// Same as toLocatorOptions, but as the target of an action, which carries its
-// own (possibly empty) parent chain.
-export function toTargetLocatorOptions(
-  selector: ElementSelector
-): TargetLocatorOptions {
+// Converts a recorded event's iframe chain into locator options for each frame.
+export function toFrameOptions(
+  frames: BrowserEventTarget
+): FrameLocatorOptions {
   return {
-    ...toLocatorOptions(selector),
-    type: 'element',
-    parents: [],
+    ...toLocatorOptions(frames.selectors),
+    type: 'frame',
   }
 }
 
-// Converts a recorded event's iframe chain into locator options for each frame.
-export function toFrameOptions(
-  frames: BrowserEventTarget[] | undefined
-): LocatorOptions[] | undefined {
-  return frames?.map((frame) => toLocatorOptions(frame.selectors))
+// Same as toLocatorOptions, but as the target of an action, which carries its
+// own (possibly empty) parent chain.
+export function toTargetLocatorOptions(
+  target: BrowserEventTarget,
+  frames: BrowserEventTarget[] = []
+): TargetLocatorOptions {
+  return {
+    ...toLocatorOptions(target.selectors),
+    type: 'element',
+    parents: frames.map((frame) => toFrameOptions(frame)),
+  }
 }

@@ -245,7 +245,9 @@ export function generateSelectors(
   }
 }
 
-export function getElementDetails(element: Element): BrowserEventTarget {
+export function getElementDetails(
+  element: Element
+): BrowserEventTarget & { aria: AriaDetails } {
   const aria = getAriaDetails(element)
 
   return {

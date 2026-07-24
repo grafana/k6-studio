@@ -1,7 +1,7 @@
 import { AnyBrowserAction, LocatorClickModifier } from '@/schemas/browserTest'
 import { BrowserEvent, ClickEvent } from '@/schemas/recording'
 import { isWebUrl } from '@/utils/browserEvents'
-import { toFrameOptions, toTargetLocatorOptions } from '@/utils/locator'
+import { toTargetLocatorOptions } from '@/utils/locator'
 import { exhaustive } from '@/utils/typescript'
 
 import { convertAssertion } from './convertAssertion'
@@ -48,16 +48,15 @@ function convertEvent(
     return { id: crypto.randomUUID(), method: 'page.reload' }
   }
 
-  // The remaining events all target an element, which may live inside iframes.
-  const frames = toFrameOptions(event.frames)
+  // Actions store events inner-most first, but events outer-most first.
+  const frames = event.frames?.toReversed() ?? []
 
   switch (event.type) {
     case 'click':
       return {
         id: crypto.randomUUID(),
         method: 'locator.click',
-        locator: toTargetLocatorOptions(event.target.selectors),
-        frames,
+        locator: toTargetLocatorOptions(event.target, frames),
         options: buildClickOptions(event, nextEvent),
       }
 
@@ -65,8 +64,7 @@ function convertEvent(
       return {
         id: crypto.randomUUID(),
         method: 'locator.fill',
-        locator: toTargetLocatorOptions(event.target.selectors),
-        frames,
+        locator: toTargetLocatorOptions(event.target, frames),
         value: event.value,
       }
 
@@ -74,24 +72,21 @@ function convertEvent(
       return {
         id: crypto.randomUUID(),
         method: event.checked ? 'locator.check' : 'locator.uncheck',
-        locator: toTargetLocatorOptions(event.target.selectors),
-        frames,
+        locator: toTargetLocatorOptions(event.target, frames),
       }
 
     case 'radio-change':
       return {
         id: crypto.randomUUID(),
         method: 'locator.click',
-        locator: toTargetLocatorOptions(event.target.selectors),
-        frames,
+        locator: toTargetLocatorOptions(event.target, frames),
       }
 
     case 'select-change':
       return {
         id: crypto.randomUUID(),
         method: 'locator.selectOption',
-        locator: toTargetLocatorOptions(event.target.selectors),
-        frames,
+        locator: toTargetLocatorOptions(event.target, frames),
         values: event.selected.map((value) => ({ value })),
       }
 
@@ -99,8 +94,7 @@ function convertEvent(
       return {
         id: crypto.randomUUID(),
         method: 'locator.click',
-        locator: toTargetLocatorOptions(event.submitter.selectors),
-        frames,
+        locator: toTargetLocatorOptions(event.submitter, frames),
         options: isFollowedByImplicitNavigation(event, nextEvent)
           ? { waitForNavigation: true }
           : undefined,
@@ -110,8 +104,7 @@ function convertEvent(
       return {
         id: crypto.randomUUID(),
         method: 'locator.waitFor',
-        locator: toTargetLocatorOptions(event.target.selectors),
-        frames,
+        locator: toTargetLocatorOptions(event.target, frames),
         options: event.options,
       }
 

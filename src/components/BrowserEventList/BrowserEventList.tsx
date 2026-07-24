@@ -60,7 +60,7 @@ export function BrowserEventList({
                       event={event}
                       onNavigate={onNavigate}
                       onHighlight={(locator) =>
-                        onHighlight(locator, toFrameOptions(frames))
+                        onHighlight(locator, frames?.map(toFrameOptions) ?? [])
                       }
                     />
                   </div>

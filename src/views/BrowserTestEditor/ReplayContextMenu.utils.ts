@@ -1,7 +1,7 @@
 import { PlayerMouseEvent } from '@/components/SessionPlayer/SessionPlayer.hooks'
 import { AnyBrowserAction } from '@/schemas/browserTest'
 import { LocatorOptions } from '@/schemas/locator'
-import { getAriaDetails } from '@/utils/dom/aria'
+import { BrowserEventTarget } from '@/schemas/recording/browser/v2'
 import { findInteractiveElement } from '@/utils/dom/dom'
 import { forEachOwningFrame } from '@/utils/dom/frameChain'
 import {
@@ -9,9 +9,8 @@ import {
   isHTMLSelectElement,
   isHTMLTextAreaElement,
 } from '@/utils/dom/realm'
-import { generateSelectors, getElementDetails } from '@/utils/dom/selectors'
-import { emptyToUndefined } from '@/utils/list'
-import { toLocatorOptions, toTargetLocatorOptions } from '@/utils/locator'
+import { getElementDetails } from '@/utils/dom/selectors'
+import { toTargetLocatorOptions } from '@/utils/locator'
 
 import { ContextMenuState } from './types'
 
@@ -87,25 +86,24 @@ export function getTextInputValue(element: Element): string {
 export function buildFrameChainFromElement(
   element: Element,
   appWindow: Window = window
-): LocatorOptions[] | undefined {
-  const chain: LocatorOptions[] = []
-
+) {
   try {
+    const chain: BrowserEventTarget[] = []
+
     forEachOwningFrame(
       element.ownerDocument.defaultView,
       // Stop at the SessionPlayer's own iframe, which lives directly in
       // appWindow's document and isn't part of the recorded page.
       (win) => win === appWindow || win.parent === appWindow,
-      (iframe) =>
-        chain.unshift(toLocatorOptions(getElementDetails(iframe).selectors))
+      (iframe) => chain.push(getElementDetails(iframe))
     )
+
+    return chain
   } catch {
     // A frame we can't walk through would yield a partial chain that resolves
     // against the wrong frame, so fall back to no frame chain.
-    return undefined
+    return []
   }
-
-  return emptyToUndefined(chain)
 }
 
 /**
@@ -128,11 +126,10 @@ export function createContextMenuState(
 ): ContextMenuState {
   const target = findInteractiveElement(event.target) ?? event.target
 
-  const aria = getAriaDetails(target)
-  const selectors = generateSelectors(target, aria)
+  const details = getElementDetails(target)
 
-  const locator = toTargetLocatorOptions(selectors)
   const frames = buildFrameChainFromElement(target)
+  const locator = toTargetLocatorOptions(details, frames)
 
   return {
     type: 'context-menu',
@@ -142,8 +139,7 @@ export function createContextMenuState(
       x: event.x,
       y: event.y,
     },
-    aria,
+    aria: details.aria,
     locator,
-    frames,
   }
 }
