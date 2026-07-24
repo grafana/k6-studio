@@ -1,20 +1,29 @@
 import { css } from '@emotion/react'
 import { Button, Flex, Grid, Heading, Text } from '@radix-ui/themes'
-import { CircleCheckIcon, CirclePlusIcon, DiscIcon } from 'lucide-react'
+import {
+  BugPlay,
+  CircleCheckIcon,
+  DiscIcon,
+  ExternalLinkIcon,
+  HammerIcon,
+  MonitorIcon,
+  ServerCogIcon,
+  VideoIcon,
+} from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-import { GeneratorIcon, RecorderIcon, ValidatorIcon } from '@/components/icons'
-import { useCreateGenerator } from '@/hooks/useCreateGenerator'
+import { ExternalLink } from '@/components/ExternalLink'
+import { useCreateTestActions } from '@/hooks/useCreateTestActions'
 import { useOpenExternalScript } from '@/hooks/useOpenExternalScript'
 import { getRoutePath } from '@/routeMap'
 
 import { NavigationCard } from './NavigationCard'
 
 export function Home() {
-  const createNewGenerator = useCreateGenerator()
   const handleOpenScript = useOpenExternalScript()
 
-  const handleCreateNewGenerator = () => createNewGenerator()
+  const { handleCreateHTTPTest, handleCreateBrowserTest } =
+    useCreateTestActions()
 
   return (
     <Flex direction="column" height="100%" position="relative">
@@ -49,9 +58,9 @@ export function Home() {
         </Text>
         <Grid gap="8" columns="3" maxWidth="720px">
           <NavigationCard
-            icon={<RecorderIcon width="52px" height="52px" />}
-            title="Recorder"
-            description="Use our built-in proxy to record a user flow"
+            icon={<VideoIcon />}
+            title="Record"
+            description="Use our built-in proxy to record a user flow."
           >
             <Button variant="ghost" asChild>
               <Link to={getRoutePath('recorder')}>
@@ -61,19 +70,25 @@ export function Home() {
             </Button>
           </NavigationCard>
           <NavigationCard
-            icon={<GeneratorIcon width="52px" height="52px" />}
-            title="Generator"
-            description="Transform a recorded flow into a k6 test script"
+            icon={<HammerIcon />}
+            title="Build"
+            description="Create ready-to-run k6 scripts for HTTP or browser testing."
           >
-            <Button variant="ghost" onClick={handleCreateNewGenerator}>
-              <CirclePlusIcon />
-              Generate test
-            </Button>
+            <Flex gap="4">
+              <Button variant="ghost" onClick={() => handleCreateHTTPTest()}>
+                <ServerCogIcon />
+                HTTP
+              </Button>
+              <Button variant="ghost" onClick={() => handleCreateBrowserTest()}>
+                <MonitorIcon />
+                Browser
+              </Button>
+            </Flex>
           </NavigationCard>
           <NavigationCard
-            icon={<ValidatorIcon width="52px" height="52px" />}
-            title="Validator"
-            description="Debug and validate your k6 script"
+            icon={<BugPlay />}
+            title="Debug"
+            description="Debug and validate your k6 script."
           >
             <Button variant="ghost" onClick={handleOpenScript}>
               <CircleCheckIcon />
@@ -82,6 +97,13 @@ export function Home() {
           </NavigationCard>
         </Grid>
       </Flex>
+      <Text size="1" mb="4">
+        <Flex justify="center" align="center" gap="1" asChild>
+          <ExternalLink href="https://grafana.com/docs/k6-studio/">
+            Learn more about Grafana k6 Studio <ExternalLinkIcon />
+          </ExternalLink>
+        </Flex>
+      </Text>
     </Flex>
   )
 }

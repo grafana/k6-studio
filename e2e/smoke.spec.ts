@@ -11,12 +11,14 @@ test('packaged app launches and renders the Home view', async ({
     appWindow.getByText('Discover what you can do with Grafana k6 Studio')
   ).toBeVisible({ timeout: 20_000 })
   await expect(
-    appWindow.getByText('Use our built-in proxy to record a user flow')
+    appWindow.getByText('Use our built-in proxy to record a user flow.')
   ).toBeVisible()
   await expect(
-    appWindow.getByText('Transform a recorded flow into a k6 test script')
+    appWindow.getByText(
+      'Create ready-to-run k6 scripts for HTTP or browser testing.'
+    )
   ).toBeVisible()
   await expect(
-    appWindow.getByText('Debug and validate your k6 script')
+    appWindow.getByText('Debug and validate your k6 script.')
   ).toBeVisible()
 })
