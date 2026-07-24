@@ -5,6 +5,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { FileContent, FileLocation, StorageLocation } from '@/handlers/fs/types'
 import { MenuItem, MenuState } from '@/handlers/ui/types'
 
+export interface OnSaveEvent<T extends FileContent = FileContent> {
+  location: FileLocation
+  content: T
+}
+
 const handlers: { [P in MenuItem]: Array<(options: SaveFileOptions) => void> } =
   {
     save: [],
@@ -48,17 +53,17 @@ interface SaveFileOptions {
   saveAs?: boolean
 }
 
-interface UseSaveFileOptions {
+interface UseSaveFileOptions<T extends FileContent = FileContent> {
   menuItems?: Partial<MenuState>
   location: StorageLocation
-  content: (location: FileLocation) => Promise<FileContent> | FileContent
+  content: (location: FileLocation) => Promise<T> | T
   filters: FileFilter[]
-  onSave?: (location: FileLocation) => void
+  onSave?: (ev: OnSaveEvent<T>) => void
   onCancel?: () => void
   onError?: (error: Error) => void
 }
 
-export function useSaveFile({
+export function useSaveFile<T extends FileContent = FileContent>({
   menuItems = {},
   location,
   content,
@@ -66,7 +71,7 @@ export function useSaveFile({
   onSave,
   onCancel,
   onError,
-}: UseSaveFileOptions) {
+}: UseSaveFileOptions<T>) {
   const [menuItemState, setMenuItemState] = useState(menuItems)
 
   if (
@@ -89,16 +94,22 @@ export function useSaveFile({
 
       const fileContent = await content(resolvedLocation)
 
-      return window.studio.fs.saveFile(resolvedLocation, fileContent)
+      return {
+        location: await window.studio.fs.saveFile(
+          resolvedLocation,
+          fileContent
+        ),
+        content: fileContent,
+      }
     },
-    onSuccess(location) {
-      if (location === undefined) {
+    onSuccess(result) {
+      if (result === undefined) {
         onCancel?.()
 
         return
       }
 
-      return onSave?.(location)
+      return onSave?.(result)
     },
     onError,
   })

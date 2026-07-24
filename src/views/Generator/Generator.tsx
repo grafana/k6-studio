@@ -104,7 +104,7 @@ export function Generator({ file, content }: GeneratorProps) {
       isExternal: false,
     }),
     filters: [{ name: 'Generator', extensions: ['k6g'] }],
-    onSave: (location) => {
+    onSave: ({ location }) => {
       if (location.path === filePath) {
         setSavedData(selectGeneratorData(useGeneratorStore.getState()))
       } else {

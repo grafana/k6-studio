@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { View } from '@/components/Layout/View'
-import { FileLocation } from '@/handlers/fs/types'
+import { OnSaveEvent } from '@/hooks/useSaveFile'
 import { ScriptPreview } from '@/hooks/useScriptPreview'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { useGeneratorStore } from '@/store/generator'
@@ -22,7 +22,7 @@ interface SetupWizardProps {
   startInGuidedSetup: boolean
   script: ScriptPreview
   scriptName: string
-  onSaveGenerator: () => Promise<FileLocation | undefined>
+  onSaveGenerator: () => Promise<OnSaveEvent | undefined>
   onExit: (outcome: SetupWizardOutcome) => void
 }
 

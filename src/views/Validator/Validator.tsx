@@ -50,8 +50,8 @@ export function Validator({ file, content }: ValidatorProps) {
       options,
     }),
     filters: [{ name: 'k6 Script', extensions: ['js', 'ts'] }],
-    onSave: async (location) => {
-      setSavedScript(scriptContent)
+    onSave: async ({ location, content }) => {
+      setSavedScript(content.data)
       setOptions(await window.studio.script.analyzeScript(location.path))
 
       await queryClient.invalidateQueries({
