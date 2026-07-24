@@ -8,11 +8,12 @@ import {
 } from '@/components/HighlightLocatorProvider'
 import { AnyLocatableAction } from '@/schemas/browserTest/v1/actions'
 import {
-  cssLocatorOptions,
+  targetLocatorOptions,
   ElementLocator,
   getCurrentLocator,
   initializeLocatorValues,
   LocatorOptions,
+  TargetLocatorOptions,
 } from '@/schemas/locator'
 import { emptyToUndefined } from '@/utils/list'
 import { exhaustive } from '@/utils/typescript'
@@ -232,7 +233,7 @@ export function LocatorForm<Action extends AnyLocatableAction>({
   }
 
   const handleAddFrame = () => {
-    const newFrame = cssLocatorOptions('')
+    const newFrame = targetLocatorOptions({ type: 'css', selector: '' })
 
     setExpandedTarget(newFrame.key)
 

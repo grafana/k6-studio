@@ -8,7 +8,11 @@ import {
   useHighlightedLocator,
 } from '@/components/HighlightLocatorProvider'
 import { LocatorClearAction } from '@/schemas/browserTest'
-import { cssLocatorOptions, LocatorOptions } from '@/schemas/locator'
+import {
+  targetLocatorOptions,
+  LocatorOptions,
+  TargetLocatorOptions,
+} from '@/schemas/locator'
 import { newSyntheticKey, SyntheticKey } from '@/utils/zod'
 
 import { LocatorForm } from './LocatorForm'
@@ -20,13 +24,13 @@ function HighlightProbe() {
 }
 
 interface RenderOptions {
-  locator?: LocatorOptions
+  locator?: TargetLocatorOptions
   frames?: LocatorOptions[]
   suggestedRoles?: string[]
 }
 
 function buildAction(
-  locator: LocatorOptions,
+  locator: TargetLocatorOptions,
   frames: LocatorOptions[] | undefined
 ): LocatorClearAction {
   return {
@@ -38,7 +42,7 @@ function buildAction(
 }
 
 function renderLocatorForm({
-  locator = cssLocatorOptions('button.pay'),
+  locator = targetLocatorOptions({ type: 'css', selector: 'button.pay' }),
   frames,
   suggestedRoles,
 }: RenderOptions = {}) {
@@ -105,7 +109,10 @@ describe('LocatorForm chain accordion', () => {
 
   it('renders frame rows outermost-first plus the element row, element open', () => {
     renderLocatorForm({
-      frames: [cssLocatorOptions('#outer'), cssLocatorOptions('#inner')],
+      frames: [
+        targetLocatorOptions({ type: 'css', selector: '#outer' }),
+        targetLocatorOptions({ type: 'css', selector: '#inner' }),
+      ],
     })
     openPopover()
 
@@ -115,8 +122,13 @@ describe('LocatorForm chain accordion', () => {
   })
 
   it('edits the element locator by default', () => {
-    const locator = cssLocatorOptions('button.pay')
-    const outerFrame = cssLocatorOptions('#outer')
+    const locator = targetLocatorOptions({
+      type: 'css',
+      selector: 'button.pay',
+    })
+
+    const outerFrame = targetLocatorOptions({ type: 'css', selector: '#outer' })
+
     const { onChange } = renderLocatorForm({
       locator,
       frames: [outerFrame],
@@ -126,20 +138,16 @@ describe('LocatorForm chain accordion', () => {
     fireEvent.change(selectorField(), { target: { value: 'button.buy' } })
 
     // Editing keeps the original locator's key — only its value changes.
-    expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        locator: { ...cssLocatorOptions('button.buy'), key: locator.key },
-        frames: [outerFrame],
-      })
-    )
+    expect(onChange).toHaveBeenCalledWith({
+      ...targetLocatorOptions({ type: 'css', selector: 'button.buy' }),
+      key: locator.key,
+    })
   })
 
   it('expanding a frame row switches the editor to that frame', () => {
-    const locator = cssLocatorOptions('button.pay')
-    const outer = cssLocatorOptions('#outer')
-    const inner = cssLocatorOptions('#inner')
+    const outer = targetLocatorOptions({ type: 'css', selector: '#outer' })
+    const inner = targetLocatorOptions({ type: 'css', selector: '#inner' })
     const { onChange } = renderLocatorForm({
-      locator,
       frames: [outer, inner],
     })
     openPopover()
@@ -152,19 +160,21 @@ describe('LocatorForm chain accordion', () => {
 
     fireEvent.change(selectorField(), { target: { value: '#outer-edited' } })
 
-    expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        locator,
-        frames: [
-          { ...cssLocatorOptions('#outer-edited'), key: outer.key },
-          inner,
-        ],
-      })
-    )
+    expect(onChange).toHaveBeenCalledWith({
+      id: 'action-1',
+      method: 'locator.clear',
+      locator: outer,
+      frames: [
+        targetLocatorOptions({ type: 'css', selector: '#outer-edited' }),
+        inner,
+      ],
+    })
   })
 
   it('expanding a frame does not mark untouched targets', () => {
-    renderLocatorForm({ frames: [cssLocatorOptions('')] })
+    renderLocatorForm({
+      frames: [targetLocatorOptions({ type: 'css', selector: '' })],
+    })
     openPopover()
 
     fireEvent.click(row(/^iframe 1/))
@@ -174,7 +184,7 @@ describe('LocatorForm chain accordion', () => {
   })
 
   it('add iframe appends an empty css frame and opens it', () => {
-    const outer = cssLocatorOptions('#outer')
+    const outer = targetLocatorOptions({ type: 'css', selector: '#outer' })
     const { onChange } = renderLocatorForm({ frames: [outer] })
     openPopover()
 
@@ -187,6 +197,8 @@ describe('LocatorForm chain accordion', () => {
         frames: [
           outer,
           {
+            type: 'element',
+            parents: [],
             key: expect.any(String) as SyntheticKey,
             current: 'css',
             values: { css: { type: 'css', selector: '' } },
@@ -199,9 +211,12 @@ describe('LocatorForm chain accordion', () => {
   })
 
   it('removing the open frame opens the element row', () => {
-    const outer = cssLocatorOptions('#outer')
+    const outer = targetLocatorOptions({ type: 'css', selector: '#outer' })
     const { onChange } = renderLocatorForm({
-      frames: [outer, cssLocatorOptions('#inner')],
+      frames: [
+        outer,
+        targetLocatorOptions({ type: 'css', selector: '#inner' }),
+      ],
     })
     openPopover()
 
@@ -217,7 +232,10 @@ describe('LocatorForm chain accordion', () => {
 
   it('removing a collapsed frame keeps the open frame selected', () => {
     renderLocatorForm({
-      frames: [cssLocatorOptions('#outer'), cssLocatorOptions('#inner')],
+      frames: [
+        targetLocatorOptions({ type: 'css', selector: '#outer' }),
+        targetLocatorOptions({ type: 'css', selector: '#inner' }),
+      ],
     })
     openPopover()
 
@@ -229,7 +247,9 @@ describe('LocatorForm chain accordion', () => {
   })
 
   it('keeps a frame error visible across row switches once touched', () => {
-    renderLocatorForm({ frames: [cssLocatorOptions('#outer')] })
+    renderLocatorForm({
+      frames: [targetLocatorOptions({ type: 'css', selector: '#outer' })],
+    })
     openPopover()
 
     fireEvent.click(row('iframe 1: #outer'))
@@ -248,7 +268,9 @@ describe('LocatorForm chain accordion', () => {
   })
 
   it('surfaces a frame error on the badge', () => {
-    const { container } = renderLocatorForm({ frames: [cssLocatorOptions('')] })
+    const { container } = renderLocatorForm({
+      frames: [targetLocatorOptions({ type: 'css', selector: '' })],
+    })
     openPopover()
 
     expect(container.querySelector('.lucide-triangle-alert')).toBeNull()
@@ -282,7 +304,10 @@ describe('LocatorForm highlight scoping', () => {
   }
 
   it('highlights the element scoped to the full chain when opened', () => {
-    const frames = [cssLocatorOptions('#outer'), cssLocatorOptions('#inner')]
+    const frames = [
+      targetLocatorOptions({ type: 'css', selector: '#outer' }),
+      targetLocatorOptions({ type: 'css', selector: '#inner' }),
+    ]
     renderLocatorForm({ frames })
     openPopover()
 
@@ -295,7 +320,10 @@ describe('LocatorForm highlight scoping', () => {
   })
 
   it('highlights a frame scoped to the frames before it when hovered', () => {
-    const frames = [cssLocatorOptions('#outer'), cssLocatorOptions('#inner')]
+    const frames = [
+      targetLocatorOptions({ type: 'css', selector: '#outer' }),
+      targetLocatorOptions({ type: 'css', selector: '#inner' }),
+    ]
     renderLocatorForm({ frames })
     openPopover()
 
@@ -310,7 +338,10 @@ describe('LocatorForm highlight scoping', () => {
   })
 
   it('highlights the open frame with no parents after expanding the first frame', () => {
-    const frames = [cssLocatorOptions('#outer'), cssLocatorOptions('#inner')]
+    const frames = [
+      targetLocatorOptions({ type: 'css', selector: '#outer' }),
+      targetLocatorOptions({ type: 'css', selector: '#inner' }),
+    ]
     renderLocatorForm({ frames })
     openPopover()
 
@@ -326,7 +357,9 @@ describe('LocatorForm highlight scoping', () => {
 })
 
 describe('LocatorForm suggested roles', () => {
-  const roleLocator = (role: string): LocatorOptions => ({
+  const roleLocator = (role: string): TargetLocatorOptions => ({
+    type: 'element',
+    parents: [],
     key: newSyntheticKey(),
     current: 'role',
     values: { role: { type: 'role', role, options: { exact: false } } },

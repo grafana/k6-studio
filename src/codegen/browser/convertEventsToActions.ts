@@ -1,7 +1,7 @@
 import { AnyBrowserAction, LocatorClickModifier } from '@/schemas/browserTest'
 import { BrowserEvent, ClickEvent } from '@/schemas/recording'
 import { isWebUrl } from '@/utils/browserEvents'
-import { toFrameOptions, toLocatorOptions } from '@/utils/locator'
+import { toFrameOptions, toTargetLocatorOptions } from '@/utils/locator'
 import { exhaustive } from '@/utils/typescript'
 
 import { convertAssertion } from './convertAssertion'
@@ -56,7 +56,7 @@ function convertEvent(
       return {
         id: crypto.randomUUID(),
         method: 'locator.click',
-        locator: toLocatorOptions(event.target.selectors),
+        locator: toTargetLocatorOptions(event.target.selectors),
         frames,
         options: buildClickOptions(event, nextEvent),
       }
@@ -65,7 +65,7 @@ function convertEvent(
       return {
         id: crypto.randomUUID(),
         method: 'locator.fill',
-        locator: toLocatorOptions(event.target.selectors),
+        locator: toTargetLocatorOptions(event.target.selectors),
         frames,
         value: event.value,
       }
@@ -74,7 +74,7 @@ function convertEvent(
       return {
         id: crypto.randomUUID(),
         method: event.checked ? 'locator.check' : 'locator.uncheck',
-        locator: toLocatorOptions(event.target.selectors),
+        locator: toTargetLocatorOptions(event.target.selectors),
         frames,
       }
 
@@ -82,7 +82,7 @@ function convertEvent(
       return {
         id: crypto.randomUUID(),
         method: 'locator.click',
-        locator: toLocatorOptions(event.target.selectors),
+        locator: toTargetLocatorOptions(event.target.selectors),
         frames,
       }
 
@@ -90,7 +90,7 @@ function convertEvent(
       return {
         id: crypto.randomUUID(),
         method: 'locator.selectOption',
-        locator: toLocatorOptions(event.target.selectors),
+        locator: toTargetLocatorOptions(event.target.selectors),
         frames,
         values: event.selected.map((value) => ({ value })),
       }
@@ -99,7 +99,7 @@ function convertEvent(
       return {
         id: crypto.randomUUID(),
         method: 'locator.click',
-        locator: toLocatorOptions(event.submitter.selectors),
+        locator: toTargetLocatorOptions(event.submitter.selectors),
         frames,
         options: isFollowedByImplicitNavigation(event, nextEvent)
           ? { waitForNavigation: true }
@@ -110,7 +110,7 @@ function convertEvent(
       return {
         id: crypto.randomUUID(),
         method: 'locator.waitFor',
-        locator: toLocatorOptions(event.target.selectors),
+        locator: toTargetLocatorOptions(event.target.selectors),
         frames,
         options: event.options,
       }

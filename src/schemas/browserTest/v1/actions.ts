@@ -1,6 +1,10 @@
 import { z } from 'zod/v4'
 
-import { LocatorOptionsSchema, type LocatorOptions } from '@/schemas/locator'
+import {
+  LocatorOptionsSchema,
+  TargetLocatorOptionsSchema,
+  type LocatorOptions,
+} from '@/schemas/locator'
 
 // NaN is not supported by JSON, so we encode it as null and decode null back to NaN.
 const JsonNumberCodec = z.codec(z.number().nullable(), z.number(), {
@@ -24,7 +28,7 @@ const ActionBaseSchema = z.object({
 // chain of iframe locators from the top frame down to the frame the element
 // lives in, outermost first. Absent or empty means the top frame.
 const LocatorActionBaseSchema = ActionBaseSchema.extend({
-  locator: LocatorOptionsSchema,
+  locator: TargetLocatorOptionsSchema,
   frames: LocatorOptionsSchema.array().optional(),
 })
 

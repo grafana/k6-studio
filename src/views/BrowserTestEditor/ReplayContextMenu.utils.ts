@@ -11,7 +11,7 @@ import {
 } from '@/utils/dom/realm'
 import { generateSelectors, getElementDetails } from '@/utils/dom/selectors'
 import { emptyToUndefined } from '@/utils/list'
-import { toLocatorOptions } from '@/utils/locator'
+import { toLocatorOptions, toTargetLocatorOptions } from '@/utils/locator'
 
 import { ContextMenuState } from './types'
 
@@ -131,7 +131,7 @@ export function createContextMenuState(
   const aria = getAriaDetails(target)
   const selectors = generateSelectors(target, aria)
 
-  const locator = toLocatorOptions(selectors)
+  const locator = toTargetLocatorOptions(selectors)
   const frames = buildFrameChainFromElement(target)
 
   return {

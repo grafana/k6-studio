@@ -1,27 +1,29 @@
 import { describe, expect, test } from 'vitest'
 
-import { cssLocatorOptions } from '@/schemas/locator'
+import { targetLocatorOptions } from '@/schemas/locator'
 
 import { AnyBrowserActionSchema } from './actions'
 
 describe('AnyBrowserActionSchema frame chain', () => {
   test('retains the frames chain on a locator action', () => {
     const frames = [
-      cssLocatorOptions('iframe#outer'),
-      cssLocatorOptions('iframe#inner'),
+      targetLocatorOptions({ type: 'css', selector: 'iframe#outer' }),
+      targetLocatorOptions({ type: 'css', selector: 'iframe#inner' }),
     ]
     const action = {
       id: 'a1',
       method: 'locator.click',
-      locator: cssLocatorOptions('button'),
+      locator: targetLocatorOptions({ type: 'css', selector: 'button' }),
       frames,
     }
 
     const result = AnyBrowserActionSchema.parse(action)
 
+    // `frames` entries are stored as plain locator values, without the
+    // target's `type`/`parents` fields, so those get stripped on parse.
     expect(result).toMatchObject({
       method: 'locator.click',
-      frames,
+      frames: frames.map(({ type: _type, parents: _parents, ...rest }) => rest),
     })
   })
 
@@ -29,7 +31,7 @@ describe('AnyBrowserActionSchema frame chain', () => {
     const action = {
       id: 'a1',
       method: 'locator.click',
-      locator: cssLocatorOptions('button'),
+      locator: targetLocatorOptions({ type: 'css', selector: 'button' }),
     }
 
     const result = AnyBrowserActionSchema.parse(action)

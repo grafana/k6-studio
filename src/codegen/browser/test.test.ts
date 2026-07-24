@@ -202,6 +202,8 @@ describe('convertActionsToTest', () => {
           method: 'locator.click',
           id: '2',
           locator: {
+            type: 'element',
+            parents: [],
             key: fixtureKey,
             current: 'css',
             values: {
@@ -293,6 +295,8 @@ describe('convertActionsToTest', () => {
           inputType: 'aria',
           checked: true,
           locator: {
+            type: 'element',
+            parents: [],
             key: fixtureKey,
             current: 'css',
             values: { css: { type: 'css', selector: '[role="checkbox"]' } },

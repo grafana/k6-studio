@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { cssLocatorOptions } from '@/schemas/locator'
+import { targetLocatorOptions } from '@/schemas/locator'
 import { BrowserEvent } from '@/schemas/recording'
 import { buildClickAction } from '@/test/factories/browserActions'
 
@@ -12,8 +12,8 @@ describe('frame chain conversion', () => {
     const test = convertActionsToTest({
       browserActions: [
         buildClickAction({
-          locator: cssLocatorOptions('button'),
-          frames: [cssLocatorOptions('iframe#a')],
+          locator: targetLocatorOptions({ type: 'css', selector: 'button' }),
+          frames: [targetLocatorOptions({ type: 'css', selector: 'iframe#a' })],
         }),
       ],
     })

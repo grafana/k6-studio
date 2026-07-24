@@ -2,11 +2,10 @@ import {
   AnyBrowserAction,
   LocatorToHaveValueAction,
 } from '@/schemas/browserTest'
-import { LocatorOptions } from '@/schemas/locator'
-import { newSyntheticKey } from '@/utils/zod'
+import { targetLocatorOptions, TargetLocatorOptions } from '@/schemas/locator'
 
 interface LocatorFactoryOptions {
-  locator?: LocatorOptions
+  locator?: TargetLocatorOptions
 }
 
 type ActionByMethod<M extends AnyBrowserAction['method']> = Extract<
@@ -20,19 +19,13 @@ export function createCheckAction({
   return {
     id: crypto.randomUUID(),
     method: 'locator.check',
-    locator: locator ?? {
-      key: newSyntheticKey(),
-      current: 'role',
-      values: {
-        role: {
-          type: 'role',
-          role: 'checkbox',
-          options: {
-            exact: false,
-          },
-        },
-      },
-    },
+    locator:
+      locator ??
+      targetLocatorOptions({
+        type: 'role',
+        role: 'checkbox',
+        options: { exact: false },
+      }),
   }
 }
 
@@ -42,19 +35,13 @@ export function createUncheckAction({
   return {
     id: crypto.randomUUID(),
     method: 'locator.uncheck',
-    locator: locator ?? {
-      key: newSyntheticKey(),
-      current: 'role',
-      values: {
-        role: {
-          type: 'role',
-          role: 'checkbox',
-          options: {
-            exact: false,
-          },
-        },
-      },
-    },
+    locator:
+      locator ??
+      targetLocatorOptions({
+        type: 'role',
+        role: 'checkbox',
+        options: { exact: false },
+      }),
   }
 }
 
@@ -64,19 +51,13 @@ export function createClearAction({
   return {
     id: crypto.randomUUID(),
     method: 'locator.clear',
-    locator: locator ?? {
-      key: newSyntheticKey(),
-      current: 'role',
-      values: {
-        role: {
-          type: 'role',
-          role: 'textbox',
-          options: {
-            exact: false,
-          },
-        },
-      },
-    },
+    locator:
+      locator ??
+      targetLocatorOptions({
+        type: 'role',
+        role: 'textbox',
+        options: { exact: false },
+      }),
   }
 }
 
@@ -86,19 +67,13 @@ export function createClickAction({
   return {
     id: crypto.randomUUID(),
     method: 'locator.click',
-    locator: locator ?? {
-      key: newSyntheticKey(),
-      current: 'role',
-      values: {
-        role: {
-          type: 'role',
-          role: 'button',
-          options: {
-            exact: false,
-          },
-        },
-      },
-    },
+    locator:
+      locator ??
+      targetLocatorOptions({
+        type: 'role',
+        role: 'button',
+        options: { exact: false },
+      }),
   }
 }
 
@@ -109,19 +84,13 @@ export function createFillAction({
     id: crypto.randomUUID(),
     method: 'locator.fill',
     value: '',
-    locator: locator ?? {
-      key: newSyntheticKey(),
-      current: 'role',
-      values: {
-        role: {
-          type: 'role',
-          role: 'textbox',
-          options: {
-            exact: false,
-          },
-        },
-      },
-    },
+    locator:
+      locator ??
+      targetLocatorOptions({
+        type: 'role',
+        role: 'textbox',
+        options: { exact: false },
+      }),
   }
 }
 
@@ -132,19 +101,13 @@ export function createSelectOptionAction({
     id: crypto.randomUUID(),
     method: 'locator.selectOption',
     values: [{ value: '' }],
-    locator: locator ?? {
-      key: newSyntheticKey(),
-      current: 'role',
-      values: {
-        role: {
-          type: 'role',
-          role: 'combobox',
-          options: {
-            exact: false,
-          },
-        },
-      },
-    },
+    locator:
+      locator ??
+      targetLocatorOptions({
+        type: 'role',
+        role: 'combobox',
+        options: { exact: false },
+      }),
   }
 }
 
@@ -154,19 +117,13 @@ export function createWaitForAction({
   return {
     id: crypto.randomUUID(),
     method: 'locator.waitFor',
-    locator: locator ?? {
-      key: newSyntheticKey(),
-      current: 'role',
-      values: {
-        role: {
-          type: 'role',
-          role: '',
-          options: {
-            exact: false,
-          },
-        },
-      },
-    },
+    locator:
+      locator ??
+      targetLocatorOptions({
+        type: 'role',
+        role: '',
+        options: { exact: false },
+      }),
   }
 }
 
@@ -178,19 +135,13 @@ export function createToBeCheckedAction({
     method: 'locator.toBeChecked',
     checked: true,
     inputType: 'native',
-    locator: locator ?? {
-      key: newSyntheticKey(),
-      current: 'role',
-      values: {
-        role: {
-          type: 'role',
-          role: 'checkbox',
-          options: {
-            exact: false,
-          },
-        },
-      },
-    },
+    locator:
+      locator ??
+      targetLocatorOptions({
+        type: 'role',
+        role: 'checkbox',
+        options: { exact: false },
+      }),
   }
 }
 
@@ -211,19 +162,13 @@ export function createToHaveValueAction({
         single: '',
       },
     },
-    locator: locator ?? {
-      key: newSyntheticKey(),
-      current: 'role',
-      values: {
-        role: {
-          type: 'role',
-          role: 'textbox',
-          options: {
-            exact: false,
-          },
-        },
-      },
-    },
+    locator:
+      locator ??
+      targetLocatorOptions({
+        type: 'role',
+        role: 'textbox',
+        options: { exact: false },
+      }),
   }
 }
 
@@ -234,19 +179,13 @@ export function createToBeVisibleAction({
     id: crypto.randomUUID(),
     method: 'locator.toBeVisible',
     visible: true,
-    locator: locator ?? {
-      key: newSyntheticKey(),
-      current: 'role',
-      values: {
-        role: {
-          type: 'role',
-          role: '',
-          options: {
-            exact: false,
-          },
-        },
-      },
-    },
+    locator:
+      locator ??
+      targetLocatorOptions({
+        type: 'role',
+        role: '',
+        options: { exact: false },
+      }),
   }
 }
 
@@ -262,19 +201,13 @@ export function createToContainTextAction({
     id: crypto.randomUUID(),
     method: 'locator.toContainText',
     expected,
-    locator: locator ?? {
-      key: newSyntheticKey(),
-      current: 'role',
-      values: {
-        role: {
-          type: 'role',
-          role: '',
-          options: {
-            exact: false,
-          },
-        },
-      },
-    },
+    locator:
+      locator ??
+      targetLocatorOptions({
+        type: 'role',
+        role: '',
+        options: { exact: false },
+      }),
   }
 }
 

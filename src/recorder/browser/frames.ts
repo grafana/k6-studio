@@ -1,4 +1,4 @@
-import { cssLocatorOptions, LocatorOptions } from '@/schemas/locator'
+import { frameLocatorOptions, LocatorOptions } from '@/schemas/locator'
 import { BrowserEvent, BrowserEventTarget } from '@/schemas/recording'
 import { forEachOwningFrame } from '@/utils/dom/frameChain'
 import { getCssSelector, getElementDetails } from '@/utils/dom/selectors'
@@ -66,7 +66,9 @@ export function getCssFramePathForElement(element: Element): LocatorOptions[] {
       (iframe) => ({ selectors: { css: getCssSelector(iframe) } })
     )
 
-    return path.map((frame) => cssLocatorOptions(frame.selectors.css))
+    return path.map((frame) =>
+      frameLocatorOptions({ type: 'css', selector: frame.selectors.css })
+    )
   } catch {
     return []
   }

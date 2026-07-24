@@ -6,6 +6,7 @@ import {
   LocatorOptions,
   PlaceholderLocator,
   RoleLocator,
+  TargetLocatorOptions,
   TestIdLocator,
   TitleLocator,
 } from '@/schemas/locator'
@@ -188,6 +189,18 @@ export function toLocatorOptions(selector: ElementSelector): LocatorOptions {
       placeholder: getPlaceholderLocator(selector) ?? undefined,
       title: getTitleLocator(selector) ?? undefined,
     },
+  }
+}
+
+// Same as toLocatorOptions, but as the target of an action, which carries its
+// own (possibly empty) parent chain.
+export function toTargetLocatorOptions(
+  selector: ElementSelector
+): TargetLocatorOptions {
+  return {
+    ...toLocatorOptions(selector),
+    type: 'element',
+    parents: [],
   }
 }
 
