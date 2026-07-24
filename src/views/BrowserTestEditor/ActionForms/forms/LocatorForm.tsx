@@ -103,8 +103,6 @@ export function LocatorForm<Action extends AnyLocatableAction>({
 
       return
     }
-
-    setIsTouched(true)
   }
 
   const handleChange = (next: LocatorOptions) => {
@@ -120,6 +118,10 @@ export function LocatorForm<Action extends AnyLocatableAction>({
 
   const handleExpandedChange = (target: LocatorTargetKey | null) => {
     setExpandedTarget(target)
+  }
+
+  const handleTouch = () => {
+    setIsTouched(true)
   }
 
   return (
@@ -149,6 +151,7 @@ export function LocatorForm<Action extends AnyLocatableAction>({
           onChange={handleChange}
           onHoverTarget={handleHoverTarget}
           onExpandedChange={handleExpandedChange}
+          onTouch={handleTouch}
         />
       </Popover.Content>
     </Popover.Root>

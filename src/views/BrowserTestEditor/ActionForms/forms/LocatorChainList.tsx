@@ -45,6 +45,7 @@ interface LocatorChainListProps {
   onChange: (newState: TargetLocatorOptions) => void
   onHoverTarget: (target: LocatorOptions | null) => void
   onExpandedChange: (target: LocatorTargetKey | null) => void
+  onTouch: () => void
 }
 
 export function LocatorChainList({
@@ -55,12 +56,14 @@ export function LocatorChainList({
   onExpandedChange,
   onHoverTarget,
   onChange,
+  onTouch,
 }: LocatorChainListProps) {
   const touchStates = useTouchStates(target, isTouched)
 
   const handleAddFrame = () => {
     const frame = frameLocatorOptions()
 
+    onExpandedChange(frame.key)
     onChange({
       ...target,
       parents: [...target.parents, frame],
@@ -69,9 +72,14 @@ export function LocatorChainList({
 
   const handleBlur = (locator: LocatorOptions) => {
     touchStates.touch(locator)
+    onTouch()
   }
 
   const handleRemoveFrame = (parent: ParentLocatorOptions) => {
+    if (expanded === parent.key) {
+      onExpandedChange(target.key)
+    }
+
     onChange({
       ...target,
       parents: target.parents.filter((frame) => frame.key !== parent.key),
