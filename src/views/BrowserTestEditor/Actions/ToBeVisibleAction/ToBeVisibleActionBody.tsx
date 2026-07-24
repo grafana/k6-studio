@@ -14,12 +14,6 @@ export function ToBeVisibleActionBody({
   action,
   onChange,
 }: ToBeVisibleActionBodyProps) {
-  const handleChangeLocator = (
-    locator: LocatorToBeVisibleAction['locator']
-  ) => {
-    onChange({ ...action, locator })
-  }
-
   const handleChangeVisible = (visible: boolean) => {
     onChange({ ...action, visible })
   }
@@ -32,7 +26,7 @@ export function ToBeVisibleActionBody({
       width="100%"
     >
       Expect
-      <LocatorForm state={action.locator} onChange={handleChangeLocator} />
+      <LocatorForm action={action} onChange={onChange} />
       to be
       <VisibilityStateForm
         value={action.visible}

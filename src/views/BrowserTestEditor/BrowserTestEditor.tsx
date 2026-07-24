@@ -15,7 +15,11 @@ import {
 } from '@/components/Validator/LogsSection'
 import { useSaveFile } from '@/hooks/useSaveFile'
 import { getViewPath } from '@/routeMap'
-import { BrowserTestFile } from '@/schemas/browserTest'
+import {
+  AnyBrowserAction,
+  BrowserTestFile,
+  BrowserTestOptions,
+} from '@/schemas/browserTest'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 
@@ -56,7 +60,8 @@ export function BrowserTestEditor({
 
   const [state, setState] = useState<ContextMenuState | null>(null)
 
-  const test = useBrowserTestState(initialData)
+  const { isDirty, test, markAsSaved, onChange } =
+    useBrowserTestState(initialData)
 
   const previewScript = useBrowserScriptPreview(test.actions, test.options)
 
@@ -97,7 +102,7 @@ export function BrowserTestEditor({
     filters: [{ name: 'Browser Test', extensions: ['k6b'] }],
     onSave: (location) => {
       if (location.path === file.path) {
-        test.markAsSaved()
+        markAsSaved()
       } else {
         navigate(getViewPath(location.path), { replace: true })
       }
@@ -116,6 +121,31 @@ export function BrowserTestEditor({
     void saveFile({ saveAs: false })
   }
 
+  const handleAddAction = (action: AnyBrowserAction) => {
+    onChange({
+      ...test,
+      actions: [...test.actions, action],
+    })
+  }
+
+  const handleActionsChange = (actions: AnyBrowserAction[]) => {
+    onChange({
+      ...test,
+      actions,
+    })
+  }
+
+  const handleOptionsChange = (
+    callback: (prev: BrowserTestOptions) => BrowserTestOptions
+  ) => {
+    onChange((prev) => {
+      return {
+        ...prev,
+        options: callback(prev.options),
+      }
+    })
+  }
+
   return (
     <HighlightLocatorProvider>
       <PlayerContextProvider>
@@ -125,10 +155,10 @@ export function BrowserTestEditor({
             subTitle={<FileNameHeader file={file} canRename={!isExternal} />}
             actions={
               <BrowserTestEditorControls
+                isDirty={isDirty}
                 file={file}
                 preview={previewScript}
                 session={session}
-                isDirty={test.isDirty}
                 onStartDebugging={startDebugging}
                 onStopDebugging={stopDebugging}
                 onSave={handleSave}
@@ -166,7 +196,7 @@ export function BrowserTestEditor({
                             previewScript={previewScript}
                             shutdownDelay={shutdownDelay}
                             onStateChange={setState}
-                            onAddAction={test.addAction}
+                            onAddAction={handleAddAction}
                             onShutdownDelayChange={setShutdownDelay}
                           />
                         </Panel>
@@ -174,18 +204,13 @@ export function BrowserTestEditor({
                         <Panel id="actions" defaultSize="30%" minSize={400}>
                           <EditableBrowserActionList
                             actions={test.actions}
-                            onAddAction={test.addAction}
-                            onRemoveAction={test.removeAction}
-                            onChangeAction={test.updateAction}
-                            onReorderActions={test.reorderActions}
                             optionsButton={
                               <BrowserTestOptionsButton
                                 options={test.options}
-                                onLoadProfileChange={test.setLoadProfile}
-                                onThresholdsChange={test.setThresholds}
-                                onLoadZonesChange={test.setLoadZones}
+                                onChange={handleOptionsChange}
                               />
                             }
+                            onChange={handleActionsChange}
                           />
                         </Panel>
                       </Group>

@@ -7,10 +7,9 @@ import {
   HighlightLocatorProvider,
   useHighlightedLocator,
 } from '@/components/HighlightLocatorProvider'
+import { LocatorClearAction } from '@/schemas/browserTest'
 import { cssLocatorOptions, LocatorOptions } from '@/schemas/locator'
 import { newSyntheticKey, SyntheticKey } from '@/utils/zod'
-
-import { FrameChainProvider } from '../../FrameChainContext'
 
 import { LocatorForm } from './LocatorForm'
 
@@ -23,60 +22,51 @@ function HighlightProbe() {
 interface RenderOptions {
   locator?: LocatorOptions
   frames?: LocatorOptions[]
-  withFrameEditing?: boolean
   suggestedRoles?: string[]
+}
+
+function buildAction(
+  locator: LocatorOptions,
+  frames: LocatorOptions[] | undefined
+): LocatorClearAction {
+  return {
+    id: 'action-1',
+    method: 'locator.clear',
+    locator,
+    frames,
+  }
 }
 
 function renderLocatorForm({
   locator = cssLocatorOptions('button.pay'),
   frames,
-  withFrameEditing = true,
   suggestedRoles,
 }: RenderOptions = {}) {
-  const onElementChange = vi.fn()
-  const onFramesChange = vi.fn()
+  const onChange = vi.fn()
 
   function Harness() {
-    const [state, setState] = useState(locator)
-    const [frameState, setFrameState] = useState(frames)
+    const [action, setAction] = useState(buildAction(locator, frames))
 
-    const handleElementChange = (value: LocatorOptions) => {
-      onElementChange(value)
-      setState(value)
+    const handleChange = (next: LocatorClearAction) => {
+      onChange(next)
+      setAction(next)
     }
-
-    const handleFramesChange = (value: LocatorOptions[] | undefined) => {
-      onFramesChange(value)
-      setFrameState(value)
-    }
-
-    const form = (
-      <LocatorForm
-        state={state}
-        onChange={handleElementChange}
-        suggestedRoles={suggestedRoles}
-      />
-    )
 
     return (
       <Theme>
         <HighlightLocatorProvider>
           <HighlightProbe />
-          {withFrameEditing ? (
-            <FrameChainProvider
-              value={{ frames: frameState, onChange: handleFramesChange }}
-            >
-              {form}
-            </FrameChainProvider>
-          ) : (
-            form
-          )}
+          <LocatorForm
+            action={action}
+            onChange={handleChange}
+            suggestedRoles={suggestedRoles}
+          />
         </HighlightLocatorProvider>
       </Theme>
     )
   }
 
-  return { ...render(<Harness />), onElementChange, onFramesChange }
+  return { ...render(<Harness />), onChange }
 }
 
 function openPopover(badgeText = 'button.pay') {
@@ -93,16 +83,8 @@ const expanded = (name: string | RegExp) =>
 const selectorField = () => screen.getByRole<HTMLTextAreaElement>('textbox')
 
 describe('LocatorForm chain accordion', () => {
-  it('renders no chain controls when the frame chain has no onChange', () => {
-    renderLocatorForm({ withFrameEditing: false })
-    openPopover()
-
-    expect(screen.queryByRole('button', { name: /add iframe/i })).toBeNull()
-    expect(selectorField().value).toBe('button.pay')
-  })
-
   it('renders the bare element form plus an add button when the chain is empty', () => {
-    renderLocatorForm()
+    renderLocatorForm({ frames: [] })
     openPopover()
 
     expect(screen.getByRole('button', { name: /add iframe/i })).toBeDefined()
@@ -112,7 +94,7 @@ describe('LocatorForm chain accordion', () => {
   })
 
   it('switches to the accordion once the first frame is added', () => {
-    renderLocatorForm()
+    renderLocatorForm({ frames: [] })
     openPopover()
 
     fireEvent.click(screen.getByRole('button', { name: /add iframe/i }))
@@ -134,26 +116,30 @@ describe('LocatorForm chain accordion', () => {
 
   it('edits the element locator by default', () => {
     const locator = cssLocatorOptions('button.pay')
-    const { onElementChange, onFramesChange } = renderLocatorForm({
+    const outerFrame = cssLocatorOptions('#outer')
+    const { onChange } = renderLocatorForm({
       locator,
-      frames: [cssLocatorOptions('#outer')],
+      frames: [outerFrame],
     })
     openPopover()
 
     fireEvent.change(selectorField(), { target: { value: 'button.buy' } })
 
     // Editing keeps the original locator's key — only its value changes.
-    expect(onElementChange).toHaveBeenCalledWith({
-      ...cssLocatorOptions('button.buy'),
-      key: locator.key,
-    })
-    expect(onFramesChange).not.toHaveBeenCalled()
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        locator: { ...cssLocatorOptions('button.buy'), key: locator.key },
+        frames: [outerFrame],
+      })
+    )
   })
 
   it('expanding a frame row switches the editor to that frame', () => {
+    const locator = cssLocatorOptions('button.pay')
     const outer = cssLocatorOptions('#outer')
     const inner = cssLocatorOptions('#inner')
-    const { onElementChange, onFramesChange } = renderLocatorForm({
+    const { onChange } = renderLocatorForm({
+      locator,
       frames: [outer, inner],
     })
     openPopover()
@@ -166,11 +152,15 @@ describe('LocatorForm chain accordion', () => {
 
     fireEvent.change(selectorField(), { target: { value: '#outer-edited' } })
 
-    expect(onFramesChange).toHaveBeenCalledWith([
-      { ...cssLocatorOptions('#outer-edited'), key: outer.key },
-      inner,
-    ])
-    expect(onElementChange).not.toHaveBeenCalled()
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        locator,
+        frames: [
+          { ...cssLocatorOptions('#outer-edited'), key: outer.key },
+          inner,
+        ],
+      })
+    )
   })
 
   it('expanding a frame does not mark untouched targets', () => {
@@ -185,27 +175,32 @@ describe('LocatorForm chain accordion', () => {
 
   it('add iframe appends an empty css frame and opens it', () => {
     const outer = cssLocatorOptions('#outer')
-    const { onFramesChange } = renderLocatorForm({ frames: [outer] })
+    const { onChange } = renderLocatorForm({ frames: [outer] })
     openPopover()
 
     fireEvent.click(screen.getByRole('button', { name: /add iframe/i }))
 
-    // The new frame gets its own fresh key — only its content is asserted.
-    expect(onFramesChange).toHaveBeenCalledWith([
-      {
-        key: expect.any(String) as SyntheticKey,
-        current: 'css',
-        values: { css: { type: 'css', selector: '' } },
-      },
-      outer,
-    ])
-    expect(expanded(/^iframe 1/)).toBe('true')
+    // The new frame is appended after existing frames and gets its own fresh
+    // key — only its content is asserted.
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        frames: [
+          outer,
+          {
+            key: expect.any(String) as SyntheticKey,
+            current: 'css',
+            values: { css: { type: 'css', selector: '' } },
+          },
+        ],
+      })
+    )
+    expect(expanded(/^iframe 2/)).toBe('true')
     expect(selectorField().value).toBe('')
   })
 
   it('removing the open frame opens the element row', () => {
     const outer = cssLocatorOptions('#outer')
-    const { onFramesChange } = renderLocatorForm({
+    const { onChange } = renderLocatorForm({
       frames: [outer, cssLocatorOptions('#inner')],
     })
     openPopover()
@@ -213,7 +208,9 @@ describe('LocatorForm chain accordion', () => {
     fireEvent.click(row('iframe 2: #inner'))
     fireEvent.click(screen.getByRole('button', { name: 'Remove iframe 2' }))
 
-    expect(onFramesChange).toHaveBeenCalledWith([outer])
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ frames: [outer] })
+    )
     expect(expanded('element: button.pay')).toBe('true')
     expect(selectorField().value).toBe('button.pay')
   })

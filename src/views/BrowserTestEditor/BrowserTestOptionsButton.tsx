@@ -14,17 +14,47 @@ import { BROWSER_METRICS_CONFIG } from './browserThresholdMetrics'
 
 interface BrowserTestOptionsButtonProps {
   options: BrowserTestOptions
-  onLoadProfileChange: (next: LoadProfileExecutorOptions) => void
-  onThresholdsChange: (next: BrowserThreshold[]) => void
-  onLoadZonesChange: (next: LoadZoneData) => void
+  // The callback here is unfortunate, but without it we risk using a stale `options` object. It's
+  // because of the way we simulate a constrolled form with `useControlledForm`.
+  onChange: (callback: (prev: BrowserTestOptions) => BrowserTestOptions) => void
 }
 
 export function BrowserTestOptionsButton({
   options,
-  onLoadProfileChange,
-  onThresholdsChange,
-  onLoadZonesChange,
+  onChange,
 }: BrowserTestOptionsButtonProps) {
+  const handleLoadProfileChange = (
+    newLoadProfile: LoadProfileExecutorOptions
+  ) => {
+    onChange((prev) => ({
+      ...prev,
+      loadProfile: {
+        // Merge so inactive-branch fields (e.g. user's stages while
+        // shared-iterations is active) survive an executor switch. Codegen
+        // reads only the active branch, so shadow fields are ignored.
+        ...prev.loadProfile,
+        ...newLoadProfile,
+      },
+    }))
+  }
+
+  const handleThresholdsChange = (newThresholds: BrowserThreshold[]) => {
+    onChange((prev) => ({
+      ...prev,
+      thresholds: newThresholds,
+    }))
+  }
+
+  const handleLoadZonesChange = (newLoadZones: LoadZoneData) => {
+    onChange((prev) => ({
+      ...prev,
+      cloud: {
+        ...prev.cloud,
+        loadZones: newLoadZones,
+      },
+    }))
+  }
+
   return (
     <TestOptionsDialog
       trigger={
@@ -35,18 +65,18 @@ export function BrowserTestOptionsButton({
       tabs={['loadProfile', 'thresholds', 'loadZones']}
       loadProfile={{
         value: options.loadProfile,
-        onChange: onLoadProfileChange,
+        onChange: handleLoadProfileChange,
         executors: ['ramping-vus', 'shared-iterations'],
       }}
       thresholds={{
         value: options.thresholds,
-        onChange: onThresholdsChange,
+        onChange: handleThresholdsChange,
         metricsConfig: BROWSER_METRICS_CONFIG,
         resolver: zodResolver(BrowserThresholdDataSchema),
       }}
       loadZones={{
         value: options.cloud.loadZones,
-        onChange: onLoadZonesChange,
+        onChange: handleLoadZonesChange,
       }}
     />
   )

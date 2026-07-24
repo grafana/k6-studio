@@ -15,13 +15,6 @@ export function WaitForActionBody({
   action,
   onChange,
 }: WaitForActionBodyProps) {
-  const handleChangeLocator = (locator: LocatorWaitForAction['locator']) => {
-    onChange({
-      ...action,
-      locator,
-    })
-  }
-
   const handleChangeOptions = (
     options: Partial<LocatorWaitForAction>['options']
   ) => {
@@ -47,7 +40,7 @@ export function WaitForActionBody({
       `}
     >
       Wait for
-      <LocatorForm state={action.locator} onChange={handleChangeLocator} />
+      <LocatorForm action={action} onChange={onChange} />
       <WaitForOptionsForm
         options={action.options}
         onChange={handleChangeOptions}

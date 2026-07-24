@@ -12,10 +12,6 @@ interface ClearActionBodyProps {
 }
 
 export function ClearActionBody({ action, onChange }: ClearActionBodyProps) {
-  const handleChangeLocator = (locator: LocatorClearAction['locator']) => {
-    onChange({ ...action, locator })
-  }
-
   return (
     <Grid
       columns="max-content minmax(0, max-content) 1fr"
@@ -25,8 +21,8 @@ export function ClearActionBody({ action, onChange }: ClearActionBodyProps) {
     >
       Clear
       <LocatorForm
-        state={action.locator}
-        onChange={handleChangeLocator}
+        action={action}
+        onChange={onChange}
         suggestedRoles={CLEAR_ROLES}
       />
     </Grid>

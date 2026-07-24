@@ -1,6 +1,6 @@
 import { z } from 'zod/v4'
 
-import { LocatorOptionsSchema } from '@/schemas/locator'
+import { LocatorOptionsSchema, type LocatorOptions } from '@/schemas/locator'
 
 // NaN is not supported by JSON, so we encode it as null and decode null back to NaN.
 const JsonNumberCodec = z.codec(z.number().nullable(), z.number(), {
@@ -282,3 +282,8 @@ export type LocatorUncheckAction = z.infer<typeof LocatorUncheckActionSchema>
 export type LocatorWaitForAction = z.infer<typeof LocatorWaitForActionSchema>
 
 export type AnyBrowserAction = z.infer<typeof AnyBrowserActionSchema>
+
+export type AnyLocatableAction = Extract<
+  AnyBrowserAction,
+  { locator: LocatorOptions; frames?: LocatorOptions[] }
+>

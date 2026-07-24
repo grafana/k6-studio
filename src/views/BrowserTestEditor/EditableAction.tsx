@@ -1,7 +1,7 @@
 import { css, keyframes } from '@emotion/react'
 import { Flex, IconButton, Tooltip } from '@radix-ui/themes'
 import { Trash2Icon } from 'lucide-react'
-import { useMemo, type ReactNode } from 'react'
+import { type ReactNode } from 'react'
 
 import { BrowserDebuggerEvent } from '@/main/runner/schema'
 import { AnyBrowserAction } from '@/schemas/browserTest'
@@ -9,12 +9,11 @@ import { ActionStatus, getStatusColor } from '@/utils/browserActionStatus'
 
 import { getActionEditorForAction } from './actionEditorRegistry'
 import { OptionsSummary } from './Actions/components/OptionsSummary'
-import { FrameChain, FrameChainProvider } from './FrameChainContext'
 import { useBrowserActionState } from './ValidationProvider'
 
 interface EditableActionProps {
   action: AnyBrowserAction
-  onRemove: (actionId: string) => void
+  onRemove: (action: AnyBrowserAction) => void
   onChange: (action: AnyBrowserAction) => void
   dragHandle?: ReactNode
 }
@@ -52,7 +51,7 @@ export function EditableAction({
   const { isValidating, state } = useBrowserActionState(action.id)
 
   const handleRemove = () => {
-    onRemove(action.id)
+    onRemove(action)
   }
 
   const editor = getActionEditorForAction(action)
@@ -60,20 +59,6 @@ export function EditableAction({
   const status = getActionStatus(isValidating, state)
   const color = status ? getStatusColor(status, 9) : 'transparent'
   const opacity = status === 'pending' ? 0.7 : 1
-
-  // Locator actions get an editable iframe chain rendered inline by their
-  // locator form; other actions get an inert chain. Memoize so the context
-  // value stays stable and consumers don't re-render on every parent render.
-  const frameChain: FrameChain = useMemo(
-    () =>
-      'locator' in action
-        ? {
-            frames: action.frames,
-            onChange: (frames) => onChange({ ...action, frames }),
-          }
-        : { frames: undefined },
-    [action, onChange]
-  )
 
   return (
     <Flex
@@ -108,9 +93,7 @@ export function EditableAction({
       <Flex align="center" gap="2">
         {dragHandle}
         {editor.icon}
-        <FrameChainProvider value={frameChain}>
-          {editor.render({ action, onChange })}
-        </FrameChainProvider>
+        {editor.render({ action, onChange })}
         <Tooltip content="Remove action">
           <IconButton
             size="2"
