@@ -49,13 +49,13 @@ export function Validator({ file, content }: ValidatorProps) {
       isExternal: content.isExternal ?? false,
       options,
     }),
-    filters: [{ name: 'k6 Script', extensions: ['js'] }],
+    filters: [{ name: 'k6 Script', extensions: ['js', 'ts'] }],
     onSave: async (location) => {
       setSavedScript(scriptContent)
       setOptions(await window.studio.script.analyzeScript(location.path))
 
       await queryClient.invalidateQueries({
-        queryKey: ['script', location.path],
+        queryKey: ['file', location.path],
       })
 
       if (location.path !== file.path) {
