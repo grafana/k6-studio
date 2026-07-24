@@ -33,24 +33,28 @@ export function useUnsavedChangesPrompt({
   }, [isDirty, blocker.state])
 
   const handleSave = async () => {
-    isConfirmed.current = true
+    try {
+      isConfirmed.current = true
 
-    const result = await onSave()
+      const result = await onSave()
 
-    if (result === undefined) {
-      // The user chose to cancel through a save dialog, so we don't want to close the app
-      isConfirmed.current = false
+      if (result === undefined) {
+        // The user chose to cancel through a save dialog, so we don't want to close the app
+        cancel()
 
-      handleCancel()
+        return
+      }
 
-      return
+      if (isCloseRequested) {
+        return window.studio.app.closeApplication()
+      }
+
+      blocker.proceed?.()
+    } catch (error) {
+      cancel()
+
+      throw error
     }
-
-    if (isCloseRequested) {
-      return window.studio.app.closeApplication()
-    }
-
-    blocker.proceed?.()
   }
 
   const handleDiscard = () => {
@@ -63,13 +67,22 @@ export function useUnsavedChangesPrompt({
     blocker.proceed?.()
   }
 
+  const cancel = () => {
+    isConfirmed.current = false
+
+    setIsCloseRequested(false)
+
+    blocker.reset?.()
+  }
+
   const handleCancel = () => {
+    // If the user has already confirmed the action by saving or discarding
+    // they should no longer be able to cancel the action.
     if (isConfirmed.current) {
       return
     }
 
-    setIsCloseRequested(false)
-    blocker.reset?.()
+    cancel()
   }
 
   return {
