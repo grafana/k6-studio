@@ -74,7 +74,7 @@ export function Home() {
             title="Build"
             description="Create ready-to-run k6 scripts for HTTP or browser testing."
           >
-            <Flex gap="6">
+            <Flex gap="4">
               <Button variant="ghost" onClick={() => handleCreateHTTPTest()}>
                 <ServerCogIcon />
                 HTTP
