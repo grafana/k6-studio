@@ -51,6 +51,7 @@ describe('BrowserEventList highlighting', () => {
       { type: 'css', selector: '#checkout-button' },
       [
         {
+          type: 'frame',
           key: expect.any(String) as SyntheticKey,
           current: 'css',
           values: { css: { type: 'css', selector: '#checkout' } },
@@ -75,7 +76,7 @@ describe('BrowserEventList highlighting', () => {
 
     expect(onHighlight).toHaveBeenCalledWith(
       { type: 'css', selector: '#checkout-button' },
-      undefined
+      []
     )
   })
 })

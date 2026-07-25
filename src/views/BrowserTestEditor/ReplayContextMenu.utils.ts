@@ -1,6 +1,4 @@
 import { PlayerMouseEvent } from '@/components/SessionPlayer/SessionPlayer.hooks'
-import { AnyBrowserAction } from '@/schemas/browserTest'
-import { LocatorOptions } from '@/schemas/locator'
 import { BrowserEventTarget } from '@/schemas/recording/browser/v2'
 import { findInteractiveElement } from '@/utils/dom/dom'
 import { forEachOwningFrame } from '@/utils/dom/frameChain'
@@ -104,21 +102,6 @@ export function buildFrameChainFromElement(
     // against the wrong frame, so fall back to no frame chain.
     return []
   }
-}
-
-/**
- * Attaches a frame chain to a locator-based action. Page-level actions and
- * top-frame actions are returned unchanged.
- */
-export function applyFrames(
-  action: AnyBrowserAction,
-  frames: LocatorOptions[] | undefined
-): AnyBrowserAction {
-  if (frames === undefined || !('locator' in action)) {
-    return action
-  }
-
-  return { ...action, frames }
 }
 
 export function createContextMenuState(

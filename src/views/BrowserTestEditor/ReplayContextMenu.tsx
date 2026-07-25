@@ -1,7 +1,7 @@
 import { DropdownMenu } from '@radix-ui/themes'
 
 import { AnyBrowserAction } from '@/schemas/browserTest'
-import { LocatorOptions, TargetLocatorOptions } from '@/schemas/locator'
+import { TargetLocatorOptions } from '@/schemas/locator'
 import { AriaDetails } from '@/schemas/recording'
 
 import {
@@ -18,7 +18,6 @@ import {
   createWaitForAction,
 } from './actionFactories'
 import {
-  applyFrames,
   getTextInputValue,
   isCheckbox,
   isRadio,
@@ -31,7 +30,6 @@ interface ReplayContextMenuProps {
   position: { x: number; y: number }
   aria: AriaDetails
   locator: TargetLocatorOptions
-  frames?: LocatorOptions[]
   onClose: () => void
   onAddAction: (action: AnyBrowserAction) => void
 }
@@ -41,16 +39,9 @@ export function ReplayContextMenu({
   position,
   aria,
   locator,
-  frames,
   onClose,
-  onAddAction: addRawAction,
+  onAddAction,
 }: ReplayContextMenuProps) {
-  // Attach the frame chain to every action created from this element so it
-  // targets the right iframe.
-  const onAddAction = (action: AnyBrowserAction) => {
-    addRawAction(applyFrames(action, frames))
-  }
-
   const isGeneric =
     !isTextInput(target, aria.roles) &&
     !isCheckbox(target, aria.roles) &&

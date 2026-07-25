@@ -1,7 +1,6 @@
 import { z } from 'zod/v4'
 
 import {
-  LocatorOptionsSchema,
   TargetLocatorOptionsSchema,
   type LocatorOptions,
 } from '@/schemas/locator'
@@ -29,7 +28,6 @@ const ActionBaseSchema = z.object({
 // lives in, outermost first. Absent or empty means the top frame.
 const LocatorActionBaseSchema = ActionBaseSchema.extend({
   locator: TargetLocatorOptionsSchema,
-  frames: LocatorOptionsSchema.array().optional(),
 })
 
 const GenericOptions = z.unknown()
