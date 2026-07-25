@@ -8,6 +8,7 @@ import {
   WindowStateSchema,
   type UpstreamProxySettings,
 } from '../v4'
+import * as v6 from '../v6'
 
 export {
   AppearanceSchema,
@@ -28,3 +29,16 @@ export const AppSettingsSchema = z.object({
 })
 
 export type AppSettings = z.infer<typeof AppSettingsSchema>
+
+export function migrate(
+  settings: z.infer<typeof AppSettingsSchema>
+): v6.AppSettings {
+  return {
+    ...settings,
+    version: '6.0',
+    recorder: {
+      ...settings.recorder,
+      customBrowserLaunchArgs: [],
+    },
+  }
+}

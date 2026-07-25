@@ -7,6 +7,7 @@ import * as v2 from './v2'
 import * as v3 from './v3'
 import * as v4 from './v4'
 import * as v5 from './v5'
+import * as v6 from './v6'
 
 const AnySettingSchema = z.discriminatedUnion('version', [
   v1.AppSettingsSchema,
@@ -14,6 +15,7 @@ const AnySettingSchema = z.discriminatedUnion('version', [
   v3.AppSettingsSchema,
   v4.AppSettingsSchema,
   v5.AppSettingsSchema,
+  v6.AppSettingsSchema,
 ])
 
 export function migrate(settings: z.infer<typeof AnySettingSchema>) {
@@ -27,6 +29,8 @@ export function migrate(settings: z.infer<typeof AnySettingSchema>) {
     case '4.0':
       return migrate(v4.migrate(settings))
     case '5.0':
+      return migrate(v5.migrate(settings))
+    case '6.0':
       return settings
     default:
       return exhaustive(settings)
@@ -37,9 +41,10 @@ export const AppSettingsSchema = AnySettingSchema.transform(migrate)
 
 export {
   AppearanceSchema,
+  CustomBrowserLaunchArgsSchema,
   ProxySettingsSchema,
   RecorderSettingsSchema,
   TelemetrySchema,
   WindowStateSchema,
   type UpstreamProxySettings,
-} from './v5'
+} from './v6'

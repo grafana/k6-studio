@@ -44,6 +44,20 @@ export function useRecordingErrorToast() {
           })
           break
 
+        case 'invalid-browser-arguments':
+          showToast({
+            status: 'error',
+            title: 'Failed to launch browser',
+            description: error.message || 'Invalid browser launch arguments.',
+            action: (
+              <Button onClick={() => openSettingsDialog('recorder')}>
+                <SettingsIcon />
+                Open settings
+              </Button>
+            ),
+          })
+          break
+
         case 'unknown':
           showToast({
             status: 'error',

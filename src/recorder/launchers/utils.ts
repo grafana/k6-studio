@@ -3,9 +3,12 @@ import os from 'os'
 import { getProxyArguments } from '@/main/proxy'
 import { AppSettings } from '@/types/settings'
 import { getBrowserPath } from '@/utils/browser'
+import { validateCustomBrowserArguments } from '@/utils/browserLaunchArgs'
 import { mkdir, mkdtemp, writeFile } from '@/utils/fs'
 import * as path from '@/utils/path'
 import { toNativePath } from '@/utils/path'
+
+import { BrowserLaunchError } from './types'
 
 const CHROME_DEV_PREFERENCES = JSON.stringify({
   devtools: {
@@ -72,6 +75,7 @@ export async function getBrowserLaunchArgs({
   const userDataDir = await createUserDataDir()
 
   const proxyArgs = await getProxyArguments(settings.proxy)
+  const customArgs = settings.recorder.customBrowserLaunchArgs
 
   const args = [
     '--new',
@@ -86,9 +90,15 @@ export async function getBrowserLaunchArgs({
     '--disable-search-engine-choice-screen',
     `--disable-features=${FEATURES_TO_DISABLE.join(',')}`,
     ...proxyArgs,
-    ...additionalArgs,
-    url?.trim() || 'about:blank',
   ]
+
+  try {
+    validateCustomBrowserArguments(customArgs, [...args, ...additionalArgs])
+  } catch (error) {
+    throw new BrowserLaunchError('invalid-browser-arguments', error)
+  }
+
+  args.push(...customArgs, ...additionalArgs, url?.trim() || 'about:blank')
 
   return {
     path,
