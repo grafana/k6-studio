@@ -10,8 +10,8 @@ import {
 import { LocatorClearAction } from '@/schemas/browserTest'
 import {
   frameLocatorOptions,
-  targetLocatorOptions,
-  TargetLocatorOptions,
+  elementLocatorOptions,
+  ElementLocatorOptions,
 } from '@/schemas/locator'
 import { newSyntheticKey, SyntheticKey } from '@/utils/zod'
 
@@ -24,11 +24,11 @@ function HighlightProbe() {
 }
 
 interface RenderOptions {
-  locator?: TargetLocatorOptions
+  locator?: ElementLocatorOptions
   suggestedRoles?: string[]
 }
 
-function buildAction(locator: TargetLocatorOptions): LocatorClearAction {
+function buildAction(locator: ElementLocatorOptions): LocatorClearAction {
   return {
     id: 'action-1',
     method: 'locator.clear',
@@ -37,7 +37,7 @@ function buildAction(locator: TargetLocatorOptions): LocatorClearAction {
 }
 
 function renderLocatorForm({
-  locator = targetLocatorOptions({ type: 'css', selector: 'button.pay' }),
+  locator = elementLocatorOptions({ type: 'css', selector: 'button.pay' }),
   suggestedRoles,
 }: RenderOptions = {}) {
   const onChange = vi.fn()
@@ -108,10 +108,11 @@ describe('LocatorForm chain accordion', () => {
     const outer = frameLocatorOptions({ type: 'css', selector: '#outer' })
 
     renderLocatorForm({
-      locator: targetLocatorOptions({ type: 'css', selector: 'button.pay' }, [
+      locator: elementLocatorOptions(
+        { type: 'css', selector: 'button.pay' },
         inner,
-        outer,
-      ]),
+        outer
+      ),
     })
     openPopover()
 
@@ -121,9 +122,9 @@ describe('LocatorForm chain accordion', () => {
   })
 
   it('edits the element locator by default', () => {
-    const locator = targetLocatorOptions(
+    const locator = elementLocatorOptions(
       { type: 'css', selector: 'button.pay' },
-      [frameLocatorOptions({ type: 'css', selector: '#outer' })]
+      frameLocatorOptions({ type: 'css', selector: '#outer' })
     )
 
     const { onChange } = renderLocatorForm({ locator })
@@ -135,9 +136,9 @@ describe('LocatorForm chain accordion', () => {
     // changes.
     expect(onChange).toHaveBeenCalledWith(
       buildAction({
-        ...targetLocatorOptions(
+        ...elementLocatorOptions(
           { type: 'css', selector: 'button.buy' },
-          locator.parents
+          locator.parent
         ),
         key: locator.key,
       })
@@ -145,11 +146,15 @@ describe('LocatorForm chain accordion', () => {
   })
 
   it('expanding a frame row switches the editor to that frame', () => {
-    const inner = frameLocatorOptions({ type: 'css', selector: '#inner' })
     const outer = frameLocatorOptions({ type: 'css', selector: '#outer' })
-    const locator = targetLocatorOptions(
+    const inner = frameLocatorOptions(
+      { type: 'css', selector: '#inner' },
+      outer
+    )
+
+    const locator = elementLocatorOptions(
       { type: 'css', selector: 'button.pay' },
-      [inner, outer]
+      inner
     )
 
     const { onChange } = renderLocatorForm({ locator })
@@ -163,25 +168,28 @@ describe('LocatorForm chain accordion', () => {
 
     fireEvent.change(selectorField(), { target: { value: '#outer-edited' } })
 
+    // Editing the outermost frame keeps its key and the rest of the chain —
+    // only its own value changes.
     expect(onChange).toHaveBeenCalledWith(
       buildAction({
         ...locator,
-        parents: [
-          inner,
-          {
-            ...frameLocatorOptions({ type: 'css', selector: '#outer-edited' }),
-            key: outer.key,
+        parent: {
+          ...inner,
+          parent: {
+            ...outer,
+            values: { css: { type: 'css', selector: '#outer-edited' } },
           },
-        ],
+        },
       })
     )
   })
 
   it('expanding a frame does not mark untouched targets', () => {
     renderLocatorForm({
-      locator: targetLocatorOptions({ type: 'css', selector: 'button.pay' }, [
-        frameLocatorOptions({ type: 'css', selector: '' }),
-      ]),
+      locator: elementLocatorOptions(
+        { type: 'css', selector: 'button.pay' },
+        frameLocatorOptions({ type: 'css', selector: '' })
+      ),
     })
     openPopover()
 
@@ -193,9 +201,9 @@ describe('LocatorForm chain accordion', () => {
 
   it('add iframe appends a new outermost frame and opens it', () => {
     const outer = frameLocatorOptions({ type: 'css', selector: '#outer' })
-    const locator = targetLocatorOptions(
+    const locator = elementLocatorOptions(
       { type: 'css', selector: 'button.pay' },
-      [outer]
+      outer
     )
 
     const { onChange } = renderLocatorForm({ locator })
@@ -209,15 +217,16 @@ describe('LocatorForm chain accordion', () => {
     expect(onChange).toHaveBeenCalledWith(
       buildAction({
         ...locator,
-        parents: [
-          outer,
-          {
+        parent: {
+          ...outer,
+          parent: {
             type: 'frame',
             key: expect.any(String) as SyntheticKey,
             current: 'css',
             values: { css: { type: 'css', selector: '' } },
+            parent: undefined,
           },
-        ],
+        },
       })
     )
     expect(expanded(/^iframe 1/)).toBe('true')
@@ -227,9 +236,10 @@ describe('LocatorForm chain accordion', () => {
   it('removing the open frame opens the element row', () => {
     const inner = frameLocatorOptions({ type: 'css', selector: '#inner' })
     const outer = frameLocatorOptions({ type: 'css', selector: '#outer' })
-    const locator = targetLocatorOptions(
+    const locator = elementLocatorOptions(
       { type: 'css', selector: 'button.pay' },
-      [inner, outer]
+      inner,
+      outer
     )
 
     const { onChange } = renderLocatorForm({ locator })
@@ -239,7 +249,7 @@ describe('LocatorForm chain accordion', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Remove iframe 2' }))
 
     expect(onChange).toHaveBeenCalledWith(
-      buildAction({ ...locator, parents: [outer] })
+      buildAction({ ...locator, parent: outer })
     )
     expect(expanded('element: button.pay')).toBe('true')
     expect(selectorField().value).toBe('button.pay')
@@ -250,10 +260,11 @@ describe('LocatorForm chain accordion', () => {
     const outer = frameLocatorOptions({ type: 'css', selector: '#outer' })
 
     renderLocatorForm({
-      locator: targetLocatorOptions({ type: 'css', selector: 'button.pay' }, [
+      locator: elementLocatorOptions(
+        { type: 'css', selector: 'button.pay' },
         inner,
-        outer,
-      ]),
+        outer
+      ),
     })
     openPopover()
 
@@ -266,9 +277,10 @@ describe('LocatorForm chain accordion', () => {
 
   it('keeps a frame error visible across row switches once touched', () => {
     renderLocatorForm({
-      locator: targetLocatorOptions({ type: 'css', selector: 'button.pay' }, [
-        frameLocatorOptions({ type: 'css', selector: '#outer' }),
-      ]),
+      locator: elementLocatorOptions(
+        { type: 'css', selector: 'button.pay' },
+        frameLocatorOptions({ type: 'css', selector: '#outer' })
+      ),
     })
     openPopover()
 
@@ -289,9 +301,10 @@ describe('LocatorForm chain accordion', () => {
 
   it('surfaces a frame error on the badge', () => {
     const { container } = renderLocatorForm({
-      locator: targetLocatorOptions({ type: 'css', selector: 'button.pay' }, [
-        frameLocatorOptions({ type: 'css', selector: '' }),
-      ]),
+      locator: elementLocatorOptions(
+        { type: 'css', selector: 'button.pay' },
+        frameLocatorOptions({ type: 'css', selector: '' })
+      ),
     })
     openPopover()
 
@@ -330,10 +343,11 @@ describe('LocatorForm highlight scoping', () => {
     const outer = frameLocatorOptions({ type: 'css', selector: '#outer' })
 
     renderLocatorForm({
-      locator: targetLocatorOptions({ type: 'css', selector: 'button.pay' }, [
+      locator: elementLocatorOptions(
+        { type: 'css', selector: 'button.pay' },
         inner,
-        outer,
-      ]),
+        outer
+      ),
     })
     openPopover()
 
@@ -341,8 +355,10 @@ describe('LocatorForm highlight scoping', () => {
 
     expect(probe()).toEqual({
       locator: { type: 'css', selector: 'button.pay' },
-      // The highlight provider wants frames outermost-first.
-      frames: [outer, inner],
+      // The highlight provider wants frames outermost-first. Each node in the
+      // chain still carries its own `.parent` pointer, so `inner` here has
+      // `outer` attached rather than matching the standalone `inner` fixture.
+      frames: [outer, { ...inner, parent: outer }],
     })
   })
 
@@ -351,10 +367,11 @@ describe('LocatorForm highlight scoping', () => {
     const outer = frameLocatorOptions({ type: 'css', selector: '#outer' })
 
     renderLocatorForm({
-      locator: targetLocatorOptions({ type: 'css', selector: 'button.pay' }, [
+      locator: elementLocatorOptions(
+        { type: 'css', selector: 'button.pay' },
         inner,
-        outer,
-      ]),
+        outer
+      ),
     })
     openPopover()
 
@@ -373,10 +390,11 @@ describe('LocatorForm highlight scoping', () => {
     const outer = frameLocatorOptions({ type: 'css', selector: '#outer' })
 
     renderLocatorForm({
-      locator: targetLocatorOptions({ type: 'css', selector: 'button.pay' }, [
+      locator: elementLocatorOptions(
+        { type: 'css', selector: 'button.pay' },
         inner,
-        outer,
-      ]),
+        outer
+      ),
     })
     openPopover()
 
@@ -392,9 +410,8 @@ describe('LocatorForm highlight scoping', () => {
 })
 
 describe('LocatorForm suggested roles', () => {
-  const roleLocator = (role: string): TargetLocatorOptions => ({
+  const roleLocator = (role: string): ElementLocatorOptions => ({
     type: 'element',
-    parents: [],
     key: newSyntheticKey(),
     current: 'role',
     values: { role: { type: 'role', role, options: { exact: false } } },
@@ -417,7 +434,7 @@ describe('LocatorForm suggested roles', () => {
 
   it('applies suggested roles only to the element form', () => {
     renderLocatorForm({
-      locator: { ...roleLocator('searchbox'), parents: [roleFrame('link')] },
+      locator: { ...roleLocator('searchbox'), parent: roleFrame('link') },
       suggestedRoles: ['checkbox'],
     })
     openPopover('searchbox')

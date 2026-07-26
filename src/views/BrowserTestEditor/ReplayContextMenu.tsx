@@ -1,7 +1,7 @@
 import { DropdownMenu } from '@radix-ui/themes'
 
 import { AnyBrowserAction } from '@/schemas/browserTest'
-import { TargetLocatorOptions } from '@/schemas/locator'
+import { ElementLocatorOptions } from '@/schemas/locator'
 import { AriaDetails } from '@/schemas/recording'
 
 import {
@@ -29,7 +29,7 @@ interface ReplayContextMenuProps {
   target: Element
   position: { x: number; y: number }
   aria: AriaDetails
-  locator: TargetLocatorOptions
+  locator: ElementLocatorOptions
   onClose: () => void
   onAddAction: (action: AnyBrowserAction) => void
 }

@@ -1,10 +1,11 @@
 import { useState } from 'react'
 
 import {
-  TargetLocatorOptions,
   LocatorOptions,
   ElementLocator,
+  ElementLocatorOptions,
 } from '@/schemas/locator'
+import { flattenLocators } from '@/utils/locator'
 
 export type TouchState = {
   [Key in ElementLocator['type']]: boolean
@@ -27,15 +28,13 @@ function initializeTouchState(
 }
 
 export function useTouchStates(
-  target: TargetLocatorOptions,
+  target: ElementLocatorOptions,
   initialState: boolean
 ) {
   const [touchStates, setTouchStates] = useState(() => {
-    const state: Record<string, TouchState> = {
-      [target.key]: initializeTouchState(target.values, initialState),
-    }
+    const state: Record<string, TouchState> = {}
 
-    for (const frame of target.parents) {
+    for (const frame of flattenLocators(target)) {
       state[frame.key] = initializeTouchState(frame.values, initialState)
     }
 

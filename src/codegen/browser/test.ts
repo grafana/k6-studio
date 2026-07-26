@@ -3,11 +3,11 @@ import { keyBy } from 'lodash-es'
 import { AnyBrowserAction, BrowserTestOptions } from '@/schemas/browserTest'
 import {
   ElementLocator,
+  ElementLocatorOptions,
   LocatorOptions,
-  TargetLocatorOptions,
 } from '@/schemas/locator'
 import { toClickButton, toClickModifiers } from '@/utils/clickOptions'
-import { isLocatorEqual } from '@/utils/locator'
+import { flattenLocators, isLocatorEqual } from '@/utils/locator'
 import { exhaustive } from '@/utils/typescript'
 
 import { TestNode, PageNode, NodeRef, Test, LocatorNode } from './types'
@@ -90,9 +90,12 @@ function buildBrowserNodeGraphFromActions(
     return toNodeRef(currentPage)
   }
 
-  function getLocator(locatorOptions: TargetLocatorOptions): NodeRef {
+  function getLocator(locatorOptions: ElementLocatorOptions): NodeRef {
     const currentLocator = toElementLocator(locatorOptions)
-    const frames = locatorOptions.parents.map(toElementLocator)
+    const frames = flattenLocators(locatorOptions.parent)
+      .map(toElementLocator)
+      .toArray()
+      .toReversed()
 
     // Group sequential locators together, so that we reuse the same locator
     // multiple actions have occurred on the same element, e.g:

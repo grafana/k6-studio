@@ -124,7 +124,6 @@ describe('convertActionsToTest', () => {
           id: '2',
           locator: {
             type: 'element',
-            parents: [],
             key: fixtureKey,
             current: 'css',
             values: {
@@ -218,7 +217,6 @@ describe('convertActionsToTest', () => {
           checked: true,
           locator: {
             type: 'element',
-            parents: [],
             key: fixtureKey,
             current: 'css',
             values: { css: { type: 'css', selector: '[role="checkbox"]' } },

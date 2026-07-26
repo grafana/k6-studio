@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { BrowserEventTarget, ElementSelector } from '@/schemas/recording'
 
-import { toTargetLocatorOptions } from './locator'
+import { toElementLocatorOptions } from './locator'
 
 function createBrowserEventTarget(
   selectors: ElementSelector
@@ -15,7 +15,7 @@ function createBrowserEventTarget(
 describe('toTargetLocatorOptions', () => {
   it('populates css locator from selector', () => {
     const selector = createBrowserEventTarget({ css: 'div.foo' })
-    const result = toTargetLocatorOptions(selector)
+    const result = toElementLocatorOptions(selector)
     expect(result.values.css).toEqual({ type: 'css', selector: 'div.foo' })
     expect(result.current).toBe('css')
   })
@@ -26,7 +26,7 @@ describe('toTargetLocatorOptions', () => {
       role: { role: 'button', name: 'Submit' },
     })
 
-    const result = toTargetLocatorOptions(selector)
+    const result = toElementLocatorOptions(selector)
     expect(result.values.role).toEqual({
       type: 'role',
       role: 'button',
@@ -40,7 +40,7 @@ describe('toTargetLocatorOptions', () => {
       css: 'div',
       testId: 'my-component',
     })
-    const result = toTargetLocatorOptions(selector)
+    const result = toElementLocatorOptions(selector)
     expect(result.values.testid).toEqual({
       type: 'testid',
       testId: 'my-component',
@@ -50,7 +50,7 @@ describe('toTargetLocatorOptions', () => {
 
   it('skips testid when empty string', () => {
     const selector = createBrowserEventTarget({ css: 'div', testId: '' })
-    const result = toTargetLocatorOptions(selector)
+    const result = toElementLocatorOptions(selector)
     expect(result.values.testid).toBeUndefined()
     expect(result.current).toBe('css')
   })
@@ -60,7 +60,7 @@ describe('toTargetLocatorOptions', () => {
       css: 'img',
       alt: 'Profile picture',
     })
-    const result = toTargetLocatorOptions(selector)
+    const result = toElementLocatorOptions(selector)
     expect(result.values.alt).toEqual({
       type: 'alt',
       text: 'Profile picture',
@@ -74,7 +74,7 @@ describe('toTargetLocatorOptions', () => {
       css: 'input',
       label: 'Username',
     })
-    const result = toTargetLocatorOptions(selector)
+    const result = toElementLocatorOptions(selector)
     expect(result.values.label).toEqual({
       type: 'label',
       label: 'Username',
@@ -88,7 +88,7 @@ describe('toTargetLocatorOptions', () => {
       css: 'input',
       placeholder: 'Enter name',
     })
-    const result = toTargetLocatorOptions(selector)
+    const result = toElementLocatorOptions(selector)
     expect(result.values.placeholder).toEqual({
       type: 'placeholder',
       placeholder: 'Enter name',
@@ -99,7 +99,7 @@ describe('toTargetLocatorOptions', () => {
 
   it('populates title locator when non-empty', () => {
     const selector = createBrowserEventTarget({ css: 'a', title: 'Home link' })
-    const result = toTargetLocatorOptions(selector)
+    const result = toElementLocatorOptions(selector)
     expect(result.values.title).toEqual({
       type: 'title',
       title: 'Home link',
@@ -117,7 +117,7 @@ describe('toTargetLocatorOptions', () => {
       title: '',
       testId: '',
     })
-    const result = toTargetLocatorOptions(selector)
+    const result = toElementLocatorOptions(selector)
     expect(result.values.alt).toBeUndefined()
     expect(result.values.label).toBeUndefined()
     expect(result.values.placeholder).toBeUndefined()
@@ -136,7 +136,7 @@ describe('toTargetLocatorOptions', () => {
       title: 'Email field',
       testId: 'email-input',
     })
-    const result = toTargetLocatorOptions(selector)
+    const result = toElementLocatorOptions(selector)
     expect(result.current).toBe('role')
     expect(Object.keys(result.values)).toHaveLength(7)
   })
@@ -147,7 +147,7 @@ describe('toTargetLocatorOptions', () => {
       placeholder: 'Search',
       testId: 'search-box',
     })
-    const result = toTargetLocatorOptions(selector)
+    const result = toElementLocatorOptions(selector)
     expect(result.current).toBe('placeholder')
   })
 })

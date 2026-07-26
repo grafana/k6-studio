@@ -8,7 +8,7 @@ import {
   isHTMLTextAreaElement,
 } from '@/utils/dom/realm'
 import { getElementDetails } from '@/utils/dom/selectors'
-import { toTargetLocatorOptions } from '@/utils/locator'
+import { toElementLocatorOptions } from '@/utils/locator'
 
 import { ContextMenuState } from './types'
 
@@ -112,7 +112,7 @@ export function createContextMenuState(
   const details = getElementDetails(target)
 
   const frames = buildFrameChainFromElement(target)
-  const locator = toTargetLocatorOptions(details, frames)
+  const locator = toElementLocatorOptions(details, frames)
 
   return {
     type: 'context-menu',

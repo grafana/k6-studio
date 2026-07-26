@@ -4,7 +4,7 @@ import { Flex } from '@/components/primitives/Flex'
 import { Table } from '@/components/primitives/Table'
 import { ElementLocator, LocatorOptions } from '@/schemas/locator'
 import { BrowserEvent } from '@/schemas/recording'
-import { toFrameOptions } from '@/utils/locator'
+import { toFrameLocatorOptions } from '@/utils/locator'
 
 import { EventDescription } from './EventDescription'
 import { EventIcon } from './EventIcon'
@@ -60,7 +60,10 @@ export function BrowserEventList({
                       event={event}
                       onNavigate={onNavigate}
                       onHighlight={(locator) =>
-                        onHighlight(locator, frames?.map(toFrameOptions) ?? [])
+                        onHighlight(
+                          locator,
+                          frames?.map(toFrameLocatorOptions) ?? []
+                        )
                       }
                     />
                   </div>

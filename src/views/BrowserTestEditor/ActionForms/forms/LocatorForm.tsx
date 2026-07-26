@@ -7,11 +7,8 @@ import {
   useHighlightLocator,
 } from '@/components/HighlightLocatorProvider'
 import { AnyLocatableAction } from '@/schemas/browserTest/v1/actions'
-import {
-  getCurrentLocator,
-  LocatorOptions,
-  TargetLocatorOptions,
-} from '@/schemas/locator'
+import { getCurrentLocator, LocatorOptions } from '@/schemas/locator'
+import { flattenLocators } from '@/utils/locator'
 
 import { ValuePopoverBadge } from '../components'
 
@@ -162,9 +159,9 @@ export function LocatorForm<Action extends AnyLocatableAction>({
 // frames before it, the element within the full chain.
 function resolveHighlight(
   target: LocatorTargetKey,
-  element: TargetLocatorOptions
+  element: LocatorOptions
 ): HighlightedLocator | null {
-  const chain = [element, ...element.parents]
+  const chain = flattenLocators(element).toArray()
 
   const index = chain.findIndex((frame) => frame.key === target)
   const [frame, ...rest] = chain.slice(index)

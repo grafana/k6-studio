@@ -2,10 +2,10 @@ import {
   AnyBrowserAction,
   LocatorToHaveValueAction,
 } from '@/schemas/browserTest'
-import { targetLocatorOptions, TargetLocatorOptions } from '@/schemas/locator'
+import { ElementLocatorOptions, elementLocatorOptions } from '@/schemas/locator'
 
 interface LocatorFactoryOptions {
-  locator?: TargetLocatorOptions
+  locator?: ElementLocatorOptions
 }
 
 type ActionByMethod<M extends AnyBrowserAction['method']> = Extract<
@@ -21,7 +21,7 @@ export function createCheckAction({
     method: 'locator.check',
     locator:
       locator ??
-      targetLocatorOptions({
+      elementLocatorOptions({
         type: 'role',
         role: 'checkbox',
         options: { exact: false },
@@ -37,7 +37,7 @@ export function createUncheckAction({
     method: 'locator.uncheck',
     locator:
       locator ??
-      targetLocatorOptions({
+      elementLocatorOptions({
         type: 'role',
         role: 'checkbox',
         options: { exact: false },
@@ -53,7 +53,7 @@ export function createClearAction({
     method: 'locator.clear',
     locator:
       locator ??
-      targetLocatorOptions({
+      elementLocatorOptions({
         type: 'role',
         role: 'textbox',
         options: { exact: false },
@@ -69,7 +69,7 @@ export function createClickAction({
     method: 'locator.click',
     locator:
       locator ??
-      targetLocatorOptions({
+      elementLocatorOptions({
         type: 'role',
         role: 'button',
         options: { exact: false },
@@ -86,7 +86,7 @@ export function createFillAction({
     value: '',
     locator:
       locator ??
-      targetLocatorOptions({
+      elementLocatorOptions({
         type: 'role',
         role: 'textbox',
         options: { exact: false },
@@ -103,7 +103,7 @@ export function createSelectOptionAction({
     values: [{ value: '' }],
     locator:
       locator ??
-      targetLocatorOptions({
+      elementLocatorOptions({
         type: 'role',
         role: 'combobox',
         options: { exact: false },
@@ -119,7 +119,7 @@ export function createWaitForAction({
     method: 'locator.waitFor',
     locator:
       locator ??
-      targetLocatorOptions({
+      elementLocatorOptions({
         type: 'role',
         role: '',
         options: { exact: false },
@@ -137,7 +137,7 @@ export function createToBeCheckedAction({
     inputType: 'native',
     locator:
       locator ??
-      targetLocatorOptions({
+      elementLocatorOptions({
         type: 'role',
         role: 'checkbox',
         options: { exact: false },
@@ -164,7 +164,7 @@ export function createToHaveValueAction({
     },
     locator:
       locator ??
-      targetLocatorOptions({
+      elementLocatorOptions({
         type: 'role',
         role: 'textbox',
         options: { exact: false },
@@ -181,7 +181,7 @@ export function createToBeVisibleAction({
     visible: true,
     locator:
       locator ??
-      targetLocatorOptions({
+      elementLocatorOptions({
         type: 'role',
         role: '',
         options: { exact: false },
@@ -203,7 +203,7 @@ export function createToContainTextAction({
     expected,
     locator:
       locator ??
-      targetLocatorOptions({
+      elementLocatorOptions({
         type: 'role',
         role: '',
         options: { exact: false },

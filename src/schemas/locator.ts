@@ -97,38 +97,32 @@ const BaseLocatorOptionsSchema = z.object({
   }),
 })
 
+export type FrameLocatorOptions = z.infer<typeof BaseLocatorOptionsSchema> & {
+  type: 'frame'
+  parent?: LocatorOptions
+}
+export type ElementLocatorOptions = z.infer<typeof BaseLocatorOptionsSchema> & {
+  type: 'element'
+  parent?: LocatorOptions
+}
+
+export type LocatorOptions = FrameLocatorOptions | ElementLocatorOptions
+
 export const FrameLocatorOptionsSchema = BaseLocatorOptionsSchema.extend({
   type: z.literal('frame'),
-})
+  parent: z.lazy(() => LocatorOptionsSchema).optional(),
+}) satisfies z.ZodType<FrameLocatorOptions>
 
 export const ElementLocatorOptionsSchema = BaseLocatorOptionsSchema.extend({
   type: z.literal('element'),
-})
+  parent: z.lazy(() => LocatorOptionsSchema).optional(),
+}) satisfies z.ZodType<ElementLocatorOptions>
 
-export const ParentLocatorOptionsSchema = z.discriminatedUnion('type', [
-  FrameLocatorOptionsSchema,
-  ElementLocatorOptionsSchema,
-])
-
-export const TargetLocatorOptionsSchema = BaseLocatorOptionsSchema.extend({
-  type: z.literal('element'),
-  parents: z.array(ParentLocatorOptionsSchema),
-})
-
-export const LocatorOptionsSchema = z.object({
-  key: syntheticKey(),
-  current: LocatorTypeSchema,
-  values: z.object({
-    css: CssLocatorSchema.optional(),
-    role: GetByRoleLocatorSchema.optional(),
-    testid: GetByTestIdLocatorSchema.optional(),
-    alt: GetByAltTextLocatorSchema.optional(),
-    label: GetByLabelLocatorSchema.optional(),
-    placeholder: GetByPlaceholderLocatorSchema.optional(),
-    title: GetByTitleLocatorSchema.optional(),
-    text: GetByTextLocatorSchema.optional(),
-  }),
-})
+export const LocatorOptionsSchema: z.ZodType<LocatorOptions> =
+  z.discriminatedUnion('type', [
+    FrameLocatorOptionsSchema,
+    ElementLocatorOptionsSchema,
+  ])
 
 export type ElementLocator = z.infer<typeof ElementLocatorSchema>
 export type CssLocator = z.infer<typeof CssLocatorSchema>
@@ -140,46 +134,53 @@ export type PlaceholderLocator = z.infer<typeof GetByPlaceholderLocatorSchema>
 export type TitleLocator = z.infer<typeof GetByTitleLocatorSchema>
 export type TextLocator = z.infer<typeof GetByTextLocatorSchema>
 
-export type FrameLocatorOptions = z.infer<typeof FrameLocatorOptionsSchema>
-export type ElementLocatorOptions = z.infer<typeof ElementLocatorOptionsSchema>
-export type ParentLocatorOptions = z.infer<typeof ParentLocatorOptionsSchema>
-export type TargetLocatorOptions = z.infer<typeof TargetLocatorOptionsSchema>
-
-export type LocatorOptions = z.infer<typeof LocatorOptionsSchema>
-export type TempLocatorOptionsType = TargetLocatorOptions | ParentLocatorOptions
-
-export function targetLocatorOptions(
-  selector: ElementLocator = { type: 'css', selector: '' },
-  parents: ParentLocatorOptions[] = []
-): TargetLocatorOptions {
-  return {
-    type: 'element',
-    key: newSyntheticKey(),
-    current: selector.type,
-    values: { [selector.type]: selector },
-    parents,
+// Appends `next` to the outermost end of `chain`, preserving whatever parent
+// chain `chain` already has instead of overwriting it.
+function appendParent(
+  chain: LocatorOptions | undefined,
+  next: LocatorOptions
+): LocatorOptions {
+  if (chain === undefined) {
+    return next
   }
+
+  return { ...chain, parent: appendParent(chain.parent, next) }
 }
 
-export function frameLocatorOptions(
-  selector: ElementLocator = { type: 'css', selector: '' }
-): FrameLocatorOptions {
-  return {
-    type: 'frame',
-    key: newSyntheticKey(),
-    current: selector.type,
-    values: { [selector.type]: selector },
-  }
+function chainParents(
+  parents: Array<LocatorOptions | undefined>
+): LocatorOptions | undefined {
+  return parents
+    .filter((parent) => parent !== undefined)
+    .reduce<LocatorOptions | undefined>(
+      (chain, next) => appendParent(chain, next),
+      undefined
+    )
 }
 
 export function elementLocatorOptions(
-  selector: ElementLocator = { type: 'css', selector: '' }
+  selector: ElementLocator = { type: 'css', selector: '' },
+  ...parents: Array<LocatorOptions | undefined>
 ): ElementLocatorOptions {
   return {
     type: 'element',
     key: newSyntheticKey(),
     current: selector.type,
     values: { [selector.type]: selector },
+    parent: chainParents(parents),
+  }
+}
+
+export function frameLocatorOptions(
+  selector: ElementLocator = { type: 'css', selector: '' },
+  ...parents: Array<LocatorOptions | undefined>
+): FrameLocatorOptions {
+  return {
+    type: 'frame',
+    key: newSyntheticKey(),
+    current: selector.type,
+    values: { [selector.type]: selector },
+    parent: chainParents(parents),
   }
 }
 

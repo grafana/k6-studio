@@ -1,4 +1,5 @@
-import { ElementLocator, TargetLocatorOptions } from '@/schemas/locator'
+import { ElementLocator, LocatorOptions } from '@/schemas/locator'
+import { flattenLocators } from '@/utils/locator'
 
 export type FieldErrors = {
   css?: {
@@ -103,12 +104,14 @@ export function validateLocator(
   }
 }
 
-export function getErrors(locator: TargetLocatorOptions): string[] {
-  return [locator, ...locator.parents].flatMap((locator) => {
-    const validation = validateLocator(locator.values[locator.current])
+export function getErrors(locator: LocatorOptions): string[] {
+  return flattenLocators(locator)
+    .flatMap((locator) => {
+      const validation = validateLocator(locator.values[locator.current])
 
-    return Object.values(validation[locator.current] ?? {}).filter(
-      (value) => value !== false
-    )
-  })
+      return Object.values(validation[locator.current] ?? {}).filter(
+        (value) => value !== false
+      )
+    })
+    .toArray()
 }

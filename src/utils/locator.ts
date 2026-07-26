@@ -2,18 +2,65 @@ import {
   AltLocator,
   CssLocator,
   ElementLocator,
+  ElementLocatorOptions,
   FrameLocatorOptions,
   LabelLocator,
   LocatorOptions,
   PlaceholderLocator,
   RoleLocator,
-  TargetLocatorOptions,
   TestIdLocator,
   TitleLocator,
 } from '@/schemas/locator'
 import { BrowserEventTarget, ElementSelector } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 import { newSyntheticKey } from '@/utils/zod'
+
+/**
+ * * Iterate through a locator chain, starting from the innermost element and moving outward to the topmost parent.
+ */
+export function* flattenLocators(
+  root: LocatorOptions | undefined
+): Generator<LocatorOptions, void, unknown> {
+  let current: LocatorOptions | undefined = root
+
+  while (current) {
+    yield current
+
+    current = current.parent
+  }
+}
+
+/**
+ * Reconstruct a locator chain from a flattened list of locators, where the first element is the innermost locator
+ * and the last element is the outermost locator.
+ */
+export function unflattenLocators(
+  locators: Iterable<LocatorOptions>
+): LocatorOptions | undefined {
+  return Array.from(locators).reduceRight<LocatorOptions | undefined>(
+    (acc, locator) => {
+      return {
+        ...locator,
+        parent: acc,
+      }
+    },
+    undefined
+  )
+}
+
+export function push(
+  root: LocatorOptions | undefined,
+  newLocator: LocatorOptions
+): LocatorOptions {
+  if (root === undefined) {
+    return newLocator
+  }
+
+  return {
+    ...root,
+    parent: push(root.parent, newLocator),
+  }
+}
 
 function hasNonEmptyString(value: string | undefined): value is string {
   return value !== undefined && value.trim() !== ''
@@ -177,7 +224,9 @@ export function isLocatorEqual(a: ElementLocator, b: ElementLocator): boolean {
   }
 }
 
-function toLocatorOptions(selector: ElementSelector): LocatorOptions {
+function toLocatorOptions(
+  selector: ElementSelector
+): Omit<LocatorOptions, 'type'> {
   return {
     key: newSyntheticKey(),
     current: getElementLocator(selector).type,
@@ -194,7 +243,7 @@ function toLocatorOptions(selector: ElementSelector): LocatorOptions {
 }
 
 // Converts a recorded event's iframe chain into locator options for each frame.
-export function toFrameOptions(
+export function toFrameLocatorOptions(
   frames: BrowserEventTarget
 ): FrameLocatorOptions {
   return {
@@ -205,13 +254,25 @@ export function toFrameOptions(
 
 // Same as toLocatorOptions, but as the target of an action, which carries its
 // own (possibly empty) parent chain.
-export function toTargetLocatorOptions(
+export function toElementLocatorOptions(
   target: BrowserEventTarget,
+  // Innermost-first — callers reverse the outermost-first `event.frames`
+  // before passing it in.
   frames: BrowserEventTarget[] = []
-): TargetLocatorOptions {
+): ElementLocatorOptions {
+  const parent = frames.reduceRight<ElementLocatorOptions['parent']>(
+    (acc, frame) => {
+      return {
+        ...toFrameLocatorOptions(frame),
+        parent: acc,
+      }
+    },
+    undefined
+  )
+
   return {
     ...toLocatorOptions(target.selectors),
     type: 'element',
-    parents: frames.map((frame) => toFrameOptions(frame)),
+    parent,
   }
 }

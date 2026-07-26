@@ -13,12 +13,12 @@ import {
   LocatorSummary,
 } from '@/components/Browser/Locator'
 import {
+  ElementLocatorOptions,
   frameLocatorOptions,
   getCurrentLocator,
   LocatorOptions,
-  ParentLocatorOptions,
-  TargetLocatorOptions,
 } from '@/schemas/locator'
+import { flattenLocators, push, unflattenLocators } from '@/utils/locator'
 import { SyntheticKey } from '@/utils/zod'
 
 import { TouchState, useTouchStates } from './LocatorChainList.hooks'
@@ -39,10 +39,10 @@ const slideUp = keyframes`
 
 interface LocatorChainListProps {
   isTouched: boolean
-  target: TargetLocatorOptions
+  target: ElementLocatorOptions
   expanded: LocatorTargetKey | null
   suggestedRoles?: string[]
-  onChange: (newState: TargetLocatorOptions) => void
+  onChange: (newState: ElementLocatorOptions) => void
   onHoverTarget: (target: LocatorOptions | null) => void
   onExpandedChange: (target: LocatorTargetKey | null) => void
   onTouch: () => void
@@ -66,7 +66,7 @@ export function LocatorChainList({
     onExpandedChange(frame.key)
     onChange({
       ...target,
-      parents: [...target.parents, frame],
+      parent: push(target.parent, frame),
     })
   }
 
@@ -75,25 +75,33 @@ export function LocatorChainList({
     onTouch()
   }
 
-  const handleRemoveFrame = (parent: ParentLocatorOptions) => {
+  const handleRemoveFrame = (parent: LocatorOptions) => {
     if (expanded === parent.key) {
       onExpandedChange(target.key)
     }
 
     onChange({
       ...target,
-      parents: target.parents.filter((frame) => frame.key !== parent.key),
-    })
-  }
-
-  const handleParentChange = (newParent: ParentLocatorOptions) => {
-    onChange({
-      ...target,
-      parents: target.parents.map((frame) =>
-        frame.key === newParent.key ? newParent : frame
+      parent: unflattenLocators(
+        flattenLocators(target.parent).filter(
+          (frame) => frame.key !== parent.key
+        )
       ),
     })
   }
+
+  const handleParentChange = (newParent: LocatorOptions) => {
+    onChange({
+      ...target,
+      parent: unflattenLocators(
+        flattenLocators(target.parent).map((frame) =>
+          frame.key === newParent.key ? newParent : frame
+        )
+      ),
+    })
+  }
+
+  const parents = flattenLocators(target.parent).toArray().toReversed()
 
   return (
     <Flex direction="column" gap="2">
@@ -117,7 +125,7 @@ export function LocatorChainList({
         value={toValue(expanded)}
         onValueChange={(value) => onExpandedChange(fromValue(value))}
       >
-        {target.parents.toReversed().map((frame, index) => (
+        {parents.map((frame, index) => (
           <LocatorChainItem
             key={frame.key}
             isSingle={false}
@@ -132,11 +140,11 @@ export function LocatorChainList({
           />
         ))}
         <LocatorChainItem
-          isSingle={target.parents.length === 0}
+          isSingle={parents.length === 0}
           target={target}
           touchState={touchStates.get(target)}
           label="element"
-          isNested={target.parents.length > 0}
+          isNested={parents.length > 0}
           suggestedRoles={suggestedRoles}
           onChange={onChange}
           onBlur={handleBlur}

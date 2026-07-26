@@ -1,7 +1,7 @@
 import { z } from 'zod/v4'
 
 import {
-  TargetLocatorOptionsSchema,
+  ElementLocatorOptionsSchema,
   type LocatorOptions,
 } from '@/schemas/locator'
 
@@ -27,7 +27,7 @@ const ActionBaseSchema = z.object({
 // chain of iframe locators from the top frame down to the frame the element
 // lives in, outermost first. Absent or empty means the top frame.
 const LocatorActionBaseSchema = ActionBaseSchema.extend({
-  locator: TargetLocatorOptionsSchema,
+  locator: ElementLocatorOptionsSchema,
 })
 
 const GenericOptions = z.unknown()

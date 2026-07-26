@@ -1,13 +1,13 @@
 import { AnyBrowserAction } from '@/schemas/browserTest'
 import { AssertEvent } from '@/schemas/recording'
-import { toTargetLocatorOptions } from '@/utils/locator'
+import { toElementLocatorOptions } from '@/utils/locator'
 import { exhaustive } from '@/utils/typescript'
 
 export function convertAssertion(
   event: AssertEvent
 ): AnyBrowserAction | undefined {
   const frames = event.frames?.toReversed() ?? []
-  const locator = toTargetLocatorOptions(event.target, frames)
+  const locator = toElementLocatorOptions(event.target, frames)
 
   const assertion = event.assertion
 
