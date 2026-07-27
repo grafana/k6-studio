@@ -21,8 +21,8 @@ import {
 import { flattenLocators, push, unflattenLocators } from '@/utils/locator'
 import { SyntheticKey } from '@/utils/zod'
 
-import { TouchState, useTouchStates } from './LocatorChainList.hooks'
 import { LocatorEditor } from './LocatorEditor'
+import { TouchState, TouchStates } from './LocatorForm.hooks'
 import { validateLocator } from './locators/validation'
 
 export type LocatorTargetKey = SyntheticKey
@@ -38,18 +38,18 @@ const slideUp = keyframes`
 `
 
 interface LocatorChainListProps {
-  isTouched: boolean
+  touchStates: TouchStates
   target: ElementLocatorOptions
   expanded: LocatorTargetKey | null
   suggestedRoles?: string[]
   onChange: (newState: ElementLocatorOptions) => void
   onHoverTarget: (target: LocatorOptions | null) => void
   onExpandedChange: (target: LocatorTargetKey | null) => void
-  onTouch: () => void
+  onTouch: (locator: LocatorOptions) => void
 }
 
 export function LocatorChainList({
-  isTouched,
+  touchStates,
   target,
   expanded,
   suggestedRoles,
@@ -58,8 +58,6 @@ export function LocatorChainList({
   onChange,
   onTouch,
 }: LocatorChainListProps) {
-  const touchStates = useTouchStates(target, isTouched)
-
   const handleAddFrame = () => {
     const frame = frameLocatorOptions()
 
@@ -68,11 +66,6 @@ export function LocatorChainList({
       ...target,
       parent: push(target.parent, frame),
     })
-  }
-
-  const handleBlur = (locator: LocatorOptions) => {
-    touchStates.touch(locator)
-    onTouch()
   }
 
   const handleRemoveFrame = (parent: LocatorOptions) => {
@@ -103,6 +96,21 @@ export function LocatorChainList({
 
   const parents = flattenLocators(target.parent).toArray().toReversed()
 
+  const handleExpandedChange = (value: string) => {
+    // Switching rows is the row's last chance to surface problems while
+    // still in view, so mark the row being left touched even if the user
+    // never blurred a field inside it.
+    if (expanded !== null) {
+      const leaving = [target, ...parents].find((row) => row.key === expanded)
+
+      if (leaving) {
+        onTouch(leaving)
+      }
+    }
+
+    onExpandedChange(fromValue(value))
+  }
+
   return (
     <Flex direction="column" gap="2">
       <Flex justify="end">
@@ -123,7 +131,7 @@ export function LocatorChainList({
         type="single"
         collapsible
         value={toValue(expanded)}
-        onValueChange={(value) => onExpandedChange(fromValue(value))}
+        onValueChange={handleExpandedChange}
       >
         {parents.map((frame, index) => (
           <LocatorChainItem
@@ -135,7 +143,7 @@ export function LocatorChainList({
             isNested={index > 0}
             onChange={handleParentChange}
             onRemove={handleRemoveFrame}
-            onBlur={handleBlur}
+            onBlur={onTouch}
             onHover={onHoverTarget}
           />
         ))}
@@ -147,7 +155,7 @@ export function LocatorChainList({
           isNested={parents.length > 0}
           suggestedRoles={suggestedRoles}
           onChange={onChange}
-          onBlur={handleBlur}
+          onBlur={onTouch}
           onHover={onHoverTarget}
         />
       </Accordion.Root>
@@ -183,7 +191,7 @@ function LocatorChainItem<Locator extends LocatorOptions>({
   const locator = getCurrentLocator(target)
   const validation = validateLocator(locator)
 
-  const isTouched = touchState[target.current] ?? false
+  const isTouched = touchState.states[target.current] ?? false
 
   const hasError =
     isTouched &&

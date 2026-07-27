@@ -1,6 +1,8 @@
 import { ElementLocator, LocatorOptions } from '@/schemas/locator'
 import { flattenLocators } from '@/utils/locator'
 
+import { TouchStates } from '../LocatorForm.hooks'
+
 export type FieldErrors = {
   css?: {
     selector?: string | false
@@ -104,18 +106,28 @@ export function validateLocator(
   }
 }
 
-export function getErrors(locator: LocatorOptions): string[] {
-  return flattenLocators(locator)
-    .toArray()
-    .flatMap((locator, index, frames) => {
-      const validation = validateLocator(locator.values[locator.current])
+export function getErrors(
+  locator: LocatorOptions,
+  touchStates: TouchStates
+): string[] {
+  const frames = flattenLocators(locator).toArray()
 
-      // Frames are stored from the innermost to the outermost, but the UI will
-      // display them with the outermost at the top so we need to reverse the count.
-      const frameIndex = frames.length - index
+  return frames.flatMap((frame, index) => {
+    // Only surface errors for frames the user has actually touched — closing
+    // the popover or leaving a row touches it, but untouched frames stay
+    // hidden until then.
+    if (!touchStates.get(frame).touched) {
+      return []
+    }
 
-      return Object.values(validation[locator.current] ?? {})
-        .filter((value) => value !== false)
-        .map((error) => (index === 0 ? error : `Frame ${frameIndex}: ${error}`))
-    })
+    const validation = validateLocator(frame.values[frame.current])
+
+    // Frames are stored from the innermost to the outermost, but the UI will
+    // display them with the outermost at the top so we need to reverse the count.
+    const frameIndex = frames.length - index
+
+    return Object.values(validation[frame.current] ?? {})
+      .filter((value) => value !== false)
+      .map((error) => (index === 0 ? error : `Frame ${frameIndex}: ${error}`))
+  })
 }

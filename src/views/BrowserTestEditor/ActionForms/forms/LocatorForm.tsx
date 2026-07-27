@@ -13,6 +13,7 @@ import { flattenLocators } from '@/utils/locator'
 import { ValuePopoverBadge } from '../components'
 
 import { LocatorChainList, LocatorTargetKey } from './LocatorChainList'
+import { useTouchStates } from './LocatorForm.hooks'
 import { getErrors } from './locators/validation'
 
 interface LocatorFormProps<Action extends AnyLocatableAction> {
@@ -30,7 +31,7 @@ export function LocatorForm<Action extends AnyLocatableAction>({
 
   const elementOptions = action.locator
 
-  const [isTouched, setIsTouched] = useState(false)
+  const touchStates = useTouchStates()
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 
   // Which accordion row is open (null = all collapsed). The open row is the one
@@ -44,7 +45,7 @@ export function LocatorForm<Action extends AnyLocatableAction>({
 
   // The badge surfaces the first problem anywhere in the chain: the element
   // first, then frames outermost-first (prefixed so the tooltip says which).
-  const badgeError = getErrors(elementOptions)[0]
+  const badgeError = getErrors(elementOptions, touchStates)[0]
 
   useEffect(() => {
     if (!isPopoverOpen) {
@@ -100,6 +101,12 @@ export function LocatorForm<Action extends AnyLocatableAction>({
 
       return
     }
+
+    // Closing is the last chance to surface problems, so mark every target
+    // touched, including frames the user never expanded.
+    for (const frame of flattenLocators(elementOptions)) {
+      touchStates.touch(frame)
+    }
   }
 
   const handleChange = (next: LocatorOptions) => {
@@ -117,8 +124,8 @@ export function LocatorForm<Action extends AnyLocatableAction>({
     setExpandedTarget(target)
   }
 
-  const handleTouch = () => {
-    setIsTouched(true)
+  const handleTouch = (locator: LocatorOptions) => {
+    touchStates.touch(locator)
   }
 
   return (
@@ -129,7 +136,7 @@ export function LocatorForm<Action extends AnyLocatableAction>({
       >
         <ValuePopoverBadge
           displayValue={<DisplayValue state={elementOptions} />}
-          error={isTouched ? badgeError : undefined}
+          error={badgeError}
         />
       </Popover.Trigger>
       <Popover.Content
@@ -142,7 +149,7 @@ export function LocatorForm<Action extends AnyLocatableAction>({
       >
         <LocatorChainList
           target={elementOptions}
-          isTouched={isTouched}
+          touchStates={touchStates}
           expanded={expandedTarget}
           suggestedRoles={suggestedRoles}
           onChange={handleChange}

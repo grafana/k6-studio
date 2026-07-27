@@ -299,6 +299,65 @@ describe('LocatorForm chain accordion', () => {
     expect(screen.getByText('CSS selector cannot be empty')).toBeDefined()
   })
 
+  it('marks the row being left touched even without blurring a field', () => {
+    renderLocatorForm({
+      locator: elementLocatorOptions(
+        { type: 'css', selector: 'button.pay' },
+        frameLocatorOptions({ type: 'css', selector: '' })
+      ),
+    })
+    openPopover()
+
+    fireEvent.click(row(/^iframe 1/))
+    fireEvent.click(row(/^element/))
+    fireEvent.click(row(/^iframe 1/))
+
+    expect(screen.getByText('CSS selector cannot be empty')).toBeDefined()
+  })
+
+  it('switching between other rows does not surface an untouched frame error', () => {
+    const outer = frameLocatorOptions({ type: 'css', selector: '' })
+    const inner = frameLocatorOptions(
+      { type: 'css', selector: '#inner' },
+      outer
+    )
+
+    const { container } = renderLocatorForm({
+      locator: elementLocatorOptions(
+        { type: 'css', selector: 'button.pay' },
+        inner
+      ),
+    })
+    openPopover()
+
+    // Switch element -> inner frame -> element again, never visiting the
+    // invalid outer frame.
+    fireEvent.click(row('iframe 2: #inner'))
+    fireEvent.click(row(/^element/))
+
+    expect(container.querySelector('.lucide-triangle-alert')).toBeNull()
+  })
+
+  it('closing the popover touches frames the user never opened', () => {
+    const { container } = renderLocatorForm({
+      locator: elementLocatorOptions(
+        { type: 'css', selector: 'button.pay' },
+        frameLocatorOptions({ type: 'css', selector: '' })
+      ),
+    })
+    // Grab the trigger before opening — once open, the element row's own
+    // header also renders "button.pay", making the text ambiguous.
+    const trigger = screen.getByText('button.pay')
+
+    fireEvent.click(trigger)
+    expect(container.querySelector('.lucide-triangle-alert')).toBeNull()
+
+    // Close without ever expanding the invalid frame row.
+    fireEvent.click(trigger)
+
+    expect(container.querySelector('.lucide-triangle-alert')).not.toBeNull()
+  })
+
   it('surfaces a frame error on the badge', () => {
     const { container } = renderLocatorForm({
       locator: elementLocatorOptions(
