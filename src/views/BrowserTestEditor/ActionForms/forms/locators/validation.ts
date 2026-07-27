@@ -106,12 +106,16 @@ export function validateLocator(
 
 export function getErrors(locator: LocatorOptions): string[] {
   return flattenLocators(locator)
-    .flatMap((locator) => {
+    .toArray()
+    .flatMap((locator, index, frames) => {
       const validation = validateLocator(locator.values[locator.current])
 
-      return Object.values(validation[locator.current] ?? {}).filter(
-        (value) => value !== false
-      )
+      // Frames are stored from the innermost to the outermost, but the UI will
+      // display them with the outermost at the top so we need to reverse the count.
+      const frameIndex = frames.length - index
+
+      return Object.values(validation[locator.current] ?? {})
+        .filter((value) => value !== false)
+        .map((error) => (index === 0 ? error : `Frame ${frameIndex}: ${error}`))
     })
-    .toArray()
 }
