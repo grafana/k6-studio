@@ -48,15 +48,12 @@ function convertEvent(
     return { id: crypto.randomUUID(), method: 'page.reload' }
   }
 
-  // Actions store events inner-most first, but events outer-most first.
-  const frames = event.frames?.toReversed() ?? []
-
   switch (event.type) {
     case 'click':
       return {
         id: crypto.randomUUID(),
         method: 'locator.click',
-        locator: toElementLocatorOptions(event.target, frames),
+        locator: toElementLocatorOptions(event.target, event.frames),
         options: buildClickOptions(event, nextEvent),
       }
 
@@ -64,7 +61,7 @@ function convertEvent(
       return {
         id: crypto.randomUUID(),
         method: 'locator.fill',
-        locator: toElementLocatorOptions(event.target, frames),
+        locator: toElementLocatorOptions(event.target, event.frames),
         value: event.value,
       }
 
@@ -72,21 +69,21 @@ function convertEvent(
       return {
         id: crypto.randomUUID(),
         method: event.checked ? 'locator.check' : 'locator.uncheck',
-        locator: toElementLocatorOptions(event.target, frames),
+        locator: toElementLocatorOptions(event.target, event.frames),
       }
 
     case 'radio-change':
       return {
         id: crypto.randomUUID(),
         method: 'locator.click',
-        locator: toElementLocatorOptions(event.target, frames),
+        locator: toElementLocatorOptions(event.target, event.frames),
       }
 
     case 'select-change':
       return {
         id: crypto.randomUUID(),
         method: 'locator.selectOption',
-        locator: toElementLocatorOptions(event.target, frames),
+        locator: toElementLocatorOptions(event.target, event.frames),
         values: event.selected.map((value) => ({ value })),
       }
 
@@ -94,7 +91,7 @@ function convertEvent(
       return {
         id: crypto.randomUUID(),
         method: 'locator.click',
-        locator: toElementLocatorOptions(event.submitter, frames),
+        locator: toElementLocatorOptions(event.submitter, event.frames),
         options: isFollowedByImplicitNavigation(event, nextEvent)
           ? { waitForNavigation: true }
           : undefined,
@@ -104,7 +101,7 @@ function convertEvent(
       return {
         id: crypto.randomUUID(),
         method: 'locator.waitFor',
-        locator: toElementLocatorOptions(event.target, frames),
+        locator: toElementLocatorOptions(event.target, event.frames),
         options: event.options,
       }
 

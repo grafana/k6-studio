@@ -40,7 +40,7 @@ export function GetByRoleForm({
   suggestedRoles = DEFAULT_ROLES,
   locator = {
     type: 'role',
-    role: suggestedRoles[0] ?? '',
+    role: '',
     options: { exact: false },
   },
   onBlur,

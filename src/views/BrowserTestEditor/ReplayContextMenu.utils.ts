@@ -93,7 +93,9 @@ export function buildFrameChainFromElement(
       // Stop at the SessionPlayer's own iframe, which lives directly in
       // appWindow's document and isn't part of the recorded page.
       (win) => win === appWindow || win.parent === appWindow,
-      (iframe) => chain.push(getElementDetails(iframe))
+      // forEachOwningFrame visits innermost to outermost; unshift reverses
+      // that so the chain comes out outermost-first, as documented above.
+      (iframe) => chain.unshift(getElementDetails(iframe))
     )
 
     return chain

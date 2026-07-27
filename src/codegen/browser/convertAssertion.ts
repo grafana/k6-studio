@@ -6,8 +6,7 @@ import { exhaustive } from '@/utils/typescript'
 export function convertAssertion(
   event: AssertEvent
 ): AnyBrowserAction | undefined {
-  const frames = event.frames?.toReversed() ?? []
-  const locator = toElementLocatorOptions(event.target, frames)
+  const locator = toElementLocatorOptions(event.target, event.frames)
 
   const assertion = event.assertion
 

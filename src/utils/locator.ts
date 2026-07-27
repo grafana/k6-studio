@@ -16,7 +16,7 @@ import { exhaustive } from '@/utils/typescript'
 import { newSyntheticKey } from '@/utils/zod'
 
 /**
- * * Iterate through a locator chain, starting from the innermost element and moving outward to the topmost parent.
+ * Iterate through a locator chain, starting from the innermost element and moving outward to the topmost parent.
  */
 export function* flattenLocators(
   root: LocatorOptions | undefined
@@ -246,12 +246,12 @@ function toLocatorOptions(
   }
 }
 
-// Converts a recorded event's iframe chain into locator options for each frame.
+// Converts a recorded event's iframe into locator options for that frame.
 export function toFrameLocatorOptions(
-  frames: BrowserEventTarget
+  frame: BrowserEventTarget
 ): FrameLocatorOptions {
   return {
-    ...toLocatorOptions(frames.selectors),
+    ...toLocatorOptions(frame.selectors),
     type: 'frame',
   }
 }
@@ -260,11 +260,10 @@ export function toFrameLocatorOptions(
 // own (possibly empty) parent chain.
 export function toElementLocatorOptions(
   target: BrowserEventTarget,
-  // Innermost-first — callers reverse the outermost-first `event.frames`
-  // before passing it in.
+  // Outermost-first, matching `event.frames`
   frames: BrowserEventTarget[] = []
 ): ElementLocatorOptions {
-  const parent = frames.reduceRight<ElementLocatorOptions['parent']>(
+  const parent = frames.reduce<ElementLocatorOptions['parent']>(
     (acc, frame) => {
       return {
         ...toFrameLocatorOptions(frame),
