@@ -2,7 +2,7 @@ import { z } from 'zod/v4'
 
 import {
   ElementLocatorOptionsSchema,
-  type LocatorOptions,
+  type ElementLocatorOptions,
 } from '@/schemas/locator'
 
 // NaN is not supported by JSON, so we encode it as null and decode null back to NaN.
@@ -23,9 +23,8 @@ const ActionBaseSchema = z.object({
   id: z.string().default(() => crypto.randomUUID()),
 })
 
-// Shared base for actions that target an element via a locator. `frames` is the
-// chain of iframe locators from the top frame down to the frame the element
-// lives in, outermost first. Absent or empty means the top frame.
+// Shared base for actions that target an element via a locator. The locator's
+// own `parent` chain carries the iframes it lives in, if any.
 const LocatorActionBaseSchema = ActionBaseSchema.extend({
   locator: ElementLocatorOptionsSchema,
 })
@@ -287,5 +286,5 @@ export type AnyBrowserAction = z.infer<typeof AnyBrowserActionSchema>
 
 export type AnyLocatableAction = Extract<
   AnyBrowserAction,
-  { locator: LocatorOptions; frames?: LocatorOptions[] }
+  { locator: ElementLocatorOptions }
 >

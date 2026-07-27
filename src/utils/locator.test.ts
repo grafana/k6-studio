@@ -12,7 +12,7 @@ function createBrowserEventTarget(
   }
 }
 
-describe('toTargetLocatorOptions', () => {
+describe('toElementLocatorOptions', () => {
   it('populates css locator from selector', () => {
     const selector = createBrowserEventTarget({ css: 'div.foo' })
     const result = toElementLocatorOptions(selector)
