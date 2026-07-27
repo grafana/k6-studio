@@ -109,14 +109,14 @@ function buildBrowserNodeGraphFromActions(
     if (
       previousLocatorNode === null ||
       !isLocatorEqual(currentLocator, previousLocatorNode.locator) ||
-      !framesEqual(frames, previousLocatorNode.parents) ||
+      !framesEqual(frames, previousLocatorNode.frames) ||
       previousLocatorNode.inputs.page.nodeId !== getPage().nodeId
     ) {
       previousLocatorNode = {
         type: 'locator',
         nodeId: crypto.randomUUID(),
         locator: currentLocator,
-        parents: frames,
+        frames: frames,
         inputs: {
           page: getPage(),
         },

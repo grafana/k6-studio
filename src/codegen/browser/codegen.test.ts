@@ -91,7 +91,7 @@ it('should emit click on element', async ({ expect }) => {
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'css', selector: 'button' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -132,7 +132,7 @@ it('should emit right-click on element', async ({ expect }) => {
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'css', selector: 'button' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -173,7 +173,7 @@ it('should emit click with modifier keys on element', async ({ expect }) => {
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'css', selector: 'button' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -214,7 +214,7 @@ it('should emit type text on element', async ({ expect }) => {
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'css', selector: 'input' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -249,7 +249,7 @@ it('should emit check on element', async ({ expect }) => {
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'css', selector: 'input[type="checkbox"]' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -284,7 +284,7 @@ it('should emit uncheck on element', async ({ expect }) => {
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'css', selector: 'input[type="checkbox"]' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -319,7 +319,7 @@ it('should emit select single option on element', async ({ expect }) => {
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'css', selector: 'select' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -357,7 +357,7 @@ it('should emit select with multiple options on element', async ({
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'css', selector: 'select' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -393,7 +393,7 @@ it('should emit waitForNavigation on a link click', async ({ expect }) => {
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'css', selector: 'button' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -452,7 +452,7 @@ it('should keep page allocation block open for post-navigation interactions', as
           type: 'locator',
           nodeId: 'linkLocator',
           locator: { type: 'css', selector: 'a.nav-link' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -478,7 +478,7 @@ it('should keep page allocation block open for post-navigation interactions', as
           type: 'locator',
           nodeId: 'inputLocator',
           locator: { type: 'css', selector: 'input[name="query"]' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -513,7 +513,7 @@ it('should emit waitForNavigation on a form submit', async ({ expect }) => {
           type: 'locator',
           nodeId: 'submitLocator',
           locator: { type: 'css', selector: 'button[type="submit"]' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -557,7 +557,7 @@ it('should assert that element contains text', async ({ expect }) => {
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'css', selector: 'button' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -602,7 +602,7 @@ it('should assert that element is visible', async ({ expect }) => {
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'css', selector: 'button' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -647,7 +647,7 @@ it('should assert that element is hidden', async ({ expect }) => {
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'css', selector: 'button' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -692,7 +692,7 @@ it('should assert that html input is checked', async ({ expect }) => {
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'css', selector: 'input[type="checkbox"]' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -738,7 +738,7 @@ it('should assert that html input is not checked', async ({ expect }) => {
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'css', selector: 'input[type="checkbox"]' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -784,7 +784,7 @@ it('should assert that html input is indeterminate', async ({ expect }) => {
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'css', selector: 'input[type="checkbox"]' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -830,7 +830,7 @@ it('should assert that aria input is checked', async ({ expect }) => {
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'css', selector: '[role="checkbox"]' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -876,7 +876,7 @@ it('should assert that aria input is not checked', async ({ expect }) => {
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'css', selector: '[role="checkbox"]' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -922,7 +922,7 @@ it('should assert that aria input is indeterminate', async ({ expect }) => {
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'css', selector: '[role="checkbox"]' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -970,7 +970,7 @@ it('should assert that input has single value using toHaveValue', async ({
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'css', selector: 'input[type="text"]' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -1015,7 +1015,7 @@ it('should emit a getByTestId locator', async ({ expect }) => {
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'testid', testId: 'submit-button' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -1060,7 +1060,7 @@ it('should emit a getByRole locator', async ({ expect }) => {
             role: 'button',
             options: { name: 'Submit' },
           },
-          parents: [],
+          frames: [],
           inputs: { page: { nodeId: 'page' } },
         },
         {
@@ -1102,7 +1102,7 @@ it('should emit a css locator', async ({ expect }) => {
             type: 'css',
             selector: 'button.submit-btn',
           },
-          parents: [],
+          frames: [],
           inputs: { page: { nodeId: 'page' } },
         },
         {
@@ -1145,7 +1145,7 @@ it('should emit a getByAltText locator', async ({ expect }) => {
             text: 'Grot is happy',
             options: { exact: true },
           },
-          parents: [],
+          frames: [],
           inputs: { page: { nodeId: 'page' } },
         },
         {
@@ -1188,7 +1188,7 @@ it('should emit a getByLabel locator', async ({ expect }) => {
             label: 'Username',
             options: { exact: true },
           },
-          parents: [],
+          frames: [],
           inputs: { page: { nodeId: 'page' } },
         },
         {
@@ -1225,7 +1225,7 @@ it('should emit a getByPlaceholder locator', async ({ expect }) => {
             placeholder: 'Enter your email',
             options: { exact: true },
           },
-          parents: [],
+          frames: [],
           inputs: { page: { nodeId: 'page' } },
         },
         {
@@ -1262,7 +1262,7 @@ it('should emit a getByTitle locator', async ({ expect }) => {
             title: 'Submit your form',
             options: { exact: true },
           },
-          parents: [],
+          frames: [],
           inputs: { page: { nodeId: 'page' } },
         },
         {
@@ -1305,7 +1305,7 @@ it('should emit a waitFor statement', async ({ expect }) => {
             title: 'Submit your form',
             options: { exact: true },
           },
-          parents: [],
+          frames: [],
           inputs: { page: { nodeId: 'page' } },
         },
         {
@@ -1476,7 +1476,7 @@ it('should emit two actions on same locator inside same try-finally block', asyn
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'css', selector: 'button' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -1602,7 +1602,7 @@ it('should emit a trace-call on pages and locators', async ({ expect }) => {
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'css', selector: 'button' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -1649,7 +1649,7 @@ it('should emit a trace-call on an expect expression', async ({ expect }) => {
           type: 'locator',
           nodeId: 'locator',
           locator: { type: 'css', selector: '#abc' },
-          parents: [],
+          frames: [],
           inputs: {
             page: { nodeId: 'page' },
           },

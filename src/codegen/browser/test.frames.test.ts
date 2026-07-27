@@ -24,9 +24,7 @@ describe('frame chain conversion', () => {
       (node) => node.type === 'locator'
     )
 
-    expect(locatorNode?.parents).toEqual([
-      { type: 'css', selector: 'iframe#a' },
-    ])
+    expect(locatorNode?.frames).toEqual([{ type: 'css', selector: 'iframe#a' }])
   })
 
   it('converts event.frame to action.locator.parent', () => {

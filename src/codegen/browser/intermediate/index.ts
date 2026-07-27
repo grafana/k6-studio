@@ -217,7 +217,7 @@ function toParentScope(
 function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
   const page = context.reference(node.inputs.page)
 
-  const chain = node.parents.reduce((prev, frame) => {
+  const chain = node.frames.reduce((prev, frame) => {
     return toParentScope(prev, frame)
   }, page)
 

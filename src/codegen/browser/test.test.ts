@@ -173,7 +173,7 @@ describe('convertActionsToTest', () => {
           type: 'css',
           selector: 'button#submit',
         },
-        parents: [],
+        frames: [],
         inputs: {
           page: {
             nodeId: '1',
