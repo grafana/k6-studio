@@ -407,6 +407,29 @@ describe('LocatorForm highlight scoping', () => {
       frames: [],
     })
   })
+
+  it('clears the highlight once the hovered frame is removed from the chain', () => {
+    const inner = frameLocatorOptions({ type: 'css', selector: '#inner' })
+    const outer = frameLocatorOptions({ type: 'css', selector: '#outer' })
+
+    renderLocatorForm({
+      locator: elementLocatorOptions(
+        { type: 'css', selector: 'button.pay' },
+        inner,
+        outer
+      ),
+    })
+    openPopover()
+
+    // Hover (without leaving) the inner frame, then remove it — the hovered
+    // key is now stale, pointing at a frame no longer in the chain.
+    fireEvent.pointerEnter(row('iframe 2: #inner'))
+    fireEvent.click(screen.getByRole('button', { name: 'Remove iframe 2' }))
+
+    settleHighlight()
+
+    expect(probe()).toBeNull()
+  })
 })
 
 describe('LocatorForm suggested roles', () => {

@@ -164,6 +164,11 @@ function resolveHighlight(
   const chain = flattenLocators(element).toArray()
 
   const index = chain.findIndex((frame) => frame.key === target)
+
+  if (index === -1) {
+    return null
+  }
+
   const [frame, ...rest] = chain.slice(index)
 
   if (frame === undefined) {
