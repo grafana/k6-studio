@@ -48,17 +48,21 @@ export function unflattenLocators(
   )
 }
 
-export function push(
-  root: LocatorOptions | undefined,
-  newLocator: LocatorOptions
+/**
+ * Appends `next` to the outermost end of `chain`, preserving whatever parent
+ * chain `chain` already has instead of overwriting it.
+ */
+export function appendOutmost(
+  chain: LocatorOptions | undefined,
+  next: LocatorOptions
 ): LocatorOptions {
-  if (root === undefined) {
-    return newLocator
+  if (chain === undefined) {
+    return next
   }
 
   return {
-    ...root,
-    parent: push(root.parent, newLocator),
+    ...chain,
+    parent: appendOutmost(chain.parent, next),
   }
 }
 

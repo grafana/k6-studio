@@ -18,7 +18,11 @@ import {
   getCurrentLocator,
   LocatorOptions,
 } from '@/schemas/locator'
-import { flattenLocators, push, unflattenLocators } from '@/utils/locator'
+import {
+  appendOutmost,
+  flattenLocators,
+  unflattenLocators,
+} from '@/utils/locator'
 import { SyntheticKey } from '@/utils/zod'
 
 import { LocatorEditor } from './LocatorEditor'
@@ -64,7 +68,7 @@ export function LocatorChainList({
     onExpandedChange(frame.key)
     onChange({
       ...target,
-      parent: push(target.parent, frame),
+      parent: appendOutmost(target.parent, frame),
     })
   }
 

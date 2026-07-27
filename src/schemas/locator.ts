@@ -1,5 +1,6 @@
 import { z } from 'zod/v4'
 
+import { appendOutmost } from '@/utils/locator'
 import { exhaustive } from '@/utils/typescript'
 import { newSyntheticKey, syntheticKey } from '@/utils/zod'
 
@@ -134,26 +135,13 @@ export type PlaceholderLocator = z.infer<typeof GetByPlaceholderLocatorSchema>
 export type TitleLocator = z.infer<typeof GetByTitleLocatorSchema>
 export type TextLocator = z.infer<typeof GetByTextLocatorSchema>
 
-// Appends `next` to the outermost end of `chain`, preserving whatever parent
-// chain `chain` already has instead of overwriting it.
-function appendParent(
-  chain: LocatorOptions | undefined,
-  next: LocatorOptions
-): LocatorOptions {
-  if (chain === undefined) {
-    return next
-  }
-
-  return { ...chain, parent: appendParent(chain.parent, next) }
-}
-
 function chainParents(
   parents: Array<LocatorOptions | undefined>
 ): LocatorOptions | undefined {
   return parents
     .filter((parent) => parent !== undefined)
     .reduce<LocatorOptions | undefined>(
-      (chain, next) => appendParent(chain, next),
+      (chain, next) => appendOutmost(chain, next),
       undefined
     )
 }
