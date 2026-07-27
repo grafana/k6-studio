@@ -95,53 +95,16 @@ describe('initSettings disk migration', () => {
     const raw = readFileSync(filePath, 'utf-8')
     const parsed = readSettingsFile(filePath)
 
-    expect(parsed.version).toBe('6.0')
+    expect(parsed.version).toBe('5.0')
     expect(parsed).not.toHaveProperty('ai')
     expect(raw).not.toContain('encrypted-key-string')
     expect(parsed.proxy).toEqual(baseSharedSettings.proxy)
     expect(parsed.recorder).toEqual({
       ...baseSharedSettings.recorder,
-      customBrowserLaunchArgs: [],
+      chromeLaunchArgs: [],
     })
     expect(parsed.telemetry).toEqual(baseSharedSettings.telemetry)
     expect(parsed.appearance).toEqual(baseSharedSettings.appearance)
     expect(parsed.windowState).toEqual(baseSharedSettings.windowState)
-  })
-
-  it('migrates a v5 file to v6 and adds customBrowserLaunchArgs', async () => {
-    const v5Settings = {
-      version: '5.0',
-      ...baseSharedSettings,
-    }
-    writeFileSync(filePath, JSON.stringify(v5Settings))
-
-    const { initSettings } = await import('./settings')
-    await initSettings()
-
-    const parsed = readSettingsFile(filePath)
-
-    expect(parsed.version).toBe('6.0')
-    expect(parsed.recorder).toEqual({
-      ...baseSharedSettings.recorder,
-      customBrowserLaunchArgs: [],
-    })
-  })
-
-  it('leaves a v6 file untouched', async () => {
-    const v6Settings = {
-      version: '6.0',
-      ...baseSharedSettings,
-      recorder: {
-        ...baseSharedSettings.recorder,
-        customBrowserLaunchArgs: ['--no-sandbox'],
-      },
-    }
-    const originalRaw = JSON.stringify(v6Settings)
-    writeFileSync(filePath, originalRaw)
-
-    const { initSettings } = await import('./settings')
-    await initSettings()
-
-    expect(readFileSync(filePath, 'utf-8')).toBe(originalRaw)
   })
 })

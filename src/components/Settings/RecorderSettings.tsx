@@ -1,7 +1,7 @@
 import { css } from '@emotion/react'
-import { Flex, Text, Checkbox, Callout, TextArea } from '@radix-ui/themes'
+import { Flex, Text, Checkbox, Callout, TextArea, Code } from '@radix-ui/themes'
 import { AlertTriangleIcon } from 'lucide-react'
-import { type ReactNode, useEffect } from 'react'
+import { useEffect } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
 import { FieldGroup } from '@/components/Form'
@@ -57,8 +57,7 @@ export const RecorderSettings = () => {
   }
 
   const hasCustomArgs =
-    recorder.customBrowserLaunchArgs?.some((argument) => argument.trim()) ??
-    false
+    recorder.chromeLaunchArgs?.some((argument) => argument.trim()) ?? false
 
   return (
     <SettingsSection>
@@ -105,21 +104,17 @@ export const RecorderSettings = () => {
 
       <Controller
         control={control}
-        name="recorder.customBrowserLaunchArgs"
+        name="recorder.chromeLaunchArgs"
         render={({ field }) => (
           <FieldGroup
-            name="recorder.customBrowserLaunchArgs"
+            name="recorder.chromeLaunchArgs"
             label="Additional Chrome/Chromium arguments"
             errors={errors}
             hint="Enter one Chromium command-line switch per line. Values may contain spaces and do not require shell quotes"
             hintType="text"
           >
             <TextArea
-              placeholder={
-                '--proxy-bypass-list=<-loopback>\n' +
-                '--ignore-certificate-errors\n' +
-                '--user-agent=Custom browser agent'
-              }
+              placeholder="e.g. --user-agent=Custom browser agent"
               rows={4}
               css={css`
                 font-family: monospace;
@@ -153,21 +148,5 @@ export const RecorderSettings = () => {
         </Callout.Root>
       )}
     </SettingsSection>
-  )
-}
-
-function Code({ children }: { children: ReactNode }) {
-  return (
-    <code
-      css={css`
-        background: var(--gray-a3);
-        padding: 1px 4px;
-        border-radius: 3px;
-        font-family: monospace;
-        font-size: 0.9em;
-      `}
-    >
-      {children}
-    </code>
   )
 }

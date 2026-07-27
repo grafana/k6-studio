@@ -15,14 +15,14 @@ import { getExecutableNameFromPlist } from '../utils/plist'
 import { stopProxyProcess, launchProxyAndAttachEmitter } from './proxy'
 
 export const defaultSettings: AppSettings = {
-  version: '6.0',
+  version: '5.0',
   proxy: {
     mode: 'regular',
     port: 6000,
     automaticallyFindPort: true,
     sslInsecure: false,
   },
-  recorder: { detectBrowserPath: true, customBrowserLaunchArgs: [] },
+  recorder: { detectBrowserPath: true, chromeLaunchArgs: [] },
   windowState: { width: 1200, height: 800, x: 0, y: 0, isMaximized: true },
   telemetry: { usageReport: true, errorReport: true },
   appearance: { theme: 'system' },

@@ -8,8 +8,6 @@ import { mkdir, mkdtemp, writeFile } from '@/utils/fs'
 import * as path from '@/utils/path'
 import { toNativePath } from '@/utils/path'
 
-import { BrowserLaunchError } from './types'
-
 const CHROME_DEV_PREFERENCES = JSON.stringify({
   devtools: {
     preferences: {
@@ -75,7 +73,7 @@ export async function getBrowserLaunchArgs({
   const userDataDir = await createUserDataDir()
 
   const proxyArgs = await getProxyArguments(settings.proxy)
-  const customArgs = settings.recorder.customBrowserLaunchArgs
+  const customArgs = settings.recorder.chromeLaunchArgs
 
   const args = [
     '--new',
@@ -92,11 +90,7 @@ export async function getBrowserLaunchArgs({
     ...proxyArgs,
   ]
 
-  try {
-    validateCustomBrowserArguments(customArgs, [...args, ...additionalArgs])
-  } catch (error) {
-    throw new BrowserLaunchError('invalid-browser-arguments', error)
-  }
+  validateCustomBrowserArguments(customArgs, [...args, ...additionalArgs])
 
   args.push(...customArgs, ...additionalArgs, url?.trim() || 'about:blank')
 

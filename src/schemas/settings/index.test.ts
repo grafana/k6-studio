@@ -4,9 +4,8 @@ import * as v1 from './v1'
 import * as v2 from './v2'
 import * as v3 from './v3'
 import * as v4 from './v4'
-import * as v5 from './v5'
 
-import { migrate } from '.'
+import { AppSettingsSchema, migrate } from '.'
 
 describe('Settings migration', () => {
   it('should migrate from v1 to latest', () => {
@@ -39,7 +38,7 @@ describe('Settings migration', () => {
 
     const migration = migrate(v1Settings)
 
-    expect(migration.version).toBe('6.0')
+    expect(migration.version).toBe('5.0')
     expect(migration.telemetry.usageReport).toBe(v1Settings.usageReport.enabled)
   })
 
@@ -73,7 +72,7 @@ describe('Settings migration', () => {
 
     const migration = migrate(v2Settings)
 
-    expect(migration.version).toBe('6.0')
+    expect(migration.version).toBe('5.0')
     expect(migration.telemetry.usageReport).toBe(v2Settings.usageReport.enabled)
   })
 
@@ -201,7 +200,10 @@ describe('Settings migration', () => {
       const migration = v4.migrate(v4Settings)
 
       expect(migration.proxy).toEqual(v4Settings.proxy)
-      expect(migration.recorder).toEqual(v4Settings.recorder)
+      expect(migration.recorder).toEqual({
+        ...v4Settings.recorder,
+        chromeLaunchArgs: [],
+      })
       expect(migration.windowState).toEqual(v4Settings.windowState)
       expect(migration.telemetry).toEqual(v4Settings.telemetry)
       expect(migration.appearance).toEqual(v4Settings.appearance)
@@ -210,14 +212,14 @@ describe('Settings migration', () => {
     it('should migrate v4 to latest through the orchestrator', () => {
       const migration = migrate(v4Settings)
 
-      expect(migration.version).toBe('6.0')
+      expect(migration.version).toBe('5.0')
       expect('ai' in migration).toBe(false)
     })
   })
 
-  describe('v5 to v6', () => {
-    it('should add customBrowserLaunchArgs as an empty array', () => {
-      const v5Settings: v5.AppSettings = {
+  describe('v5 parsing', () => {
+    it('should default chromeLaunchArgs to an empty array', () => {
+      const v5Settings = {
         version: '5.0',
         proxy: {
           mode: 'regular',
@@ -245,10 +247,10 @@ describe('Settings migration', () => {
         },
       }
 
-      const migration = v5.migrate(v5Settings)
+      const migration = AppSettingsSchema.parse(v5Settings)
 
-      expect(migration.version).toBe('6.0')
-      expect(migration.recorder.customBrowserLaunchArgs).toEqual([])
+      expect(migration.version).toBe('5.0')
+      expect(migration.recorder.chromeLaunchArgs).toEqual([])
     })
   })
 })

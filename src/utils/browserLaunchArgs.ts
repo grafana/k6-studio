@@ -1,11 +1,4 @@
-export class BrowserLaunchArgumentsError extends Error {
-  readonly code = 'INVALID_BROWSER_LAUNCH_ARGUMENTS'
-
-  constructor(message: string) {
-    super(message)
-    this.name = 'BrowserLaunchArgumentsError'
-  }
-}
+import { BrowserLaunchError } from '@/recorder/launchers/types'
 
 /**
  * Switches that settings and launch-time validation always treat as managed by
@@ -91,6 +84,6 @@ export function validateCustomBrowserArguments(
   )
 
   if (message) {
-    throw new BrowserLaunchArgumentsError(message)
+    throw new BrowserLaunchError('invalid-browser-arguments', message)
   }
 }

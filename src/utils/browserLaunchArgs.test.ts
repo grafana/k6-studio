@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
+import { BrowserLaunchError } from '@/recorder/launchers/types'
+
 import {
   ALWAYS_MANAGED_BROWSER_SWITCHES,
-  BrowserLaunchArgumentsError,
   findCustomBrowserArgumentError,
   getBrowserSwitchName,
   validateCustomBrowserArguments,
@@ -45,12 +46,23 @@ describe('findCustomBrowserArgumentError', () => {
 
 describe('validateCustomBrowserArguments', () => {
   it('rejects a custom switch that conflicts with a runtime-managed switch', () => {
-    expect(() =>
+    let thrown: unknown
+
+    try {
       validateCustomBrowserArguments(
         ['--disable-web-security'],
         ['--disable-web-security']
       )
-    ).toThrow(BrowserLaunchArgumentsError)
+    } catch (error) {
+      thrown = error
+    }
+
+    expect(thrown).toBeInstanceOf(BrowserLaunchError)
+
+    if (!(thrown instanceof BrowserLaunchError)) {
+      throw new Error('Expected BrowserLaunchError')
+    }
+    expect(thrown.source).toBe('invalid-browser-arguments')
   })
 
   it('compares switch names case-insensitively', () => {
