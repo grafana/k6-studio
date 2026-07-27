@@ -100,7 +100,7 @@ export function BrowserTestEditor({
       isExternal: false,
     }),
     filters: [{ name: 'Browser Test', extensions: ['k6b'] }],
-    onSave: (location) => {
+    onSave: ({ location }) => {
       if (location.path === file.path) {
         markAsSaved()
       } else {

@@ -6,7 +6,7 @@ import {
   IconButton,
   Tooltip,
 } from '@radix-ui/themes'
-import { BugIcon, EllipsisVerticalIcon } from 'lucide-react'
+import { BugIcon, EllipsisVerticalIcon, SaveIcon } from 'lucide-react'
 
 import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
 import { RichDropdownMenuItem } from '@/components/RichDropdownMenuItem'
@@ -19,22 +19,26 @@ interface ValidatorControlsProps {
   file: StudioFile
   isRunning: boolean
   canDelete: boolean
+  isDirty: boolean
   scenarios: string[]
   onRunScript: (scenarioName?: string) => void
   onRunInCloud: () => void
   onSelectScript: () => void
   onStopScript: () => void
+  onSave: () => void
 }
 
 export function ValidatorControls({
   file,
   isRunning,
   canDelete,
+  isDirty,
   scenarios,
   onRunScript,
   onRunInCloud,
   onSelectScript,
   onStopScript,
+  onSave,
 }: ValidatorControlsProps) {
   const proxyStatus = useProxyStatus()
 
@@ -55,6 +59,17 @@ export function ValidatorControls({
       )}
       {!isRunning && (
         <Flex gap="4" align="center">
+          <Tooltip content={!isDirty ? 'Changes saved' : 'Save changes'}>
+            <IconButton
+              onClick={onSave}
+              disabled={!isDirty}
+              variant="ghost"
+              color="gray"
+              aria-label="Save script"
+            >
+              <SaveIcon />
+            </IconButton>
+          </Tooltip>
           <Tooltip
             content={`Proxy is ${proxyStatus}`}
             hidden={proxyStatus === 'online'}

@@ -61,7 +61,11 @@ export function useDebugSession(script: Script) {
         const scriptPath = await window.studio.fs.getTempScriptPath()
 
         await window.studio.script
-          .runScriptFromGenerator(input, scriptPath)
+          .runScriptFromGenerator({
+            content: input,
+            path: scriptPath,
+            scenario: scenarioName,
+          })
           .catch(() => {
             setState('stopped')
           })
@@ -69,9 +73,11 @@ export function useDebugSession(script: Script) {
         return
       }
 
-      await window.studio.script.runScript(input, scenarioName).catch(() => {
-        setState('stopped')
-      })
+      await window.studio.script
+        .runScript({ path: input, scenario: scenarioName })
+        .catch(() => {
+          setState('stopped')
+        })
     },
     [resetSession, script.type, input]
   )

@@ -1,7 +1,7 @@
 import { Flex } from '@radix-ui/themes'
 
 import { AssistantAuthGate } from '@/components/Assistant/AssistantAuthGate'
-import { FileLocation } from '@/handlers/fs/types'
+import { OnSaveEvent } from '@/hooks/useSaveFile'
 import { ScriptPreview } from '@/hooks/useScriptPreview'
 
 import { useSetupWizard } from './state/SetupWizardContext'
@@ -49,7 +49,7 @@ function ActiveStep({
 interface WizardShellProps {
   script: ScriptPreview
   scriptName: string
-  onSaveGenerator: () => Promise<FileLocation | undefined>
+  onSaveGenerator: () => Promise<OnSaveEvent | undefined>
   onComplete: () => void
 }
 

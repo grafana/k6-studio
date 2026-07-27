@@ -4,8 +4,9 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { mockMatchMedia } from '@/test/utils/mockMatchMedia'
 
-import { TimelineSlider } from './TimelineSlider'
 import { Time } from '../types'
+
+import { TimelineSlider } from './TimelineSlider'
 
 function StatefulTimelineSlider({
   onSeek,

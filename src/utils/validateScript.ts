@@ -54,7 +54,11 @@ export async function validateScript(
 
     // Run the script
     window.studio.script
-      .runScriptFromGenerator(script, scriptPath, shouldTrack)
+      .runScriptFromGenerator({
+        content: script,
+        path: scriptPath,
+        shouldTrack,
+      })
       .catch((error) => {
         cleanup()
         reject(error)
