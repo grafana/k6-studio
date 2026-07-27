@@ -100,6 +100,15 @@ function buildBrowserNodeGraphFromActions(
   function getLocator(locatorOptions: ElementLocatorOptions): NodeRef {
     const currentLocator = toElementLocator(locatorOptions)
     const frames = flattenLocators(locatorOptions.parent)
+      .map((frame) => {
+        if (frame.type === 'element') {
+          throw new Error(
+            'Nested element locators are currently not supported.'
+          )
+        }
+
+        return frame
+      })
       .map(toElementLocator)
       .toArray()
       .toReversed()
