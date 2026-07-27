@@ -193,38 +193,37 @@ function toLocatorExpression(
 // readable `frameLocator(selector)`. Other locator types must go through
 // `<locator>.contentFrame()` because `frameLocator` only accepts a string
 // selector.
-function toParentScope(
-  parent: ir.Expression,
-  frame: ElementLocator
+function toFrameScope(
+  page: ir.Expression,
+  frames: ElementLocator[] | undefined
 ): ir.Expression {
-  if (frame.type === 'css') {
-    return {
-      type: 'NewFrameLocatorExpression',
-      parent,
-      selector: {
-        type: 'StringLiteral',
-        value: frame.selector,
-      },
+  return (frames ?? []).reduce<ir.Expression>((parent, frame) => {
+    if (frame.type === 'css') {
+      return {
+        type: 'NewFrameLocatorExpression',
+        parent,
+        selector: {
+          type: 'StringLiteral',
+          value: frame.selector,
+        },
+      }
     }
-  }
 
-  return {
-    type: 'ContentFrameExpression',
-    target: toLocatorExpression(parent, frame),
-  }
+    return {
+      type: 'ContentFrameExpression',
+      target: toLocatorExpression(parent, frame),
+    }
+  }, page)
 }
 
 function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
   const page = context.reference(node.inputs.page)
-
-  const chain = node.frames.reduce((prev, frame) => {
-    return toParentScope(prev, frame)
-  }, page)
+  const scope = toFrameScope(page, node.frames)
 
   // We always inline locator nodes for readability. If we implement better
   // logic for generating variable names, then we could consider declaring
   // a variable for it if there are multiple references.
-  context.inline(node, toLocatorExpression(chain, node.locator))
+  context.inline(node, toLocatorExpression(scope, node.locator))
 }
 
 function getClickOptions(node: m.ClickNode): ir.ClickOptionsExpression | null {

@@ -27,7 +27,7 @@ function clickScenario(
         type: 'locator',
         nodeId: 'loc',
         locator: element,
-        frames: frames,
+        frames,
         inputs: { page: { nodeId: 'page' } },
       },
       {

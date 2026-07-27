@@ -35,8 +35,15 @@ function toElementLocator({ current, values }: LocatorOptions): ElementLocator {
   return locator
 }
 
-function framesEqual(a: ElementLocator[], b: ElementLocator[]): boolean {
-  if (a.length !== b.length) {
+function framesEqual(
+  a: ElementLocator[] | undefined,
+  b: ElementLocator[] | undefined
+): boolean {
+  if (a === undefined && b === undefined) {
+    return true
+  }
+
+  if (a === undefined || b === undefined || a.length !== b.length) {
     return false
   }
 
@@ -116,7 +123,7 @@ function buildBrowserNodeGraphFromActions(
         type: 'locator',
         nodeId: crypto.randomUUID(),
         locator: currentLocator,
-        frames: frames,
+        frames,
         inputs: {
           page: getPage(),
         },
