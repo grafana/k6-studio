@@ -113,10 +113,13 @@ export function getErrors(
   const frames = flattenLocators(locator).toArray()
 
   return frames.flatMap((frame, index) => {
+    const touchState = touchStates.get(frame)
+    const inputTouched = touchState.states[frame.current]
+
     // Only surface errors for frames the user has actually touched — closing
     // the popover or leaving a row touches it, but untouched frames stay
     // hidden until then.
-    if (!touchStates.get(frame).touched) {
+    if (!inputTouched && !touchState.touched) {
       return []
     }
 
