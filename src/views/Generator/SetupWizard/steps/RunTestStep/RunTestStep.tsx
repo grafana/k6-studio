@@ -21,8 +21,8 @@ import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { LoadProfile } from '@/components/TestOptions'
 import { VuhEstimate } from '@/handlers/cloud/types'
-import { FileLocation } from '@/handlers/fs/types'
 import { useAuthStatus } from '@/hooks/useAuthStatus'
+import { OnSaveEvent } from '@/hooks/useSaveFile'
 import { ScriptPreview } from '@/hooks/useScriptPreview'
 import {
   selectFilteredRequests,
@@ -57,7 +57,7 @@ const STAGE_LABEL_MIN_WIDTH = 88
 interface RunTestStepProps {
   script: ScriptPreview
   scriptName: string
-  onSave: () => Promise<FileLocation | undefined>
+  onSave: () => Promise<OnSaveEvent | undefined>
   onComplete: () => void
 }
 

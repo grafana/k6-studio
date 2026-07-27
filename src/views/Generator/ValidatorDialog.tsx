@@ -70,7 +70,10 @@ export function ValidatorDialog({
       recording
     )
 
-    await window.studio.script.runScriptFromGenerator(generated, scriptPath)
+    await window.studio.script.runScriptFromGenerator({
+      content: generated,
+      path: scriptPath,
+    })
   }, [resetState])
 
   useEffect(() => {

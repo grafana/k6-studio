@@ -8,6 +8,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { DEFAULT_OPTIONS } from './defaultOptions'
 import { EditorToolbar, ToolbarState } from './EditorToolbar'
 import { useHighlightSearch } from './ReactMonacoEditor.hooks'
+import { registerTypeDefinitions } from './registerTypeDefinitions'
 import { useShouldEnableWordWrap } from './useShouldEnableWordWrap'
 
 loader.config({ monaco })
@@ -46,6 +47,12 @@ export function ReactMonacoEditor({
     }
   }
 
+  const handleBeforeMount = (monaco: Monaco) => {
+    registerTypeDefinitions()
+
+    props.beforeMount?.(monaco)
+  }
+
   useEffect(() => {
     if (!editor || !onCopy) {
       return
@@ -71,6 +78,7 @@ export function ReactMonacoEditor({
       )}
       <Editor
         {...props}
+        beforeMount={handleBeforeMount}
         options={{
           ...DEFAULT_OPTIONS,
           ...props.options,

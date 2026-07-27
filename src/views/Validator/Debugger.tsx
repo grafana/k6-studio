@@ -17,6 +17,7 @@ interface DebuggerProps {
   options: K6TestOptions
   session: DebugSession
   onDebugScript: () => void
+  onScriptChange: (value: string) => void
 }
 
 export function Debugger({
@@ -25,6 +26,7 @@ export function Debugger({
   options,
   session,
   onDebugScript,
+  onScriptChange,
 }: DebuggerProps) {
   if (isBrowserTest(options)) {
     return (
@@ -33,6 +35,7 @@ export function Debugger({
         script={script}
         session={session}
         onDebugScript={onDebugScript}
+        onScriptChange={onScriptChange}
       />
     )
   }
@@ -42,6 +45,7 @@ export function Debugger({
       script={script}
       session={session}
       onDebugScript={onDebugScript}
+      onScriptChange={onScriptChange}
     />
   )
 }
