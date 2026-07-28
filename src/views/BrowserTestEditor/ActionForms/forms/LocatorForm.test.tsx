@@ -199,7 +199,7 @@ describe('LocatorForm chain accordion', () => {
     expect(screen.queryByText('CSS selector cannot be empty')).toBeNull()
   })
 
-  it('add iframe appends a new outermost frame and opens it', () => {
+  it('add iframe prepends a new innermost frame and opens it', () => {
     const outer = frameLocatorOptions({ type: 'css', selector: '#outer' })
     const locator = elementLocatorOptions(
       { type: 'css', selector: 'button.pay' },
@@ -211,25 +211,23 @@ describe('LocatorForm chain accordion', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /add iframe/i }))
 
-    // The new frame is appended after existing parents (making it the new
-    // outermost frame) and gets its own fresh key — only its content is
-    // asserted.
+    // The new frame is prepended before existing parents (making it the new
+    // innermost frame, directly wrapping the element) and gets its own fresh
+    // key — only its content is asserted.
     expect(onChange).toHaveBeenCalledWith(
       buildAction({
         ...locator,
         parent: {
-          ...outer,
-          parent: {
-            type: 'frame',
-            key: expect.any(String) as SyntheticKey,
-            current: 'css',
-            values: { css: { type: 'css', selector: '' } },
-            parent: undefined,
-          },
+          type: 'frame',
+          key: expect.any(String) as SyntheticKey,
+          current: 'css',
+          values: { css: { type: 'css', selector: '' } },
+          parent: outer,
         },
       })
     )
-    expect(expanded(/^iframe 1/)).toBe('true')
+    // The innermost frame renders last in the outermost-first row list.
+    expect(expanded(/^iframe 2/)).toBe('true')
     expect(selectorField().value).toBe('')
   })
 

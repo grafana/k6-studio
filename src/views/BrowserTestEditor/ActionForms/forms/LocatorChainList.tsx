@@ -18,11 +18,7 @@ import {
   getCurrentLocator,
   LocatorOptions,
 } from '@/schemas/locator'
-import {
-  appendOutmost,
-  flattenLocators,
-  unflattenLocators,
-} from '@/utils/locator'
+import { flattenLocators, unflattenLocators } from '@/utils/locator'
 import { SyntheticKey } from '@/utils/zod'
 
 import { LocatorEditor } from './LocatorEditor'
@@ -63,12 +59,15 @@ export function LocatorChainList({
   onTouch,
 }: LocatorChainListProps) {
   const handleAddFrame = () => {
-    const frame = frameLocatorOptions()
+    const frame = {
+      ...frameLocatorOptions(),
+      parent: target.parent,
+    }
 
     onExpandedChange(frame.key)
     onChange({
       ...target,
-      parent: appendOutmost(target.parent, frame),
+      parent: frame,
     })
   }
 
