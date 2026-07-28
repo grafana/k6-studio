@@ -9,11 +9,13 @@ import { HighlightLocatorProvider } from '@/components/HighlightLocatorProvider'
 import { HtmlInspector } from '@/components/HtmlInspector'
 import { View } from '@/components/Layout/View'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
+import { UnsavedChangesDialog } from '@/components/UnsavedChangesDialog'
 import {
   LogsSection,
   useConsoleFilter,
 } from '@/components/Validator/LogsSection'
 import { useSaveFile } from '@/hooks/useSaveFile'
+import { useUnsavedChangesPrompt } from '@/hooks/useUnsavedChangesPrompt'
 import { getViewPath } from '@/routeMap'
 import {
   AnyBrowserAction,
@@ -120,6 +122,11 @@ export function BrowserTestEditor({
   const handleSave = () => {
     void saveFile({ saveAs: false })
   }
+
+  const unsavedChangesPrompt = useUnsavedChangesPrompt({
+    isDirty,
+    onSave: () => saveFile({ saveAs: false }),
+  })
 
   const handleAddAction = (action: AnyBrowserAction) => {
     onChange({
@@ -273,6 +280,7 @@ export function BrowserTestEditor({
                 </Flex>
               </Tabs.Root>
             </Flex>
+            <UnsavedChangesDialog {...unsavedChangesPrompt} />
           </View>
         </ValidationProvider>
       </PlayerContextProvider>

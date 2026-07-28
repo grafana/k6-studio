@@ -151,7 +151,7 @@ const createWindow = async () => {
 
     if (
       fileExtension &&
-      ['.k6g', '.js', '.ts'].includes(fileExtension) &&
+      ['.k6g', '.k6b', '.js', '.ts'].includes(fileExtension) &&
       !k6StudioState.wasAppClosedByClient
     ) {
       event.preventDefault()
