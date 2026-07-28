@@ -6,15 +6,19 @@ import { ElementLocator, CssLocator } from '@/schemas/locator'
 
 import { toFieldErrors } from '../utils'
 
+import { FieldErrors } from './validation'
+
 interface GetByCssFormProps {
-  locator: CssLocator
-  errors?: Record<string, string>
+  locator: CssLocator | undefined
+  isTouched: boolean
+  errors: FieldErrors['css'] | undefined
   onChange: (locator: ElementLocator) => void
   onBlur?: () => void
 }
 
 export function GetByCssForm({
-  locator,
+  locator = { type: 'css', selector: '' },
+  isTouched,
   errors,
   onChange,
   onBlur,
@@ -25,7 +29,7 @@ export function GetByCssForm({
       label="CSS selector"
       labelSize="1"
       mb="0"
-      errors={toFieldErrors('css-selector', errors?.['css-selector'])}
+      errors={toFieldErrors('css-selector', isTouched && errors?.selector)}
       css={css`
         display: grid;
         height: 100%;

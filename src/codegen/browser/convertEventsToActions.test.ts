@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { LocatorOptions } from '@/schemas/locator'
 import { BrowserEvent } from '@/schemas/recording'
 
 import { convertEventsToActions } from './convertEventsToActions'
@@ -221,13 +222,14 @@ describe('convertEventsToActions', () => {
         submitter: makeTarget('button[type=submit]'),
       },
     ]
-    const actions = convertEventsToActions(events)
-    expect(actions).toHaveLength(1)
-    expect(actions[0]).toMatchObject({ method: 'locator.click' })
-    expect(
-      (actions[0] as { locator: { values: { css: { selector: string } } } })
-        .locator.values.css?.selector
-    ).toBe('button[type=submit]')
+    const [action, ...rest] = convertEventsToActions(events) as Array<{
+      method: string
+      locator?: LocatorOptions
+    }>
+
+    expect(rest).toHaveLength(0)
+    expect(action?.method).toBe('locator.click')
+    expect(action?.locator?.values.css?.selector).toBe('button[type=submit]')
   })
 
   it('converts wait-for to locator.waitFor with options', () => {

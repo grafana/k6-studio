@@ -1,5 +1,5 @@
 import { BrowserDebuggerEvent } from '@/main/runner/schema'
-import { LocatorOptions } from '@/schemas/locator'
+import { ElementLocatorOptions } from '@/schemas/locator'
 import { AriaDetails } from '@/schemas/recording'
 
 export interface ContextMenuState {
@@ -11,9 +11,7 @@ export interface ContextMenuState {
     y: number
   }
   aria: AriaDetails
-  locator: LocatorOptions
-  // Chain of iframe locators (outermost first) the clicked element lives in.
-  frames?: LocatorOptions[]
+  locator: ElementLocatorOptions
 }
 
 export type BrowserActionStates = Partial<

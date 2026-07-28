@@ -1,15 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { LocatorOptions } from '@/schemas/locator'
-import { newSyntheticKey } from '@/utils/zod'
+import { frameLocatorOptions } from '@/schemas/locator'
 
 import { findElementsByFrameChain } from './selectors'
 
-const cssFrame = (selector: string): LocatorOptions => ({
-  key: newSyntheticKey(),
-  current: 'css',
-  values: { css: { type: 'css', selector } },
-})
+const cssFrame = (selector: string) => {
+  return frameLocatorOptions({ type: 'css', selector })
+}
 
 function mountIframe(parent: Document, id: string, innerHtml: string): void {
   const iframe = parent.createElement('iframe')

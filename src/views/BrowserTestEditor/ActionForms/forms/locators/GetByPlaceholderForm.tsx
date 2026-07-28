@@ -4,15 +4,19 @@ import { ElementLocator, PlaceholderLocator } from '@/schemas/locator'
 import { TextFieldWithExactToggle } from '../../components'
 import { toFieldErrors } from '../utils'
 
+import { FieldErrors } from './validation'
+
 interface GetByPlaceholderFormProps {
-  locator: PlaceholderLocator
-  errors?: Record<string, string>
+  locator: PlaceholderLocator | undefined
+  isTouched: boolean
+  errors: FieldErrors['placeholder'] | undefined
   onChange: (locator: ElementLocator) => void
   onBlur?: () => void
 }
 
 export function GetByPlaceholderForm({
-  locator,
+  locator = { type: 'placeholder', placeholder: '', options: { exact: false } },
+  isTouched,
   errors,
   onChange,
   onBlur,
@@ -23,7 +27,7 @@ export function GetByPlaceholderForm({
       label="Placeholder"
       labelSize="1"
       mb="0"
-      errors={toFieldErrors('placeholder', errors?.['placeholder'])}
+      errors={toFieldErrors('placeholder', isTouched && errors?.placeholder)}
     >
       <TextFieldWithExactToggle
         name="placeholder"

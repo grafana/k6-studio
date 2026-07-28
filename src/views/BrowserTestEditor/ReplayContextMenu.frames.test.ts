@@ -8,7 +8,7 @@ describe('buildFrameChainFromElement', () => {
     const button = document.querySelector('button')
 
     expect(button).not.toBeNull()
-    expect(buildFrameChainFromElement(button as Element)).toBeUndefined()
+    expect(buildFrameChainFromElement(button as Element)).toEqual([])
   })
 
   // The inclusion path (collecting recorded-page iframes while excluding the

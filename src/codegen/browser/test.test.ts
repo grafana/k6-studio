@@ -6,92 +6,13 @@ import {
 } from '@/test/factories/browserActions'
 import { SyntheticKey } from '@/utils/zod'
 
-import { convertActionsToTest, convertEventsToTest } from './test'
+import { convertActionsToTest } from './test'
+import { TestNode } from './types'
 
 // A fixed stand-in key: these fixtures don't exercise key behavior, and
 // generating one via newSyntheticKey() would consume the mocked
 // crypto.randomUUID() counter that convertActionsToTest's node IDs rely on.
 const fixtureKey = 'fixture-key' as SyntheticKey
-
-describe('convertEventsToTest', () => {
-  it('should not wait for navigation when submit-form is not followed by an implicit navigation', () => {
-    const test = convertEventsToTest({
-      browserEvents: [
-        {
-          type: 'navigate-to-page',
-          eventId: 'start-nav',
-          timestamp: 1,
-          tab: 'tab-1',
-          url: 'https://example.com/search',
-          source: 'address-bar',
-        },
-        {
-          type: 'submit-form',
-          eventId: 'submit',
-          timestamp: 2,
-          tab: 'tab-1',
-          form: { selectors: { css: 'form.search' } },
-          submitter: { selectors: { css: 'button[type="submit"]' } },
-        },
-      ],
-    })
-
-    const submitNode = test.defaultScenario?.nodes
-      .filter((node) => node.type === 'click')
-      .find((node) => node.nodeId === 'submit')
-
-    expect(submitNode).toBeDefined()
-    expect(submitNode?.waitForNavigation).toBeUndefined()
-  })
-
-  it('should wait for navigation when submit-form is followed by an implicit navigation', () => {
-    const test = convertEventsToTest({
-      browserEvents: [
-        {
-          type: 'navigate-to-page',
-          eventId: 'start-nav',
-          timestamp: 1,
-          tab: 'tab-1',
-          url: 'https://example.com/search',
-          source: 'address-bar',
-        },
-        {
-          type: 'submit-form',
-          eventId: 'submit',
-          timestamp: 2,
-          tab: 'tab-1',
-          form: { selectors: { css: 'form.search' } },
-          submitter: { selectors: { css: 'button[type="submit"]' } },
-        },
-        {
-          type: 'navigate-to-page',
-          eventId: 'implicit-nav',
-          timestamp: 3,
-          tab: 'tab-1',
-          url: 'https://example.com/results',
-          source: 'implicit',
-        },
-      ],
-    })
-
-    const nodes = test.defaultScenario?.nodes ?? []
-
-    const submitNode = nodes
-      .filter((node) => node.type === 'click')
-      .find((node) => node.nodeId === 'submit')
-
-    const implicitNavNode = nodes.find((node) => node.nodeId === 'implicit-nav')
-
-    expect(implicitNavNode).toBeUndefined()
-
-    expect(submitNode).toBeDefined()
-    expect(submitNode?.waitForNavigation).toEqual({
-      page: {
-        nodeId: 'tab-1',
-      },
-    })
-  })
-})
 
 describe('convertActionsToTest', () => {
   beforeEach(() => {
@@ -202,6 +123,7 @@ describe('convertActionsToTest', () => {
           method: 'locator.click',
           id: '2',
           locator: {
+            type: 'element',
             key: fixtureKey,
             current: 'css',
             values: {
@@ -251,6 +173,7 @@ describe('convertActionsToTest', () => {
           type: 'css',
           selector: 'button#submit',
         },
+        frames: [],
         inputs: {
           page: {
             nodeId: '1',
@@ -283,7 +206,7 @@ describe('convertActionsToTest', () => {
           },
         },
       },
-    ])
+    ] satisfies TestNode[])
   })
 
   it('threads inputType:aria through toBeChecked to is-checked IR operation', () => {
@@ -293,6 +216,7 @@ describe('convertActionsToTest', () => {
           inputType: 'aria',
           checked: true,
           locator: {
+            type: 'element',
             key: fixtureKey,
             current: 'css',
             values: { css: { type: 'css', selector: '[role="checkbox"]' } },

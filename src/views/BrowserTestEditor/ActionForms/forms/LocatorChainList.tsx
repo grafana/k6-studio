@@ -7,22 +7,25 @@ import {
   PlusIcon,
   Trash2Icon,
 } from 'lucide-react'
-import { ReactNode } from 'react'
 
 import {
   getLocatorPlainText,
   LocatorSummary,
 } from '@/components/Browser/Locator'
-import { getCurrentLocator, LocatorOptions } from '@/schemas/locator'
+import {
+  ElementLocatorOptions,
+  frameLocatorOptions,
+  getCurrentLocator,
+  LocatorOptions,
+} from '@/schemas/locator'
+import { flattenLocators, unflattenLocators } from '@/utils/locator'
 import { SyntheticKey } from '@/utils/zod'
 
-export type LocatorTargetKey = SyntheticKey
+import { LocatorEditor } from './LocatorEditor'
+import { TouchState, TouchStates } from './LocatorForm.hooks'
+import { validateLocator } from './locators/validation'
 
-export interface LocatorTarget {
-  key: LocatorTargetKey
-  options: LocatorOptions
-  error: string | null
-}
+export type LocatorTargetKey = SyntheticKey
 
 const slideDown = keyframes`
   from { height: 0; }
@@ -35,116 +38,190 @@ const slideUp = keyframes`
 `
 
 interface LocatorChainListProps {
-  frames: LocatorTarget[]
-  element: LocatorTarget
+  touchStates: TouchStates
+  target: ElementLocatorOptions
   expanded: LocatorTargetKey | null
+  suggestedRoles?: string[]
+  onChange: (newState: ElementLocatorOptions) => void
+  onHoverTarget: (target: LocatorOptions | null) => void
   onExpandedChange: (target: LocatorTargetKey | null) => void
-  onHoverTarget: (target: LocatorTargetKey | null) => void
-  onAddFrame: () => void
-  onRemoveFrame: (key: LocatorTargetKey) => void
-  renderEditor: (target: LocatorTarget) => ReactNode
+  onTouch: (locator: LocatorOptions) => void
 }
 
-/**
- * The frame chain (outermost first) and the element, as a single-open
- * accordion. Each row's header summarizes its locator; expanding a row reveals
- * its editor inline. Frames can be removed and new ones added; the element is
- * always present.
- */
 export function LocatorChainList({
-  frames,
-  element,
+  touchStates,
+  target,
   expanded,
+  suggestedRoles,
   onExpandedChange,
   onHoverTarget,
-  onAddFrame,
-  onRemoveFrame,
-  renderEditor,
+  onChange,
+  onTouch,
 }: LocatorChainListProps) {
-  const addButton = (
-    <Flex justify="end">
-      <Tooltip content="Add iframe">
-        <IconButton
-          size="1"
-          variant="ghost"
-          color="gray"
-          onClick={onAddFrame}
-          aria-label="Add iframe"
-        >
-          <PlusIcon />
-        </IconButton>
-      </Tooltip>
-    </Flex>
-  )
+  const handleAddFrame = () => {
+    const frame = {
+      ...frameLocatorOptions(),
+      parent: target.parent,
+    }
 
-  // With no frames there's nothing to chain, so skip the accordion and show the
-  // element's editor directly — only the add button hints that frames exist.
-  if (frames.length === 0) {
-    return (
-      <Flex direction="column" gap="2">
-        {addButton}
-        <Flex px="2" pb="3">
-          {renderEditor(element)}
-        </Flex>
-      </Flex>
-    )
+    onExpandedChange(frame.key)
+    onChange({
+      ...target,
+      parent: frame,
+    })
+  }
+
+  const handleRemoveFrame = (parent: LocatorOptions) => {
+    if (expanded === parent.key) {
+      onExpandedChange(target.key)
+    }
+
+    onChange({
+      ...target,
+      parent: unflattenLocators(
+        flattenLocators(target.parent).filter(
+          (frame) => frame.key !== parent.key
+        )
+      ),
+    })
+  }
+
+  const handleParentChange = (newParent: LocatorOptions) => {
+    onChange({
+      ...target,
+      parent: unflattenLocators(
+        flattenLocators(target.parent).map((frame) =>
+          frame.key === newParent.key ? newParent : frame
+        )
+      ),
+    })
+  }
+
+  const parents = flattenLocators(target.parent).toArray().toReversed()
+
+  const handleExpandedChange = (value: string) => {
+    // Switching rows is the row's last chance to surface problems while
+    // still in view, so mark the row being left touched even if the user
+    // never blurred a field inside it.
+    if (expanded !== null) {
+      const leaving = [target, ...parents].find((row) => row.key === expanded)
+
+      if (leaving) {
+        onTouch(leaving)
+      }
+    }
+
+    onExpandedChange(fromValue(value))
   }
 
   return (
     <Flex direction="column" gap="2">
-      {addButton}
+      <Flex justify="end">
+        <Tooltip content="Add iframe">
+          <IconButton
+            size="1"
+            variant="ghost"
+            color="gray"
+            onClick={handleAddFrame}
+            aria-label="Add iframe"
+          >
+            <PlusIcon />
+          </IconButton>
+        </Tooltip>
+      </Flex>
 
       <Accordion.Root
         type="single"
         collapsible
         value={toValue(expanded)}
-        onValueChange={(value) => onExpandedChange(fromValue(value))}
+        onValueChange={handleExpandedChange}
       >
-        {frames.map((frame, index) => (
-          <ChainRow
+        {parents.map((frame, index) => (
+          <LocatorChainItem
             key={frame.key}
+            isSingle={false}
+            touchState={touchStates.get(frame)}
             target={frame}
             label={`iframe ${index + 1}`}
-            isOpen={expanded === frame.key}
             isNested={index > 0}
-            onRemove={() => onRemoveFrame(frame.key)}
-            onHoverTarget={onHoverTarget}
-            renderEditor={renderEditor}
+            onChange={handleParentChange}
+            onRemove={handleRemoveFrame}
+            onBlur={onTouch}
+            onHover={onHoverTarget}
           />
         ))}
-        <ChainRow
-          target={element}
+        <LocatorChainItem
+          isSingle={parents.length === 0}
+          target={target}
+          touchState={touchStates.get(target)}
           label="element"
-          isOpen={expanded === element.key}
-          isNested={frames.length > 0}
-          onHoverTarget={onHoverTarget}
-          renderEditor={renderEditor}
+          isNested={parents.length > 0}
+          suggestedRoles={suggestedRoles}
+          onChange={onChange}
+          onBlur={onTouch}
+          onHover={onHoverTarget}
         />
       </Accordion.Root>
     </Flex>
   )
 }
 
-interface ChainRowProps {
-  target: LocatorTarget
-  label: string
-  isOpen: boolean
+interface LocatorChainItemProps<Locator extends LocatorOptions> {
+  isSingle: boolean
   isNested?: boolean
-  onRemove?: () => void
-  onHoverTarget: (target: LocatorTargetKey | null) => void
-  renderEditor: (target: LocatorTarget) => ReactNode
+  touchState: TouchState
+  target: Locator
+  label: string
+  suggestedRoles?: string[]
+  onChange: (locator: Locator) => void
+  onRemove?: (locator: Locator) => void
+  onBlur: (locator: Locator) => void
+  onHover: (target: Locator | null) => void
 }
 
-function ChainRow({
-  target,
-  label,
-  isOpen,
+function LocatorChainItem<Locator extends LocatorOptions>({
+  isSingle,
   isNested = false,
+  target,
+  touchState,
+  label,
+  suggestedRoles,
+  onChange,
   onRemove,
-  onHoverTarget,
-  renderEditor,
-}: ChainRowProps) {
-  const locator = getCurrentLocator(target.options)
+  onBlur,
+  onHover,
+}: LocatorChainItemProps<Locator>) {
+  const locator = getCurrentLocator(target)
+  const validation = validateLocator(locator)
+
+  const isTouched = touchState.states[target.current] ?? false
+
+  const hasError =
+    isTouched &&
+    Object.values(validation[target.current] ?? {}).some(
+      (value) => value !== false
+    )
+
+  const handleRemove = () => {
+    onRemove?.(target)
+  }
+
+  if (isSingle) {
+    // With no frames there's nothing to chain, so skip the accordion and show the
+    // element's editor directly — only the add button hints that frames exist.
+    return (
+      <Flex px="2" pb="3">
+        <LocatorEditor
+          locator={target}
+          isTouched={isTouched}
+          fieldErrors={validation}
+          suggestedRoles={suggestedRoles}
+          onChange={onChange}
+          onFieldBlur={onBlur}
+        />
+      </Flex>
+    )
+  }
 
   return (
     <Accordion.Item
@@ -162,8 +239,8 @@ function ChainRow({
             <button
               type="button"
               aria-label={`${label}: ${getLocatorPlainText(locator)}`}
-              onPointerEnter={() => onHoverTarget(target.key)}
-              onPointerLeave={() => onHoverTarget(null)}
+              onPointerEnter={() => onHover(target)}
+              onPointerLeave={() => onHover(null)}
               css={css`
                 appearance: none;
                 background: transparent;
@@ -177,7 +254,7 @@ function ChainRow({
                 padding: var(--space-3) 0;
                 cursor: pointer;
                 font-size: var(--font-size-1);
-                color: ${target.error ? 'var(--red-11)' : 'inherit'};
+                color: ${hasError ? 'var(--red-11)' : 'inherit'};
               `}
             >
               <ChevronRightIcon
@@ -200,8 +277,8 @@ function ChainRow({
                 size="1"
                 variant="ghost"
                 color="gray"
-                onClick={onRemove}
                 aria-label={`Remove ${label}`}
+                onClick={handleRemove}
               >
                 <Trash2Icon />
               </IconButton>
@@ -221,7 +298,14 @@ function ChainRow({
         `}
       >
         <Flex px="2" pb="3">
-          {isOpen ? renderEditor(target) : null}
+          <LocatorEditor
+            locator={target}
+            isTouched={isTouched}
+            fieldErrors={validation}
+            suggestedRoles={suggestedRoles}
+            onChange={onChange}
+            onFieldBlur={onBlur}
+          />
         </Flex>
       </Accordion.Content>
     </Accordion.Item>
