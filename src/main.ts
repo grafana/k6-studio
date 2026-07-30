@@ -27,6 +27,12 @@ import { ProxyStatus } from './types'
 import { getAppIcon, getPlatform } from './utils/electron'
 import { setupProjectStructure } from './utils/workspace'
 
+// stdout/stderr can be closed pipes (e.g. the launching terminal has exited);
+// without an error listener every console write throws an uncaught EPIPE,
+// which Electron surfaces as a crash dialog.
+process.stdout?.on('error', () => {})
+process.stderr?.on('error', () => {})
+
 if (process.env.NODE_ENV !== 'development') {
   // initialize Sentry first so the autoUpdater error listener below can report
   Sentry.init({
