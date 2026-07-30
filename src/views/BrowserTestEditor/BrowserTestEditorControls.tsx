@@ -78,13 +78,23 @@ export function BrowserTestEditorControls({
       </Flex>
       <Flex gap="4" align="center" pl="2">
         {session.state === 'running' && (
-          <Button variant="ghost" onClick={onStopDebugging}>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              onStopDebugging()
+            }}
+          >
             <Spinner />
             Stop
           </Button>
         )}
         {session.state !== 'running' && (
-          <Button variant="ghost" onClick={onStartDebugging}>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              onStartDebugging()
+            }}
+          >
             <CircleCheckBigIcon /> Validate
           </Button>
         )}
