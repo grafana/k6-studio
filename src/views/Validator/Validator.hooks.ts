@@ -96,6 +96,12 @@ export function useDebugSession(script: Script) {
     })
   }, [])
 
+  useEffect(() => {
+    return window.studio.script.onScriptStopped(() => {
+      setState('stopped')
+    })
+  }, [])
+
   const session = useMemo(() => {
     return {
       id: sessionId,
