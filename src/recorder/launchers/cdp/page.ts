@@ -137,6 +137,8 @@ export class Page extends EventEmitter<PageEventMap> {
 
   async attach() {
     await this.#client.page.enable()
+    // TEMP EXPERIMENT: Runtime.enable suppresses renderer crash on sandboxed iframes
+    await this.#client.runtime.enable()
     await this.#client.page.setBypassCSP(true)
 
     await this.#client.page.addScriptToEvaluateOnNewDocument({
