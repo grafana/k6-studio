@@ -12,6 +12,9 @@ export default defineConfig({
       'k6/http': fileURLToPath(
         new URL('./src/test/stubs/k6-http.ts', import.meta.url)
       ),
+      'k6/browser': fileURLToPath(
+        new URL('./src/test/stubs/k6-browser.ts', import.meta.url)
+      ),
     },
   },
   define: {

@@ -1,5 +1,6 @@
 import { BrowserContext, Page } from 'k6/browser'
 
+import { drainPage } from '../replayDrain'
 import { createSingleEntryGuard, ProxyOptions, trackLog } from '../utils'
 
 import { elementLocatorProxies } from './elementLocators'
@@ -7,6 +8,22 @@ import { frameLocatorProxy } from './frameLocator'
 import { isLocatorMethod } from './utils'
 
 const shouldInstrument = createSingleEntryGuard()
+
+function drainBefore<Args extends unknown[], Return>(
+  page: Page,
+  fn: (...args: Args) => Promise<Return>
+): (...args: Args) => Promise<Return> {
+  return async (...args) => {
+    try {
+      // Drain buffered replay events before navigation destroys the document
+      await drainPage(page)
+    } catch {
+      // The action must run even when draining fails
+    }
+
+    return await fn(...args)
+  }
+}
 
 declare module 'k6/browser' {
   interface Page {
@@ -41,27 +58,11 @@ export function pageProxy(target: Page): ProxyOptions<Page> {
         process: 'browser',
       })
     })
+
+    target.goto = drainBefore(target, target.goto.bind(target))
+    target.reload = drainBefore(target, target.reload.bind(target))
+    target.close = drainBefore(target, target.close.bind(target))
   }
-
-  function flushReplayEvents<Args extends unknown[], Return>(
-    fn: (...args: Args) => Promise<Return>
-  ): (...args: Args) => Promise<Return> {
-    return async (...args) => {
-      try {
-        await target.evaluate(() => {
-          return window.__K6_FLUSH_EVENTS__?.()
-        })
-      } catch {
-        // Ignore errors from flushing events so that the main action always runs
-      }
-
-      return await fn(...args)
-    }
-  }
-
-  target.goto = flushReplayEvents(target.goto.bind(target))
-  target.close = flushReplayEvents(target.close.bind(target))
-  target.reload = flushReplayEvents(target.reload.bind(target))
 
   return {
     target,

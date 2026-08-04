@@ -1,15 +1,14 @@
 import { BrowserContext, browser } from 'k6/browser'
 
+import { TRACKING_SERVER_URL } from '../utils'
+
 import {
   browserContextProxy,
   pageProxy,
   setNewTabInitializer,
 } from './proxies/page'
-import {
-  createSingleEntryGuard,
-  createProxy,
-  TRACKING_SERVER_URL,
-} from './utils'
+import { flushReplayEvents, registerContext } from './replayDrain'
+import { createSingleEntryGuard, createProxy } from './utils'
 
 import '../symbols'
 
@@ -29,10 +28,28 @@ const SESSION_REPLAY_SCRIPT = ''
 
 const isContextInitialized = createSingleEntryGuard()
 
+/**
+ * Closing a context destroys its pages, taking whatever they recorded since the
+ * last drain with them.
+ */
+function drainOnClose(context: BrowserContext) {
+  const close = context.close.bind(context)
+
+  context.close = async () => {
+    await flushReplayEvents()
+
+    await close()
+  }
+}
+
 async function injectSessionReplayScript(context: BrowserContext) {
+  registerContext(context)
+
   if (!isContextInitialized(context)) {
     return
   }
+
+  drainOnClose(context)
 
   await context.addInitScript(
     `window.__K6_SESSION_REPLAY_TRACKING_SERVER_URL__ = ${JSON.stringify(TRACKING_SERVER_URL)};`
@@ -92,6 +109,9 @@ browser.context = function (...args) {
   if (context === null) {
     return null
   }
+
+  // Contexts the script never created itself still hold pages to drain.
+  registerContext(context)
 
   return createProxy(browserContextProxy(context))
 }
