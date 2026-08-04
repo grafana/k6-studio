@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/grafana/k6-studio/compare/v2.0.0...v2.0.1) (2026-08-04)
+
+
+### Bug Fixes
+
+* Prevent recorder tab crash on pages with sandboxed iframes ([#1345](https://github.com/grafana/k6-studio/issues/1345)) ([d0ebbd6](https://github.com/grafana/k6-studio/commit/d0ebbd692940dcf92c3f4448e62bb01d368fd626))
+
 ## [2.0.0](https://github.com/grafana/k6-studio/compare/v1.13.0...v2.0.0) (2026-07-30)
 
 
