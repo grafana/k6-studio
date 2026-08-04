@@ -137,6 +137,17 @@ export class Page extends EventEmitter<PageEventMap> {
 
   async attach() {
     await this.#client.page.enable()
+
+    // Force main-world context creation for every frame up front. Without it,
+    // injecting our scripts into a frame that has no context yet (e.g. a
+    // sandboxed iframe without allow-scripts) makes Chromium create the
+    // context mid-injection and re-enter its script bookkeeping, hitting a
+    // use-after-free that kills the whole tab with "Aw, Snap! Error code: 5".
+    // Chromium fixed one variant of this in
+    // https://chromium-review.googlesource.com/c/chromium/src/+/7978579 but it
+    // still reproduces on Chrome 151 with our two consecutive injections.
+    await this.#client.runtime.enable()
+
     await this.#client.page.setBypassCSP(true)
 
     await this.#client.page.addScriptToEvaluateOnNewDocument({
