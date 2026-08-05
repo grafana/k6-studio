@@ -135,29 +135,49 @@ export class Page extends EventEmitter<PageEventMap> {
     })
   }
 
-  async attach() {
-    await this.#client.page.enable()
+  async attach({ waitingForDebugger }: { waitingForDebugger: boolean }) {
+    // A target paused waiting for the debugger (e.g. a popup opened with
+    // noopener/noreferrer, which gets a new browsing context group) doesn't
+    // process session commands until Runtime.runIfWaitingForDebugger is sent,
+    // so awaiting any response before requesting resume would deadlock and
+    // leave the tab paused with a spinner forever. All commands are therefore
+    // dispatched up front and only then awaited. The transport sends messages
+    // in call order, so the scripts are still registered before the page
+    // resumes.
+    //
+    // Scripts run immediately only in targets that already have a document
+    // (the tab the recording starts in). A paused target only has its empty
+    // initial document, and executing the recording script there wedges the
+    // renderer of noopener/noreferrer popups in a busy loop that blocks their
+    // first real navigation.
+    const runImmediately = !waitingForDebugger
 
-    // Force main-world context creation for every frame up front. Without it,
-    // injecting our scripts into a frame that has no context yet (e.g. a
-    // sandboxed iframe without allow-scripts) makes Chromium create the
-    // context mid-injection and re-enter its script bookkeeping, hitting a
-    // use-after-free that kills the whole tab with "Aw, Snap! Error code: 5".
-    // Chromium fixed one variant of this in
-    // https://chromium-review.googlesource.com/c/chromium/src/+/7978579 but it
-    // still reproduces on Chrome 151 with our two consecutive injections.
-    await this.#client.runtime.enable()
+    await Promise.all([
+      this.#client.page.enable(),
 
-    await this.#client.page.setBypassCSP(true)
+      // Force main-world context creation for every frame up front. Without
+      // it, injecting our scripts into a frame that has no context yet (e.g.
+      // a sandboxed iframe without allow-scripts) makes Chromium create the
+      // context mid-injection and re-enter its script bookkeeping, hitting a
+      // use-after-free that kills the whole tab with "Aw, Snap! Error code:
+      // 5". Chromium fixed one variant of this in
+      // https://chromium-review.googlesource.com/c/chromium/src/+/7978579 but
+      // it still reproduces on Chrome 151 with our two consecutive
+      // injections.
+      this.#client.runtime.enable(),
 
-    await this.#client.page.addScriptToEvaluateOnNewDocument({
-      source: `window.__K6_STUDIO_TAB_ID__ = "${this.#id}";`,
-      runImmediately: true,
-    })
+      this.#client.page.setBypassCSP(true),
 
-    await this.#script.inject(this.#client)
+      this.#client.page.addScriptToEvaluateOnNewDocument({
+        source: `window.__K6_STUDIO_TAB_ID__ = "${this.#id}";`,
+        runImmediately,
+      }),
+      this.#script.inject(this.#client, runImmediately),
 
-    await this.#client.runtime.runIfWaitingForDebugger()
+      // Must stay dispatched last so the commands above are queued before the
+      // page resumes.
+      this.#client.runtime.runIfWaitingForDebugger(),
+    ])
 
     return this
   }
