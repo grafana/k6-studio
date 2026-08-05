@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.2](https://github.com/grafana/k6-studio/compare/v2.0.1...v2.0.2) (2026-08-05)
+
+
+### Bug Fixes
+
+* New tabs opened as noopener popups hang during recording ([#1347](https://github.com/grafana/k6-studio/issues/1347)) ([3881dfa](https://github.com/grafana/k6-studio/commit/3881dfaac95cd69c8207ee06abfe604202b89e8e))
+* Recording toolbar disappears on pages that remove the injected mount ([#1348](https://github.com/grafana/k6-studio/issues/1348)) ([09a68c0](https://github.com/grafana/k6-studio/commit/09a68c0cecf22e4054d1d7bb70c95b848aff01e9))
+
 ## [2.0.1](https://github.com/grafana/k6-studio/compare/v2.0.0...v2.0.1) (2026-08-04)
 
 
