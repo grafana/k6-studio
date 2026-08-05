@@ -87,7 +87,7 @@ export class BrowserSession extends EventEmitter<BrowserSessionEventMap> {
       })
     }
 
-    await page.attach()
+    await page.attach({ waitingForDebugger: data.waitingForDebugger })
   }
 
   #handleDetachedFromTarget = ({

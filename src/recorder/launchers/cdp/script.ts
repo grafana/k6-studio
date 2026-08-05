@@ -20,7 +20,9 @@ export class Script extends EventEmitter<ScriptEventMap> {
     this.#content = content
   }
 
-  async inject(client: ChromeDevToolsClient, runImmediately = true) {
+  // Must dispatch the CDP call without awaiting anything first: Page.attach
+  // relies on this call being queued before Runtime.runIfWaitingForDebugger.
+  async inject(client: ChromeDevToolsClient, runImmediately: boolean) {
     const { identifier } = await client.page.addScriptToEvaluateOnNewDocument({
       source: this.#content,
       runImmediately,
