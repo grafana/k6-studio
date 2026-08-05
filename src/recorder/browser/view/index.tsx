@@ -8,6 +8,7 @@ import { BrowserExtensionClient } from '@/recorder/browser/messaging'
 
 import { GlobalStyles } from './GlobalStyles'
 import { InBrowserControls } from './InBrowserControls'
+import { createMount } from './mount'
 import { SettingsProvider, SettingsStorage } from './SettingsProvider'
 import { StudioClientProvider } from './StudioClientProvider'
 import { isUsingTool } from './utils'
@@ -115,58 +116,6 @@ export function initializeView(
   const abortController = new AbortController()
 
   let shadowRoot: ShadowRoot | null = null
-
-  function createMount() {
-    const mount = document.createElement('div')
-
-    document.body.appendChild(mount)
-
-    // Our mount needs to stay at the end of the body, otherwise it will interfere
-    // with the selector algorithm. For example, take the following DOM:
-    //
-    // ```
-    // <body>
-    //   <div>User element</div>
-    //   <div id="ksix-studio-mount"></div>
-    //   <div>Dynamically added later</div>
-    // </body>
-    // ```
-    //
-    // If the user was highlighting the dynamically added element, the selector generator
-    // could generate a selector like `body > div:nth-child(3)`. But running the generated
-    // script would always result in an error because the mount is only present when recording
-    // and the correct selector should have been `body > div:nth-child(2)`.
-    //
-    // So we use a MutationObserver to continuously check if the mount is still the last
-    // element in the body. If it isn't, we move it to the end of the body.
-    const positionObserver = new MutationObserver(() => {
-      if (mount.nextSibling === null) {
-        return
-      }
-
-      document.body.appendChild(mount)
-    })
-
-    positionObserver.observe(document.body, {
-      childList: true,
-    })
-
-    // Some UI frameworks use the `inert` attribute to disable interaction with
-    // elements outside of a modal. We remove this attribute so that the recording
-    // controls are always accessible.
-    const attributeObserver = new MutationObserver(() => {
-      if (mount.hasAttribute('inert')) {
-        mount.removeAttribute('inert')
-      }
-    })
-
-    attributeObserver.observe(mount, {
-      attributes: true,
-      attributeFilter: ['inert'],
-    })
-
-    return mount
-  }
 
   function createShadowRoot(mount: Element) {
     shadowRoot = mount.attachShadow({
