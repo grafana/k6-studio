@@ -245,6 +245,29 @@ describe('mergeLinearPages', () => {
     ])
   })
 
+  it('demotes the handed-off tab entry navigation so the click owns the landing', () => {
+    // The recorder marks a popup's first navigation as address-bar because no
+    // in-page request precedes it, but the click that opened the tab already
+    // lands the test there.
+    const events = [
+      navigate('tab1', 'https://one.com'),
+      click('tab1', 'a.open'),
+      tabOpened('tab2'),
+      navigate('tab2', 'https://two.com'),
+      click('tab2', 'button.submit'),
+    ]
+
+    const merged = mergeLinearPages(events, groupEventsByPage(events))
+
+    expect(merged).toEqual([
+      navigate('tab1', 'https://one.com'),
+      click('tab1', 'a.open'),
+      tabOpened('tab2'),
+      { ...navigate('tab2', 'https://two.com'), source: 'implicit' },
+      click('tab2', 'button.submit'),
+    ])
+  })
+
   it('falls back to an explicit entry navigation when no click opened the new tab', () => {
     const events = [
       navigate('tab1', 'https://one.com'),

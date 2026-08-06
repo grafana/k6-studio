@@ -89,6 +89,29 @@ export function normalizeEntryNavigation(
 }
 
 /**
+ * The recorder marks a popup's first navigation as explicit (`address-bar`)
+ * because no in-page request precedes it in the new tab. When the tab was
+ * reached through a click handoff, the click already lands the test on that
+ * page, so the entry navigation is demoted to implicit and conversion drops
+ * it instead of emitting a duplicate `page.goto`.
+ */
+function demoteEntryNavigation(events: BrowserEvent[]): BrowserEvent[] {
+  const entryIndex = events.findIndex(
+    (event) => event.type === 'navigate-to-page' && isWebUrl(event.url)
+  )
+
+  const entry = events[entryIndex]
+
+  if (entry?.type !== 'navigate-to-page' || entry.source === 'implicit') {
+    return events
+  }
+
+  return events.map((event, index) =>
+    index === entryIndex ? { ...event, source: 'implicit' } : event
+  )
+}
+
+/**
  * Whether an event was directly caused by the user acting on the page, as
  * opposed to a side effect like an implicit navigation or a tab opening.
  */
@@ -151,12 +174,12 @@ export function mergeLinearPages(
     )
 
     // A tab reached through a click handoff starts on the right page already,
-    // so its implicit entry navigations can be left for conversion to drop.
-    // Any other tab (including the first) needs its entry navigation promoted
-    // to an explicit one, mirroring the single-page export path.
-    if (!handedOffByClick) {
-      slice = normalizeEntryNavigation(slice)
-    }
+    // so its entry navigation is demoted for conversion to drop. Any other tab
+    // (including the first) needs its entry navigation promoted to an explicit
+    // one instead, mirroring the single-page export path.
+    slice = handedOffByClick
+      ? demoteEntryNavigation(slice)
+      : normalizeEntryNavigation(slice)
 
     const nextEntry = next?.events[0]
 

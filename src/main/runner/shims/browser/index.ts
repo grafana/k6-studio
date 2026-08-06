@@ -1,10 +1,9 @@
 import { BrowserContext, browser } from 'k6/browser'
 
-import { pageProxy } from './proxies/page'
+import { browserContextProxy, pageProxy } from './proxies/page'
 import {
   createSingleEntryGuard,
   createProxy,
-  ProxyOptions,
   TRACKING_SERVER_URL,
 } from './utils'
 
@@ -36,20 +35,6 @@ async function injectSessionReplayScript(context: BrowserContext) {
   )
 
   await context.addInitScript(SESSION_REPLAY_SCRIPT)
-}
-
-function browserContextProxy(
-  target: BrowserContext
-): ProxyOptions<BrowserContext> {
-  return {
-    target,
-    tracking: {},
-    proxies: {
-      newPage(target) {
-        return pageProxy(target)
-      },
-    },
-  }
 }
 
 const nativeNewPage = browser.newPage.bind(browser)

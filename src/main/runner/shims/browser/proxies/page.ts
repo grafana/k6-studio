@@ -1,4 +1,4 @@
-import { Page } from 'k6/browser'
+import { BrowserContext, Page } from 'k6/browser'
 
 import { createSingleEntryGuard, ProxyOptions, trackLog } from '../utils'
 
@@ -99,7 +99,11 @@ export function pageProxy(target: Page): ProxyOptions<Page> {
       },
 
       $default(method, ...args) {
-        if (typeof method === 'symbol' || isLocatorMethod(method)) {
+        if (
+          typeof method === 'symbol' ||
+          isLocatorMethod(method) ||
+          method === 'context'
+        ) {
           return null
         }
 
@@ -114,6 +118,29 @@ export function pageProxy(target: Page): ProxyOptions<Page> {
       ...elementLocatorProxies(),
       frameLocator(target) {
         return frameLocatorProxy(target)
+      },
+      context(target) {
+        return browserContextProxy(target)
+      },
+    },
+  }
+}
+
+export function browserContextProxy(
+  target: BrowserContext
+): ProxyOptions<BrowserContext> {
+  return {
+    target,
+    tracking: {},
+    proxies: {
+      newPage(target) {
+        return pageProxy(target)
+      },
+      // A page opened by an action (e.g. a click on a target="_blank" link)
+      // is obtained through waitForEvent and must be proxied like any other
+      // page so that `$trace` and tracking work on it.
+      waitForEvent(target) {
+        return pageProxy(target)
       },
     },
   }
