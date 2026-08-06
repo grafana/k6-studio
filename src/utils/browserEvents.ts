@@ -148,6 +148,37 @@ function isInteraction(event: BrowserEvent): boolean {
 }
 
 /**
+ * Finds the `tab-opened` event proving that the click directly opened the
+ * given page's tab: it must be the first tab opened after the click, and the
+ * tab must not start on a browser-internal page. A manually opened tab starts
+ * on `chrome://new-tab-page` before the user types the url, and a click whose
+ * popup is some other (non-exportable) tab is not a handoff either; replaying
+ * such a click and waiting for a page would hang or grab the wrong page.
+ */
+function findHandoffTabOpened(
+  events: BrowserEvent[],
+  click: BrowserEvent,
+  next: EventPage
+): BrowserEvent | null {
+  const clickIndex = events.indexOf(click)
+  const opened = events.find(
+    (event, index) => index > clickIndex && event.type === 'tab-opened'
+  )
+
+  if (opened === undefined || opened.tab !== next.tab) {
+    return null
+  }
+
+  const entry = next.events.find((event) => event.type === 'navigate-to-page')
+
+  if (entry !== undefined && entry.url.startsWith('chrome://')) {
+    return null
+  }
+
+  return opened
+}
+
+/**
  * Merges a multi-tab recording into a single linear event list when the
  * journey never returns to a tab after moving on: each tab's interactions must
  * end before the next tab's events begin. When the last interaction in a tab
@@ -203,23 +234,19 @@ export function mergeLinearPages(
       return null
     }
 
-    if (lastInteraction?.type !== 'click') {
+    const handoff =
+      lastInteraction?.type === 'click'
+        ? findHandoffTabOpened(events, lastInteraction, next)
+        : null
+
+    if (lastInteraction === undefined || handoff === null) {
       merged.push(...slice)
       handedOffByClick = false
       continue
     }
 
     merged.push(...slice.slice(0, slice.indexOf(lastInteraction) + 1))
-    merged.push(
-      // Old recordings (schema v1) have no tab-opened events, so mint one to
-      // mark the handoff for conversion.
-      next.events.find((event) => event.type === 'tab-opened') ?? {
-        type: 'tab-opened',
-        eventId: crypto.randomUUID(),
-        timestamp: lastInteraction.timestamp,
-        tab: next.tab,
-      }
-    )
+    merged.push(handoff)
     handedOffByClick = true
   }
 

@@ -207,7 +207,6 @@ describe('mergeLinearPages', () => {
       navigate('tab1', 'https://one.com'),
       click('tab1', 'a.open'),
       tabOpened('tab2'),
-      implicitNavigate('tab2', 'chrome://new-tab-page/'),
       implicitNavigate('tab2', 'https://two.com'),
       click('tab2', 'button.submit'),
     ]
@@ -218,8 +217,61 @@ describe('mergeLinearPages', () => {
       navigate('tab1', 'https://one.com'),
       click('tab1', 'a.open'),
       tabOpened('tab2'),
-      implicitNavigate('tab2', 'chrome://new-tab-page/'),
       implicitNavigate('tab2', 'https://two.com'),
+      click('tab2', 'button.submit'),
+    ])
+  })
+
+  it('falls back to an explicit navigation when the new tab was opened manually', () => {
+    // A manually opened tab starts on chrome://new-tab-page before the user
+    // types the url. The preceding click did not open it, so replaying the
+    // click and waiting for a page would hang.
+    const events = [
+      navigate('tab1', 'https://one.com'),
+      click('tab1', 'button.unrelated'),
+      tabOpened('tab2'),
+      implicitNavigate('tab2', 'chrome://new-tab-page/'),
+      navigate('tab2', 'https://two.com'),
+      click('tab2', 'button.submit'),
+    ]
+
+    const merged = mergeLinearPages(events, groupEventsByPage(events))
+
+    expect(merged).toEqual([
+      navigate('tab1', 'https://one.com'),
+      click('tab1', 'button.unrelated'),
+      implicitNavigate('tab2', 'chrome://new-tab-page/'),
+      navigate('tab2', 'https://two.com'),
+      click('tab2', 'button.submit'),
+    ])
+  })
+
+  it('falls back to an explicit navigation when the click opened a different tab', () => {
+    // The click opened a tab that is not exportable; waiting for a page after
+    // replaying it would hand the test the wrong page.
+    const events = [
+      navigate('tab1', 'https://one.com'),
+      click('tab1', 'a.junk'),
+      tabOpened('tab3'),
+      implicitNavigate('tab3', 'chrome://extensions/'),
+      tabOpened('tab2'),
+      implicitNavigate('tab2', 'https://two.com'),
+      click('tab2', 'button.submit'),
+    ]
+
+    const pages = groupEventsByPage(events).filter(
+      (page) => page.tab !== 'tab3'
+    )
+
+    const merged = mergeLinearPages(events, pages)
+
+    expect(merged).toEqual([
+      navigate('tab1', 'https://one.com'),
+      click('tab1', 'a.junk'),
+      {
+        ...implicitNavigate('tab2', 'https://two.com'),
+        source: 'address-bar',
+      },
       click('tab2', 'button.submit'),
     ])
   })
