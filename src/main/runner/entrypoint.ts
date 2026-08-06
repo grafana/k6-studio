@@ -6,7 +6,15 @@ import './shims/browser'
 import * as untypedScript from '__USER_SCRIPT_PATH__'
 import type { Options } from 'k6/options'
 
+import {
+  drainReplayEvents,
+  flushReplayEvents,
+} from './shims/browser/replayDrain'
+import { TRACKING_SERVER_URL } from './shims/utils'
 import { configureOptions, getDebugTarget } from './utils'
+
+// Keeps the loss from navigations the browser proxy can't see bounded
+const REPLAY_DRAIN_INTERVAL = 300
 
 const userScript = untypedScript as Record<string, () => Promise<void>> & {
   options?: Options
@@ -30,8 +38,26 @@ export default async function () {
     )
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-  await userScript[exec]()
+  // Link clicks, form submits and waitForNavigation destroy the document
+  // without going through a proxied method, so replay events are also pulled
+  // on a timer for as long as the script runs.
+  const drainInterval =
+    TRACKING_SERVER_URL === null
+      ? null
+      : setInterval(() => {
+          void drainReplayEvents()
+        }, REPLAY_DRAIN_INTERVAL)
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    await userScript[exec]()
+  } finally {
+    if (drainInterval !== null) {
+      clearInterval(drainInterval)
+
+      await flushReplayEvents()
+    }
+  }
 }
 
 export { handleSummary } from './summary'

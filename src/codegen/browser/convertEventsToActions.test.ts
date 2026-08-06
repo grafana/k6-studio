@@ -317,6 +317,44 @@ describe('convertEventsToActions', () => {
     })
   })
 
+  it('sets switchesToNewPage on click followed by tab-opened', () => {
+    const events: BrowserEvent[] = [
+      {
+        type: 'click',
+        eventId: '1',
+        timestamp: 0,
+        tab: 'tab1',
+        target: makeTarget('a.link'),
+        button: 'left',
+        modifiers: { ctrl: false, shift: false, alt: false, meta: false },
+      },
+      {
+        type: 'tab-opened',
+        eventId: '2',
+        timestamp: 100,
+        tab: 'tab2',
+      },
+      {
+        type: 'navigate-to-page',
+        eventId: '3',
+        timestamp: 200,
+        tab: 'tab2',
+        url: 'https://example.com/next',
+        source: 'implicit',
+      },
+    ]
+    const actions = convertEventsToActions(events)
+    expect(actions).toHaveLength(1)
+    expect(actions[0]).toMatchObject({
+      method: 'locator.click',
+      options: { switchesToNewPage: true },
+    })
+    expect(
+      (actions[0] as { options?: { waitForNavigation?: boolean } }).options
+        ?.waitForNavigation
+    ).toBeUndefined()
+  })
+
   it('does not set waitForNavigation when next navigation is on different tab', () => {
     const events: BrowserEvent[] = [
       {

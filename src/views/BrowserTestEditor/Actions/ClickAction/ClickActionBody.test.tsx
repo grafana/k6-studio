@@ -57,6 +57,19 @@ describe('ClickActionBody', () => {
     expect(updated?.options?.button).toBe('right')
   })
 
+  it('writes options.switchesToNewPage when the option is toggled', () => {
+    const handleChange = vi.fn<(action: ClickAction) => void>()
+    renderBody(buildClickAction(), handleChange)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit options' }))
+    fireEvent.click(
+      screen.getByRole('switch', { name: 'Continues in new tab' })
+    )
+
+    const updated = handleChange.mock.lastCall?.[0]
+    expect(updated?.options?.switchesToNewPage).toBe(true)
+  })
+
   it('preserves modifiers already present on options', () => {
     const handleChange = vi.fn<(action: ClickAction) => void>()
     renderBody(

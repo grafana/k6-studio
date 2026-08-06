@@ -101,6 +101,52 @@ describe('convertActionsToTest', () => {
     })
   })
 
+  it('switches to a new page when click options.switchesToNewPage is true', () => {
+    const test = convertActionsToTest({
+      browserActions: [
+        buildClickAction({ options: { switchesToNewPage: true } }),
+        buildClickAction({ options: undefined }),
+      ],
+    })
+
+    const nodes = test.defaultScenario?.nodes ?? []
+    const pageNodes = nodes.filter((node) => node.type === 'page')
+    const promiseNode = nodes.find((node) => node.type === 'new-tab-promise')
+    const clickIndex = nodes.findIndex((node) => node.type === 'click')
+
+    expect(pageNodes).toHaveLength(2)
+    expect(promiseNode).toBeDefined()
+    expect(pageNodes[1]?.promise).toEqual({ nodeId: promiseNode?.nodeId })
+
+    // The promise must be created before the click and the new page after it.
+    expect(nodes.findIndex((node) => node === promiseNode)).toBeLessThan(
+      clickIndex
+    )
+    expect(nodes.findIndex((node) => node === pageNodes[1])).toBeGreaterThan(
+      clickIndex
+    )
+  })
+
+  it('binds locators after a page switch to the new page', () => {
+    const test = convertActionsToTest({
+      browserActions: [
+        buildClickAction({ options: { switchesToNewPage: true } }),
+        buildClickAction({ options: undefined }),
+      ],
+    })
+
+    const nodes = test.defaultScenario?.nodes ?? []
+    const pageNodes = nodes.filter((node) => node.type === 'page')
+    const locatorNodes = nodes.filter((node) => node.type === 'locator')
+
+    expect(locatorNodes[0]?.inputs.page).toEqual({
+      nodeId: pageNodes[0]?.nodeId,
+    })
+    expect(locatorNodes[1]?.inputs.page).toEqual({
+      nodeId: pageNodes[1]?.nodeId,
+    })
+  })
+
   it('does not wait for navigation when click options.waitForNavigation is false', () => {
     const test = convertActionsToTest({
       browserActions: [

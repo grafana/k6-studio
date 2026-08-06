@@ -1,5 +1,7 @@
-import { Page } from 'k6/browser'
+import { BrowserContext, Page } from 'k6/browser'
 
+import { drainPage } from '../replayDrain'
+import { injectSessionReplayIntoNewTab } from '../sessionReplay'
 import { createSingleEntryGuard, ProxyOptions, trackLog } from '../utils'
 
 import { elementLocatorProxies } from './elementLocators'
@@ -7,6 +9,22 @@ import { frameLocatorProxy } from './frameLocator'
 import { isLocatorMethod } from './utils'
 
 const shouldInstrument = createSingleEntryGuard()
+
+function drainBefore<Args extends unknown[], Return>(
+  page: Page,
+  fn: (...args: Args) => Promise<Return>
+): (...args: Args) => Promise<Return> {
+  return async (...args) => {
+    try {
+      // Drain buffered replay events before navigation destroys the document
+      await drainPage(page)
+    } catch {
+      // The action must run even when draining fails
+    }
+
+    return await fn(...args)
+  }
+}
 
 declare module 'k6/browser' {
   interface Page {
@@ -41,27 +59,11 @@ export function pageProxy(target: Page): ProxyOptions<Page> {
         process: 'browser',
       })
     })
+
+    target.goto = drainBefore(target, target.goto.bind(target))
+    target.reload = drainBefore(target, target.reload.bind(target))
+    target.close = drainBefore(target, target.close.bind(target))
   }
-
-  function flushReplayEvents<Args extends unknown[], Return>(
-    fn: (...args: Args) => Promise<Return>
-  ): (...args: Args) => Promise<Return> {
-    return async (...args) => {
-      try {
-        await target.evaluate(() => {
-          return window.__K6_FLUSH_EVENTS__?.()
-        })
-      } catch {
-        // Ignore errors from flushing events so that the main action always runs
-      }
-
-      return await fn(...args)
-    }
-  }
-
-  target.goto = flushReplayEvents(target.goto.bind(target))
-  target.close = flushReplayEvents(target.close.bind(target))
-  target.reload = flushReplayEvents(target.reload.bind(target))
 
   return {
     target,
@@ -99,7 +101,11 @@ export function pageProxy(target: Page): ProxyOptions<Page> {
       },
 
       $default(method, ...args) {
-        if (typeof method === 'symbol' || isLocatorMethod(method)) {
+        if (
+          typeof method === 'symbol' ||
+          isLocatorMethod(method) ||
+          method === 'context'
+        ) {
           return null
         }
 
@@ -114,6 +120,51 @@ export function pageProxy(target: Page): ProxyOptions<Page> {
       ...elementLocatorProxies(),
       frameLocator(target) {
         return frameLocatorProxy(target)
+      },
+      context(target) {
+        return browserContextProxy(target)
+      },
+    },
+  }
+}
+
+const shouldWrapWaitForEvent = createSingleEntryGuard()
+
+export function browserContextProxy(
+  target: BrowserContext
+): ProxyOptions<BrowserContext> {
+  if (shouldWrapWaitForEvent(target)) {
+    const nativeWaitForEvent = target.waitForEvent.bind(target)
+
+    // Pages obtained through waitForEvent were opened by the page itself, so
+    // the recorder has to be injected before the page is handed to the test.
+    target.waitForEvent = async (...args) => {
+      const page = await nativeWaitForEvent(...args)
+
+      try {
+        await injectSessionReplayIntoNewTab(page)
+      } catch {
+        // Session replay is non-critical and a popup that is still navigating
+        // can reject the injection; the recorder is retried after the next
+        // action.
+      }
+
+      return page
+    }
+  }
+
+  return {
+    target,
+    tracking: {},
+    proxies: {
+      newPage(target) {
+        return pageProxy(target)
+      },
+      // A page opened by an action (e.g. a click on a target="_blank" link)
+      // is obtained through waitForEvent and must be proxied like any other
+      // page so that `$trace` and tracking work on it.
+      waitForEvent(target) {
+        return pageProxy(target)
       },
     },
   }
