@@ -51,14 +51,7 @@ async function sendOutbox() {
       return
     }
 
-    let accepted = false
-
-    try {
-      accepted = await postTracking('/session-replay', body)
-    } catch {
-      // A request can fail synchronously, which must not stop the pump from
-      // being restarted by the next drain.
-    }
+    const accepted = await postTracking('/session-replay', body)
 
     if (!accepted) {
       outbox.unshift(body)
@@ -88,7 +81,7 @@ function pump() {
 // every call, so an in-flight pull can't be recognized through the wrapper.
 const pulls = new Map<string, Promise<void>>()
 
-async function pullBatch(page: Page) {
+async function pullBatch(page: Page, serializedOn: string) {
   try {
     // The page serializes the events itself so the k6 runtime receives one
     // string instead of rebuilding a multi-megabyte object graph per pull.
@@ -107,6 +100,14 @@ async function pullBatch(page: Page) {
 
     const pageId = payload.slice(0, pageIdEnd)
     const batchId = Number(payload.slice(pageIdEnd + 1, batchIdEnd))
+
+    // The page navigated between the id probe and this pull, so the batch
+    // belongs to a document this pull is not serialized against and another
+    // pull could be reading it at the same time. Leave it retained in the page
+    // for the correctly keyed pull to deliver.
+    if (pageId !== serializedOn) {
+      return
+    }
 
     // Acking only once the body is queued keeps the batch retained in the page
     // for as long as it could still be lost.
@@ -144,7 +145,7 @@ export async function drainPage(page: Page) {
     }
 
     const pull = (pulls.get(pageId) ?? Promise.resolve()).then(() => {
-      return pullBatch(page)
+      return pullBatch(page, pageId)
     })
 
     pulls.set(pageId, pull)

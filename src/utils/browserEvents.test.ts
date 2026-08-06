@@ -222,6 +222,31 @@ describe('mergeLinearPages', () => {
     ])
   })
 
+  it('keeps the typed navigation when the popup opens on about:blank', () => {
+    // A JS-driven popup can open on about:blank before the user types the
+    // real url. The click handoff only lands the test on the blank page, so
+    // the typed navigation must survive as an explicit goto.
+    const events = [
+      navigate('tab1', 'https://one.com'),
+      click('tab1', 'a.popup'),
+      tabOpened('tab2'),
+      implicitNavigate('tab2', 'about:blank'),
+      navigate('tab2', 'https://app.example.com'),
+      click('tab2', 'button.submit'),
+    ]
+
+    const merged = mergeLinearPages(events, groupEventsByPage(events))
+
+    expect(merged).toEqual([
+      navigate('tab1', 'https://one.com'),
+      click('tab1', 'a.popup'),
+      tabOpened('tab2'),
+      implicitNavigate('tab2', 'about:blank'),
+      navigate('tab2', 'https://app.example.com'),
+      click('tab2', 'button.submit'),
+    ])
+  })
+
   it('falls back to an explicit navigation when the new tab was opened manually', () => {
     // A manually opened tab starts on chrome://new-tab-page before the user
     // types the url. The preceding click did not open it, so replaying the
@@ -408,6 +433,26 @@ describe('mergeLinearPages', () => {
       },
       click('tab2', 'button.submit'),
     ])
+  })
+
+  it('returns null when a tab left out of the exportable pages has interactions', () => {
+    // Merging would silently drop the clicks recorded in tab2, so the
+    // recording has to fall back to the page picker instead.
+    const events = [
+      navigate('tab1', 'https://one.com'),
+      click('tab1', 'a.open'),
+      tabOpened('tab2'),
+      click('tab2', 'button.important-step'),
+      tabOpened('tab3'),
+      implicitNavigate('tab3', 'https://three.com'),
+      click('tab3', 'button.final'),
+    ]
+
+    const pages = groupEventsByPage(events).filter(
+      (page) => page.tab !== 'tab2'
+    )
+
+    expect(mergeLinearPages(events, pages)).toBeNull()
   })
 
   it('ignores events from tabs that are not part of the exportable pages', () => {

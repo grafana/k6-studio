@@ -70,6 +70,40 @@ describe('ClickActionBody', () => {
     expect(updated?.options?.switchesToNewPage).toBe(true)
   })
 
+  // The two options are mutually exclusive: codegen ignores waitForNavigation
+  // on a click that switches page, so the form must not let both be on.
+  it('clears waitForNavigation when the click is set to continue in a new tab', () => {
+    const handleChange = vi.fn<(action: ClickAction) => void>()
+    renderBody(
+      buildClickAction({ options: { waitForNavigation: true } }),
+      handleChange
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit options' }))
+    fireEvent.click(
+      screen.getByRole('switch', { name: 'Continues in new tab' })
+    )
+
+    const updated = handleChange.mock.lastCall?.[0]
+    expect(updated?.options?.switchesToNewPage).toBe(true)
+    expect(updated?.options?.waitForNavigation).toBe(false)
+  })
+
+  it('clears switchesToNewPage when the click is set to wait for navigation', () => {
+    const handleChange = vi.fn<(action: ClickAction) => void>()
+    renderBody(
+      buildClickAction({ options: { switchesToNewPage: true } }),
+      handleChange
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit options' }))
+    fireEvent.click(screen.getByRole('switch', { name: 'Wait for navigation' }))
+
+    const updated = handleChange.mock.lastCall?.[0]
+    expect(updated?.options?.waitForNavigation).toBe(true)
+    expect(updated?.options?.switchesToNewPage).toBe(false)
+  })
+
   it('preserves modifiers already present on options', () => {
     const handleChange = vi.fn<(action: ClickAction) => void>()
     renderBody(

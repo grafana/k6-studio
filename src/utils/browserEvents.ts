@@ -107,12 +107,22 @@ export function normalizeEntryNavigation(
  * because no in-page request precedes it in the new tab. When the tab was
  * reached through a click handoff, the click already lands the test on that
  * page, so the entry navigation is demoted to implicit and conversion drops
- * it instead of emitting a duplicate `page.goto`.
+ * it instead of emitting a duplicate `page.goto`. Only the very first
+ * navigation is the click's landing: a popup that opens on about:blank lands
+ * there, and a web navigation typed afterwards must survive as a goto.
  */
 function demoteEntryNavigation(events: BrowserEvent[]): BrowserEvent[] {
   const found = findEntryNavigation(events)
 
   if (found === null || found.entry.source === 'implicit') {
+    return events
+  }
+
+  const firstNavigation = events.find(
+    (event) => event.type === 'navigate-to-page'
+  )
+
+  if (firstNavigation !== found.entry) {
     return events
   }
 
@@ -193,6 +203,18 @@ export function mergeLinearPages(
   pages: EventPage[]
 ): BrowserEvent[] | null {
   if (pages.length < 2) {
+    return null
+  }
+
+  // Merging only covers the exportable pages, so a tab left out of them that
+  // the user interacted with would lose those steps without a trace. Fall back
+  // to the page picker instead of exporting an incomplete journey.
+  const exportableTabs = new Set(pages.map((page) => page.tab))
+  const hasHiddenInteraction = events.some(
+    (event) => !exportableTabs.has(event.tab) && isInteraction(event)
+  )
+
+  if (hasHiddenInteraction) {
     return null
   }
 
