@@ -118,10 +118,36 @@ describe('session replay in-page script', () => {
     expect(batch.pageId).toBe(pageStartOf(batch).payload.pageId)
   })
 
+  // The k6 side serializes pulls per page to avoid handing out the same
+  // unacked batch twice, and it needs a stable id to do so: the Page wrappers
+  // it gets from context.pages() are fresh objects on every call.
+  it('exposes the page id on the window', async () => {
+    await importReplayScript()
+
+    const pageId = (window as { __K6_REPLAY_PAGE_ID__?: string })
+      .__K6_REPLAY_PAGE_ID__
+
+    expect(pageId).toBe(drainedBatch().pageId)
+  })
+
   it('numbers the first batch 1 so a missing ack means nothing was received', async () => {
     await importReplayScript()
 
     expect(drainedBatch().batchId).toBe(1)
+  })
+
+  // k6 v2.0.0 marshals an empty object argument of page.evaluate into
+  // undefined, and the ack map is empty until the first batch is acked, so
+  // every pull would throw and the recording never left the page.
+  it('drains when the ack map argument is missing', async () => {
+    await importReplayScript()
+
+    const drainEvents = replayWindow.__K6_DRAIN_EVENTS__
+    const payload = drainEvents?.(
+      undefined as unknown as Record<string, number>
+    )
+
+    expect(payload).toContain('page-start')
   })
 
   it('re-sends an unacked batch merged with newer events', async () => {

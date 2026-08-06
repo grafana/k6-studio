@@ -91,9 +91,18 @@ function fakePage(pageId: string) {
     }),
     evaluate: vi.fn(async function (
       _fn: unknown,
-      received: Record<string, number>
+      received?: Record<string, number>
       // k6 turns an in-page `undefined` into null, which tests can mock in
     ): Promise<string | null | undefined> {
+      // A call without an ack map is the page id probe
+      if (received === undefined) {
+        if (delivery !== null) {
+          await delivery
+        }
+
+        return pageId
+      }
+
       acks.push({ ...received })
 
       const payload = drain(received)
@@ -254,9 +263,12 @@ describe('drainPage', () => {
     })
 
     // The pre-navigation drain must be its own pull, not a reused result, and
-    // the events must not be duplicated by the two overlapping drains.
+    // the events must not be duplicated by the two overlapping drains. Only
+    // batch pulls count; page id probes carry no ack map.
     const pullsBeforeNavigation = page.evaluate.mock.invocationCallOrder.filter(
-      (order) => order < (navigate.mock.invocationCallOrder[0] ?? Infinity)
+      (order, index) =>
+        page.evaluate.mock.calls[index]?.[1] !== undefined &&
+        order < (navigate.mock.invocationCallOrder[0] ?? Infinity)
     )
 
     expect(pullsBeforeNavigation).toHaveLength(2)
@@ -355,6 +367,43 @@ describe('drainReplayEvents', () => {
     await vi.waitFor(() => {
       expect(postedEvents()).toContainEqual(popupEvent)
     })
+  })
+
+  it('pulls once per page when drains overlap across fresh page wrappers', async () => {
+    const { register, drainReplayEvents, flushReplayEvents, postedEvents } =
+      modules
+    const page = fakePage('page-1')
+
+    // k6's context.pages() returns a new Page wrapper on every call, so a
+    // pull in flight cannot be recognized through the wrapper object. An
+    // overlapping pull that isn't serialized is handed the same unacked
+    // batch again, duplicating the events downstream.
+    register({
+      ...fakeContext(),
+      pages: vi.fn(() => [
+        {
+          isClosed: () => page.isClosed(),
+          evaluate: (fn: unknown, received?: Record<string, number>) =>
+            page.evaluate(fn, received as Record<string, number>),
+        },
+      ]),
+    } as unknown as FakeContext)
+
+    const event = replayEvent(1)
+
+    page.emit(event)
+
+    const deliver = page.delayDelivery()
+
+    const first = drainReplayEvents()
+    const second = drainReplayEvents()
+
+    deliver()
+
+    await Promise.all([first, second])
+    await flushReplayEvents()
+
+    expect(postedEvents()).toEqual([event])
   })
 
   it('does not pull from a closed page', async () => {

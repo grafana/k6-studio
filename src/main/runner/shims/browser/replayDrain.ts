@@ -4,14 +4,6 @@ import { postTracking, TRACKING_SERVER_URL } from '../utils'
 
 import { onActionEnd } from './utils'
 
-declare module 'k6/browser' {
-  interface Page {
-    // The pull currently in flight on this page. Overlapping pulls would each
-    // return the page's unacked batch, duplicating events downstream.
-    __replayPull?: Promise<void>
-  }
-}
-
 // Roughly a few seconds of a busy page. Beyond that the tracking server is gone
 // or wedged and holding on to the events only grows the k6 process.
 const OUTBOX_LIMIT = 100
@@ -91,14 +83,13 @@ function pump() {
   return pumping
 }
 
-async function pullPage(page: Page) {
-  try {
-    // Covers pages torn down by context.close(), browser shutdown or a crash,
-    // which never go through the page.close() proxy.
-    if (page.isClosed()) {
-      return
-    }
+// pageId -> pull in flight. Keyed by the id the recorder exposes on the window
+// because the Page wrappers coming out of context.pages() are fresh objects on
+// every call, so an in-flight pull can't be recognized through the wrapper.
+const pulls = new Map<string, Promise<void>>()
 
+async function pullBatch(page: Page) {
+  try {
     // The page serializes the events itself so the k6 runtime receives one
     // string instead of rebuilding a multi-megabyte object graph per pull.
     const payload = await page.evaluate<string | undefined, typeof received>(
@@ -131,17 +122,41 @@ async function pullPage(page: Page) {
 
 /**
  * Pulls the events buffered in a single page. Pulls on the same page run one
- * after the other, but each one reads the page fresh, so a pull started before
- * a navigation always sees everything the page recorded up to that point.
+ * after the other, so an overlapping pull can't be handed the page's unacked
+ * batch a second time, but each one reads the page fresh, so a pull started
+ * before a navigation always sees everything the page recorded up to then.
  */
-export function drainPage(page: Page) {
-  const pull = (page.__replayPull ?? Promise.resolve()).then(() => {
-    return pullPage(page)
-  })
+export async function drainPage(page: Page) {
+  try {
+    // Covers pages torn down by context.close(), browser shutdown or a crash,
+    // which never go through the page.close() proxy.
+    if (page.isClosed()) {
+      return
+    }
 
-  page.__replayPull = pull
+    const pageId = await page.evaluate<string | undefined, undefined>(
+      '() => window.__K6_REPLAY_PAGE_ID__'
+    )
 
-  return pull
+    // No id means the recorder is not running in the page
+    if (pageId == null) {
+      return
+    }
+
+    const pull = (pulls.get(pageId) ?? Promise.resolve()).then(() => {
+      return pullBatch(page)
+    })
+
+    pulls.set(pageId, pull)
+
+    await pull
+
+    if (pulls.get(pageId) === pull) {
+      pulls.delete(pageId)
+    }
+  } catch {
+    // Draining must never break the action that triggered it.
+  }
 }
 
 function drainAllPages() {

@@ -7,6 +7,7 @@ import type { BrowserReplayEvent } from '../../schema'
 declare global {
   interface Window {
     __K6_SESSION_REPLAY_TRACKING_SERVER_URL__: string | null
+    __K6_REPLAY_PAGE_ID__?: string
     __K6_DRAIN_EVENTS__?: (
       received: Record<string, number>
     ) => string | undefined
@@ -37,6 +38,10 @@ function createPageId() {
 if (trackingServerUrl !== null && isTopLevelFrame()) {
   const pageId = createPageId()
 
+  // The k6 side serializes pulls per page and needs a stable id for that: the
+  // Page wrappers it gets from context.pages() are fresh objects every call.
+  window.__K6_REPLAY_PAGE_ID__ = pageId
+
   let buffer: BrowserReplayEvent[] = [
     {
       type: EventType.Custom,
@@ -60,7 +65,9 @@ if (trackingServerUrl !== null && isTopLevelFrame()) {
   let nextBatchId = 0
 
   window.__K6_DRAIN_EVENTS__ = (received) => {
-    const acked = received[pageId]
+    // k6 v2.0.0 marshals an empty object argument of page.evaluate into
+    // undefined, and the ack map is empty until the first batch is acked.
+    const acked = received?.[pageId]
 
     if (retained !== null && acked !== undefined && acked >= retained.id) {
       retained = null
