@@ -72,6 +72,8 @@ const LocatorClickOptionSchema = z
       )
     ),
     waitForNavigation: safe(z.boolean()),
+    // The click opens a new tab and the rest of the test continues there.
+    switchesToNewPage: safe(z.boolean()),
   })
   .passthrough()
 

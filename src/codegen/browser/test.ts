@@ -10,7 +10,14 @@ import { toClickButton, toClickModifiers } from '@/utils/clickOptions'
 import { flattenLocators, isLocatorEqual } from '@/utils/locator'
 import { exhaustive } from '@/utils/typescript'
 
-import { TestNode, PageNode, NodeRef, Test, LocatorNode } from './types'
+import {
+  TestNode,
+  PageNode,
+  NewTabPromiseNode,
+  NodeRef,
+  Test,
+  LocatorNode,
+} from './types'
 
 function toNodeRef(node: TestNode): NodeRef {
   return {
@@ -194,9 +201,13 @@ function buildBrowserNodeGraphFromActions(
           nodeId: crypto.randomUUID(),
           button: toClickButton(action.options),
           modifiers: toClickModifiers(action.options?.modifiers),
-          waitForNavigation: action.options?.waitForNavigation
-            ? { page: getPage() }
-            : undefined,
+          // A click that switches to a new page never navigates the page it
+          // was made on, so waiting for a navigation there would hang.
+          waitForNavigation:
+            action.options?.waitForNavigation &&
+            !action.options.switchesToNewPage
+              ? { page: getPage() }
+              : undefined,
           inputs: {
             locator: withTrace(action, getLocator(action.locator)),
           },
@@ -339,9 +350,35 @@ function buildBrowserNodeGraphFromActions(
   }
 
   browserActions.forEach((action) => {
-    const node = toNode(action)
+    const switchesToNewPage =
+      action.method === 'locator.click' &&
+      action.options?.switchesToNewPage === true
 
-    nodes.push(node)
+    if (!switchesToNewPage) {
+      nodes.push(toNode(action))
+      return
+    }
+
+    // The promise for the new page must be created before the click that
+    // opens it.
+    const promiseNode: NewTabPromiseNode = {
+      type: 'new-tab-promise',
+      nodeId: crypto.randomUUID(),
+      inputs: {
+        page: getPage(),
+      },
+    }
+
+    nodes.push(promiseNode, toNode(action))
+
+    // The rest of the test continues on the page the click opened.
+    currentPage = {
+      type: 'page',
+      nodeId: crypto.randomUUID(),
+      promise: toNodeRef(promiseNode),
+    }
+
+    nodes.push(currentPage)
   })
 
   return nodes

@@ -74,6 +74,19 @@ describe('OptionsSummary', () => {
     expect(container.textContent).toBe('')
   })
 
+  it('renders switchesToNewPage as friendly label without =true', () => {
+    renderWithTheme(<OptionsSummary options={{ switchesToNewPage: true }} />)
+    expect(screen.getByText('continues in new tab')).toBeDefined()
+    expect(screen.queryByText(/=true/)).toBeNull()
+  })
+
+  it('hides switchesToNewPage when set to false', () => {
+    const { container } = renderWithTheme(
+      <OptionsSummary options={{ switchesToNewPage: false }} />
+    )
+    expect(container.textContent).toBe('')
+  })
+
   it('renders unmapped boolean as key=value', () => {
     renderWithTheme(<OptionsSummary options={{ force: false }} />)
     expect(screen.getByText('force=false')).toBeDefined()

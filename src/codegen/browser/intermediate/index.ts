@@ -19,9 +19,14 @@ function emitTraceNode(context: IntermediateContext, node: m.TraceNode) {
 }
 
 function emitPageNode(context: IntermediateContext, node: m.PageNode) {
-  const expression: ir.NewPageExpression = {
-    type: 'NewPageExpression',
-  }
+  const expression: ir.Expression = node.promise
+    ? {
+        type: 'AwaitExpression',
+        argument: context.reference(node.promise),
+      }
+    : {
+        type: 'NewPageExpression',
+      }
 
   context.allocate({
     node,
@@ -35,6 +40,21 @@ function emitPageNode(context: IntermediateContext, node: m.PageNode) {
           target: expression,
         },
       }
+    },
+  })
+}
+
+function emitNewTabPromiseNode(
+  context: IntermediateContext,
+  node: m.NewTabPromiseNode
+) {
+  context.declare({
+    kind: 'const',
+    node,
+    name: 'newPagePromise',
+    value: {
+      type: 'NewPagePromiseExpression',
+      target: context.reference(node.inputs.page),
     },
   })
 }
@@ -509,6 +529,9 @@ function emitNode(context: IntermediateContext, node: m.TestNode) {
 
     case 'page':
       return emitPageNode(context, node)
+
+    case 'new-tab-promise':
+      return emitNewTabPromiseNode(context, node)
 
     case 'locator':
       return emitLocatorNode(context, node)

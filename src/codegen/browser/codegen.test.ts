@@ -119,6 +119,89 @@ it('should emit click on element', async ({ expect }) => {
   )
 })
 
+it('should switch to the page opened by a click', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'goto',
+          nodeId: 'goto',
+          url: 'https://example.com',
+          source: 'address-bar',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          locator: { type: 'css', selector: 'a.open' },
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'new-tab-promise',
+          nodeId: 'promise',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'click',
+          nodeId: 'click',
+          button: 'left',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+        {
+          type: 'page',
+          nodeId: 'page2',
+          promise: { nodeId: 'promise' },
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator2',
+          locator: { type: 'css', selector: 'button.submit' },
+          inputs: {
+            page: { nodeId: 'page2' },
+          },
+        },
+        {
+          type: 'click',
+          nodeId: 'click2',
+          button: 'left',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          inputs: {
+            locator: { nodeId: 'locator2' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/click-switches-to-new-page.ts'
+  )
+})
+
 it('should emit right-click on element', async ({ expect }) => {
   const script = await emitScript({
     defaultScenario: {

@@ -10,6 +10,7 @@ type OptionsSummaryProps = {
 
 const KEY_LABELS: Record<string, string> = {
   waitForNavigation: 'wait for navigation',
+  switchesToNewPage: 'continues in new tab',
 }
 
 export function OptionsSummary({

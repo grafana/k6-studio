@@ -22,6 +22,22 @@ export interface TraceNode extends NodeBase {
 
 export interface PageNode extends NodeBase {
   type: 'page'
+  // When set, the page was opened by a previous action (e.g. a click on a
+  // target="_blank" link) and is obtained by awaiting the referenced
+  // new-tab-promise instead of calling browser.newPage().
+  promise?: NodeRef
+}
+
+// A promise for the next page opened in the browser context. It must be
+// created before the action that opens the page and is awaited by the
+// PageNode that references it. The page input is the page whose context is
+// waited on; it also keeps that page alive until the new page has been
+// obtained.
+export interface NewTabPromiseNode extends NodeBase {
+  type: 'new-tab-promise'
+  inputs: {
+    page: NodeRef
+  }
 }
 
 export interface LocatorNode extends NodeBase {
@@ -180,6 +196,7 @@ export interface WaitForTimeoutNode extends NodeBase {
 export type TestNode =
   | TraceNode
   | PageNode
+  | NewTabPromiseNode
   | GotoNode
   | ReloadNode
   | LocatorNode

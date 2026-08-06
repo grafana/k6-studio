@@ -11,6 +11,32 @@ import { useId, useState } from 'react'
 
 import { LocatorClickAction } from '@/schemas/browserTest'
 
+interface OptionSwitchProps {
+  label: string
+  checked: boolean
+  onChange: (checked: boolean) => void
+}
+
+function OptionSwitch({ label, checked, onChange }: OptionSwitchProps) {
+  const switchId = useId()
+
+  return (
+    <Flex asChild align="center" justify="between" gap="3">
+      <label htmlFor={switchId}>
+        <Text size="1" weight="medium">
+          {label}
+        </Text>
+        <Switch
+          id={switchId}
+          size="1"
+          checked={checked}
+          onCheckedChange={onChange}
+        />
+      </label>
+    </Flex>
+  )
+}
+
 interface ClickOptionsFormProps {
   options: LocatorClickAction['options']
   onChange: (
@@ -20,9 +46,6 @@ interface ClickOptionsFormProps {
 
 export function ClickOptionsForm({ options, onChange }: ClickOptionsFormProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
-  const switchId = useId()
-
-  const waitForNavigation = options?.waitForNavigation === true
 
   return (
     <Popover.Root open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
@@ -39,20 +62,21 @@ export function ClickOptionsForm({ options, onChange }: ClickOptionsFormProps) {
         </Popover.Trigger>
       </Tooltip>
       <Popover.Content align="start" size="1" width="240px">
-        <Flex asChild align="center" justify="between" gap="3">
-          <label htmlFor={switchId}>
-            <Text size="1" weight="medium">
-              Wait for navigation
-            </Text>
-            <Switch
-              id={switchId}
-              size="1"
-              checked={waitForNavigation}
-              onCheckedChange={(checked) => {
-                onChange({ ...(options ?? {}), waitForNavigation: checked })
-              }}
-            />
-          </label>
+        <Flex direction="column" gap="2">
+          <OptionSwitch
+            label="Wait for navigation"
+            checked={options?.waitForNavigation === true}
+            onChange={(checked) => {
+              onChange({ ...(options ?? {}), waitForNavigation: checked })
+            }}
+          />
+          <OptionSwitch
+            label="Continues in new tab"
+            checked={options?.switchesToNewPage === true}
+            onChange={(checked) => {
+              onChange({ ...(options ?? {}), switchesToNewPage: checked })
+            }}
+          />
         </Flex>
       </Popover.Content>
     </Popover.Root>

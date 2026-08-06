@@ -19,6 +19,7 @@ import { ProxyData, StudioFile } from '@/types'
 import {
   EventPage,
   groupEventsByPage,
+  mergeLinearPages,
   normalizeEntryNavigation,
 } from '@/utils/browserEvents'
 
@@ -70,6 +71,15 @@ export function RecordingPreviewControls({
 
   const handleCreateBrowserTest = () => {
     if (pages.length > 1) {
+      // A journey that moves from tab to tab without ever returning can be
+      // exported as one linear test, so no page needs to be picked.
+      const merged = mergeLinearPages(browserEvents, pages)
+
+      if (merged !== null) {
+        void createBrowserTest(convertEventsToActions(merged))
+        return
+      }
+
       setIsSelectPageOpen(true)
       return
     }

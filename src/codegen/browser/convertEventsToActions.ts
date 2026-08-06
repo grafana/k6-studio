@@ -14,17 +14,19 @@ function buildClickOptions(event: ClickEvent, nextEvent?: BrowserEvent) {
   if (event.modifiers.meta) modifiers.push('Meta')
   if (event.modifiers.shift) modifiers.push('Shift')
 
-  const waitForNavigation = isFollowedByImplicitNavigation(event, nextEvent)
-  const isDefaultClick =
-    event.button === 'left' && modifiers.length === 0 && !waitForNavigation
+  const switchesToNewPage = nextEvent?.type === 'tab-opened'
+  const waitForNavigation =
+    !switchesToNewPage && isFollowedByImplicitNavigation(event, nextEvent)
 
-  if (isDefaultClick) return undefined
-
-  return {
+  const options = {
     ...(event.button !== 'left' && { button: event.button }),
     ...(modifiers.length > 0 && { modifiers }),
     ...(waitForNavigation && { waitForNavigation: true }),
+    ...(switchesToNewPage && { switchesToNewPage: true }),
   }
+
+  // A plain left click needs no options object at all.
+  return Object.keys(options).length > 0 ? options : undefined
 }
 
 function convertEvent(
