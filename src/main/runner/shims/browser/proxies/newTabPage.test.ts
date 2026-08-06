@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import '../../symbols'
 import { createProxy } from '../utils'
 
-import { pageProxy } from './page'
+import { pageProxy, setNewTabInitializer } from './page'
 
 vi.hoisted(() => {
   ;(globalThis as { __ENV?: Record<string, string> }).__ENV = {}
@@ -47,6 +47,27 @@ describe('new tab page proxying', () => {
     const newPage = await proxiedPage().context().waitForEvent('page')
 
     expect(() => newPage.$trace('id')).not.toThrow()
+  })
+
+  // k6 does not apply context init scripts to pages opened by the page itself
+  // (e.g. a click on a target="_blank" link), so the shim initializes such
+  // pages (session replay injection) before the test can act on them.
+  it('runs the new tab initializer before handing the page to the test', async () => {
+    const order: string[] = []
+
+    setNewTabInitializer(() => {
+      order.push('initialized')
+      return Promise.resolve()
+    })
+
+    try {
+      await proxiedPage().context().waitForEvent('page')
+      order.push('handed-over')
+
+      expect(order).toEqual(['initialized', 'handed-over'])
+    } finally {
+      setNewTabInitializer(() => Promise.resolve())
+    }
   })
 
   // Mirrors the generated code shape: the click that opened the tab is awaited

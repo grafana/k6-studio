@@ -126,9 +126,38 @@ export function pageProxy(target: Page): ProxyOptions<Page> {
   }
 }
 
+type NewTabInitializer = (page: Page) => Promise<void>
+
+let initializeNewTab: NewTabInitializer = () => Promise.resolve()
+
+/**
+ * Registers a hook that runs on every page obtained through
+ * `waitForEvent('page')`, before the page is handed to the test. k6 does not
+ * apply context init scripts to pages the page opened itself (e.g. a click on
+ * a target="_blank" link), so setup like the session replay recorder has to be
+ * injected here instead.
+ */
+export function setNewTabInitializer(initializer: NewTabInitializer) {
+  initializeNewTab = initializer
+}
+
+const shouldWrapWaitForEvent = createSingleEntryGuard()
+
 export function browserContextProxy(
   target: BrowserContext
 ): ProxyOptions<BrowserContext> {
+  if (shouldWrapWaitForEvent(target)) {
+    const nativeWaitForEvent = target.waitForEvent.bind(target)
+
+    target.waitForEvent = async (...args) => {
+      const page = await nativeWaitForEvent(...args)
+
+      await initializeNewTab(page)
+
+      return page
+    }
+  }
+
   return {
     target,
     tracking: {},
