@@ -141,7 +141,13 @@ export function browserContextProxy(
     target.waitForEvent = async (...args) => {
       const page = await nativeWaitForEvent(...args)
 
-      await injectSessionReplayIntoNewTab(page)
+      try {
+        await injectSessionReplayIntoNewTab(page)
+      } catch {
+        // Session replay is non-critical and a popup that is still navigating
+        // can reject the injection; the recorder is retried after the next
+        // action.
+      }
 
       return page
     }

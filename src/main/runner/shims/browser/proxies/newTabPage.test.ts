@@ -68,6 +68,18 @@ describe('new tab page proxying', () => {
     expect(newPage).toBeDefined()
   })
 
+  // Session replay is non-critical: a popup that is still navigating can
+  // reject the injection evaluates, and that must not fail the test.
+  it('hands the page over even when the recorder injection fails', async () => {
+    const injected = vi.mocked(injectSessionReplayIntoNewTab)
+
+    injected.mockRejectedValueOnce(new Error('execution context destroyed'))
+
+    const newPage = await proxiedPage().context().waitForEvent('page')
+
+    expect(newPage).toBeDefined()
+  })
+
   // Mirrors the generated code shape: the click that opened the tab is awaited
   // elsewhere; the test then acts on the new page through a traced locator.
   it('runs a traced action on a locator of the new page', async () => {
