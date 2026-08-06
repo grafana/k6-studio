@@ -1146,6 +1146,52 @@ it('should emit a getByRole locator', async ({ expect }) => {
   )
 })
 
+// k6 escapes the name itself when building its internal selector (see
+// https://github.com/grafana/k6/pull/5374), so the emitted script must pass
+// the name through verbatim. Pre-escaping it produces a double escape and an
+// InvalidSelectorError at runtime.
+it('should emit a getByRole name with an apostrophe verbatim', async ({
+  expect,
+}) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          locator: {
+            type: 'role',
+            role: 'radio',
+            options: { name: "I don't know" },
+          },
+          inputs: { page: { nodeId: 'page' } },
+        },
+        {
+          type: 'click',
+          nodeId: 'click',
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+          button: 'left',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  expect(script).toContain(`getByRole("radio", { name: "I don't know" })`)
+})
+
 it('should emit a css locator', async ({ expect }) => {
   const script = await emitScript({
     defaultScenario: {
