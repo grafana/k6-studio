@@ -1,4 +1,4 @@
-import { BrowserEvent } from '@/schemas/recording'
+import { BrowserEvent, NavigateToPageEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 
 export interface EventPage {
@@ -47,6 +47,26 @@ export function groupEventsByPage(events: BrowserEvent[]): EventPage[] {
   return [...pages.values()]
 }
 
+function findEntryNavigation(events: BrowserEvent[]) {
+  const index = events.findIndex(
+    (event) => event.type === 'navigate-to-page' && isWebUrl(event.url)
+  )
+
+  const entry = events[index]
+
+  return entry?.type === 'navigate-to-page' ? { index, entry } : null
+}
+
+function withEntrySource(
+  events: BrowserEvent[],
+  entryIndex: number,
+  source: NavigateToPageEvent['source']
+): BrowserEvent[] {
+  return events.map((event, index) =>
+    index === entryIndex ? { ...event, source } : event
+  )
+}
+
 /**
  * When a page is exported on its own, the navigation that opened it may have
  * been recorded as implicit because the action that triggered it lives in
@@ -57,13 +77,9 @@ export function groupEventsByPage(events: BrowserEvent[]): EventPage[] {
 export function normalizeEntryNavigation(
   events: BrowserEvent[]
 ): BrowserEvent[] {
-  const entryIndex = events.findIndex(
-    (event) => event.type === 'navigate-to-page' && isWebUrl(event.url)
-  )
+  const found = findEntryNavigation(events)
 
-  const entry = events[entryIndex]
-
-  if (entry?.type !== 'navigate-to-page' || entry.source !== 'implicit') {
+  if (found === null || found.entry.source !== 'implicit') {
     return events
   }
 
@@ -75,7 +91,7 @@ export function normalizeEntryNavigation(
   // [navigate(chrome://new-tab-page), navigate(https://app)]: nothing in this
   // tab triggered the app navigation, so it is promoted. A same-tab
   // [click, navigate(https://app)] is left as-is, since the click owns it.
-  const previous = events[entryIndex - 1]
+  const previous = events[found.index - 1]
   const triggeredByPreviousAction =
     previous?.type === 'click' || previous?.type === 'submit-form'
 
@@ -83,9 +99,7 @@ export function normalizeEntryNavigation(
     return events
   }
 
-  return events.map((event, index) =>
-    index === entryIndex ? { ...event, source: 'address-bar' } : event
-  )
+  return withEntrySource(events, found.index, 'address-bar')
 }
 
 /**
@@ -96,19 +110,13 @@ export function normalizeEntryNavigation(
  * it instead of emitting a duplicate `page.goto`.
  */
 function demoteEntryNavigation(events: BrowserEvent[]): BrowserEvent[] {
-  const entryIndex = events.findIndex(
-    (event) => event.type === 'navigate-to-page' && isWebUrl(event.url)
-  )
+  const found = findEntryNavigation(events)
 
-  const entry = events[entryIndex]
-
-  if (entry?.type !== 'navigate-to-page' || entry.source === 'implicit') {
+  if (found === null || found.entry.source === 'implicit') {
     return events
   }
 
-  return events.map((event, index) =>
-    index === entryIndex ? { ...event, source: 'implicit' } : event
-  )
+  return withEntrySource(events, found.index, 'implicit')
 }
 
 /**
@@ -157,12 +165,6 @@ export function mergeLinearPages(
     return null
   }
 
-  const positions = new Map<BrowserEvent, number>(
-    events.map((event, index) => [event, index])
-  )
-
-  const position = (event: BrowserEvent) => positions.get(event) ?? -1
-
   const merged: BrowserEvent[] = []
   let handedOffByClick = false
 
@@ -190,11 +192,13 @@ export function mergeLinearPages(
 
     // Events within a tab are in source order, so checking the last
     // interaction is enough to know the user never came back to this tab.
+    // Both events come from the raw recording, so the flat list can be
+    // compared by identity.
     const lastInteraction = page.events.findLast(isInteraction)
 
     if (
       lastInteraction !== undefined &&
-      position(lastInteraction) > position(nextEntry)
+      events.indexOf(lastInteraction) > events.indexOf(nextEntry)
     ) {
       return null
     }

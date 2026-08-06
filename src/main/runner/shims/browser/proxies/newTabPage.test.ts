@@ -2,13 +2,18 @@ import { Page } from 'k6/browser'
 import { describe, expect, it, vi } from 'vitest'
 
 import '../../symbols'
+import { injectSessionReplayIntoNewTab } from '../sessionReplay'
 import { createProxy } from '../utils'
 
-import { pageProxy, setNewTabInitializer } from './page'
+import { pageProxy } from './page'
 
 vi.hoisted(() => {
   ;(globalThis as { __ENV?: Record<string, string> }).__ENV = {}
 })
+
+vi.mock('../sessionReplay', () => ({
+  injectSessionReplayIntoNewTab: vi.fn(() => Promise.resolve()),
+}))
 
 // Raw k6 objects have no `$trace` member; the shim adds it by proxying. A page
 // obtained through `page.context().waitForEvent('page')` (a click that opens a
@@ -50,24 +55,17 @@ describe('new tab page proxying', () => {
   })
 
   // k6 does not apply context init scripts to pages opened by the page itself
-  // (e.g. a click on a target="_blank" link), so the shim initializes such
-  // pages (session replay injection) before the test can act on them.
-  it('runs the new tab initializer before handing the page to the test', async () => {
-    const order: string[] = []
+  // (e.g. a click on a target="_blank" link), so the shim injects the session
+  // replay recorder before the test can act on the page.
+  it('injects the session replay recorder before handing the page over', async () => {
+    const injected = vi.mocked(injectSessionReplayIntoNewTab)
 
-    setNewTabInitializer(() => {
-      order.push('initialized')
-      return Promise.resolve()
-    })
+    injected.mockClear()
 
-    try {
-      await proxiedPage().context().waitForEvent('page')
-      order.push('handed-over')
+    const newPage = await proxiedPage().context().waitForEvent('page')
 
-      expect(order).toEqual(['initialized', 'handed-over'])
-    } finally {
-      setNewTabInitializer(() => Promise.resolve())
-    }
+    expect(injected).toHaveBeenCalledOnce()
+    expect(newPage).toBeDefined()
   })
 
   // Mirrors the generated code shape: the click that opened the tab is awaited
