@@ -13,6 +13,21 @@ interface UseDeleteFileArgs {
   navigateHomeOnDelete?: boolean
 }
 
+interface DeleteFileOptions {
+  force?: boolean
+}
+
+interface DeletedResult {
+  deleted: true
+}
+
+interface NotDeletedResult {
+  deleted: false
+  references: string[]
+}
+
+export type DeleteFileResult = DeletedResult | NotDeletedResult
+
 export function useDeleteFile({
   file,
   navigateHomeOnDelete,
@@ -22,10 +37,28 @@ export function useDeleteFile({
   const addPending = usePendingDeletesStore((state) => state.add)
   const removePending = usePendingDeletesStore((state) => state.remove)
 
-  return () => {
+  return async ({
+    force = false,
+  }: DeleteFileOptions = {}): Promise<DeleteFileResult> => {
     if (usePendingDeletesStore.getState().paths.has(file.path)) {
-      return
+      return {
+        deleted: true,
+      }
     }
+
+    if (!force) {
+      const references = await window.studio.workspace.getFileReferences(
+        file.path
+      )
+
+      if (references.referencedBy.length > 0) {
+        return {
+          deleted: false,
+          references: references.referencedBy,
+        }
+      }
+    }
+
     addPending(file.path)
 
     if (navigateHomeOnDelete) {
@@ -69,5 +102,9 @@ export function useDeleteFile({
       ),
       onDismiss: handleDismiss,
     })
+
+    return {
+      deleted: true,
+    }
   }
 }
