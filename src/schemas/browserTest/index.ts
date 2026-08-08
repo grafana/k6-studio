@@ -1,22 +1,35 @@
 import { z } from 'zod'
 
-import { jsonCodec, migrationCodec } from '@/utils/zod'
+import { jsonCodec } from '@/utils/zod'
 
+import { migrateBrowserTestFile } from './migration'
 import { BrowserTestFileSchema } from './v1'
 
-const AnyBrowserTestFileSchema = z.discriminatedUnion('version', [
-  BrowserTestFileSchema,
-])
+// Lenient input schema that accepts both old (pre-#1332) and new locator
+// formats. Old files lack `type` on locator options and may have a flat
+// `frames` array on actions. We parse actions loosely here and rely on the
+// migration + strict schema validation to normalize.
+const LenientBrowserTestFileSchema = z.looseObject({
+  version: z.literal('1.0'),
+  actions: z.array(z.looseObject({})),
+  options: z.looseObject({}),
+})
 
-export const BrowserTestFileCodec = jsonCodec(
-  migrationCodec(
-    AnyBrowserTestFileSchema,
-    BrowserTestFileSchema,
-    (supported) => {
-      return supported
-    }
-  )
+const BrowserTestMigrationCodec = z.codec(
+  LenientBrowserTestFileSchema,
+  BrowserTestFileSchema,
+  {
+    decode(value) {
+      const migrated = migrateBrowserTestFile(value as never)
+      return BrowserTestFileSchema.parse(migrated)
+    },
+    encode(value) {
+      return BrowserTestFileSchema.parse(value)
+    },
+  }
 )
+
+export const BrowserTestFileCodec = jsonCodec(BrowserTestMigrationCodec)
 
 export {
   type BrowserTestFile,
