@@ -2,6 +2,7 @@ import { MakerDeb } from '@electron-forge/maker-deb'
 import { MakerDMG } from '@electron-forge/maker-dmg'
 import { MakerRpm } from '@electron-forge/maker-rpm'
 import { MakerSquirrel } from '@electron-forge/maker-squirrel'
+import { MakerWix } from '@electron-forge/maker-wix'
 import { MakerZIP } from '@electron-forge/maker-zip'
 import { FusesPlugin } from '@electron-forge/plugin-fuses'
 import { VitePlugin } from '@electron-forge/plugin-vite'
@@ -91,7 +92,34 @@ function getPostMakeHook() {
       .map((filePath) => spawnSignFile(filePath))
 
     await Promise.all(signingPromises)
-    return makeResults
+
+    return await Promise.all(
+      makeResults.map(async (result) => {
+        const artifacts = await Promise.all(
+          result.artifacts.map(async (artifact) => {
+            const parsed = path.parse(artifact)
+
+            if (parsed.ext.toLowerCase() !== '.msi') {
+              return artifact
+            }
+
+            // Rename the MSI file to follow pattern of other artifacts
+            // oxlint-disable-next-line typescript/no-unsafe-member-access
+            const newArtifact = `k6.Studio-${result.packageJSON.version}-${result.arch}.msi`
+            const newArtifactPath = path.join(parsed.dir, newArtifact)
+
+            await fs.promises.rename(artifact, newArtifactPath)
+
+            return newArtifactPath
+          })
+        )
+
+        return {
+          ...result,
+          artifacts,
+        }
+      })
+    )
   }
 }
 
@@ -152,6 +180,27 @@ const config: ForgeConfig = {
       iconUrl:
         'https://raw.githubusercontent.com/grafana/k6-studio/refs/heads/main/resources/icons/logo.ico',
     }),
+    process.env.BUILD_MSI_INSTALLER === 'true' &&
+      new MakerWix({
+        manufacturer: 'Grafana Labs',
+        icon: './resources/icons/logo.ico',
+        features: {
+          autoUpdate: false,
+          autoLaunch: false,
+        },
+        ui: {
+          chooseDirectory: true,
+        },
+        // Use custom WiX template that points shortcuts directly to the real exe
+        // in the versioned subfolder, bypassing the broken stub launcher
+        // (see https://github.com/electron-userland/electron-wix-msi/issues/161)
+        beforeCreate: (creator) => {
+          creator.wixTemplate = fs.readFileSync(
+            path.join(__dirname, 'resources', 'wix-template.xml'),
+            'utf-8'
+          )
+        },
+      }),
     new MakerZIP({}, ['darwin']),
     new MakerDMG(
       {
@@ -166,7 +215,7 @@ const config: ForgeConfig = {
         mimeType: [`x-scheme-handler/${CUSTOM_APP_PROTOCOL}`],
       },
     }),
-  ],
+  ].filter((value) => value !== false),
   plugins: [
     new VitePlugin({
       // `build` can specify multiple entry builds, which can be Main process, Preload scripts, Worker process, etc.
