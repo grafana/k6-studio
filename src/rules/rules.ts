@@ -47,10 +47,17 @@ export function applyRules(recording: ProxyData[], rules: TestRule[]) {
     // since some rules may change the URL
     .map(updateQueryParams)
 
-  // Collect affected requests to exclude from redirect merging
+  // Collect affected requests to exclude from redirect merging.
+  // All rule types that modify request snippets must be included here,
+  // otherwise their modifications (before/after/checks) can be silently
+  // dropped when redirect chains are merged.
   const affectedRequestIds = new Set(
     ruleInstances.flatMap((instance) => {
-      if (['parameterization', 'customCode'].includes(instance.type)) {
+      if (
+        ['parameterization', 'customCode', 'verification'].includes(
+          instance.type
+        )
+      ) {
         return instance.state.matchedRequestIds
       }
 
