@@ -82,10 +82,13 @@ export class Page extends EventEmitter<PageEventMap> {
       }
 
       // The navigation this page attached on was already recorded, so ignore
-      // the event if it does arrive after all.
-      if (this.#recordedEntryUrl === data.frame.url) {
-        this.#recordedEntryUrl = null
+      // the event if it does arrive after all. Whatever the first navigation
+      // turns out to be, later ones are new, so returning to the entry url is
+      // recorded normally.
+      const recordedEntryUrl = this.#recordedEntryUrl
+      this.#recordedEntryUrl = null
 
+      if (recordedEntryUrl === data.frame.url) {
         this.#reset()
 
         return
@@ -177,6 +180,14 @@ export class Page extends EventEmitter<PageEventMap> {
     // for the next document only would lose every event in it.
     const runImmediately = hasDocument(url)
 
+    // Must happen before the page resumes: a tab that attaches while still
+    // paused on its entry navigation delivers the commit events during the
+    // await below, and recording the entry navigation after them would emit
+    // the same navigation twice.
+    if (!isInitialTab && hasDocument(url)) {
+      this.#recordEntryNavigation(url)
+    }
+
     await Promise.all([
       this.#client.page.enable(),
 
@@ -203,10 +214,6 @@ export class Page extends EventEmitter<PageEventMap> {
       // page resumes.
       this.#client.runtime.runIfWaitingForDebugger(),
     ])
-
-    if (!isInitialTab && hasDocument(url)) {
-      this.#recordEntryNavigation(url)
-    }
 
     return this
   }

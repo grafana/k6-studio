@@ -185,6 +185,37 @@ describe('Page.attach', () => {
     expect(recorded).toHaveLength(1)
   })
 
+  // A context-menu tab can attach while still paused on its entry navigation,
+  // in which case the commit events race the rest of the attach sequence.
+  it('does not duplicate the entry navigation when its commit races the attach', async () => {
+    const { transport, page, recorded } = setup()
+
+    const attached = page.attach({
+      url: 'https://example.test/page',
+      isInitialTab: false,
+    })
+
+    navigateFrame(transport, 'https://example.test/page')
+
+    await attached
+
+    expect(recorded).toHaveLength(1)
+  })
+
+  // Suppression must only cover the entry navigation itself: once any other
+  // navigation has happened, returning to the entry url is a new navigation.
+  it('records a later return to the entry url', async () => {
+    const { transport, page, recorded } = setup()
+
+    await page.attach({ url: 'https://example.test/page', isInitialTab: false })
+
+    navigateFrame(transport, 'https://example.test/next')
+    navigateFrame(transport, 'https://example.test/page')
+
+    expect(recorded).toHaveLength(3)
+    expect(recorded[2]).toMatchObject({ url: 'https://example.test/page' })
+  })
+
   it('records a later navigation of a tab that attached with a document', async () => {
     const { transport, page, recorded } = setup()
 
