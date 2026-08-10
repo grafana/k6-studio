@@ -102,27 +102,33 @@ export function normalizeEntryNavigation(
   return withEntrySource(events, found.index, 'address-bar')
 }
 
+// The landing of a click-opened popup starts committing the moment the tab
+// opens, so its navigation is recorded within a couple of seconds even on
+// slow sites (up to ~2.5s across measured recordings). A popup that opens on
+// about:blank records no landing at all: its first navigation is whatever the
+// user navigated to afterwards, which arrives much later.
+const LANDING_COMMIT_MAX_DELAY_MS = 5_000
+
 /**
  * The recorder marks a popup's first navigation as explicit (`address-bar`)
  * because no in-page request precedes it in the new tab. When the tab was
  * reached through a click handoff, the click already lands the test on that
  * page, so the entry navigation is demoted to implicit and conversion drops
- * it instead of emitting a duplicate `page.goto`. Only the very first
- * navigation is the click's landing: a popup that opens on about:blank lands
- * there, and a web navigation typed afterwards must survive as a goto.
+ * it instead of emitting a duplicate `page.goto`. Only a navigation committed
+ * soon after the tab opened is the click's landing: anything later is the
+ * user navigating the popup themselves and must survive as a goto.
  */
-function demoteEntryNavigation(events: BrowserEvent[]): BrowserEvent[] {
+function demoteEntryNavigation(
+  events: BrowserEvent[],
+  openedAt: number
+): BrowserEvent[] {
   const found = findEntryNavigation(events)
 
   if (found === null || found.entry.source === 'implicit') {
     return events
   }
 
-  const firstNavigation = events.find(
-    (event) => event.type === 'navigate-to-page'
-  )
-
-  if (firstNavigation !== found.entry) {
+  if (found.entry.timestamp - openedAt > LANDING_COMMIT_MAX_DELAY_MS) {
     return events
   }
 
@@ -229,7 +235,7 @@ export function mergeLinearPages(
   }
 
   const merged: BrowserEvent[] = []
-  let handedOffByClick = false
+  let handoffOpened: BrowserEvent | null = null
 
   for (const [index, page] of pages.entries()) {
     const next = pages[index + 1]
@@ -242,9 +248,10 @@ export function mergeLinearPages(
     // so its entry navigation is demoted for conversion to drop. Any other tab
     // (including the first) needs its entry navigation promoted to an explicit
     // one instead, mirroring the single-page export path.
-    slice = handedOffByClick
-      ? demoteEntryNavigation(slice)
-      : normalizeEntryNavigation(slice)
+    slice =
+      handoffOpened !== null
+        ? demoteEntryNavigation(slice, handoffOpened.timestamp)
+        : normalizeEntryNavigation(slice)
 
     const nextEntry = next?.events[0]
 
@@ -273,13 +280,13 @@ export function mergeLinearPages(
 
     if (lastInteraction === undefined || handoff === null) {
       merged.push(...slice)
-      handedOffByClick = false
+      handoffOpened = null
       continue
     }
 
     merged.push(...slice.slice(0, slice.indexOf(lastInteraction) + 1))
     merged.push(handoff)
-    handedOffByClick = true
+    handoffOpened = handoff
   }
 
   return merged

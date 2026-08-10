@@ -222,28 +222,54 @@ describe('mergeLinearPages', () => {
     ])
   })
 
-  it('keeps the typed navigation when the popup opens on about:blank', () => {
-    // A JS-driven popup can open on about:blank before the user types the
-    // real url. The click handoff only lands the test on the blank page, so
-    // the typed navigation must survive as an explicit goto.
+  it('keeps a navigation typed into a popup that opened without a landing page', () => {
+    // A popup opened on about:blank records no navigation of its own, so the
+    // first recorded navigation of the tab is whatever the user typed into it
+    // afterwards. The click's own landing commits right after the tab opens,
+    // so a navigation recorded much later cannot be the landing and must
+    // survive as an explicit goto.
     const events = [
       navigate('tab1', 'https://one.com'),
-      click('tab1', 'a.popup'),
-      tabOpened('tab2'),
-      implicitNavigate('tab2', 'about:blank'),
-      navigate('tab2', 'https://app.example.com'),
-      click('tab2', 'button.submit'),
+      { ...click('tab1', 'a.popup'), timestamp: 1000 },
+      { ...tabOpened('tab2'), timestamp: 1005 },
+      { ...navigate('tab2', 'https://app.example.com'), timestamp: 16000 },
+      { ...click('tab2', 'button.submit'), timestamp: 17000 },
     ]
 
     const merged = mergeLinearPages(events, groupEventsByPage(events))
 
     expect(merged).toEqual([
       navigate('tab1', 'https://one.com'),
-      click('tab1', 'a.popup'),
-      tabOpened('tab2'),
-      implicitNavigate('tab2', 'about:blank'),
-      navigate('tab2', 'https://app.example.com'),
-      click('tab2', 'button.submit'),
+      { ...click('tab1', 'a.popup'), timestamp: 1000 },
+      { ...tabOpened('tab2'), timestamp: 1005 },
+      { ...navigate('tab2', 'https://app.example.com'), timestamp: 16000 },
+      { ...click('tab2', 'button.submit'), timestamp: 17000 },
+    ])
+  })
+
+  it('demotes a landing that took a while to commit after the tab opened', () => {
+    // Network time sits between the tab opening and the landing committing;
+    // measured recordings put it anywhere up to ~2.5 seconds.
+    const events = [
+      navigate('tab1', 'https://one.com'),
+      { ...click('tab1', 'a.open'), timestamp: 1000 },
+      { ...tabOpened('tab2'), timestamp: 1005 },
+      { ...navigate('tab2', 'https://two.com'), timestamp: 3500 },
+      { ...click('tab2', 'button.submit'), timestamp: 5000 },
+    ]
+
+    const merged = mergeLinearPages(events, groupEventsByPage(events))
+
+    expect(merged).toEqual([
+      navigate('tab1', 'https://one.com'),
+      { ...click('tab1', 'a.open'), timestamp: 1000 },
+      { ...tabOpened('tab2'), timestamp: 1005 },
+      {
+        ...navigate('tab2', 'https://two.com'),
+        timestamp: 3500,
+        source: 'implicit',
+      },
+      { ...click('tab2', 'button.submit'), timestamp: 5000 },
     ])
   })
 
