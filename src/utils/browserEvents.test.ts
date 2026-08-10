@@ -247,6 +247,28 @@ describe('mergeLinearPages', () => {
     ])
   })
 
+  it('falls back to an explicit navigation when the tab opened long after the click', () => {
+    // Opening a link through the context menu records no click of its own, so
+    // the previous unrelated click would otherwise be blamed for the new tab.
+    // A click that opens a tab does so in the same task, within milliseconds.
+    const events = [
+      navigate('tab1', 'https://one.com'),
+      { ...click('tab1', 'button.recommend'), timestamp: 1000 },
+      { ...tabOpened('tab2'), timestamp: 3218 },
+      { ...navigate('tab2', 'https://two.com'), timestamp: 3300 },
+      { ...click('tab2', 'button.submit'), timestamp: 4000 },
+    ]
+
+    const merged = mergeLinearPages(events, groupEventsByPage(events))
+
+    expect(merged).toEqual([
+      navigate('tab1', 'https://one.com'),
+      { ...click('tab1', 'button.recommend'), timestamp: 1000 },
+      { ...navigate('tab2', 'https://two.com'), timestamp: 3300 },
+      { ...click('tab2', 'button.submit'), timestamp: 4000 },
+    ])
+  })
+
   it('falls back to an explicit navigation when the new tab was opened manually', () => {
     // A manually opened tab starts on chrome://new-tab-page before the user
     // types the url. The preceding click did not open it, so replaying the

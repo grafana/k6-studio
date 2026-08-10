@@ -157,13 +157,19 @@ function isInteraction(event: BrowserEvent): boolean {
   }
 }
 
+// A click that opens a tab does so in the same task, so the tab is attached
+// within milliseconds. Anything slower was opened by something else: the
+// context menu's "open link in new tab" records no click of its own, which
+// would otherwise leave the previous unrelated click blamed for the new tab.
+const HANDOFF_MAX_DELAY_MS = 500
+
 /**
  * Finds the `tab-opened` event proving that the click directly opened the
- * given page's tab: it must be the first tab opened after the click, and the
- * tab must not start on a browser-internal page. A manually opened tab starts
- * on `chrome://new-tab-page` before the user types the url, and a click whose
- * popup is some other (non-exportable) tab is not a handoff either; replaying
- * such a click and waiting for a page would hang or grab the wrong page.
+ * given page's tab: it must be the first tab opened after the click, it must
+ * follow the click immediately, and the tab must not start on a browser
+ * internal page (a manually opened tab starts on `chrome://new-tab-page`
+ * before the user types the url). Replaying a click that did not open the tab
+ * and then waiting for a page would hang or grab the wrong page.
  */
 function findHandoffTabOpened(
   events: BrowserEvent[],
@@ -176,6 +182,10 @@ function findHandoffTabOpened(
   )
 
   if (opened === undefined || opened.tab !== next.tab) {
+    return null
+  }
+
+  if (opened.timestamp - click.timestamp > HANDOFF_MAX_DELAY_MS) {
     return null
   }
 
