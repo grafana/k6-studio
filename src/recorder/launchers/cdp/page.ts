@@ -22,6 +22,14 @@ function toNavigationSource(
   }
 }
 
+/**
+ * Whether the target already has a document to run scripts in. Targets that
+ * attach before their first document report no url at all.
+ */
+function hasDocument(url: string): boolean {
+  return url !== '' && url !== 'about:blank'
+}
+
 function isReload(event: CdpPage.FrameStartedNavigatingEvent): boolean {
   return (
     event.navigationType === 'reload' ||
@@ -40,6 +48,10 @@ export class Page extends EventEmitter<PageEventMap> {
 
   #requestedNavigation: CdpPage.FrameRequestedNavigationEvent | null = null
   #startedNavigation: CdpPage.FrameStartedNavigatingEvent | null = null
+
+  // Url of an entry navigation recorded on attach, until the matching
+  // frameNavigated has been ignored. See #recordEntryNavigation.
+  #recordedEntryUrl: string | null = null
 
   constructor(id: string, client: ChromeDevToolsClient, script: Script) {
     super()
@@ -66,6 +78,16 @@ export class Page extends EventEmitter<PageEventMap> {
 
     this.#client.page.on('frameNavigated', ({ data }) => {
       if (data.frame.id !== this.#id) {
+        return
+      }
+
+      // The navigation this page attached on was already recorded, so ignore
+      // the event if it does arrive after all.
+      if (this.#recordedEntryUrl === data.frame.url) {
+        this.#recordedEntryUrl = null
+
+        this.#reset()
+
         return
       }
 
@@ -135,7 +157,7 @@ export class Page extends EventEmitter<PageEventMap> {
     })
   }
 
-  async attach({ waitingForDebugger }: { waitingForDebugger: boolean }) {
+  async attach({ url, isInitialTab }: { url: string; isInitialTab: boolean }) {
     // A target paused waiting for the debugger (e.g. a popup opened with
     // noopener/noreferrer, which gets a new browsing context group) doesn't
     // process session commands until Runtime.runIfWaitingForDebugger is sent,
@@ -145,12 +167,15 @@ export class Page extends EventEmitter<PageEventMap> {
     // in call order, so the scripts are still registered before the page
     // resumes.
     //
-    // Scripts run immediately only in targets that already have a document
-    // (the tab the recording starts in). A paused target only has its empty
-    // initial document, and executing the recording script there wedges the
+    // Scripts run immediately only in targets that already have a document.
+    // A popup the page opened attaches before its document exists, and
+    // executing the recording script in its empty initial document wedges the
     // renderer of noopener/noreferrer popups in a busy loop that blocks their
-    // first real navigation.
-    const runImmediately = !waitingForDebugger
+    // first real navigation. A tab opened through the context menu attaches
+    // with its url already set: that document is the one the user goes on to
+    // interact with, and it never navigates again, so registering the scripts
+    // for the next document only would lose every event in it.
+    const runImmediately = hasDocument(url)
 
     await Promise.all([
       this.#client.page.enable(),
@@ -179,7 +204,33 @@ export class Page extends EventEmitter<PageEventMap> {
       this.#client.runtime.runIfWaitingForDebugger(),
     ])
 
+    if (!isInitialTab && hasDocument(url)) {
+      this.#recordEntryNavigation(url)
+    }
+
     return this
+  }
+
+  /**
+   * Records the navigation a tab attached on. A tab opened through the context
+   * menu has already committed its document by the time we attach, so no
+   * navigation event ever arrives for it and the tab would have nothing to
+   * export a test from. The tab the recording starts in is excluded: the
+   * recorder navigates it itself and that navigation is reported normally.
+   */
+  #recordEntryNavigation(url: string) {
+    this.#recordedEntryUrl = url
+
+    this.emit('navigate', {
+      event: {
+        type: 'navigate-to-page',
+        eventId: uuid(),
+        timestamp: Date.now(),
+        source: 'address-bar',
+        url,
+        tab: this.#id,
+      },
+    })
   }
 
   navigateTo(url: string) {

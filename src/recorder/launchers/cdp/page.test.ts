@@ -1,16 +1,20 @@
 import { describe, expect, it } from 'vitest'
 
+import { BrowserEvent } from '@/schemas/recording'
 import {
   ChromeCommand,
   ChromeDevToolsClient,
   Transport,
 } from '@/utils/cdp/client'
 
+type Listener = Parameters<Transport['on']>[1]
+
 import { Page } from './page'
 import { Script } from './script'
 
 class FakeTransport implements Transport {
   calls: ChromeCommand[] = []
+  #listeners = new Map<string, Set<Listener>>()
 
   // Mimics a popup opened with noopener/noreferrer: while such a page is
   // paused waiting for the debugger, Chrome doesn't respond to any session
@@ -44,11 +48,24 @@ class FakeTransport implements Transport {
     return promise
   }
 
-  on() {
-    return () => {}
+  on(event: string, listener: Listener) {
+    const listeners = this.#listeners.get(event) ?? new Set()
+
+    listeners.add(listener)
+    this.#listeners.set(event, listeners)
+
+    return () => this.off(event, listener)
   }
 
-  off() {}
+  off(event: string, listener: Listener) {
+    this.#listeners.get(event)?.delete(listener)
+  }
+
+  emit(event: string, data: unknown) {
+    this.#listeners.get(event)?.forEach((listener) => {
+      listener({ method: event, sessionId: undefined, data } as never)
+    })
+  }
 
   dispose() {}
 }
@@ -58,7 +75,21 @@ function setup(holdResponsesUntilResume = false) {
   const client = new ChromeDevToolsClient(transport)
   const page = new Page('tab-1', client, new Script('script-content'))
 
-  return { transport, page }
+  const recorded: BrowserEvent[] = []
+  page.on('navigate', ({ event }) => recorded.push(event))
+
+  return { transport, page, recorded }
+}
+
+function navigateFrame(transport: FakeTransport, url: string) {
+  transport.emit('Page.frameStartedNavigating', {
+    frameId: 'tab-1',
+    url,
+    navigationType: 'differentDocument',
+  })
+  transport.emit('Page.frameNavigated', {
+    frame: { id: 'tab-1', url },
+  })
 }
 
 function scriptCalls(transport: FakeTransport) {
@@ -74,7 +105,7 @@ describe('Page.attach', () => {
     async () => {
       const { transport, page } = setup(true)
 
-      await page.attach({ waitingForDebugger: true })
+      await page.attach({ url: '', isInitialTab: false })
 
       const methods = transport.calls.map((call) => call.method)
 
@@ -84,17 +115,22 @@ describe('Page.attach', () => {
     }
   )
 
-  // A paused target only has its empty initial document, and executing the
-  // recording script there wedges the renderer of noopener/noreferrer popups.
+  // Scripts can only run immediately in a target that already has a document.
+  // A popup opened by the page attaches before its document exists (empty
+  // url), and executing the recording script in its empty initial document
+  // wedges the renderer of noopener/noreferrer popups. A tab opened through
+  // the context menu attaches with its url already set: that document is the
+  // one the user interacts with, so skipping it loses every event in it.
   it.each([
-    { waitingForDebugger: false, runImmediately: true },
-    { waitingForDebugger: true, runImmediately: false },
+    { url: 'https://example.test/page', runImmediately: true },
+    { url: '', runImmediately: false },
+    { url: 'about:blank', runImmediately: false },
   ])(
-    'injects scripts with runImmediately: $runImmediately when waitingForDebugger is $waitingForDebugger',
-    async ({ waitingForDebugger, runImmediately }) => {
+    'injects scripts with runImmediately: $runImmediately for url "$url"',
+    async ({ url, runImmediately }) => {
       const { transport, page } = setup()
 
-      await page.attach({ waitingForDebugger })
+      await page.attach({ url, isInitialTab: true })
 
       const calls = scriptCalls(transport)
 
@@ -104,4 +140,59 @@ describe('Page.attach', () => {
       })
     }
   )
+
+  // A tab opened through the context menu has already committed its document
+  // when we attach, so its navigation never reaches us and the tab would have
+  // no entry navigation to export a test from.
+  it('records the entry navigation of a tab that attached with a document', async () => {
+    const { page, recorded } = setup()
+
+    await page.attach({ url: 'https://example.test/page', isInitialTab: false })
+
+    expect(recorded).toEqual([
+      expect.objectContaining({
+        type: 'navigate-to-page',
+        url: 'https://example.test/page',
+        source: 'address-bar',
+        tab: 'tab-1',
+      }),
+    ])
+  })
+
+  it('does not record an entry navigation for the tab the recording starts in', async () => {
+    const { page, recorded } = setup()
+
+    await page.attach({ url: 'https://example.test/page', isInitialTab: true })
+
+    expect(recorded).toEqual([])
+  })
+
+  it('does not record an entry navigation for a popup that has no document yet', async () => {
+    const { page, recorded } = setup()
+
+    await page.attach({ url: '', isInitialTab: false })
+
+    expect(recorded).toEqual([])
+  })
+
+  it('does not record the same entry navigation twice when the navigation still arrives', async () => {
+    const { transport, page, recorded } = setup()
+
+    await page.attach({ url: 'https://example.test/page', isInitialTab: false })
+
+    navigateFrame(transport, 'https://example.test/page')
+
+    expect(recorded).toHaveLength(1)
+  })
+
+  it('records a later navigation of a tab that attached with a document', async () => {
+    const { transport, page, recorded } = setup()
+
+    await page.attach({ url: 'https://example.test/page', isInitialTab: false })
+
+    navigateFrame(transport, 'https://example.test/next')
+
+    expect(recorded).toHaveLength(2)
+    expect(recorded[1]).toMatchObject({ url: 'https://example.test/next' })
+  })
 })
