@@ -14,6 +14,10 @@ import { Script } from './script'
 
 class FakeTransport implements Transport {
   calls: ChromeCommand[] = []
+
+  // Url the main frame has committed, reported by Page.getFrameTree
+  frameUrl = ''
+
   #listeners = new Map<string, Set<Listener>>()
 
   // Mimics a popup opened with noopener/noreferrer: while such a page is
@@ -29,13 +33,18 @@ class FakeTransport implements Transport {
   call<Return>(command: ChromeCommand): Promise<Return> {
     this.calls.push(command)
 
-    const result = {} as Return
+    const result = (
+      command.method === 'Page.getFrameTree'
+        ? { frameTree: { frame: { id: 'tab-1', url: this.frameUrl } } }
+        : {}
+    ) as Return
 
     if (!this.#holdResponsesUntilResume) {
       return Promise.resolve(result)
     }
 
     if (command.method === 'Runtime.runIfWaitingForDebugger') {
+      this.#holdResponsesUntilResume = false
       this.#heldResponses.splice(0).forEach((respond) => respond())
 
       return Promise.resolve(result)
@@ -82,6 +91,7 @@ function setup(holdResponsesUntilResume = false) {
 }
 
 function navigateFrame(transport: FakeTransport, url: string) {
+  transport.frameUrl = url
   transport.emit('Page.frameStartedNavigating', {
     frameId: 'tab-1',
     url,
@@ -105,7 +115,7 @@ describe('Page.attach', () => {
     async () => {
       const { transport, page } = setup(true)
 
-      await page.attach({ url: '', isInitialTab: false })
+      await page.attach({ isInitialTab: false, hasOpener: true })
 
       const methods = transport.calls.map((call) => call.method)
 
@@ -115,22 +125,21 @@ describe('Page.attach', () => {
     }
   )
 
-  // Scripts can only run immediately in a target that already has a document.
-  // A popup opened by the page attaches before its document exists (empty
-  // url), and executing the recording script in its empty initial document
-  // wedges the renderer of noopener/noreferrer popups. A tab opened through
-  // the context menu attaches with its url already set: that document is the
-  // one the user interacts with, so skipping it loses every event in it.
+  // Scripts can only run immediately in tabs the page did not open itself. A
+  // popup opened by the page attaches before its document exists, and
+  // executing the recording script in its empty initial document wedges the
+  // renderer of noopener/noreferrer popups. Any other tab (context menu,
+  // middle click) commits its first document independently of the debugger
+  // pause, so waiting for the next document would lose every event in it.
   it.each([
-    { url: 'https://example.test/page', runImmediately: true },
-    { url: '', runImmediately: false },
-    { url: 'about:blank', runImmediately: false },
+    { hasOpener: false, runImmediately: true },
+    { hasOpener: true, runImmediately: false },
   ])(
-    'injects scripts with runImmediately: $runImmediately for url "$url"',
-    async ({ url, runImmediately }) => {
+    'injects scripts with runImmediately: $runImmediately when hasOpener is $hasOpener',
+    async ({ hasOpener, runImmediately }) => {
       const { transport, page } = setup()
 
-      await page.attach({ url, isInitialTab: true })
+      await page.attach({ isInitialTab: true, hasOpener })
 
       const calls = scriptCalls(transport)
 
@@ -141,13 +150,16 @@ describe('Page.attach', () => {
     }
   )
 
-  // A tab opened through the context menu has already committed its document
-  // when we attach, so its navigation never reaches us and the tab would have
-  // no entry navigation to export a test from.
-  it('records the entry navigation of a tab that attached with a document', async () => {
-    const { page, recorded } = setup()
+  // A tab opened through the context menu or a middle click can commit its
+  // first document before Page.enable takes effect, so its navigation never
+  // reaches us and the tab would have no entry navigation to export a test
+  // from.
+  it('records the entry navigation of a tab whose commit was never reported', async () => {
+    const { transport, page, recorded } = setup()
 
-    await page.attach({ url: 'https://example.test/page', isInitialTab: false })
+    transport.frameUrl = 'https://example.test/page'
+
+    await page.attach({ isInitialTab: false, hasOpener: false })
 
     expect(recorded).toEqual([
       expect.objectContaining({
@@ -160,54 +172,44 @@ describe('Page.attach', () => {
   })
 
   it('does not record an entry navigation for the tab the recording starts in', async () => {
-    const { page, recorded } = setup()
+    const { transport, page, recorded } = setup()
 
-    await page.attach({ url: 'https://example.test/page', isInitialTab: true })
+    transport.frameUrl = 'https://example.test/page'
+
+    await page.attach({ isInitialTab: true, hasOpener: false })
 
     expect(recorded).toEqual([])
   })
 
   it('does not record an entry navigation for a popup that has no document yet', async () => {
-    const { page, recorded } = setup()
+    const { transport, page, recorded } = setup()
 
-    await page.attach({ url: '', isInitialTab: false })
+    transport.frameUrl = 'about:blank'
+
+    await page.attach({ isInitialTab: false, hasOpener: true })
 
     expect(recorded).toEqual([])
   })
 
-  it('does not record the same entry navigation twice when the navigation still arrives', async () => {
+  it('does not duplicate an entry navigation that was reported during the attach', async () => {
     const { transport, page, recorded } = setup()
 
-    await page.attach({ url: 'https://example.test/page', isInitialTab: false })
-
-    navigateFrame(transport, 'https://example.test/page')
-
-    expect(recorded).toHaveLength(1)
-  })
-
-  // A context-menu tab can attach while still paused on its entry navigation,
-  // in which case the commit events race the rest of the attach sequence.
-  it('does not duplicate the entry navigation when its commit races the attach', async () => {
-    const { transport, page, recorded } = setup()
-
-    const attached = page.attach({
-      url: 'https://example.test/page',
-      isInitialTab: false,
-    })
+    const attached = page.attach({ isInitialTab: false, hasOpener: false })
 
     navigateFrame(transport, 'https://example.test/page')
 
     await attached
 
     expect(recorded).toHaveLength(1)
+    expect(recorded[0]).toMatchObject({ url: 'https://example.test/page' })
   })
 
-  // Suppression must only cover the entry navigation itself: once any other
-  // navigation has happened, returning to the entry url is a new navigation.
   it('records a later return to the entry url', async () => {
     const { transport, page, recorded } = setup()
 
-    await page.attach({ url: 'https://example.test/page', isInitialTab: false })
+    transport.frameUrl = 'https://example.test/page'
+
+    await page.attach({ isInitialTab: false, hasOpener: false })
 
     navigateFrame(transport, 'https://example.test/next')
     navigateFrame(transport, 'https://example.test/page')
@@ -219,7 +221,9 @@ describe('Page.attach', () => {
   it('records a later navigation of a tab that attached with a document', async () => {
     const { transport, page, recorded } = setup()
 
-    await page.attach({ url: 'https://example.test/page', isInitialTab: false })
+    transport.frameUrl = 'https://example.test/page'
+
+    await page.attach({ isInitialTab: false, hasOpener: false })
 
     navigateFrame(transport, 'https://example.test/next')
 

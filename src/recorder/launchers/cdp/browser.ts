@@ -87,7 +87,10 @@ export class BrowserSession extends EventEmitter<BrowserSessionEventMap> {
       })
     }
 
-    await page.attach({ url: data.targetInfo.url, isInitialTab })
+    await page.attach({
+      isInitialTab,
+      hasOpener: data.targetInfo.openerId !== undefined,
+    })
   }
 
   #handleDetachedFromTarget = ({

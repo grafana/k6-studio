@@ -49,9 +49,9 @@ export class Page extends EventEmitter<PageEventMap> {
   #requestedNavigation: CdpPage.FrameRequestedNavigationEvent | null = null
   #startedNavigation: CdpPage.FrameStartedNavigatingEvent | null = null
 
-  // Url of an entry navigation recorded on attach, until the matching
-  // frameNavigated has been ignored. See #recordEntryNavigation.
-  #recordedEntryUrl: string | null = null
+  // Whether any navigation has been recorded for this tab. See
+  // #recordMissedEntryNavigation.
+  #hasNavigation = false
 
   constructor(id: string, client: ChromeDevToolsClient, script: Script) {
     super()
@@ -81,19 +81,6 @@ export class Page extends EventEmitter<PageEventMap> {
         return
       }
 
-      // The navigation this page attached on was already recorded, so ignore
-      // the event if it does arrive after all. Whatever the first navigation
-      // turns out to be, later ones are new, so returning to the entry url is
-      // recorded normally.
-      const recordedEntryUrl = this.#recordedEntryUrl
-      this.#recordedEntryUrl = null
-
-      if (recordedEntryUrl === data.frame.url) {
-        this.#reset()
-
-        return
-      }
-
       if (this.#startedNavigation === null) {
         logger.warn(
           'Received frameNavigated event without prior navigation events'
@@ -103,6 +90,8 @@ export class Page extends EventEmitter<PageEventMap> {
       }
 
       if (isReload(this.#startedNavigation)) {
+        this.#hasNavigation = true
+
         this.emit('navigate', {
           event: {
             type: 'reload-page',
@@ -130,6 +119,8 @@ export class Page extends EventEmitter<PageEventMap> {
 
         return
       }
+
+      this.#hasNavigation = true
 
       this.emit('navigate', {
         event: {
@@ -160,7 +151,13 @@ export class Page extends EventEmitter<PageEventMap> {
     })
   }
 
-  async attach({ url, isInitialTab }: { url: string; isInitialTab: boolean }) {
+  async attach({
+    isInitialTab,
+    hasOpener,
+  }: {
+    isInitialTab: boolean
+    hasOpener: boolean
+  }) {
     // A target paused waiting for the debugger (e.g. a popup opened with
     // noopener/noreferrer, which gets a new browsing context group) doesn't
     // process session commands until Runtime.runIfWaitingForDebugger is sent,
@@ -170,23 +167,16 @@ export class Page extends EventEmitter<PageEventMap> {
     // in call order, so the scripts are still registered before the page
     // resumes.
     //
-    // Scripts run immediately only in targets that already have a document.
-    // A popup the page opened attaches before its document exists, and
-    // executing the recording script in its empty initial document wedges the
-    // renderer of noopener/noreferrer popups in a busy loop that blocks their
-    // first real navigation. A tab opened through the context menu attaches
-    // with its url already set: that document is the one the user goes on to
-    // interact with, and it never navigates again, so registering the scripts
-    // for the next document only would lose every event in it.
-    const runImmediately = hasDocument(url)
-
-    // Must happen before the page resumes: a tab that attaches while still
-    // paused on its entry navigation delivers the commit events during the
-    // await below, and recording the entry navigation after them would emit
-    // the same navigation twice.
-    if (!isInitialTab && hasDocument(url)) {
-      this.#recordEntryNavigation(url)
-    }
+    // Scripts run immediately only in tabs the page did not open itself. A
+    // popup the page opened (window.open, target=_blank) attaches before its
+    // document exists, and executing the recording script in its empty
+    // initial document wedges the renderer of noopener/noreferrer popups in a
+    // busy loop that blocks their first real navigation; its landing commits
+    // only after the tab resumes, so the scripts registered above still catch
+    // it. Every other tab (context menu, middle click) commits its first
+    // document independently of the debugger pause, racing the registration,
+    // so the scripts must also run in whatever document already exists.
+    const runImmediately = !hasOpener
 
     await Promise.all([
       this.#client.page.enable(),
@@ -215,18 +205,30 @@ export class Page extends EventEmitter<PageEventMap> {
       this.#client.runtime.runIfWaitingForDebugger(),
     ])
 
+    if (!isInitialTab) {
+      await this.#recordMissedEntryNavigation()
+    }
+
     return this
   }
 
   /**
-   * Records the navigation a tab attached on. A tab opened through the context
-   * menu has already committed its document by the time we attach, so no
-   * navigation event ever arrives for it and the tab would have nothing to
-   * export a test from. The tab the recording starts in is excluded: the
-   * recorder navigates it itself and that navigation is reported normally.
+   * Records the navigation a tab attached on when its commit was never
+   * reported. A tab opened through the context menu or a middle click can
+   * commit its first document before `Page.enable` takes effect, leaving the
+   * tab with no entry navigation to export a test from. If the commit was
+   * reported after all, the regular handler recorded it and there is nothing
+   * to do. The tab the recording starts in is excluded: the recorder
+   * navigates it itself and that navigation is reported normally.
    */
-  #recordEntryNavigation(url: string) {
-    this.#recordedEntryUrl = url
+  async #recordMissedEntryNavigation() {
+    const { frameTree } = await this.#client.page.getFrameTree()
+
+    if (this.#hasNavigation || !hasDocument(frameTree.frame.url)) {
+      return
+    }
+
+    this.#hasNavigation = true
 
     this.emit('navigate', {
       event: {
@@ -234,7 +236,7 @@ export class Page extends EventEmitter<PageEventMap> {
         eventId: uuid(),
         timestamp: Date.now(),
         source: 'address-bar',
-        url,
+        url: frameTree.frame.url,
         tab: this.#id,
       },
     })
