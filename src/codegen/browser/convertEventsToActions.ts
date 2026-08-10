@@ -1,11 +1,13 @@
 import { AnyBrowserAction, LocatorClickModifier } from '@/schemas/browserTest'
 import { BrowserEvent, ClickEvent } from '@/schemas/recording'
+import { ProxyData } from '@/types'
 import { isWebUrl } from '@/utils/browserEvents'
 import { toElementLocatorOptions } from '@/utils/locator'
 import { exhaustive } from '@/utils/typescript'
 
 import { convertAssertion } from './convertAssertion'
 import { isFollowedByImplicitNavigation } from './navigation'
+import { detectWaits } from './waits'
 
 function buildClickOptions(event: ClickEvent, nextEvent?: BrowserEvent) {
   const modifiers: LocatorClickModifier[] = []
@@ -115,11 +117,43 @@ function convertEvent(
   }
 }
 
+/**
+ * @param waits Timeout in milliseconds keyed by the id of the event the wait
+ * must precede. Events that convert to nothing get no wait, since a wait
+ * before a dropped action would be an orphan.
+ */
 export function convertEventsToActions(
-  events: BrowserEvent[]
+  events: BrowserEvent[],
+  waits?: Map<string, number>
 ): AnyBrowserAction[] {
   return events.flatMap((event, index) => {
     const action = convertEvent(event, events[index + 1])
-    return action ? [action] : []
+
+    if (!action) {
+      return []
+    }
+
+    const timeout = waits?.get(event.eventId)
+
+    if (timeout === undefined) {
+      return [action]
+    }
+
+    return [
+      { id: crypto.randomUUID(), method: 'page.waitForTimeout', timeout },
+      action,
+    ]
   })
+}
+
+/**
+ * Converts a recording into browser test actions, inserting the
+ * `page.waitForTimeout` actions the replay needs to avoid racing requests
+ * that the recording's own pacing waited out.
+ */
+export function convertRecordingToActions(
+  events: BrowserEvent[],
+  requests: ProxyData[]
+): AnyBrowserAction[] {
+  return convertEventsToActions(events, detectWaits(events, requests))
 }

@@ -2,8 +2,20 @@ import { describe, expect, it } from 'vitest'
 
 import { LocatorOptions } from '@/schemas/locator'
 import { BrowserEvent } from '@/schemas/recording'
+import {
+  createClickEvent,
+  createNavigateToPageEvent,
+} from '@/test/factories/browserEvents'
+import {
+  createProxyData,
+  createRequest,
+  createResponse,
+} from '@/test/factories/proxyData'
 
-import { convertEventsToActions } from './convertEventsToActions'
+import {
+  convertEventsToActions,
+  convertRecordingToActions,
+} from './convertEventsToActions'
 
 function makeTarget(css = 'div.test') {
   return { selectors: { css } }
@@ -448,6 +460,67 @@ describe('convertEventsToActions', () => {
     expect(actions).toEqual([])
   })
 
+  it('inserts a wait before the flagged action', () => {
+    const events: BrowserEvent[] = [
+      {
+        type: 'navigate-to-page',
+        eventId: '1',
+        timestamp: 0,
+        tab: 'tab1',
+        url: 'https://example.com',
+        source: 'address-bar',
+      },
+      {
+        type: 'click',
+        eventId: '2',
+        timestamp: 100,
+        tab: 'tab1',
+        target: makeTarget('button'),
+        button: 'left',
+        modifiers: { ctrl: false, shift: false, alt: false, meta: false },
+      },
+    ]
+    const actions = convertEventsToActions(events, new Map([['2', 1500]]))
+    expect(actions).toHaveLength(3)
+    expect(actions[0]).toMatchObject({ method: 'page.goto' })
+    expect(actions[1]).toMatchObject({
+      method: 'page.waitForTimeout',
+      timeout: 1500,
+    })
+    expect(actions[2]).toMatchObject({ method: 'locator.click' })
+  })
+
+  it('leaves actions unchanged when no event id matches', () => {
+    const events: BrowserEvent[] = [
+      {
+        type: 'click',
+        eventId: '1',
+        timestamp: 0,
+        tab: 'tab1',
+        target: makeTarget('button'),
+        button: 'left',
+        modifiers: { ctrl: false, shift: false, alt: false, meta: false },
+      },
+    ]
+    const actions = convertEventsToActions(events, new Map([['other', 1500]]))
+    expect(actions).toHaveLength(1)
+    expect(actions[0]).toMatchObject({ method: 'locator.click' })
+  })
+
+  it('does not insert a wait before an event that converts to nothing', () => {
+    const events: BrowserEvent[] = [
+      {
+        type: 'navigate-to-page',
+        eventId: '1',
+        timestamp: 0,
+        tab: 'tab1',
+        url: 'https://example.com/login',
+        source: 'implicit',
+      },
+    ]
+    expect(convertEventsToActions(events, new Map([['1', 1500]]))).toEqual([])
+  })
+
   it('preserves event order and generates unique ids', () => {
     const events: BrowserEvent[] = [
       {
@@ -484,5 +557,43 @@ describe('convertEventsToActions', () => {
     expect(actions[2]!.method).toBe('locator.fill')
     const ids = actions.map((action) => action.id)
     expect(new Set(ids).size).toBe(3)
+  })
+})
+
+describe('convertRecordingToActions', () => {
+  it('inserts the waits detected from the recording', () => {
+    const events = [
+      createNavigateToPageEvent({
+        eventId: '1',
+        timestamp: 1_000_000,
+        url: 'https://example.com/',
+      }),
+      createClickEvent({ eventId: '2', timestamp: 1_001_000 }),
+      createClickEvent({ eventId: '3', timestamp: 1_004_000 }),
+    ]
+    // A 1s request fired by the first click and waited out by the recording's
+    // own pacing before the second click.
+    const requests = [
+      createProxyData({
+        request: createRequest({
+          host: 'example.com',
+          url: 'https://example.com/data',
+          timestampStart: 1001,
+          timestampEnd: 1002,
+        }),
+        response: createResponse(),
+      }),
+    ]
+
+    const methods = convertRecordingToActions(events, requests).map(
+      (action) => action.method
+    )
+
+    expect(methods).toEqual([
+      'page.goto',
+      'locator.click',
+      'page.waitForTimeout',
+      'locator.click',
+    ])
   })
 })

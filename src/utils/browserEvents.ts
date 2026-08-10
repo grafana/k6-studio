@@ -47,7 +47,7 @@ export function groupEventsByPage(events: BrowserEvent[]): EventPage[] {
   return [...pages.values()]
 }
 
-function findEntryNavigation(events: BrowserEvent[]) {
+export function findEntryNavigation(events: BrowserEvent[]) {
   const index = events.findIndex(
     (event) => event.type === 'navigate-to-page' && isWebUrl(event.url)
   )
