@@ -102,37 +102,24 @@ export function normalizeEntryNavigation(
   return withEntrySource(events, found.index, 'address-bar')
 }
 
-// The landing of a click-opened popup starts committing the moment the tab
-// opens, so its navigation is recorded within a couple of seconds even on
-// slow sites (up to ~2.5s across measured recordings). A popup that opens on
-// about:blank records no landing at all: its first navigation is whatever the
-// user navigated to afterwards, which arrives much later.
-const LANDING_COMMIT_MAX_DELAY_MS = 5_000
-
 /**
  * The recorder marks a popup's first navigation as explicit (`address-bar`)
  * because no in-page request precedes it in the new tab. When the tab was
  * reached through a click handoff, the click already lands the test on that
- * page, so the entry navigation is demoted to implicit and conversion drops
- * it instead of emitting a duplicate `page.goto`. Only a navigation committed
- * soon after the tab opened is the click's landing: anything later is the
- * user navigating the popup themselves and must survive as a goto.
+ * page, so the landing navigation is demoted to implicit and conversion drops
+ * it instead of emitting a duplicate `page.goto`.
  */
-function demoteEntryNavigation(
+function demoteLanding(
   events: BrowserEvent[],
-  openedAt: number
+  landing: NavigateToPageEvent | null
 ): BrowserEvent[] {
-  const found = findEntryNavigation(events)
-
-  if (found === null || found.entry.source === 'implicit') {
+  if (landing === null) {
     return events
   }
 
-  if (found.entry.timestamp - openedAt > LANDING_COMMIT_MAX_DELAY_MS) {
-    return events
-  }
-
-  return withEntrySource(events, found.index, 'implicit')
+  return events.map((event) =>
+    event === landing ? { ...landing, source: 'implicit' } : event
+  )
 }
 
 /**
@@ -169,6 +156,20 @@ function isInteraction(event: BrowserEvent): boolean {
 // would otherwise leave the previous unrelated click blamed for the new tab.
 const HANDOFF_MAX_DELAY_MS = 500
 
+// The landing of a click-opened popup starts committing the moment the tab
+// opens, so its navigation is recorded within a couple of seconds even on
+// slow sites (up to ~2.5s across measured recordings). A popup that opens on
+// about:blank records no landing at all: its first navigation is whatever the
+// user navigated to afterwards, which arrives much later.
+const LANDING_COMMIT_MAX_DELAY_MS = 5_000
+
+interface Handoff {
+  opened: BrowserEvent
+  // The navigation the click landed the new tab on, or null when the tab has
+  // none (e.g. a popup opened on about:blank that the user navigated later).
+  landing: NavigateToPageEvent | null
+}
+
 /**
  * Finds the `tab-opened` event proving that the click directly opened the
  * given page's tab: it must be the first tab opened after the click, it must
@@ -176,12 +177,17 @@ const HANDOFF_MAX_DELAY_MS = 500
  * internal page (a manually opened tab starts on `chrome://new-tab-page`
  * before the user types the url). Replaying a click that did not open the tab
  * and then waiting for a page would hang or grab the wrong page.
+ *
+ * Also resolves which of the tab's navigations is the click's landing: only
+ * an explicit navigation committed soon after the tab opened qualifies,
+ * anything later is the user navigating the popup themselves and must
+ * survive as a goto.
  */
-function findHandoffTabOpened(
+function findHandoff(
   events: BrowserEvent[],
   click: BrowserEvent,
   next: EventPage
-): BrowserEvent | null {
+): Handoff | null {
   const clickIndex = events.indexOf(click)
   const opened = events.find(
     (event, index) => index > clickIndex && event.type === 'tab-opened'
@@ -195,13 +201,25 @@ function findHandoffTabOpened(
     return null
   }
 
-  const entry = next.events.find((event) => event.type === 'navigate-to-page')
+  const firstNavigation = next.events.find(
+    (event) => event.type === 'navigate-to-page'
+  )
 
-  if (entry !== undefined && entry.url.startsWith('chrome://')) {
+  if (
+    firstNavigation !== undefined &&
+    firstNavigation.url.startsWith('chrome://')
+  ) {
     return null
   }
 
-  return opened
+  const entry = findEntryNavigation(next.events)?.entry ?? null
+
+  const isLanding =
+    entry !== null &&
+    entry.source !== 'implicit' &&
+    entry.timestamp - opened.timestamp <= LANDING_COMMIT_MAX_DELAY_MS
+
+  return { opened, landing: isLanding ? entry : null }
 }
 
 /**
@@ -235,7 +253,7 @@ export function mergeLinearPages(
   }
 
   const merged: BrowserEvent[] = []
-  let handoffOpened: BrowserEvent | null = null
+  let handoff: Handoff | null = null
 
   for (const [index, page] of pages.entries()) {
     const next = pages[index + 1]
@@ -245,12 +263,12 @@ export function mergeLinearPages(
     )
 
     // A tab reached through a click handoff starts on the right page already,
-    // so its entry navigation is demoted for conversion to drop. Any other tab
-    // (including the first) needs its entry navigation promoted to an explicit
-    // one instead, mirroring the single-page export path.
+    // so its landing navigation is demoted for conversion to drop. Any other
+    // tab (including the first) needs its entry navigation promoted to an
+    // explicit one instead, mirroring the single-page export path.
     slice =
-      handoffOpened !== null
-        ? demoteEntryNavigation(slice, handoffOpened.timestamp)
+      handoff !== null
+        ? demoteLanding(slice, handoff.landing)
         : normalizeEntryNavigation(slice)
 
     const nextEntry = next?.events[0]
@@ -273,20 +291,20 @@ export function mergeLinearPages(
       return null
     }
 
-    const handoff =
+    const nextHandoff =
       lastInteraction?.type === 'click'
-        ? findHandoffTabOpened(events, lastInteraction, next)
+        ? findHandoff(events, lastInteraction, next)
         : null
 
-    if (lastInteraction === undefined || handoff === null) {
+    if (lastInteraction === undefined || nextHandoff === null) {
       merged.push(...slice)
-      handoffOpened = null
+      handoff = null
       continue
     }
 
     merged.push(...slice.slice(0, slice.indexOf(lastInteraction) + 1))
-    merged.push(handoff)
-    handoffOpened = handoff
+    merged.push(nextHandoff.opened)
+    handoff = nextHandoff
   }
 
   return merged

@@ -238,13 +238,7 @@ describe('mergeLinearPages', () => {
 
     const merged = mergeLinearPages(events, groupEventsByPage(events))
 
-    expect(merged).toEqual([
-      navigate('tab1', 'https://one.com'),
-      { ...click('tab1', 'a.popup'), timestamp: 1000 },
-      { ...tabOpened('tab2'), timestamp: 1005 },
-      { ...navigate('tab2', 'https://app.example.com'), timestamp: 16000 },
-      { ...click('tab2', 'button.submit'), timestamp: 17000 },
-    ])
+    expect(merged).toEqual(events)
   })
 
   it('demotes a landing that took a while to commit after the tab opened', () => {
