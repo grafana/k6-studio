@@ -5,6 +5,7 @@ import {
   createClickEvent,
   createInputChangeEvent,
   createNavigateToPageEvent,
+  createTabOpenedEvent,
 } from '@/test/factories/browserEvents'
 import {
   createProxyData,
@@ -142,6 +143,20 @@ describe('detectWaits', () => {
   it('ignores a request that started too long after any action to be its result', () => {
     const events = [navigate('nav', 0), click('a', 1000), click('b', 7000)]
     const requests = [apiRequest({ startMs: 5000, durationMs: 500 })]
+
+    expect(detectWaits(events, requests)).toEqual(new Map())
+  })
+
+  it('never inserts a wait before a click that opens a new tab', () => {
+    // The click hands off to a fresh document, so requests still in flight on
+    // the old page cannot race it, just like an explicit navigation.
+    const events = [
+      navigate('nav', 0),
+      click('a', 1000),
+      click('b', 4000),
+      createTabOpenedEvent({ eventId: 'opened', timestamp: BASE_MS + 4050 }),
+    ]
+    const requests = [apiRequest({ startMs: 1000, durationMs: 1000 })]
 
     expect(detectWaits(events, requests)).toEqual(new Map())
   })

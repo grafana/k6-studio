@@ -201,7 +201,8 @@ function attributeRequest(
  */
 function simulateTab(
   interactions: SimulatedInteraction[],
-  attributed: AttributedRequest[]
+  attributed: AttributedRequest[],
+  opensNewPage: ReadonlySet<string>
 ): Array<[eventId: string, timeout: number]> {
   const insertions: Array<[string, number]> = []
   const replayTimes: number[] = []
@@ -237,9 +238,14 @@ function simulateTab(
     }
 
     // A `goto` starts a fresh document, so nothing left over from the old page
-    // can race it. Navigations still trigger requests and take up time on the
-    // timeline, they just never need a wait in front of them.
-    if (longestRemainingMs > 0 && interaction.type !== 'navigate-to-page') {
+    // can race it. The same holds for a click that hands off to a new tab: its
+    // outcome is a fresh document too. Both still trigger requests and take up
+    // time on the timeline, they just never need a wait in front of them.
+    const startsFreshDocument =
+      interaction.type === 'navigate-to-page' ||
+      opensNewPage.has(interaction.eventId)
+
+    if (longestRemainingMs > 0 && !startsFreshDocument) {
       const timeout = Math.min(
         Math.ceil(longestRemainingMs * 2 + WAIT_MARGIN_MS),
         MAX_WAIT_MS
@@ -275,6 +281,16 @@ export function detectWaits(
 
   const candidates = getCandidateRequests(requests, originHost)
 
+  // Clicks that conversion pairs with a `tab-opened` event replay as a switch
+  // to the new page, the same pairing `buildClickOptions` uses.
+  const opensNewPage = new Set(
+    events.flatMap((event, index) =>
+      event.type === 'click' && events[index + 1]?.type === 'tab-opened'
+        ? [event.eventId]
+        : []
+    )
+  )
+
   // Requests carry no tab association, so every candidate is offered to every
   // tab and may end up attributed in more than one of them. That is safe: the
   // attribution windows and the completed-before condition in the simulation
@@ -286,7 +302,7 @@ export function detectWaits(
         (candidate) => attributeRequest(interactions, candidate) ?? []
       )
 
-      return simulateTab(interactions, attributed)
+      return simulateTab(interactions, attributed, opensNewPage)
     })
   )
 }
