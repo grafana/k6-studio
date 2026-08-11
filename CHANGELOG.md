@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.1.0](https://github.com/grafana/k6-studio/compare/v2.0.2...v2.1.0) (2026-08-11)
+
+
+### Features
+
+* Export linear multi-tab recordings as a single browser test ([#1352](https://github.com/grafana/k6-studio/issues/1352)) ([8a6e4c9](https://github.com/grafana/k6-studio/commit/8a6e4c96bbb84ff5ffb1df67dcf5cb63c2be1aca))
+* Insert waits for raced requests when creating a browser test ([#1355](https://github.com/grafana/k6-studio/issues/1355)) ([d59a3fe](https://github.com/grafana/k6-studio/commit/d59a3fe7be0018ea7d84d9b666afefed95981fbf))
+
+
+### Bug Fixes
+
+* API requests fail with 502 when server closes idle keep-alive connections ([#1351](https://github.com/grafana/k6-studio/issues/1351)) ([0b2de5e](https://github.com/grafana/k6-studio/commit/0b2de5e8fedea88f02096ed0de2de38a41aeb0a4))
+
+
+### Miscellaneous Chores
+
+* **main:** release 2.1.0 ([#1349](https://github.com/grafana/k6-studio/issues/1349)) ([5046db8](https://github.com/grafana/k6-studio/commit/5046db8c575a21ae4319923fe32897eaa0cad465))
+
 ## [2.0.2](https://github.com/grafana/k6-studio/compare/v2.0.1...v2.0.2) (2026-08-05)
 
 
