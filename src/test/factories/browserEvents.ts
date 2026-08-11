@@ -2,7 +2,6 @@ import {
   ClickEvent,
   InputChangeEvent,
   NavigateToPageEvent,
-  TabOpenedEvent,
 } from '@/schemas/recording'
 
 export function createNavigateToPageEvent(
@@ -28,18 +27,6 @@ export function createClickEvent(overrides?: Partial<ClickEvent>): ClickEvent {
     target: { selectors: { css: 'button.submit' } },
     button: 'left',
     modifiers: { ctrl: false, shift: false, alt: false, meta: false },
-    ...overrides,
-  }
-}
-
-export function createTabOpenedEvent(
-  overrides?: Partial<TabOpenedEvent>
-): TabOpenedEvent {
-  return {
-    type: 'tab-opened',
-    eventId: 'tab-opened-1',
-    timestamp: 0,
-    tab: 'tab2',
     ...overrides,
   }
 }
