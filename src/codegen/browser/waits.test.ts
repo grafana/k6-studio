@@ -132,6 +132,20 @@ describe('detectWaits', () => {
     expect(detectWaits(events, requests)).toEqual(new Map([['b', 3300]]))
   })
 
+  it('keeps attribution on the preceding click when a value input follows later', () => {
+    // The request belongs to click a; a value input typed seconds later must
+    // not steal it, or click b would lose the wait protecting the race.
+    const events = [
+      navigate('nav', 0),
+      click('a', 1000),
+      click('b', 4000),
+      inputChange('input', 6000),
+    ]
+    const requests = [apiRequest({ startMs: 1000, durationMs: 1000 })]
+
+    expect(detectWaits(events, requests)).toEqual(new Map([['b', 2300]]))
+  })
+
   it('ignores a request that never completed before the next action in the recording', () => {
     const events = [navigate('nav', 0), click('a', 1000), click('b', 1500)]
     const requests = [apiRequest({ startMs: 1000, durationMs: 1000 })]

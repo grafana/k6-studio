@@ -166,16 +166,20 @@ function attributeRequest(
   // Sites fire debounced fetches while the user is still typing, before the
   // recorder's value-change event lands. On replay `fill()` collapses the
   // typing into one shot, so the request goes out at the interaction itself,
-  // hence offset 0.
-  const typedIndex = interactions.findIndex(
-    (interaction) =>
-      isValueInput(interaction) &&
-      interaction.timestamp >= candidate.startMs &&
-      interaction.timestamp - candidate.startMs <= TYPING_LOOKBACK_MS
+  // hence offset 0. This only holds when the value input is the next
+  // interaction after the request: anything in between means the request was
+  // not fired mid-typing and belongs to the interaction preceding it.
+  const followingIndex = interactions.findIndex(
+    (interaction) => interaction.timestamp >= candidate.startMs
   )
+  const following = interactions[followingIndex]
 
-  if (typedIndex !== -1) {
-    return { ...candidate, triggerIndex: typedIndex, offsetMs: 0 }
+  if (
+    following !== undefined &&
+    isValueInput(following) &&
+    following.timestamp - candidate.startMs <= TYPING_LOOKBACK_MS
+  ) {
+    return { ...candidate, triggerIndex: followingIndex, offsetMs: 0 }
   }
 
   const precedingIndex = interactions.findLastIndex(
