@@ -8,7 +8,10 @@ import {
 import { useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
-import { convertEventsToActions } from '@/codegen/browser/convertEventsToActions'
+import {
+  convertEventsToActions,
+  convertRecordingToActions,
+} from '@/codegen/browser/convertEventsToActions'
 import { RichDropdownMenuItem } from '@/components/RichDropdownMenuItem'
 import { useCreateBrowserTest } from '@/hooks/useCreateBrowserTest'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
@@ -25,8 +28,8 @@ import {
 
 import { SelectPageDialog } from './SelectPageDialog'
 
-function toPageActions(page: EventPage) {
-  return convertEventsToActions(normalizeEntryNavigation(page.events))
+function toPageEvents(page: EventPage) {
+  return normalizeEntryNavigation(page.events)
 }
 
 interface RecordingPreviewControlsProps {
@@ -61,7 +64,9 @@ export function RecordingPreviewControls({
   const pages = useMemo(
     () =>
       groupEventsByPage(browserEvents).filter((page) =>
-        toPageActions(page).some((action) => action.method === 'page.goto')
+        convertEventsToActions(toPageEvents(page)).some(
+          (action) => action.method === 'page.goto'
+        )
       ),
     [browserEvents]
   )
@@ -76,7 +81,7 @@ export function RecordingPreviewControls({
       const merged = mergeLinearPages(browserEvents, pages)
 
       if (merged !== null) {
-        void createBrowserTest(convertEventsToActions(merged))
+        void createBrowserTest(convertRecordingToActions(merged, requests))
         return
       }
 
@@ -86,13 +91,17 @@ export function RecordingPreviewControls({
 
     const page = pages[0]
     if (page) {
-      void createBrowserTest(toPageActions(page))
+      void createBrowserTest(
+        convertRecordingToActions(toPageEvents(page), requests)
+      )
     }
   }
 
   const handleSelectPage = (page: EventPage) => {
     setIsSelectPageOpen(false)
-    void createBrowserTest(toPageActions(page))
+    void createBrowserTest(
+      convertRecordingToActions(toPageEvents(page), requests)
+    )
   }
 
   const handleDelete = useDeleteFile({

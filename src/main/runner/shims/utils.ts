@@ -16,15 +16,21 @@ export function postTracking(path: string, body: string): Promise<boolean> {
     return Promise.resolve(false)
   }
 
-  return http
-    .asyncRequest('POST', `${TRACKING_SERVER_URL}${path}`, body, {
-      headers: { 'Content-Type': 'application/json' },
-    })
-    .then(
-      // A 4xx or 5xx resolves with a response instead of rejecting.
-      (response) => response.status >= 200 && response.status < 300,
-      () => false
-    )
+  try {
+    return http
+      .asyncRequest('POST', `${TRACKING_SERVER_URL}${path}`, body, {
+        headers: { 'Content-Type': 'application/json' },
+      })
+      .then(
+        // A 4xx or 5xx resolves with a response instead of rejecting.
+        (response) => response.status >= 200 && response.status < 300,
+        () => false
+      )
+  } catch {
+    // A request can also fail synchronously, e.g. when the k6 runtime is
+    // tearing down the iteration.
+    return Promise.resolve(false)
+  }
 }
 
 export class TrackingClient {

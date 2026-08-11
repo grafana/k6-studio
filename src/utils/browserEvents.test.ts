@@ -222,6 +222,73 @@ describe('mergeLinearPages', () => {
     ])
   })
 
+  it('keeps a navigation typed into a popup that opened without a landing page', () => {
+    // A popup opened on about:blank records no navigation of its own, so the
+    // first recorded navigation of the tab is whatever the user typed into it
+    // afterwards. The click's own landing commits right after the tab opens,
+    // so a navigation recorded much later cannot be the landing and must
+    // survive as an explicit goto.
+    const events = [
+      navigate('tab1', 'https://one.com'),
+      { ...click('tab1', 'a.popup'), timestamp: 1000 },
+      { ...tabOpened('tab2'), timestamp: 1005 },
+      { ...navigate('tab2', 'https://app.example.com'), timestamp: 16000 },
+      { ...click('tab2', 'button.submit'), timestamp: 17000 },
+    ]
+
+    const merged = mergeLinearPages(events, groupEventsByPage(events))
+
+    expect(merged).toEqual(events)
+  })
+
+  it('demotes a landing that took a while to commit after the tab opened', () => {
+    // Network time sits between the tab opening and the landing committing;
+    // measured recordings put it anywhere up to ~2.5 seconds.
+    const events = [
+      navigate('tab1', 'https://one.com'),
+      { ...click('tab1', 'a.open'), timestamp: 1000 },
+      { ...tabOpened('tab2'), timestamp: 1005 },
+      { ...navigate('tab2', 'https://two.com'), timestamp: 3500 },
+      { ...click('tab2', 'button.submit'), timestamp: 5000 },
+    ]
+
+    const merged = mergeLinearPages(events, groupEventsByPage(events))
+
+    expect(merged).toEqual([
+      navigate('tab1', 'https://one.com'),
+      { ...click('tab1', 'a.open'), timestamp: 1000 },
+      { ...tabOpened('tab2'), timestamp: 1005 },
+      {
+        ...navigate('tab2', 'https://two.com'),
+        timestamp: 3500,
+        source: 'implicit',
+      },
+      { ...click('tab2', 'button.submit'), timestamp: 5000 },
+    ])
+  })
+
+  it('falls back to an explicit navigation when the tab opened long after the click', () => {
+    // Opening a link through the context menu records no click of its own, so
+    // the previous unrelated click would otherwise be blamed for the new tab.
+    // A click that opens a tab does so in the same task, within milliseconds.
+    const events = [
+      navigate('tab1', 'https://one.com'),
+      { ...click('tab1', 'button.recommend'), timestamp: 1000 },
+      { ...tabOpened('tab2'), timestamp: 3218 },
+      { ...navigate('tab2', 'https://two.com'), timestamp: 3300 },
+      { ...click('tab2', 'button.submit'), timestamp: 4000 },
+    ]
+
+    const merged = mergeLinearPages(events, groupEventsByPage(events))
+
+    expect(merged).toEqual([
+      navigate('tab1', 'https://one.com'),
+      { ...click('tab1', 'button.recommend'), timestamp: 1000 },
+      { ...navigate('tab2', 'https://two.com'), timestamp: 3300 },
+      { ...click('tab2', 'button.submit'), timestamp: 4000 },
+    ])
+  })
+
   it('falls back to an explicit navigation when the new tab was opened manually', () => {
     // A manually opened tab starts on chrome://new-tab-page before the user
     // types the url. The preceding click did not open it, so replaying the
@@ -406,6 +473,55 @@ describe('mergeLinearPages', () => {
         ...implicitNavigate('tab2', 'https://two.com'),
         source: 'address-bar',
       },
+      click('tab2', 'button.submit'),
+    ])
+  })
+
+  it('returns null when a tab left out of the exportable pages has interactions', () => {
+    // Merging would silently drop the clicks recorded in tab2, so the
+    // recording has to fall back to the page picker instead.
+    const events = [
+      navigate('tab1', 'https://one.com'),
+      click('tab1', 'a.open'),
+      tabOpened('tab2'),
+      click('tab2', 'button.important-step'),
+      tabOpened('tab3'),
+      implicitNavigate('tab3', 'https://three.com'),
+      click('tab3', 'button.final'),
+    ]
+
+    const pages = groupEventsByPage(events).filter(
+      (page) => page.tab !== 'tab2'
+    )
+
+    expect(mergeLinearPages(events, pages)).toBeNull()
+  })
+
+  it('merges when a left-out tab only holds browser-internal navigations', () => {
+    // A manually opened tab records an explicit navigation to
+    // chrome://new-tab-page. Nothing in it can be exported, so abandoning it
+    // must not force the page picker.
+    const events = [
+      navigate('tab1', 'https://one.com'),
+      click('tab1', 'a.open'),
+      tabOpened('tab2'),
+      implicitNavigate('tab2', 'https://two.com'),
+      tabOpened('tab3'),
+      navigate('tab3', 'chrome://new-tab-page/'),
+      click('tab2', 'button.submit'),
+    ]
+
+    const pages = groupEventsByPage(events).filter(
+      (page) => page.tab !== 'tab3'
+    )
+
+    const merged = mergeLinearPages(events, pages)
+
+    expect(merged).toEqual([
+      navigate('tab1', 'https://one.com'),
+      click('tab1', 'a.open'),
+      tabOpened('tab2'),
+      implicitNavigate('tab2', 'https://two.com'),
       click('tab2', 'button.submit'),
     ])
   })

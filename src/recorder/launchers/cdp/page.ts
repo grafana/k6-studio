@@ -22,6 +22,14 @@ function toNavigationSource(
   }
 }
 
+/**
+ * Whether the target already has a document to run scripts in. Targets that
+ * attach before their first document report no url at all.
+ */
+function hasDocument(url: string): boolean {
+  return url !== '' && url !== 'about:blank'
+}
+
 function isReload(event: CdpPage.FrameStartedNavigatingEvent): boolean {
   return (
     event.navigationType === 'reload' ||
@@ -40,6 +48,10 @@ export class Page extends EventEmitter<PageEventMap> {
 
   #requestedNavigation: CdpPage.FrameRequestedNavigationEvent | null = null
   #startedNavigation: CdpPage.FrameStartedNavigatingEvent | null = null
+
+  // Whether any navigation has been recorded for this tab. See
+  // #recordMissedEntryNavigation.
+  #hasNavigation = false
 
   constructor(id: string, client: ChromeDevToolsClient, script: Script) {
     super()
@@ -78,6 +90,8 @@ export class Page extends EventEmitter<PageEventMap> {
       }
 
       if (isReload(this.#startedNavigation)) {
+        this.#hasNavigation = true
+
         this.emit('navigate', {
           event: {
             type: 'reload-page',
@@ -105,6 +119,8 @@ export class Page extends EventEmitter<PageEventMap> {
 
         return
       }
+
+      this.#hasNavigation = true
 
       this.emit('navigate', {
         event: {
@@ -135,7 +151,13 @@ export class Page extends EventEmitter<PageEventMap> {
     })
   }
 
-  async attach({ waitingForDebugger }: { waitingForDebugger: boolean }) {
+  async attach({
+    isInitialTab,
+    hasOpener,
+  }: {
+    isInitialTab: boolean
+    hasOpener: boolean
+  }) {
     // A target paused waiting for the debugger (e.g. a popup opened with
     // noopener/noreferrer, which gets a new browsing context group) doesn't
     // process session commands until Runtime.runIfWaitingForDebugger is sent,
@@ -145,12 +167,16 @@ export class Page extends EventEmitter<PageEventMap> {
     // in call order, so the scripts are still registered before the page
     // resumes.
     //
-    // Scripts run immediately only in targets that already have a document
-    // (the tab the recording starts in). A paused target only has its empty
-    // initial document, and executing the recording script there wedges the
-    // renderer of noopener/noreferrer popups in a busy loop that blocks their
-    // first real navigation.
-    const runImmediately = !waitingForDebugger
+    // Scripts run immediately only in tabs the page did not open itself. A
+    // popup the page opened (window.open, target=_blank) attaches before its
+    // document exists, and executing the recording script in its empty
+    // initial document wedges the renderer of noopener/noreferrer popups in a
+    // busy loop that blocks their first real navigation; its landing commits
+    // only after the tab resumes, so the scripts registered above still catch
+    // it. Every other tab (context menu, middle click) commits its first
+    // document independently of the debugger pause, racing the registration,
+    // so the scripts must also run in whatever document already exists.
+    const runImmediately = !hasOpener
 
     await Promise.all([
       this.#client.page.enable(),
@@ -179,7 +205,41 @@ export class Page extends EventEmitter<PageEventMap> {
       this.#client.runtime.runIfWaitingForDebugger(),
     ])
 
+    if (!isInitialTab) {
+      await this.#recordMissedEntryNavigation()
+    }
+
     return this
+  }
+
+  /**
+   * Records the navigation a tab attached on when its commit was never
+   * reported. A tab opened through the context menu or a middle click can
+   * commit its first document before `Page.enable` takes effect, leaving the
+   * tab with no entry navigation to export a test from. If the commit was
+   * reported after all, the regular handler recorded it and there is nothing
+   * to do. The tab the recording starts in is excluded: the recorder
+   * navigates it itself and that navigation is reported normally.
+   */
+  async #recordMissedEntryNavigation() {
+    const { frameTree } = await this.#client.page.getFrameTree()
+
+    if (this.#hasNavigation || !hasDocument(frameTree.frame.url)) {
+      return
+    }
+
+    this.#hasNavigation = true
+
+    this.emit('navigate', {
+      event: {
+        type: 'navigate-to-page',
+        eventId: uuid(),
+        timestamp: Date.now(),
+        source: 'address-bar',
+        url: frameTree.frame.url,
+        tab: this.#id,
+      },
+    })
   }
 
   navigateTo(url: string) {

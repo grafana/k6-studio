@@ -67,14 +67,25 @@ export function ClickOptionsForm({ options, onChange }: ClickOptionsFormProps) {
             label="Wait for navigation"
             checked={options?.waitForNavigation === true}
             onChange={(checked) => {
-              onChange({ ...(options ?? {}), waitForNavigation: checked })
+              // A click either navigates the current page or continues in a
+              // new tab; codegen ignores the navigation wait in the latter
+              // case, so enabling one turns the other off.
+              onChange({
+                ...(options ?? {}),
+                waitForNavigation: checked,
+                ...(checked && { switchesToNewPage: false }),
+              })
             }}
           />
           <OptionSwitch
             label="Continues in new tab"
             checked={options?.switchesToNewPage === true}
             onChange={(checked) => {
-              onChange({ ...(options ?? {}), switchesToNewPage: checked })
+              onChange({
+                ...(options ?? {}),
+                switchesToNewPage: checked,
+                ...(checked && { waitForNavigation: false }),
+              })
             }}
           />
         </Flex>

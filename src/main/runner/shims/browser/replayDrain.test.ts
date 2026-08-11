@@ -406,6 +406,39 @@ describe('drainReplayEvents', () => {
     expect(postedEvents()).toEqual([event])
   })
 
+  // Pulls are serialized per page id, which is read before the pull. If the
+  // page navigated in between, the batch belongs to a document this pull was
+  // not serialized against, so it has to be left for the correctly keyed pull
+  // instead of being acked here.
+  it('leaves a batch whose page id does not match the one it serialized on', async () => {
+    const { register, drainReplayEvents, postedBodies } = modules
+    const page = fakePage('page-after-navigation')
+
+    register({
+      ...fakeContext(),
+      pages: vi.fn(() => [
+        {
+          isClosed: () => page.isClosed(),
+          evaluate: (fn: unknown, received?: Record<string, number>) => {
+            // The probe still sees the old document's id
+            if (received === undefined) {
+              return Promise.resolve('page-before-navigation')
+            }
+
+            return page.evaluate(fn, received)
+          },
+        },
+      ]),
+    } as unknown as FakeContext)
+
+    page.emit(replayEvent(1))
+
+    await drainReplayEvents()
+    await nextTick()
+
+    expect(postedBodies()).toHaveLength(0)
+  })
+
   it('does not pull from a closed page', async () => {
     const { register, proxyPage, drainReplayEvents } = modules
     const page = fakePage('page-1')
