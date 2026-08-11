@@ -133,15 +133,6 @@ export const buildProxyArgs = (
     // them fail with "502 server closed connection".
     '--set',
     'connection_strategy=lazy',
-    // Force HTTP/1.1 upstream. mitmproxy's lazy strategy deadlocks HTTP/2
-    // connections under browser-level concurrency: the deferred upstream
-    // connect races h2 stream multiplexing and some requests hang forever
-    // (observed: a site's CTA script never loaded, so a `target=_blank` click
-    // opened no tab and the test's `waitForEvent('page')` timed out). k6
-    // itself replays over HTTP/1.1 by default, so capturing over 1.1 also
-    // matches what the generated test runs.
-    '--set',
-    'http2=false',
   ]
 
   if (proxySettings.sslInsecure) {

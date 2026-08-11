@@ -49,8 +49,6 @@ describe('buildProxyArgs', () => {
       'validate_inbound_headers=false',
       '--set',
       'connection_strategy=lazy',
-      '--set',
-      'http2=false',
     ])
   })
 
