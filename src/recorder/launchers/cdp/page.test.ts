@@ -70,9 +70,9 @@ class FakeTransport implements Transport {
     this.#listeners.get(event)?.delete(listener)
   }
 
-  emit(event: string, data: unknown) {
+  emit(event: string, data: unknown, sessionId?: string) {
     this.#listeners.get(event)?.forEach((listener) => {
-      listener({ method: event, sessionId: undefined, data } as never)
+      listener({ method: event, sessionId, data } as never)
     })
   }
 
@@ -106,6 +106,34 @@ function scriptCalls(transport: FakeTransport) {
   return transport.calls.filter(
     (call) => call.method === 'Page.addScriptToEvaluateOnNewDocument'
   )
+}
+
+function evaluateCalls(transport: FakeTransport) {
+  return transport.calls.filter((call) => call.method === 'Runtime.evaluate')
+}
+
+function createExecutionContext(
+  transport: FakeTransport,
+  {
+    id,
+    frameId,
+    isDefault = true,
+    sessionId,
+  }: { id: number; frameId: string; isDefault?: boolean; sessionId?: string }
+) {
+  transport.emit(
+    'Runtime.executionContextCreated',
+    { context: { id, auxData: { isDefault, frameId } } },
+    sessionId
+  )
+}
+
+function openDocument(
+  transport: FakeTransport,
+  frameId: string,
+  sessionId?: string
+) {
+  transport.emit('Page.documentOpened', { frame: { id: frameId } }, sessionId)
 }
 
 describe('Page.attach', () => {
@@ -229,5 +257,137 @@ describe('Page.attach', () => {
 
     expect(recorded).toHaveLength(2)
     expect(recorded[1]).toMatchObject({ url: 'https://example.test/next' })
+  })
+})
+
+// A page can replace its document with `document.open()`. That destroys the
+// injected recording script's UI and event listeners, and Chromium does not
+// re-run scripts registered with Page.addScriptToEvaluateOnNewDocument for the
+// replaced document. The recorder has to evaluate the script again in the
+// frame's execution context, which survives the replacement.
+describe('document.open', () => {
+  it('re-evaluates the recording script when a document is replaced', async () => {
+    const { transport, page } = setup()
+
+    await page.attach({ isInitialTab: true, hasOpener: false })
+
+    createExecutionContext(transport, { id: 7, frameId: 'tab-1' })
+    openDocument(transport, 'tab-1')
+
+    const calls = evaluateCalls(transport)
+
+    expect(calls).toHaveLength(1)
+    expect(calls[0]?.params).toMatchObject({
+      expression: 'script-content',
+      contextId: 7,
+    })
+  })
+
+  it('re-evaluates in the context of the frame that opened the document', async () => {
+    const { transport, page } = setup()
+
+    await page.attach({ isInitialTab: true, hasOpener: false })
+
+    createExecutionContext(transport, { id: 7, frameId: 'tab-1' })
+    createExecutionContext(transport, { id: 9, frameId: 'frame-2' })
+    openDocument(transport, 'frame-2')
+
+    const calls = evaluateCalls(transport)
+
+    expect(calls).toHaveLength(1)
+    expect(calls[0]?.params).toMatchObject({ contextId: 9 })
+  })
+
+  it('ignores frames without a known context', async () => {
+    const { transport, page } = setup()
+
+    await page.attach({ isInitialTab: true, hasOpener: false })
+
+    openDocument(transport, 'frame-2')
+
+    expect(evaluateCalls(transport)).toEqual([])
+  })
+
+  it('ignores contexts that are not the default context of the frame', async () => {
+    const { transport, page } = setup()
+
+    await page.attach({ isInitialTab: true, hasOpener: false })
+
+    createExecutionContext(transport, {
+      id: 7,
+      frameId: 'tab-1',
+      isDefault: false,
+    })
+    openDocument(transport, 'tab-1')
+
+    expect(evaluateCalls(transport)).toEqual([])
+  })
+
+  it('does not evaluate in a destroyed context', async () => {
+    const { transport, page } = setup()
+
+    await page.attach({ isInitialTab: true, hasOpener: false })
+
+    createExecutionContext(transport, { id: 7, frameId: 'tab-1' })
+    transport.emit('Runtime.executionContextDestroyed', {
+      executionContextId: 7,
+    })
+    openDocument(transport, 'tab-1')
+
+    expect(evaluateCalls(transport)).toEqual([])
+  })
+
+  it('does not evaluate after all contexts are cleared', async () => {
+    const { transport, page } = setup()
+
+    await page.attach({ isInitialTab: true, hasOpener: false })
+
+    createExecutionContext(transport, { id: 7, frameId: 'tab-1' })
+    transport.emit('Runtime.executionContextsCleared', {})
+    openDocument(transport, 'tab-1')
+
+    expect(evaluateCalls(transport)).toEqual([])
+  })
+
+  // The generated CDP client registers its listeners on the shared transport
+  // without applying its per-session filter, so a Page receives every tab's
+  // Runtime and Page events. The context tracking has to filter by session
+  // itself, or one tab's document.open would trigger an evaluate from every
+  // Page in the recording.
+  it('ignores events addressed to other sessions', async () => {
+    const transport = new FakeTransport(false)
+    const client = new ChromeDevToolsClient(transport).withSession('session-1')
+    const page = new Page('tab-1', client, new Script('script-content'))
+
+    await page.attach({ isInitialTab: true, hasOpener: false })
+
+    createExecutionContext(transport, {
+      id: 7,
+      frameId: 'tab-1',
+      sessionId: 'session-2',
+    })
+    openDocument(transport, 'tab-1', 'session-2')
+
+    expect(evaluateCalls(transport)).toEqual([])
+  })
+
+  it('re-evaluates for events addressed to its own session', async () => {
+    const transport = new FakeTransport(false)
+    const client = new ChromeDevToolsClient(transport).withSession('session-1')
+    const page = new Page('tab-1', client, new Script('script-content'))
+
+    await page.attach({ isInitialTab: true, hasOpener: false })
+
+    createExecutionContext(transport, {
+      id: 7,
+      frameId: 'tab-1',
+      sessionId: 'session-1',
+    })
+    openDocument(transport, 'tab-1', 'session-1')
+
+    const calls = evaluateCalls(transport)
+
+    expect(calls).toHaveLength(1)
+    expect(calls[0]?.params).toMatchObject({ contextId: 7 })
   })
 })

@@ -1,4 +1,4 @@
-import { ChromeDevToolsClient } from '@/utils/cdp/client'
+import { ChromeDevToolsClient, Runtime } from '@/utils/cdp/client'
 import { EventEmitter } from '@/utils/events'
 
 interface ScriptEventMap {
@@ -29,6 +29,22 @@ export class Script extends EventEmitter<ScriptEventMap> {
     })
 
     this.#sessions.push({ client, scriptId: identifier })
+  }
+
+  /**
+   * Evaluates the script in an existing execution context. Used for documents
+   * that replaced an already-injected document (e.g. via `document.open()`),
+   * where scripts registered with `Page.addScriptToEvaluateOnNewDocument` are
+   * not run again.
+   */
+  async evaluate(
+    client: ChromeDevToolsClient,
+    contextId: Runtime.ExecutionContextId
+  ) {
+    await client.runtime.evaluate({
+      expression: this.#content,
+      contextId,
+    })
   }
 
   async remove(client: ChromeDevToolsClient) {

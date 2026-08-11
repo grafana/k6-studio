@@ -1,11 +1,21 @@
 import logger from 'electron-log/main'
+import { z } from 'zod/v4'
 
 import { NavigateToPageEvent, ReloadPageEvent } from '@/schemas/recording'
-import { ChromeDevToolsClient, Page as CdpPage } from '@/utils/cdp/client'
+import {
+  ChromeDevToolsClient,
+  Page as CdpPage,
+  Runtime as CdpRuntime,
+} from '@/utils/cdp/client'
 import { EventEmitter } from '@/utils/events'
 import { uuid } from '@/utils/uuid'
 
 import { Script } from './script'
+
+const ExecutionContextAuxDataSchema = z.object({
+  isDefault: z.boolean(),
+  frameId: z.string(),
+})
 
 function toNavigationSource(
   event: CdpPage.FrameStartedNavigatingEvent
@@ -48,6 +58,12 @@ export class Page extends EventEmitter<PageEventMap> {
 
   #requestedNavigation: CdpPage.FrameRequestedNavigationEvent | null = null
   #startedNavigation: CdpPage.FrameStartedNavigatingEvent | null = null
+
+  // The default execution context of each frame in the tab. See the
+  // documentOpened handler for why they are tracked.
+  readonly #contexts = new Map<string, CdpRuntime.ExecutionContextId>()
+
+  readonly #disposers: Array<() => void> = []
 
   // Whether any navigation has been recorded for this tab. See
   // #recordMissedEntryNavigation.
@@ -143,6 +159,86 @@ export class Page extends EventEmitter<PageEventMap> {
 
       this.#reset()
     })
+
+    // The context and document.open handlers below cannot filter by frame id
+    // like the navigation handlers above: they must handle every frame in the
+    // tab (e.g. a frameset child the parent document.write()s into). They
+    // filter by session instead, because the generated CDP client registers
+    // its listeners on the shared transport without applying its per-session
+    // filter, delivering every tab's events to every Page.
+    const isOwnSession = (sessionId: string | undefined) =>
+      sessionId === this.#client.sessionId
+
+    this.#disposers.push(
+      this.#client.runtime.on(
+        'executionContextCreated',
+        ({ sessionId, data }) => {
+          if (!isOwnSession(sessionId)) {
+            return
+          }
+
+          const auxData = ExecutionContextAuxDataSchema.safeParse(
+            data.context.auxData
+          )
+
+          if (!auxData.success || !auxData.data.isDefault) {
+            return
+          }
+
+          this.#contexts.set(auxData.data.frameId, data.context.id)
+        }
+      ),
+
+      this.#client.runtime.on(
+        'executionContextDestroyed',
+        ({ sessionId, data }) => {
+          if (!isOwnSession(sessionId)) {
+            return
+          }
+
+          for (const [frameId, contextId] of this.#contexts) {
+            if (contextId === data.executionContextId) {
+              this.#contexts.delete(frameId)
+            }
+          }
+        }
+      ),
+
+      this.#client.runtime.on('executionContextsCleared', ({ sessionId }) => {
+        if (!isOwnSession(sessionId)) {
+          return
+        }
+
+        this.#contexts.clear()
+      }),
+
+      // A document replaced via document.open() loses the recording script's
+      // UI and event listeners, and Chromium does not run scripts registered
+      // with Page.addScriptToEvaluateOnNewDocument again for it. The frame's
+      // execution context survives the replacement, so the script is
+      // evaluated there again. Complements the in-page recovery mechanisms
+      // (monitorDocumentChange and keepMountAtEndOfBody in
+      // src/recorder/browser/view), which cannot survive document.open
+      // because their observers die with the old document.
+      this.#client.page.on('documentOpened', ({ sessionId, data }) => {
+        if (!isOwnSession(sessionId)) {
+          return
+        }
+
+        const contextId = this.#contexts.get(data.frame.id)
+
+        if (contextId === undefined) {
+          return
+        }
+
+        this.#script.evaluate(this.#client, contextId).catch((error) => {
+          logger.warn(
+            'Failed to re-inject recording script after document.open:',
+            error
+          )
+        })
+      })
+    )
 
     this.#script.on('reload', () => {
       this.#client.page.reload({}).catch((error) => {
@@ -276,6 +372,8 @@ export class Page extends EventEmitter<PageEventMap> {
   }
 
   dispose() {
+    this.#disposers.forEach((dispose) => dispose())
+
     this.#script.remove(this.#client).catch(() => {
       // Let's just assume we got here because the session was already
       // closed or the script was already removed.
