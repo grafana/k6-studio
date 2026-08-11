@@ -497,6 +497,35 @@ describe('mergeLinearPages', () => {
     expect(mergeLinearPages(events, pages)).toBeNull()
   })
 
+  it('merges when a left-out tab only holds browser-internal navigations', () => {
+    // A manually opened tab records an explicit navigation to
+    // chrome://new-tab-page. Nothing in it can be exported, so abandoning it
+    // must not force the page picker.
+    const events = [
+      navigate('tab1', 'https://one.com'),
+      click('tab1', 'a.open'),
+      tabOpened('tab2'),
+      implicitNavigate('tab2', 'https://two.com'),
+      tabOpened('tab3'),
+      navigate('tab3', 'chrome://new-tab-page/'),
+      click('tab2', 'button.submit'),
+    ]
+
+    const pages = groupEventsByPage(events).filter(
+      (page) => page.tab !== 'tab3'
+    )
+
+    const merged = mergeLinearPages(events, pages)
+
+    expect(merged).toEqual([
+      navigate('tab1', 'https://one.com'),
+      click('tab1', 'a.open'),
+      tabOpened('tab2'),
+      implicitNavigate('tab2', 'https://two.com'),
+      click('tab2', 'button.submit'),
+    ])
+  })
+
   it('ignores events from tabs that are not part of the exportable pages', () => {
     const events = [
       navigate('tab1', 'https://one.com'),

@@ -125,6 +125,9 @@ function demoteLanding(
 /**
  * Whether an event was directly caused by the user acting on the page, as
  * opposed to a side effect like an implicit navigation or a tab opening.
+ * Navigations and reloads of browser-internal pages do not count: they never
+ * convert to an action, so nothing is lost by leaving them out of an export
+ * (e.g. an abandoned tab sitting on `chrome://new-tab-page`).
  */
 function isInteraction(event: BrowserEvent): boolean {
   switch (event.type) {
@@ -136,11 +139,13 @@ function isInteraction(event: BrowserEvent): boolean {
     case 'submit-form':
     case 'assert':
     case 'wait-for':
-    case 'reload-page':
       return true
 
+    case 'reload-page':
+      return isWebUrl(event.url)
+
     case 'navigate-to-page':
-      return event.source !== 'implicit'
+      return event.source !== 'implicit' && isWebUrl(event.url)
 
     case 'tab-opened':
       return false
