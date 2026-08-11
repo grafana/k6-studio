@@ -112,8 +112,12 @@ function isJsonResponse(headers: Header[]): boolean {
 
 /**
  * Requests that a following action could plausibly depend on: data fetches the
- * page made against its own site. Cross-site requests (analytics, embeds) and
- * documents or assets do not carry state the next action reads back.
+ * page made with JSON responses. On the page's own site any method counts, but
+ * cross-site only GETs do: pages call their backends on other registrable
+ * domains (a shopping wizard fetching from its vendor's API), while the
+ * cross-site noise this filter exists to kill (analytics and telemetry
+ * beacons) reports via POST. Documents and assets do not carry state the next
+ * action reads back.
  */
 function getCandidateRequests(
   requests: ProxyData[],
@@ -129,7 +133,7 @@ function getCandidateRequests(
       : getDomain(requestHost) === originDomain
 
   return requests.flatMap(({ request, response }) => {
-    const { timestampStart, timestampEnd, host } = request
+    const { timestampStart, timestampEnd, host, method } = request
 
     // Timestamps are seconds here, and the HAR round-trip encodes the entry's
     // duration as the request end. Without a response, or without a usable end,
@@ -138,7 +142,11 @@ function getCandidateRequests(
       return []
     }
 
-    if (!isJsonResponse(response.headers) || !isSameSite(host)) {
+    if (!isJsonResponse(response.headers)) {
+      return []
+    }
+
+    if (!isSameSite(host) && method !== 'GET') {
       return []
     }
 

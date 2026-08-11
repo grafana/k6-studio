@@ -52,6 +52,7 @@ interface RequestOptions {
   durationMs: number
   host?: string
   contentType?: string
+  method?: 'GET' | 'POST'
 }
 
 function apiRequest({
@@ -59,12 +60,14 @@ function apiRequest({
   durationMs,
   host = ORIGIN_HOST,
   contentType = 'application/json',
+  method = 'GET',
 }: RequestOptions): ProxyData {
   const timestampStart = (BASE_MS + startMs) / 1000
 
   return createProxyData({
     request: createRequest({
       host,
+      method,
       url: `https://${host}/data`,
       timestampStart,
       timestampEnd: timestampStart + durationMs / 1000,
@@ -154,13 +157,38 @@ describe('detectWaits', () => {
     expect(detectWaits(events, requests)).toEqual(new Map())
   })
 
-  it('ignores requests to a third-party domain', () => {
+  it('ignores non-GET requests to a third-party domain', () => {
+    const events = [navigate('nav', 0), click('a', 1000), click('b', 4000)]
+    const requests = [
+      apiRequest({
+        startMs: 1000,
+        durationMs: 1000,
+        host: 'api.other.test',
+        method: 'POST',
+      }),
+    ]
+
+    expect(detectWaits(events, requests)).toEqual(new Map())
+  })
+
+  it('counts GET requests to a third-party domain', () => {
+    // Pages call their backends on other registrable domains; only the
+    // POSTing telemetry beacons are dropped by the cross-site filter.
     const events = [navigate('nav', 0), click('a', 1000), click('b', 4000)]
     const requests = [
       apiRequest({ startMs: 1000, durationMs: 1000, host: 'api.other.test' }),
     ]
 
-    expect(detectWaits(events, requests)).toEqual(new Map())
+    expect(detectWaits(events, requests)).toEqual(new Map([['b', 2300]]))
+  })
+
+  it('counts non-GET requests on the origin domain', () => {
+    const events = [navigate('nav', 0), click('a', 1000), click('b', 4000)]
+    const requests = [
+      apiRequest({ startMs: 1000, durationMs: 1000, method: 'POST' }),
+    ]
+
+    expect(detectWaits(events, requests)).toEqual(new Map([['b', 2300]]))
   })
 
   it('counts requests to a subdomain of the origin domain', () => {
@@ -176,7 +204,7 @@ describe('detectWaits', () => {
     expect(detectWaits(events, requests)).toEqual(new Map([['b', 2300]]))
   })
 
-  it('counts same-host requests when the origin has no registrable domain', () => {
+  it('treats only the exact host as same-site when the origin has no registrable domain', () => {
     const events = [
       navigate('nav', 0, 'http://localhost:3000/'),
       click('a', 1000),
@@ -185,13 +213,23 @@ describe('detectWaits', () => {
 
     expect(
       detectWaits(events, [
-        apiRequest({ startMs: 1000, durationMs: 1000, host: 'localhost' }),
+        apiRequest({
+          startMs: 1000,
+          durationMs: 1000,
+          host: 'localhost',
+          method: 'POST',
+        }),
       ])
     ).toEqual(new Map([['b', 2300]]))
 
     expect(
       detectWaits(events, [
-        apiRequest({ startMs: 1000, durationMs: 1000, host: '127.0.0.1' }),
+        apiRequest({
+          startMs: 1000,
+          durationMs: 1000,
+          host: '127.0.0.1',
+          method: 'POST',
+        }),
       ])
     ).toEqual(new Map())
   })
