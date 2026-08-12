@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/electron/main'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { BrowserExtensionMessageSchema } from '@/recorder/browser/messaging/types'
+import { createInputChangeEvent } from '@/test/factories/browserEvents'
 
 import { createInvalidMessageReporter } from './server'
 
@@ -21,7 +22,7 @@ function createValidationError() {
   const result = BrowserExtensionMessageSchema.safeParse({
     type: 'record-events',
     events: JSON.stringify([
-      { type: 'input-change', sensitive: true, value: RECORDED_PASSWORD },
+      createInputChangeEvent({ sensitive: true, value: RECORDED_PASSWORD }),
     ]),
   })
 

@@ -168,8 +168,11 @@ export class Page extends EventEmitter<PageEventMap> {
     // frame id: it must handle every frame in the tab (e.g. a frameset child
     // the parent document.write()s into). It filters by session because the
     // generated CDP client delivers every tab's events to every Page.
-    // TODO: That is a bug in generateCdpClient.ts — `on` builds a session
-    // filter but registers the raw listener (`off` needs the symmetric fix).
+    // TODO: That is a bug in generateCdpClient.ts: `on` builds a session
+    // filter but registers the raw listener. The generator is fixed to
+    // register filteredListener, but client.ts could not be regenerated
+    // (gen:cdp currently fails with TS5011), so this guard stays until a
+    // regenerated client ships.
     // The frame id checks in the handlers above only double as session
     // filters by accident, because a page target's frame id equals its
     // target id.
@@ -299,10 +302,16 @@ export class Page extends EventEmitter<PageEventMap> {
       worldName: RECORDER_WORLD_NAME,
     })
 
-    await this.#client.runtime.evaluate({
+    const { exceptionDetails } = await this.#client.runtime.evaluate({
       expression: tabIdSource(this.#id),
       contextId: executionContextId,
     })
+
+    if (exceptionDetails !== undefined) {
+      throw new Error(
+        `Failed to set tab id: ${exceptionDetails.exception?.description ?? exceptionDetails.text}`
+      )
+    }
 
     await this.#script.evaluate(this.#client, executionContextId)
   }

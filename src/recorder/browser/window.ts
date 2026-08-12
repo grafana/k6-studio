@@ -2,6 +2,11 @@ import { BrowserExtensionClient } from './messaging'
 
 let wasFocused = false
 
+/**
+ * Reports to the client when the tab gains focus. Returns a dispose function:
+ * document.open() erases the focus listener but not the interval, so a
+ * re-injected copy disposes the previous tracker and starts its own.
+ */
 export function trackTabFocus(client: BrowserExtensionClient) {
   const checkFocus = () => {
     const tab = window.__K6_STUDIO_TAB_ID__
@@ -22,14 +27,18 @@ export function trackTabFocus(client: BrowserExtensionClient) {
     wasFocused = isFocused
   }
 
-  window.addEventListener(
-    'focus',
-    () => {
-      checkFocus()
-    },
-    true
-  )
+  const handleFocus = () => {
+    checkFocus()
+  }
 
-  setInterval(checkFocus, 200)
+  window.addEventListener('focus', handleFocus, true)
+
+  const interval = setInterval(checkFocus, 200)
+
   checkFocus()
+
+  return function dispose() {
+    window.removeEventListener('focus', handleFocus, true)
+    clearInterval(interval)
+  }
 }

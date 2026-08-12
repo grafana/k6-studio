@@ -80,4 +80,19 @@ describe('ErrorBoundary', () => {
       expect.any(Error)
     )
   })
+
+  // A crashed tool disappears, but the tool selection lives outside the
+  // boundary. Without a reset hook the store would keep suppressing event
+  // recording while the user sees no tool UI at all.
+  it('notifies onError when a child crashes', () => {
+    const onError = vi.fn()
+
+    render(
+      <ErrorBoundary name="Element inspector" onError={onError}>
+        <Bomb />
+      </ErrorBoundary>
+    )
+
+    expect(onError).toHaveBeenCalledOnce()
+  })
 })

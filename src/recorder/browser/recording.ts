@@ -270,4 +270,8 @@ export function startRecording(
       tab: getTabId(),
     })
   })
+
+  return function dispose() {
+    manager.dispose()
+  }
 }

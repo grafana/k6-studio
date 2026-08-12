@@ -5,8 +5,11 @@ import type { RecorderRuntime } from './index'
 const createClient = vi.fn()
 const configureStorage = vi.fn()
 const initializeView = vi.fn()
+const disposeView = vi.fn()
 const trackTabFocus = vi.fn()
+const disposeTabFocus = vi.fn()
 const startRecording = vi.fn()
+const disposeRecording = vi.fn()
 
 vi.mock('./routing', () => ({
   createClient: () => createClient() as never,
@@ -44,6 +47,9 @@ describe('recorder entrypoint', () => {
 
     createClient.mockReturnValue({ fake: 'client' })
     configureStorage.mockReturnValue({ fake: 'storage' })
+    initializeView.mockReturnValue(disposeView)
+    trackTabFocus.mockReturnValue(disposeTabFocus)
+    startRecording.mockReturnValue(disposeRecording)
   })
 
   it('creates the runtime and remembers it on the window', async () => {
@@ -51,7 +57,7 @@ describe('recorder entrypoint', () => {
 
     expect(createClient).toHaveBeenCalledOnce()
     expect(trackTabFocus).toHaveBeenCalledOnce()
-    expect(window.__K6_STUDIO_RECORDER_RUNTIME__).toEqual({
+    expect(window.__K6_STUDIO_RECORDER_RUNTIME__).toMatchObject({
       client: { fake: 'client' },
       storage: { fake: 'storage' },
     })
@@ -59,12 +65,13 @@ describe('recorder entrypoint', () => {
 
   // Re-injection after document.open() runs a fresh copy of the whole script
   // in the same realm. The previous copy's connection and timers survived the
-  // document swap, so creating new ones would accumulate a socket, keepalive
-  // timers, and a focus poll on every document.open().
-  it('reuses the previous runtime when re-injected into the same realm', async () => {
+  // document swap, so creating new ones would accumulate a socket and
+  // keepalive timers on every document.open().
+  it('reuses the previous connection when re-injected into the same realm', async () => {
     const runtime = {
       client: { fake: 'existing-client' },
       storage: { fake: 'existing-storage' },
+      disposeDocument: vi.fn(),
     } as unknown as RecorderRuntime
 
     window.__K6_STUDIO_RECORDER_RUNTIME__ = runtime
@@ -73,10 +80,38 @@ describe('recorder entrypoint', () => {
 
     expect(createClient).not.toHaveBeenCalled()
     expect(configureStorage).not.toHaveBeenCalled()
-    expect(trackTabFocus).not.toHaveBeenCalled()
 
     // The per-document work must still run with the surviving runtime.
     expect(initializeView).toHaveBeenCalledWith(runtime.client, runtime.storage)
     expect(startRecording).toHaveBeenCalledWith(runtime.client, runtime.storage)
+    expect(trackTabFocus).toHaveBeenCalledWith(runtime.client)
+  })
+
+  // When two re-injections land in the same document (e.g. two rapid
+  // document.open() calls), the earlier copy's recording listeners are still
+  // live and would record every interaction twice. Each copy therefore
+  // disposes its predecessor's per-document setup before starting its own.
+  it('disposes the previous copy before setting up', async () => {
+    const disposeDocument = vi.fn()
+
+    window.__K6_STUDIO_RECORDER_RUNTIME__ = {
+      client: { fake: 'existing-client' },
+      storage: { fake: 'existing-storage' },
+      disposeDocument,
+    } as unknown as RecorderRuntime
+
+    await runEntrypoint()
+
+    expect(disposeDocument).toHaveBeenCalledOnce()
+  })
+
+  it('exposes a disposeDocument that tears down its own setup', async () => {
+    await runEntrypoint()
+
+    window.__K6_STUDIO_RECORDER_RUNTIME__?.disposeDocument()
+
+    expect(disposeView).toHaveBeenCalledOnce()
+    expect(disposeTabFocus).toHaveBeenCalledOnce()
+    expect(disposeRecording).toHaveBeenCalledOnce()
   })
 })

@@ -77,7 +77,10 @@ export class BrowserExtensionClient extends EventEmitter<BrowserExtensionClientE
       const parsed = BrowserExtensionClientMessageSchema.safeParse(data)
 
       if (!parsed.success) {
-        console.error(`[${name}] received invalid message:`, parsed.error, data)
+        // Never log the message itself: it can carry recorded user input,
+        // including passwords, and in the main process console output becomes
+        // a Sentry breadcrumb on the event onInvalidMessage reports.
+        console.error(`[${name}] received invalid message:`, parsed.error)
 
         options.onInvalidMessage?.(parsed.error)
 

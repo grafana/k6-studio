@@ -48,10 +48,19 @@ export class Script extends EventEmitter<ScriptEventMap> {
     client: ChromeDevToolsClient,
     contextId: Runtime.ExecutionContextId
   ) {
-    await client.runtime.evaluate({
+    const { exceptionDetails } = await client.runtime.evaluate({
       expression: this.#content,
       contextId,
     })
+
+    // Runtime.evaluate reports a throwing expression on an otherwise
+    // successful response, which would silently pass for a working
+    // re-injection.
+    if (exceptionDetails !== undefined) {
+      throw new Error(
+        `Script threw during evaluation: ${exceptionDetails.exception?.description ?? exceptionDetails.text}`
+      )
+    }
   }
 
   async remove(client: ChromeDevToolsClient) {

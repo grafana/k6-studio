@@ -51,15 +51,18 @@ export function InBrowserControls() {
       </ErrorBoundary>
       {/*
         The boundaries sit inside the conditionals so that selecting a tool
-        again mounts a fresh one, giving a crashed tool another chance.
+        again mounts a fresh one, giving a crashed tool another chance. A
+        crashed tool also deselects itself: leaving it selected would keep
+        suppressing event recording (shouldSkipEvent) with no tool UI in
+        sight.
       */}
       {tool === 'inspect' && (
-        <ErrorBoundary name="Element inspector">
+        <ErrorBoundary name="Element inspector" onError={handleDeselectTool}>
           <ElementInspector onClose={handleDeselectTool} />
         </ErrorBoundary>
       )}
       {tool === 'assert-text' && (
-        <ErrorBoundary name="Text selection">
+        <ErrorBoundary name="Text selection" onError={handleDeselectTool}>
           <TextSelectionPopover onClose={handleDeselectTool} />
         </ErrorBoundary>
       )}

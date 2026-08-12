@@ -3,6 +3,12 @@ import { Component, ReactNode } from 'react'
 interface ErrorBoundaryProps {
   name?: string
   children?: ReactNode
+
+  /**
+   * Called when a child crashes, so state living outside the boundary that
+   * assumes the child is visible (e.g. the selected tool) can be reset.
+   */
+  onError?: () => void
 }
 
 interface ErrorBoundaryState {
@@ -38,6 +44,8 @@ export class ErrorBoundary extends Component<
       `[k6 Studio] ${this.props.name ?? 'In-browser UI'} crashed and was removed from the page.`,
       error
     )
+
+    this.props.onError?.()
   }
 
   render() {

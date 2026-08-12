@@ -14,6 +14,12 @@ import { trackTabFocus } from './window'
 export interface RecorderRuntime {
   client: BrowserExtensionClient
   storage: SettingsStorage
+
+  /**
+   * Tears down the per-document setup of the copy that created this runtime:
+   * recording listeners, the UI's React tree, and focus tracking.
+   */
+  disposeDocument: () => void
 }
 
 declare global {
@@ -25,19 +31,25 @@ declare global {
 // CDP injects this script into every frame, and injects it AGAIN into the
 // same realm when a page replaces its document with document.open() (see the
 // documentOpened handler in src/recorder/launchers/cdp/page.ts). The realm's
-// long-lived pieces survive that replacement: the WebSocket connection, its
-// keepalive timers, and the tab focus poll. Creating them anew on every
-// re-injection would accumulate a connection and timers per document.open(),
-// so they are created once per realm and reused. Everything per-document
-// (the UI, the recording listeners) is genuinely destroyed with the old
-// document and is set up again below.
-const runtime = window.__K6_STUDIO_RECORDER_RUNTIME__
-const isReinjection = runtime !== undefined
+// long-lived pieces survive that replacement: the WebSocket connection and
+// its keepalive timers. Creating them anew on every re-injection would
+// accumulate a connection per document.open(), so they are created once per
+// realm and reused.
+//
+// Everything per-document is disposed and set up again: document.open()
+// erases the previous copy's window listeners, but when two copies race into
+// the SAME document (e.g. two rapid document.open() calls whose re-injections
+// both land after the last one), the earlier copy's listeners are still live
+// and every interaction would be recorded twice. The previous copy's React
+// tree also stays subscribed to the reused client until unmounted.
+const previous = window.__K6_STUDIO_RECORDER_RUNTIME__
 
-const client = runtime?.client ?? createClient()
-const storage = runtime?.storage ?? configureStorage(client)
+previous?.disposeDocument()
 
-window.__K6_STUDIO_RECORDER_RUNTIME__ = { client, storage }
+const client = previous?.client ?? createClient()
+const storage = previous?.storage ?? configureStorage(client)
+
+const disposers: Array<() => void> = []
 
 // We capture events in all frames so that interactions inside iframes are
 // recorded, but the recorder UI and tab focus tracking only make sense in the
@@ -47,11 +59,16 @@ if (isInFrame()) {
   attachInspectionDetection()
   attachTextSelectionDetection()
 } else {
-  if (!isReinjection) {
-    trackTabFocus(client)
-  }
-
-  initializeView(client, storage)
+  disposers.push(trackTabFocus(client))
+  disposers.push(initializeView(client, storage))
 }
 
-startRecording(client, storage)
+disposers.push(startRecording(client, storage))
+
+window.__K6_STUDIO_RECORDER_RUNTIME__ = {
+  client,
+  storage,
+  disposeDocument: () => {
+    disposers.forEach((dispose) => dispose())
+  },
+}

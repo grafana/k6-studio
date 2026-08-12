@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest'
+import logger from 'electron-log/main'
+import { describe, expect, it, vi } from 'vitest'
 
 import { BrowserEvent } from '@/schemas/recording'
 import {
@@ -23,6 +24,10 @@ class FakeTransport implements Transport {
 
   // Methods that respond with an error, e.g. because the frame is gone
   rejectedMethods = new Set<string>()
+
+  // When set, Runtime.evaluate reports that the evaluated expression threw.
+  // The CDP call itself still succeeds.
+  evaluationThrows = false
 
   #listeners = new Map<string, Set<Listener>>()
 
@@ -91,6 +96,20 @@ class FakeTransport implements Transport {
 
       case 'Page.createIsolatedWorld':
         return { executionContextId: this.isolatedWorldContextId }
+
+      case 'Runtime.evaluate':
+        return this.evaluationThrows
+          ? {
+              result: { type: 'undefined' },
+              exceptionDetails: {
+                exceptionId: 1,
+                text: 'Uncaught',
+                lineNumber: 0,
+                columnNumber: 0,
+                exception: { type: 'object', description: 'Error: boom' },
+              },
+            }
+          : { result: { type: 'undefined' } }
 
       default:
         return {}
@@ -325,6 +344,7 @@ describe('document.open', () => {
   })
 
   it('does not re-inject when the isolated world cannot be created', async () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => logger)
     const { transport, page } = setup()
 
     await page.attach({ isInitialTab: true, hasOpener: false })
@@ -334,13 +354,39 @@ describe('document.open', () => {
     await openDocument(transport, 'tab-1')
 
     expect(callsTo(transport, 'Runtime.evaluate')).toEqual([])
+
+    // The failure is logged; waiting for it also keeps the rejection chain
+    // from settling during a later test.
+    await vi.waitFor(() => expect(warn).toHaveBeenCalledOnce())
+
+    warn.mockRestore()
   })
 
-  // The generated CDP client registers its listeners on the shared transport
-  // without applying its per-session filter, so a Page receives every tab's
-  // Page events. The handler has to filter by session itself, or one tab's
-  // document.open would trigger a re-injection from every Page in the
-  // recording.
+  // Runtime.evaluate reports a throwing expression via exceptionDetails on an
+  // otherwise successful response. Treating that as success would leave the
+  // recorder dead for the document without any trace in the logs.
+  it('logs a warning when the re-injected script throws', async () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => logger)
+    const { transport, page } = setup()
+
+    await page.attach({ isInitialTab: true, hasOpener: false })
+
+    transport.evaluationThrows = true
+
+    await openDocument(transport, 'tab-1')
+
+    expect(warn).toHaveBeenCalledExactlyOnceWith(
+      'Failed to re-inject recording script after document.open:',
+      expect.any(Error)
+    )
+
+    const error: unknown = warn.mock.calls[0]?.[1]
+
+    expect(String(error)).toContain('boom')
+
+    warn.mockRestore()
+  })
+
   it('ignores events addressed to other sessions', async () => {
     const { transport, page } = setup({ sessionId: 'session-1' })
 

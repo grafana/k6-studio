@@ -11,8 +11,30 @@
  */
 const MOUNT_MARKER_ATTRIBUTE = 'data-ksix-studio-mount'
 
+/**
+ * Whether the document hosts a LIVE recorder UI. The marker attribute alone
+ * is not proof: a page that serializes its own body and rewrites itself
+ * (e.g. document.write(document.body.innerHTML)) reproduces the marker as a
+ * dead copy, since shadow roots do not serialize. A mount without a shadow
+ * root has no UI behind it and must not block a fresh injection.
+ */
 export function isDocumentMounted() {
-  return document.querySelector(`[${MOUNT_MARKER_ATTRIBUTE}]`) !== null
+  return findMounts().some((element) => element.shadowRoot !== null)
+}
+
+/**
+ * Removes marker-bearing elements that have no UI behind them, so they can't
+ * skew generated nth-child selectors. See isDocumentMounted for how dead
+ * copies come to exist.
+ */
+export function removeStaleMounts() {
+  findMounts()
+    .filter((element) => element.shadowRoot === null)
+    .forEach((element) => element.remove())
+}
+
+function findMounts() {
+  return [...document.querySelectorAll(`[${MOUNT_MARKER_ATTRIBUTE}]`)]
 }
 
 /**
@@ -79,7 +101,19 @@ export function createMount() {
  * so the recording controls stay available.
  */
 export function keepMountAtEndOfBody(mount: Element) {
+  const body = document.body
+
   function ensureAtEndOfBody() {
+    // The body this observer was attached to is gone (e.g. document.open()
+    // rewrote the document, which does not disconnect observers). The mount
+    // died with it and must not be resurrected into the new document, where
+    // its marker would block a fresh injection from mounting a working UI.
+    if (document.body !== body) {
+      positionObserver.disconnect()
+
+      return
+    }
+
     if (document.body.lastElementChild !== mount) {
       document.body.appendChild(mount)
     }
@@ -87,7 +121,7 @@ export function keepMountAtEndOfBody(mount: Element) {
 
   const positionObserver = new MutationObserver(ensureAtEndOfBody)
 
-  positionObserver.observe(document.body, {
+  positionObserver.observe(body, {
     childList: true,
   })
 

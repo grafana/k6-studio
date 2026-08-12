@@ -425,16 +425,19 @@ function generateEventFunctions({ domain, events = [] }: cdp.Domain) {
           '+',
           params.name
         )
-        const listener = new ExpressionBuilder(identifier('listener')).as(
-          typeRef('ChromeEventListener')
-        )
+
+        // The transport is shared by every session, so the session-filtering
+        // wrapper is what gets registered, not the raw listener.
+        const filteredListener = new ExpressionBuilder(
+          identifier('filteredListener')
+        ).as(typeRef('ChromeEventListener'))
 
         return [
           ...body,
           new ExpressionBuilder($this())
             .member('transport')
             .member(name)
-            .call([eventName, listener])
+            .call([eventName, filteredListener])
             .returned(),
         ]
       })

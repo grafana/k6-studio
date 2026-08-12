@@ -88,6 +88,22 @@ describe('BrowserExtensionClient', () => {
     expect(consoleError).toHaveBeenCalledOnce()
   })
 
+  // The message can carry recorded user input, including passwords, and main
+  // process console output becomes a Sentry breadcrumb on the reported event.
+  it('does not log the contents of an invalid message', () => {
+    const { transport } = createClient()
+
+    receive(transport, {
+      type: 'message',
+      data: {
+        type: 'record-events',
+        events: JSON.stringify([{ type: 'input-change', value: 'hunter2' }]),
+      },
+    })
+
+    expect(JSON.stringify(consoleError.mock.calls)).not.toContain('hunter2')
+  })
+
   it('does not notify onInvalidMessage for valid messages', () => {
     const onInvalidMessage = vi.fn<(error: z.ZodError) => void>()
     const { client, transport } = createClient({ onInvalidMessage })
