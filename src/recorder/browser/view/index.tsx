@@ -8,7 +8,7 @@ import { BrowserExtensionClient } from '@/recorder/browser/messaging'
 
 import { GlobalStyles } from './GlobalStyles'
 import { InBrowserControls } from './InBrowserControls'
-import { createMount } from './mount'
+import { createMount, isDocumentMounted } from './mount'
 import { SettingsProvider, SettingsStorage } from './SettingsProvider'
 import { StudioClientProvider } from './StudioClientProvider'
 import { isUsingTool } from './utils'
@@ -115,6 +115,11 @@ export function initializeView(
 ) {
   const abortController = new AbortController()
 
+  // Stops the mount's defending observers. Production never disposes (the
+  // UI lives for the document's lifetime), but tests must, so that observer
+  // callbacks don't fire into a torn-down environment.
+  let disposeMount = () => {}
+
   let shadowRoot: ShadowRoot | null = null
 
   function createShadowRoot(mount: Element) {
@@ -143,7 +148,18 @@ export function initializeView(
 
     abortController.abort()
 
-    const mount = createMount()
+    // Another copy of the script beat us to this document. See
+    // MOUNT_MARKER_ATTRIBUTE for why a second mount must never be created.
+    if (isDocumentMounted()) {
+      console.warn('[k6 Studio] In-browser UI is already initialized.')
+
+      return
+    }
+
+    const { mount, dispose } = createMount()
+
+    disposeMount = dispose
+
     const root = createShadowRoot(mount)
 
     /**
@@ -167,7 +183,12 @@ export function initializeView(
       speedy: false,
     })
 
-    createRoot(root).render(
+    createRoot(root, {
+      // Our error boundaries already warn once for every crash they catch.
+      // React would log the same crash again at error level, in a console that
+      // belongs to the recorded page rather than to us.
+      onCaughtError: () => {},
+    }).render(
       <CacheProvider value={globalCache}>
         <GlobalStyles />
         <StudioClientProvider client={client}>
@@ -278,4 +299,8 @@ export function initializeView(
   window.addEventListener('focusout', bypassFocusEvent, true)
   window.addEventListener('focus', bypassFocusEvent, true)
   window.addEventListener('blur', bypassFocusEvent, true)
+
+  return function dispose() {
+    disposeMount()
+  }
 }

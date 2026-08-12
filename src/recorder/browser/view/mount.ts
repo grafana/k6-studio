@@ -1,13 +1,31 @@
 /**
+ * Marks the mount element so that other copies of this script can tell that
+ * the document already hosts the recorder UI. The same document can be
+ * initialized from more than one copy of the script (e.g. one injected into
+ * the initial empty document and one injected when the real document commits
+ * into the same context), and their mounts would fight over the end of the
+ * body through keepMountAtEndOfBody, locking the renderer in an infinite
+ * MutationObserver loop.
+ */
+export const MOUNT_MARKER_ATTRIBUTE = 'data-ksix-studio-mount'
+
+export function isDocumentMounted() {
+  return document.querySelector(`[${MOUNT_MARKER_ATTRIBUTE}]`) !== null
+}
+
+/**
  * Creates the element that hosts the recorder UI inside the recorded page and
- * defends it against the page's own DOM manipulation.
+ * defends it against the page's own DOM manipulation. Returns the mount and a
+ * dispose function that stops the defending observers.
  */
 export function createMount() {
   const mount = document.createElement('div')
 
+  mount.setAttribute(MOUNT_MARKER_ATTRIBUTE, 'true')
+
   document.body.appendChild(mount)
 
-  keepMountAtEndOfBody(mount)
+  const stopKeepingAtEndOfBody = keepMountAtEndOfBody(mount)
 
   // Some UI frameworks use the `inert` attribute to disable interaction with
   // elements outside of a modal. We remove this attribute so that the recording
@@ -23,7 +41,13 @@ export function createMount() {
     attributeFilter: ['inert'],
   })
 
-  return mount
+  return {
+    mount,
+    dispose: () => {
+      stopKeepingAtEndOfBody()
+      attributeObserver.disconnect()
+    },
+  }
 }
 
 /**
