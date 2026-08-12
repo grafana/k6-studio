@@ -30,7 +30,10 @@ export class ErrorBoundary extends Component<
 
   componentDidCatch(error: Error) {
     // This lands in the recorded page's console, so it's logged as a warning
-    // to avoid it being mistaken for a failure of the page itself.
+    // to avoid it being mistaken for a failure of the page itself. It is also
+    // the ONLY record of the crash: the render root in view/index.tsx mutes
+    // React's own error logging (onCaughtError) on the assumption that this
+    // warning exists.
     console.warn(
       `[k6 Studio] ${this.props.name ?? 'In-browser UI'} crashed and was removed from the page.`,
       error

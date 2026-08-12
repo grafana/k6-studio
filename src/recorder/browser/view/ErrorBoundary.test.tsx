@@ -68,13 +68,16 @@ describe('ErrorBoundary', () => {
     )
   })
 
-  it('warns without a name when none was given', () => {
+  it('warns with a generic name when none was given', () => {
     render(
       <ErrorBoundary>
         <Bomb />
       </ErrorBoundary>
     )
 
-    expect(console.warn).toHaveBeenCalledTimes(1)
+    expect(console.warn).toHaveBeenCalledWith(
+      expect.stringContaining('In-browser UI'),
+      expect.any(Error)
+    )
   })
 })

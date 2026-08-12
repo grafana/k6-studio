@@ -98,9 +98,12 @@ class FakeTransport implements Transport {
   }
 }
 
-function setup(holdResponsesUntilResume = false) {
+function setup({
+  holdResponsesUntilResume = false,
+  sessionId,
+}: { holdResponsesUntilResume?: boolean; sessionId?: string } = {}) {
   const transport = new FakeTransport(holdResponsesUntilResume)
-  const client = new ChromeDevToolsClient(transport)
+  const client = new ChromeDevToolsClient(transport, sessionId)
   const page = new Page('tab-1', client, new Script('script-content'))
 
   const recorded: BrowserEvent[] = []
@@ -141,7 +144,7 @@ describe('Page.attach', () => {
     'registers scripts before resuming a paused popup that holds command responses until resume',
     { timeout: 1000 },
     async () => {
-      const { transport, page } = setup(true)
+      const { transport, page } = setup({ holdResponsesUntilResume: true })
 
       await page.attach({ isInitialTab: false, hasOpener: true })
 
@@ -339,9 +342,7 @@ describe('document.open', () => {
   // document.open would trigger a re-injection from every Page in the
   // recording.
   it('ignores events addressed to other sessions', async () => {
-    const transport = new FakeTransport(false)
-    const client = new ChromeDevToolsClient(transport).withSession('session-1')
-    const page = new Page('tab-1', client, new Script('script-content'))
+    const { transport, page } = setup({ sessionId: 'session-1' })
 
     await page.attach({ isInitialTab: true, hasOpener: false })
 
@@ -352,9 +353,7 @@ describe('document.open', () => {
   })
 
   it('re-injects for events addressed to its own session', async () => {
-    const transport = new FakeTransport(false)
-    const client = new ChromeDevToolsClient(transport).withSession('session-1')
-    const page = new Page('tab-1', client, new Script('script-content'))
+    const { transport, page } = setup({ sessionId: 'session-1' })
 
     await page.attach({ isInitialTab: true, hasOpener: false })
 

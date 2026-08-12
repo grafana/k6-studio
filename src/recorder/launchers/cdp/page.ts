@@ -55,7 +55,10 @@ export class Page extends EventEmitter<PageEventMap> {
   #requestedNavigation: CdpPage.FrameRequestedNavigationEvent | null = null
   #startedNavigation: CdpPage.FrameStartedNavigatingEvent | null = null
 
-  readonly #disposers: Array<() => void> = []
+  // The navigation handlers in the constructor are never unregistered (a Page
+  // outliving its CDP session only leaks no-op listeners), but documentOpened
+  // triggers multi-megabyte evaluates, so it must stop with the Page.
+  #disposeDocumentOpened = () => {}
 
   // Whether any navigation has been recorded for this tab. See
   // #recordMissedEntryNavigation.
@@ -152,26 +155,28 @@ export class Page extends EventEmitter<PageEventMap> {
       this.#reset()
     })
 
-    // The document.open handler below cannot filter by frame id like the
-    // navigation handlers above: it must handle every frame in the tab (e.g. a
-    // frameset child the parent document.write()s into). It filters by session
-    // instead, because the generated CDP client registers its listeners on the
-    // shared transport without applying its per-session filter, delivering
-    // every tab's events to every Page.
-    const isOwnSession = (sessionId: string | undefined) =>
-      sessionId === this.#client.sessionId
-
-    this.#disposers.push(
-      // A document replaced via document.open() loses the recording script's
-      // UI and event listeners, and Chromium does not run scripts registered
-      // with Page.addScriptToEvaluateOnNewDocument again for it, so the script
-      // is evaluated again in the frame's isolated world. Complements the
-      // in-page recovery mechanisms (monitorDocumentChange and
-      // keepMountAtEndOfBody in src/recorder/browser/view), which cannot
-      // survive document.open because their observers die with the old
-      // document.
-      this.#client.page.on('documentOpened', ({ sessionId, data }) => {
-        if (!isOwnSession(sessionId)) {
+    // A document replaced via document.open() loses the recording script's
+    // UI and event listeners, and Chromium does not run scripts registered
+    // with Page.addScriptToEvaluateOnNewDocument again for it, so the script
+    // is evaluated again in the frame's isolated world. Complements the
+    // in-page recovery mechanisms (monitorDocumentChange and
+    // keepMountAtEndOfBody in src/recorder/browser/view), which cannot
+    // survive document.open because their observers die with the old
+    // document.
+    //
+    // Unlike the navigation handlers above, this handler cannot filter by
+    // frame id: it must handle every frame in the tab (e.g. a frameset child
+    // the parent document.write()s into). It filters by session because the
+    // generated CDP client delivers every tab's events to every Page.
+    // TODO: That is a bug in generateCdpClient.ts — `on` builds a session
+    // filter but registers the raw listener (`off` needs the symmetric fix).
+    // The frame id checks in the handlers above only double as session
+    // filters by accident, because a page target's frame id equals its
+    // target id.
+    this.#disposeDocumentOpened = this.#client.page.on(
+      'documentOpened',
+      ({ sessionId, data }) => {
+        if (sessionId !== this.#client.sessionId) {
           return
         }
 
@@ -181,7 +186,7 @@ export class Page extends EventEmitter<PageEventMap> {
             error
           )
         })
-      })
+      }
     )
 
     this.#script.on('reload', () => {
@@ -336,7 +341,7 @@ export class Page extends EventEmitter<PageEventMap> {
   }
 
   dispose() {
-    this.#disposers.forEach((dispose) => dispose())
+    this.#disposeDocumentOpened()
 
     this.#script.remove(this.#client).catch(() => {
       // Let's just assume we got here because the session was already

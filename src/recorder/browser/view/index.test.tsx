@@ -26,7 +26,7 @@ describe('initializeView', () => {
   // no-op. Calling initializeView twice mimics the second copy: the guard is
   // in the DOM (the mount marker), which is all a separate script copy would
   // share with us.
-  it('initializes the in-browser UI only once per document', () => {
+  it('mounts the in-browser UI only once per document', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const client = new BrowserExtensionClient('test')
 

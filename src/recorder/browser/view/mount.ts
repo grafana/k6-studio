@@ -1,13 +1,15 @@
 /**
- * Marks the mount element so that other copies of this script can tell that
- * the document already hosts the recorder UI. The same document can be
- * initialized from more than one copy of the script (e.g. one injected into
- * the initial empty document and one injected when the real document commits
- * into the same context), and their mounts would fight over the end of the
- * body through keepMountAtEndOfBody, locking the renderer in an infinite
- * MutationObserver loop.
+ * Marks the mount element so that any other initializer can tell that the
+ * document already hosts the recorder UI. The same document can be
+ * initialized more than once: by another copy of this script (one injected
+ * into the initial empty document and one injected when the real document
+ * commits into the same context), or by the same copy re-entering through
+ * monitorDocumentChange in view/index.tsx. Two mounts would fight over the
+ * end of the body through keepMountAtEndOfBody, locking the renderer in an
+ * infinite MutationObserver loop. The marker lives in the DOM because the
+ * DOM is the only state separate script copies share.
  */
-export const MOUNT_MARKER_ATTRIBUTE = 'data-ksix-studio-mount'
+const MOUNT_MARKER_ATTRIBUTE = 'data-ksix-studio-mount'
 
 export function isDocumentMounted() {
   return document.querySelector(`[${MOUNT_MARKER_ATTRIBUTE}]`) !== null

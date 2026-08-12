@@ -20,6 +20,13 @@ import { isUsingTool } from './utils'
 // It's not entirely clear why this happens and there doesn't seem to be any events firing that
 // we can rely on. So instead, we use use a brute-force polling mechanism to monitor if the document
 // reference changes during the opening stages of the page. It's not pretty but it works.
+//
+// This covers only the initial empty-document swap (a navigation commit that
+// replaces the Document object). The other way a page loses our UI is
+// document.open(), which reuses the same Document object and so is invisible
+// to this poll; that case is handled from the main process, which re-injects
+// the whole script on CDP's Page.documentOpened event (see the documentOpened
+// handler in src/recorder/launchers/cdp/page.ts).
 function monitorDocumentChange(onChange: () => void) {
   // During this short period of time the document will have the URL "about:blank", so if it's
   // different then we can skip this check entirely.
@@ -148,8 +155,8 @@ export function initializeView(
 
     abortController.abort()
 
-    // Another copy of the script beat us to this document. See
-    // MOUNT_MARKER_ATTRIBUTE for why a second mount must never be created.
+    // Another initializer beat us to this document. See the mount marker in
+    // mount.ts for why a second mount must never be created.
     if (isDocumentMounted()) {
       console.warn('[k6 Studio] In-browser UI is already initialized.')
 
