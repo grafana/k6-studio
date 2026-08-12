@@ -1,0 +1,107 @@
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+  type MockInstance,
+} from 'vitest'
+import { z } from 'zod/v4'
+
+import { Transport } from './transports/transport'
+
+import { BrowserExtensionClient, BrowserExtensionClientOptions } from './index'
+
+class FakeTransport extends Transport {
+  send(): void {}
+
+  /**
+   * Simulates the remote end of the transport sending us a raw envelope.
+   */
+  receive(data: unknown) {
+    this.emit('message', { data })
+  }
+}
+
+// The shape the in-page recorder sent when a page polluted Array.prototype
+// with a toJSON method: `events` arrives double-encoded as a string.
+const doubleEncodedEnvelope = {
+  type: 'message',
+  data: {
+    type: 'record-events',
+    events: JSON.stringify([{ type: 'click' }]),
+  },
+}
+
+const validEnvelope = {
+  type: 'message',
+  data: {
+    type: 'load-events',
+  },
+}
+
+describe('BrowserExtensionClient', () => {
+  const clients: BrowserExtensionClient[] = []
+
+  let consoleError: MockInstance<typeof console.error>
+
+  function createClient(options?: BrowserExtensionClientOptions) {
+    const transport = new FakeTransport()
+    const client = new BrowserExtensionClient('test-client', transport, options)
+
+    clients.push(client)
+
+    return { client, transport }
+  }
+
+  beforeEach(() => {
+    consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    clients.forEach((client) => client.dispose())
+    clients.length = 0
+
+    vi.restoreAllMocks()
+  })
+
+  it('notifies onInvalidMessage when a message fails validation', () => {
+    const onInvalidMessage = vi.fn<(error: z.ZodError) => void>()
+    const { transport } = createClient({ onInvalidMessage })
+
+    transport.receive(doubleEncodedEnvelope)
+
+    expect(onInvalidMessage).toHaveBeenCalledOnce()
+
+    const [error] = onInvalidMessage.mock.calls[0] ?? []
+
+    expect(error).toBeInstanceOf(z.ZodError)
+    expect(error?.issues).toEqual([
+      expect.objectContaining({
+        code: 'invalid_type',
+        path: ['data', 'events'],
+      }),
+    ])
+  })
+
+  it('logs invalid messages when no callback was given', () => {
+    const { transport } = createClient()
+
+    expect(() => transport.receive(doubleEncodedEnvelope)).not.toThrow()
+    expect(consoleError).toHaveBeenCalledOnce()
+  })
+
+  it('does not notify onInvalidMessage for valid messages', () => {
+    const onInvalidMessage = vi.fn<(error: z.ZodError) => void>()
+    const { client, transport } = createClient({ onInvalidMessage })
+    const onLoadEvents = vi.fn()
+
+    client.on('load-events', onLoadEvents)
+
+    transport.receive(validEnvelope)
+
+    expect(onLoadEvents).toHaveBeenCalledOnce()
+    expect(onInvalidMessage).not.toHaveBeenCalled()
+  })
+})

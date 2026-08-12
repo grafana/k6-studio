@@ -1,3 +1,6 @@
+import { captureMessage } from '@sentry/electron/main'
+import type { z } from 'zod/v4'
+
 import { BrowserExtensionClient } from '@/recorder/browser/messaging'
 import { WebSocketServerTransport } from '@/recorder/browser/messaging/transports/webSocketServer'
 import {
@@ -19,6 +22,39 @@ type BrowserExtensionServerEvents = {
   focus: { tab: string }
 }
 
+/**
+ * Reports messages the browser rejected as invalid. A page that breaks the
+ * transport breaks every message it sends, e.g. a script polluting
+ * Array.prototype with toJSON double-encodes the events we receive, so we only
+ * report the first failure instead of flooding Sentry for the whole session.
+ */
+export function createInvalidMessageReporter() {
+  let reported = false
+
+  return (error: z.ZodError) => {
+    if (reported) {
+      return
+    }
+
+    reported = true
+
+    captureMessage('Browser extension client received an invalid message', {
+      level: 'warning',
+      tags: { component: 'browser-extension-messaging' },
+      extra: {
+        // Only zod's issue metadata is safe to send. The message that failed
+        // validation holds recorded user input, including passwords typed into
+        // the page, so never attach the message or any part of it here.
+        issues: error.issues.map((issue) => ({
+          path: issue.path.map(String).join('.'),
+          code: issue.code,
+          message: issue.message,
+        })),
+      },
+    })
+  }
+}
+
 export class BrowserServer extends EventEmitter<BrowserExtensionServerEvents> {
   #client: BrowserExtensionClient
 
@@ -28,7 +64,9 @@ export class BrowserServer extends EventEmitter<BrowserExtensionServerEvents> {
     const transport = await WebSocketServerTransport.create('127.0.0.1', 7554)
 
     return new BrowserServer(
-      new BrowserExtensionClient('studio-server', transport)
+      new BrowserExtensionClient('studio-server', transport, {
+        onInvalidMessage: createInvalidMessageReporter(),
+      })
     )
   }
 
