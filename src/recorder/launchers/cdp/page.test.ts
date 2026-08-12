@@ -121,20 +121,8 @@ function navigateFrame(transport: FakeTransport, url: string) {
   })
 }
 
-function scriptCalls(transport: FakeTransport) {
-  return transport.calls.filter(
-    (call) => call.method === 'Page.addScriptToEvaluateOnNewDocument'
-  )
-}
-
-function evaluateCalls(transport: FakeTransport) {
-  return transport.calls.filter((call) => call.method === 'Runtime.evaluate')
-}
-
-function isolatedWorldCalls(transport: FakeTransport) {
-  return transport.calls.filter(
-    (call) => call.method === 'Page.createIsolatedWorld'
-  )
+function callsTo(transport: FakeTransport, method: string) {
+  return transport.calls.filter((call) => call.method === method)
 }
 
 // Re-injecting the script is asynchronous, so let it settle before asserting.
@@ -181,7 +169,7 @@ describe('Page.attach', () => {
 
       await page.attach({ isInitialTab: true, hasOpener })
 
-      const calls = scriptCalls(transport)
+      const calls = callsTo(transport, 'Page.addScriptToEvaluateOnNewDocument')
 
       expect(calls).toHaveLength(2)
       calls.forEach((call) => {
@@ -296,7 +284,7 @@ describe('document.open', () => {
 
     await openDocument(transport, 'tab-1')
 
-    const worlds = isolatedWorldCalls(transport)
+    const worlds = callsTo(transport, 'Page.createIsolatedWorld')
 
     expect(worlds).toHaveLength(1)
     expect(worlds[0]?.params).toMatchObject({
@@ -306,7 +294,7 @@ describe('document.open', () => {
 
     // The script reads the tab id when it starts up, so the global has to be
     // set before it runs again.
-    const calls = evaluateCalls(transport)
+    const calls = callsTo(transport, 'Runtime.evaluate')
 
     expect(calls).toHaveLength(2)
     expect(calls[0]?.params).toMatchObject({
@@ -326,11 +314,11 @@ describe('document.open', () => {
 
     await openDocument(transport, 'frame-2')
 
-    const worlds = isolatedWorldCalls(transport)
+    const worlds = callsTo(transport, 'Page.createIsolatedWorld')
 
     expect(worlds).toHaveLength(1)
     expect(worlds[0]?.params).toMatchObject({ frameId: 'frame-2' })
-    expect(evaluateCalls(transport)).toHaveLength(2)
+    expect(callsTo(transport, 'Runtime.evaluate')).toHaveLength(2)
   })
 
   it('does not re-inject when the isolated world cannot be created', async () => {
@@ -342,7 +330,7 @@ describe('document.open', () => {
 
     await openDocument(transport, 'tab-1')
 
-    expect(evaluateCalls(transport)).toEqual([])
+    expect(callsTo(transport, 'Runtime.evaluate')).toEqual([])
   })
 
   // The generated CDP client registers its listeners on the shared transport
@@ -359,8 +347,8 @@ describe('document.open', () => {
 
     await openDocument(transport, 'tab-1', 'session-2')
 
-    expect(isolatedWorldCalls(transport)).toEqual([])
-    expect(evaluateCalls(transport)).toEqual([])
+    expect(callsTo(transport, 'Page.createIsolatedWorld')).toEqual([])
+    expect(callsTo(transport, 'Runtime.evaluate')).toEqual([])
   })
 
   it('re-injects for events addressed to its own session', async () => {
@@ -372,7 +360,7 @@ describe('document.open', () => {
 
     await openDocument(transport, 'tab-1', 'session-1')
 
-    expect(isolatedWorldCalls(transport)).toHaveLength(1)
-    expect(evaluateCalls(transport)).toHaveLength(2)
+    expect(callsTo(transport, 'Page.createIsolatedWorld')).toHaveLength(1)
+    expect(callsTo(transport, 'Runtime.evaluate')).toHaveLength(2)
   })
 })

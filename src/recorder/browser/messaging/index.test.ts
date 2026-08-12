@@ -9,19 +9,15 @@ import {
 } from 'vitest'
 import { z } from 'zod/v4'
 
-import { Transport } from './transports/transport'
+import { NullTransport } from './transports/null'
 
 import { BrowserExtensionClient, BrowserExtensionClientOptions } from './index'
 
-class FakeTransport extends Transport {
-  send(): void {}
-
-  /**
-   * Simulates the remote end of the transport sending us a raw envelope.
-   */
-  receive(data: unknown) {
-    this.emit('message', { data })
-  }
+/**
+ * Simulates the remote end of the transport sending us a raw envelope.
+ */
+function receive(transport: NullTransport, data: unknown) {
+  transport.emit('message', { data })
 }
 
 // The shape the in-page recorder sent when a page polluted Array.prototype
@@ -47,7 +43,7 @@ describe('BrowserExtensionClient', () => {
   let consoleError: MockInstance<typeof console.error>
 
   function createClient(options?: BrowserExtensionClientOptions) {
-    const transport = new FakeTransport()
+    const transport = new NullTransport()
     const client = new BrowserExtensionClient('test-client', transport, options)
 
     clients.push(client)
@@ -70,7 +66,7 @@ describe('BrowserExtensionClient', () => {
     const onInvalidMessage = vi.fn<(error: z.ZodError) => void>()
     const { transport } = createClient({ onInvalidMessage })
 
-    transport.receive(doubleEncodedEnvelope)
+    receive(transport, doubleEncodedEnvelope)
 
     expect(onInvalidMessage).toHaveBeenCalledOnce()
 
@@ -88,7 +84,7 @@ describe('BrowserExtensionClient', () => {
   it('logs invalid messages when no callback was given', () => {
     const { transport } = createClient()
 
-    expect(() => transport.receive(doubleEncodedEnvelope)).not.toThrow()
+    expect(() => receive(transport, doubleEncodedEnvelope)).not.toThrow()
     expect(consoleError).toHaveBeenCalledOnce()
   })
 
@@ -99,7 +95,7 @@ describe('BrowserExtensionClient', () => {
 
     client.on('load-events', onLoadEvents)
 
-    transport.receive(validEnvelope)
+    receive(transport, validEnvelope)
 
     expect(onLoadEvents).toHaveBeenCalledOnce()
     expect(onInvalidMessage).not.toHaveBeenCalled()

@@ -1,8 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { BrowserExtensionClient } from '@/recorder/browser/messaging'
-
-import { DEFAULT_SETTINGS, SettingsStorage } from './SettingsProvider'
+import { configureStorage } from '@/recorder/browser/storage'
 
 import { initializeView } from './index'
 
@@ -12,15 +11,6 @@ import { initializeView } from './index'
 vi.mock('./InBrowserControls', () => ({
   InBrowserControls: () => null,
 }))
-
-function createStorage(): SettingsStorage {
-  return {
-    getCurrent: () => DEFAULT_SETTINGS,
-    load: () => Promise.resolve(DEFAULT_SETTINGS),
-    save: () => Promise.resolve(),
-    onUpdate: () => () => {},
-  }
-}
 
 function mountHosts() {
   return [...document.body.children].filter((element) => element.shadowRoot)
@@ -36,22 +26,19 @@ describe('initializeView', () => {
   // no-op. Calling initializeView twice mimics the second copy: the guard is
   // in the DOM (the mount marker), which is all a separate script copy would
   // share with us.
-  it('initializes the in-browser UI only once per document', async () => {
+  it('initializes the in-browser UI only once per document', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const client = new BrowserExtensionClient('test')
 
-    const disposeFirst = initializeView(client, createStorage())
-    const disposeSecond = initializeView(client, createStorage())
+    const disposeFirst = initializeView(client, configureStorage(client))
+    const disposeSecond = initializeView(client, configureStorage(client))
 
     expect(mountHosts()).toHaveLength(1)
     expect(warn).toHaveBeenCalledWith(
       expect.stringContaining('already initialized')
     )
 
-    // Let React's commit settle, then stop the mount observers so nothing
-    // fires into the torn-down test environment.
-    await new Promise((resolve) => setTimeout(resolve, 50))
-
+    // Stop the mount observers before the test environment is torn down.
     disposeFirst()
     disposeSecond()
     warn.mockRestore()
