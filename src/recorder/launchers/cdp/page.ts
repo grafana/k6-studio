@@ -1,21 +1,17 @@
 import logger from 'electron-log/main'
-import { z } from 'zod/v4'
 
 import { NavigateToPageEvent, ReloadPageEvent } from '@/schemas/recording'
-import {
-  ChromeDevToolsClient,
-  Page as CdpPage,
-  Runtime as CdpRuntime,
-} from '@/utils/cdp/client'
+import { ChromeDevToolsClient, Page as CdpPage } from '@/utils/cdp/client'
 import { EventEmitter } from '@/utils/events'
 import { uuid } from '@/utils/uuid'
 
-import { Script } from './script'
+import { RECORDER_WORLD_NAME, Script } from './script'
 
-const ExecutionContextAuxDataSchema = z.object({
-  isDefault: z.boolean(),
-  frameId: z.string(),
-})
+// The recording script reads the tab id from this global when it starts up, so
+// every world it runs in has to have it set.
+function tabIdSource(tabId: string) {
+  return `window.__K6_STUDIO_TAB_ID__ = "${tabId}";`
+}
 
 function toNavigationSource(
   event: CdpPage.FrameStartedNavigatingEvent
@@ -58,10 +54,6 @@ export class Page extends EventEmitter<PageEventMap> {
 
   #requestedNavigation: CdpPage.FrameRequestedNavigationEvent | null = null
   #startedNavigation: CdpPage.FrameStartedNavigatingEvent | null = null
-
-  // The default execution context of each frame in the tab. See the
-  // documentOpened handler for why they are tracked.
-  readonly #contexts = new Map<string, CdpRuntime.ExecutionContextId>()
 
   readonly #disposers: Array<() => void> = []
 
@@ -160,78 +152,30 @@ export class Page extends EventEmitter<PageEventMap> {
       this.#reset()
     })
 
-    // The context and document.open handlers below cannot filter by frame id
-    // like the navigation handlers above: they must handle every frame in the
-    // tab (e.g. a frameset child the parent document.write()s into). They
-    // filter by session instead, because the generated CDP client registers
-    // its listeners on the shared transport without applying its per-session
-    // filter, delivering every tab's events to every Page.
+    // The document.open handler below cannot filter by frame id like the
+    // navigation handlers above: it must handle every frame in the tab (e.g. a
+    // frameset child the parent document.write()s into). It filters by session
+    // instead, because the generated CDP client registers its listeners on the
+    // shared transport without applying its per-session filter, delivering
+    // every tab's events to every Page.
     const isOwnSession = (sessionId: string | undefined) =>
       sessionId === this.#client.sessionId
 
     this.#disposers.push(
-      this.#client.runtime.on(
-        'executionContextCreated',
-        ({ sessionId, data }) => {
-          if (!isOwnSession(sessionId)) {
-            return
-          }
-
-          const auxData = ExecutionContextAuxDataSchema.safeParse(
-            data.context.auxData
-          )
-
-          if (!auxData.success || !auxData.data.isDefault) {
-            return
-          }
-
-          this.#contexts.set(auxData.data.frameId, data.context.id)
-        }
-      ),
-
-      this.#client.runtime.on(
-        'executionContextDestroyed',
-        ({ sessionId, data }) => {
-          if (!isOwnSession(sessionId)) {
-            return
-          }
-
-          for (const [frameId, contextId] of this.#contexts) {
-            if (contextId === data.executionContextId) {
-              this.#contexts.delete(frameId)
-            }
-          }
-        }
-      ),
-
-      this.#client.runtime.on('executionContextsCleared', ({ sessionId }) => {
-        if (!isOwnSession(sessionId)) {
-          return
-        }
-
-        this.#contexts.clear()
-      }),
-
       // A document replaced via document.open() loses the recording script's
       // UI and event listeners, and Chromium does not run scripts registered
-      // with Page.addScriptToEvaluateOnNewDocument again for it. The frame's
-      // execution context survives the replacement, so the script is
-      // evaluated there again. Complements the in-page recovery mechanisms
-      // (monitorDocumentChange and keepMountAtEndOfBody in
-      // src/recorder/browser/view), which cannot survive document.open
-      // because their observers die with the old document.
+      // with Page.addScriptToEvaluateOnNewDocument again for it, so the script
+      // is evaluated again in the frame's isolated world. Complements the
+      // in-page recovery mechanisms (monitorDocumentChange and
+      // keepMountAtEndOfBody in src/recorder/browser/view), which cannot
+      // survive document.open because their observers die with the old
+      // document.
       this.#client.page.on('documentOpened', ({ sessionId, data }) => {
         if (!isOwnSession(sessionId)) {
           return
         }
 
-        const contextId = this.#contexts.get(data.frame.id)
-
-        if (contextId === undefined) {
-          return
-        }
-
-        this.#script.evaluate(this.#client, contextId).catch((error) => {
+        this.#reinjectScript(data.frame.id).catch((error) => {
           logger.warn(
             'Failed to re-inject recording script after document.open:',
             error
@@ -291,7 +235,8 @@ export class Page extends EventEmitter<PageEventMap> {
       this.#client.page.setBypassCSP(true),
 
       this.#client.page.addScriptToEvaluateOnNewDocument({
-        source: `window.__K6_STUDIO_TAB_ID__ = "${this.#id}";`,
+        source: tabIdSource(this.#id),
+        worldName: RECORDER_WORLD_NAME,
         runImmediately,
       }),
       this.#script.inject(this.#client, runImmediately),
@@ -336,6 +281,25 @@ export class Page extends EventEmitter<PageEventMap> {
         tab: this.#id,
       },
     })
+  }
+
+  /**
+   * Runs the recording script in the frame's isolated world again. The world
+   * outlives the document it was created for, and `Page.createIsolatedWorld`
+   * returns it when it is still around and creates it otherwise.
+   */
+  async #reinjectScript(frameId: string) {
+    const { executionContextId } = await this.#client.page.createIsolatedWorld({
+      frameId,
+      worldName: RECORDER_WORLD_NAME,
+    })
+
+    await this.#client.runtime.evaluate({
+      expression: tabIdSource(this.#id),
+      contextId: executionContextId,
+    })
+
+    await this.#script.evaluate(this.#client, executionContextId)
   }
 
   navigateTo(url: string) {
