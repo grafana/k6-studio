@@ -56,8 +56,8 @@ const disposers: Array<() => void> = []
 // top frame. Child frames instead forward element inspection to the top
 // frame's inspector.
 if (isInFrame()) {
-  attachInspectionDetection()
-  attachTextSelectionDetection()
+  disposers.push(attachInspectionDetection())
+  disposers.push(attachTextSelectionDetection())
 } else {
   disposers.push(trackTabFocus(client))
   disposers.push(initializeView(client, storage))

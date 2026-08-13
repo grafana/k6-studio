@@ -91,7 +91,7 @@ export function readSelection(
  * element reference passes across the boundary).
  */
 export function attachInspectionDetection() {
-  document.addEventListener('mouseover', (event) => {
+  function handleMouseOver(event: MouseEvent) {
     const bridge = getBridge()
 
     if (bridge === undefined) {
@@ -109,37 +109,41 @@ export function attachInspectionDetection() {
     // instead so a prior highlight can't linger over it (this also avoids an
     // expensive selector computation on the often deeply nested iframe element).
     bridge.hover(isHTMLIFrameElement(target) ? null : target)
-  })
+  }
 
-  document.addEventListener(
-    'click',
-    (event) => {
-      const bridge = getBridge()
+  function handleClick(event: MouseEvent) {
+    const bridge = getBridge()
 
-      if (bridge === undefined) {
-        return
-      }
+    if (bridge === undefined) {
+      return
+    }
 
-      const [target] = event.composedPath()
+    const [target] = event.composedPath()
 
-      if (!isElement(target)) {
-        return
-      }
+    if (!isElement(target)) {
+      return
+    }
 
-      // The inspector is active, so swallow the page click and pick instead.
-      event.preventDefault()
-      event.stopPropagation()
+    // The inspector is active, so swallow the page click and pick instead.
+    event.preventDefault()
+    event.stopPropagation()
 
-      // Don't pick the iframe element itself; the inspector inside it picks the
-      // real element under the cursor.
-      if (isHTMLIFrameElement(target)) {
-        return
-      }
+    // Don't pick the iframe element itself; the inspector inside it picks the
+    // real element under the cursor.
+    if (isHTMLIFrameElement(target)) {
+      return
+    }
 
-      bridge.pick(target, event.clientX, event.clientY)
-    },
-    { capture: true }
-  )
+    bridge.pick(target, event.clientX, event.clientY)
+  }
+
+  document.addEventListener('mouseover', handleMouseOver)
+  document.addEventListener('click', handleClick, { capture: true })
+
+  return () => {
+    document.removeEventListener('mouseover', handleMouseOver)
+    document.removeEventListener('click', handleClick, { capture: true })
+  }
 }
 
 /**
@@ -150,13 +154,13 @@ export function attachInspectionDetection() {
 export function attachTextSelectionDetection() {
   let isSelecting = false
 
-  document.addEventListener('selectstart', () => {
+  function handleSelectStart() {
     if (getTextSelectionBridge() !== undefined) {
       isSelecting = true
     }
-  })
+  }
 
-  document.addEventListener('mouseup', () => {
+  function handleMouseUp() {
     if (!isSelecting) {
       return
     }
@@ -174,5 +178,13 @@ export function attachTextSelectionDetection() {
     if (selection !== null) {
       bridge.select(selection.range, selection.commonAncestor)
     }
-  })
+  }
+
+  document.addEventListener('selectstart', handleSelectStart)
+  document.addEventListener('mouseup', handleMouseUp)
+
+  return () => {
+    document.removeEventListener('selectstart', handleSelectStart)
+    document.removeEventListener('mouseup', handleMouseUp)
+  }
 }
