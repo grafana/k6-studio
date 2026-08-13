@@ -9,55 +9,11 @@ import { BrowserExtensionClient } from '@/recorder/browser/messaging'
 import { ErrorBoundary } from './ErrorBoundary'
 import { GlobalStyles } from './GlobalStyles'
 import { InBrowserControls } from './InBrowserControls'
+import { monitorDocumentChange } from './monitor'
 import { createMount, isDocumentMounted, removeStaleMounts } from './mount'
 import { SettingsProvider, SettingsStorage } from './SettingsProvider'
 import { StudioClientProvider } from './StudioClientProvider'
 import { isUsingTool } from './utils'
-
-// When using CDP, some pages will open with an empty document with readyState "completed"
-// the first time that a page is loaded. This means our UI is injected into the empty document,
-// then the document is replaced with the actual content, making our UI disappear.
-//
-// It's not entirely clear why this happens and there doesn't seem to be any events firing that
-// we can rely on. So instead, we use use a brute-force polling mechanism to monitor if the document
-// reference changes during the opening stages of the page. It's not pretty but it works.
-//
-// This covers only the initial empty-document swap (a navigation commit that
-// replaces the Document object). The other way a page loses our UI is
-// document.open(), which reuses the same Document object and so is invisible
-// to this poll; that case is handled from the main process, which re-injects
-// the whole script on CDP's Page.documentOpened event (see the documentOpened
-// handler in src/recorder/launchers/cdp/page.ts).
-function monitorDocumentChange(onChange: () => void) {
-  // During this short period of time the document will have the URL "about:blank", so if it's
-  // different then we can skip this check entirely.
-  if (document.location.href !== 'about:blank') {
-    return
-  }
-
-  const abortController = new AbortController()
-  const currentDocument = document
-
-  setTimeout(function checkDocumentInstance() {
-    if (abortController.signal.aborted) {
-      return
-    }
-
-    if (document === currentDocument) {
-      setTimeout(checkDocumentInstance, 1)
-
-      return
-    }
-
-    onChange()
-  }, 1)
-
-  // We only need to monitor the first few seconds or so. If nothing has changed
-  // by then, there's no point in wasting CPU cycles.
-  setTimeout(() => {
-    abortController.abort()
-  }, 5000)
-}
 
 // We use a MutationObservers to try and load the UI as soon as the body
 // element has been added. Otherwise we have to wait for content to be
@@ -235,7 +191,7 @@ export function initializeView(
     }
   }
 
-  monitorDocumentChange(() => {
+  const stopMonitoring = monitorDocumentChange(() => {
     console.log('Document instance changed, re-initializing UI.')
 
     disposeReinitialized = initializeView(client, storage)
@@ -349,6 +305,14 @@ export function initializeView(
     // Cancels an initialization that hasn't happened yet (initialize() bails
     // once the controller is aborted) and tears down one that has.
     abortController.abort()
+
+    // The monitor runs on its own controller, because the one above is aborted
+    // by initialize() as its single-initialization latch, long before the
+    // empty-document swap the monitor waits for. Stopping it here, before the
+    // teardown below, keeps a late poll from re-initializing a view whose
+    // dispose handle would land in this dead copy's disposeReinitialized.
+    stopMonitoring()
+
     disposeInitialized()
     disposeReinitialized()
   }

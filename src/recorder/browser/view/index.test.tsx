@@ -12,6 +12,14 @@ vi.mock('./InBrowserControls', () => ({
   InBrowserControls: () => null,
 }))
 
+const { stopMonitoring } = vi.hoisted(() => ({ stopMonitoring: vi.fn() }))
+
+// The monitor keeps polling on its own timers, so whether dispose stops it is
+// only visible from the outside.
+vi.mock('./monitor', () => ({
+  monitorDocumentChange: () => stopMonitoring,
+}))
+
 function mountHosts() {
   return [...document.body.children].filter((element) => element.shadowRoot)
 }
@@ -48,6 +56,7 @@ describe('initializeView', () => {
 
   afterEach(() => {
     cleanup()
+    stopMonitoring.mockClear()
   })
 
   // The same document can be initialized from more than one copy of the
@@ -115,5 +124,21 @@ describe('initializeView', () => {
     expect(context.warn).not.toHaveBeenCalledWith(
       expect.stringContaining('already initialized')
     )
+  })
+
+  // The monitor re-initializes the view when the document is swapped, so a
+  // monitor that outlives its view starts a second view from the disposed
+  // copy's closure. That view's dispose handle is then held by a copy nobody
+  // calls again, and the mount guard blocks every later injection for good.
+  it('stops monitoring for a document change when disposed', () => {
+    const context = setup()
+
+    cleanup = context.cleanup
+
+    const dispose = context.initialize()
+
+    dispose()
+
+    expect(stopMonitoring).toHaveBeenCalled()
   })
 })
