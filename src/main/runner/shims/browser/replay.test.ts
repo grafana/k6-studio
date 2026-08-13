@@ -272,7 +272,7 @@ describe('session replay in-page script', () => {
     expect(vi.mocked(record)).not.toHaveBeenCalled()
   })
 
-  // Prototype.js 1.6 (still served by legacy intranets) predates native JSON
+  // Prototype.js 1.6 (still served by legacy sites) predates native JSON
   // and adds toJSON methods that return already-serialized text to the shared
   // prototypes. JSON.stringify honors them, double-encoding every array and
   // string, and the tracking server then rejects the whole batch: the replay
