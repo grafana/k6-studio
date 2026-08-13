@@ -27,6 +27,32 @@ const POLLUTABLE_PROTOTYPES: object[] = [
 ]
 
 /**
+ * Keeps `Array.from` native for the page's lifetime. Pre-JSON frameworks like
+ * Prototype.js 1.6 replace it with a version that ignores the map function
+ * argument, which breaks rrweb's stylesheet inlining
+ * (`Array.from(rules, stringifyRule).join('')` joins raw CSSRule objects into
+ * "[object CSSStyleRule]...") and renders every replay unstyled. This script
+ * runs before any page script, so the native is still available to pin. The
+ * setter silently ignores the page's later assignment: such frameworks call
+ * their own helper internally and only alias it onto `Array.from`, so the
+ * page keeps working.
+ */
+function pinNativeArrayFrom() {
+  const nativeFrom = Array.from
+
+  try {
+    Object.defineProperty(Array, 'from', {
+      configurable: false,
+      get: () => nativeFrom,
+      set: () => {},
+    })
+  } catch {
+    // Not configurable: either already pinned by another copy of this script
+    // or locked down by the page. Nothing to do either way.
+  }
+}
+
+/**
  * JSON.stringify that ignores toJSON methods the page added to the shared
  * prototypes. Pre-JSON frameworks like Prototype.js 1.6 add toJSON methods
  * that return already-serialized text, which double-encodes every array and
@@ -80,6 +106,8 @@ function createPageId() {
 // Events are buffered here and pulled from the k6 process, see the drain
 // function in replayDrain.ts for why they can't be pushed with fetch.
 if (trackingServerUrl !== null && isTopLevelFrame()) {
+  pinNativeArrayFrom()
+
   const pageId = createPageId()
 
   // The k6 side serializes pulls per page and needs a stable id for that: the

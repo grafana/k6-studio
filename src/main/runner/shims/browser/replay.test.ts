@@ -340,5 +340,37 @@ describe('session replay in-page script', () => {
         unpollute()
       }
     })
+
+    // Prototype.js also replaces Array.from with a version that ignores the
+    // map function argument. rrweb inlines stylesheets with
+    // Array.from(rules, stringifyRule).join(''), which then joins raw CSSRule
+    // objects into "[object CSSStyleRule]..." and every replay renders
+    // unstyled. The script runs before page scripts, so it pins the native
+    // Array.from against later replacement.
+    it('keeps Array.from working when the page later replaces it', async () => {
+      const nativeFrom = Array.from
+
+      await importReplayScript()
+
+      try {
+        // What Prototype 1.6 does: a replacement that drops the map function.
+        const brokenFrom = (arrayLike: ArrayLike<unknown>) =>
+          nativeFrom(arrayLike)
+
+        // Plain assignment like Prototype's `Array.from = $A`. Must neither
+        // throw nor take effect.
+        expect(() => {
+          Object.assign(Array, { from: brokenFrom })
+        }).not.toThrow()
+
+        expect(Array.from([1, 2], (value) => value * 2)).toEqual([2, 4])
+      } finally {
+        Reflect.defineProperty(Array, 'from', {
+          value: nativeFrom,
+          writable: true,
+          configurable: true,
+        })
+      }
+    })
   })
 })
