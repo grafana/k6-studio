@@ -32,7 +32,7 @@ function monitorDocumentChange(onChange: () => void) {
   // During this short period of time the document will have the URL "about:blank", so if it's
   // different then we can skip this check entirely.
   if (document.location.href !== 'about:blank') {
-    return
+    return () => {}
   }
 
   const abortController = new AbortController()
@@ -57,6 +57,10 @@ function monitorDocumentChange(onChange: () => void) {
   setTimeout(() => {
     abortController.abort()
   }, 5000)
+
+  return () => {
+    abortController.abort()
+  }
 }
 
 // We use a MutationObservers to try and load the UI as soon as the body
@@ -235,7 +239,7 @@ export function initializeView(
     }
   }
 
-  monitorDocumentChange(() => {
+  const disposeMonitorDocumentChange = monitorDocumentChange(() => {
     console.log('Document instance changed, re-initializing UI.')
 
     disposeReinitialized = initializeView(client, storage)
@@ -349,6 +353,7 @@ export function initializeView(
     // Cancels an initialization that hasn't happened yet (initialize() bails
     // once the controller is aborted) and tears down one that has.
     abortController.abort()
+    disposeMonitorDocumentChange()
     disposeInitialized()
     disposeReinitialized()
   }
