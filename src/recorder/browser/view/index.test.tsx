@@ -92,4 +92,28 @@ describe('initializeView', () => {
     expect(mountHosts()).toHaveLength(1)
     expect(staleMount.isConnected).toBe(false)
   })
+
+  // When two copies of the script land in the same document, the second one
+  // disposes the first copy's view before initializing its own (see the
+  // runtime handover in src/recorder/browser/index.ts). The disposed view must
+  // leave nothing behind that the mount guard would mistake for a live UI,
+  // otherwise that document never gets its toolbar back.
+  it('mounts again after a previous initialization was disposed', () => {
+    const context = setup()
+
+    cleanup = context.cleanup
+
+    const dispose = context.initialize()
+    const [disposedHost] = mountHosts()
+
+    dispose()
+
+    context.initialize()
+
+    expect(mountHosts()).toHaveLength(1)
+    expect(disposedHost?.isConnected).toBe(false)
+    expect(context.warn).not.toHaveBeenCalledWith(
+      expect.stringContaining('already initialized')
+    )
+  })
 })

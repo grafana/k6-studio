@@ -40,7 +40,8 @@ function findMounts() {
 /**
  * Creates the element that hosts the recorder UI inside the recorded page and
  * defends it against the page's own DOM manipulation. Returns the mount and a
- * dispose function that stops the defending observers.
+ * dispose function that stops the defending observers and takes the mount back
+ * out of the document.
  */
 export function createMount() {
   const mount = document.createElement('div')
@@ -70,6 +71,13 @@ export function createMount() {
     dispose: () => {
       stopKeepingAtEndOfBody()
       attributeObserver.disconnect()
+
+      // The shadow root cannot be detached, so a disposed mount left in the
+      // document would still pass isDocumentMounted and block the next copy of
+      // the script from mounting a working UI. Its position observer is gone
+      // too, so the page could also drift it away from the end of the body and
+      // skew generated selectors.
+      mount.remove()
     },
   }
 }

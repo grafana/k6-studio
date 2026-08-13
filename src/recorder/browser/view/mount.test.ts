@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { keepMountAtEndOfBody } from './mount'
+import { createMount, isDocumentMounted, keepMountAtEndOfBody } from './mount'
 
 let dispose: (() => void) | null = null
 
@@ -73,5 +73,21 @@ describe('keepMountAtEndOfBody', () => {
     await new Promise((resolve) => setTimeout(resolve, 0))
 
     expect(document.body.contains(mount)).toBe(false)
+  })
+})
+
+describe('createMount', () => {
+  it('removes the mount from the document when disposed', () => {
+    const { mount, dispose } = createMount()
+
+    // view/index.tsx attaches the shadow root that holds the UI, and a shadow
+    // root cannot be detached again. A disposed mount left in the document
+    // would keep passing for a live UI and block the next injection.
+    mount.attachShadow({ mode: 'open' })
+
+    dispose()
+
+    expect(isDocumentMounted()).toBe(false)
+    expect(mount.isConnected).toBe(false)
   })
 })
