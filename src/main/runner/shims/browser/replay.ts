@@ -16,6 +16,50 @@ declare global {
 
 const trackingServerUrl = window.__K6_SESSION_REPLAY_TRACKING_SERVER_URL__
 
+// None of these have a toJSON method natively, so one found there is the
+// page's (Date is left alone: its toJSON is native and JSON-compatible).
+const POLLUTABLE_PROTOTYPES: object[] = [
+  Array.prototype,
+  String.prototype,
+  Number.prototype,
+  Boolean.prototype,
+  Object.prototype,
+]
+
+/**
+ * JSON.stringify that ignores toJSON methods the page added to the shared
+ * prototypes. Pre-JSON frameworks like Prototype.js 1.6 add toJSON methods
+ * that return already-serialized text, which double-encodes every array and
+ * string in the batch and gets it rejected by the tracking server. This runs
+ * in the page's own world (the k6 browser module can only inject there), so
+ * the pollution can't be avoided, only sidestepped: the methods are removed
+ * for the duration of the (synchronous) stringify and restored right after,
+ * so the page never observes the gap.
+ */
+function stringifyIgnoringPageToJSON(value: unknown): string {
+  const removed: Array<{ prototype: object; descriptor: PropertyDescriptor }> =
+    []
+
+  for (const prototype of POLLUTABLE_PROTOTYPES) {
+    const descriptor = Reflect.getOwnPropertyDescriptor(prototype, 'toJSON')
+
+    if (
+      descriptor !== undefined &&
+      Reflect.deleteProperty(prototype, 'toJSON')
+    ) {
+      removed.push({ prototype, descriptor })
+    }
+  }
+
+  try {
+    return JSON.stringify(value)
+  } finally {
+    for (const { prototype, descriptor } of removed) {
+      Reflect.defineProperty(prototype, 'toJSON', descriptor)
+    }
+  }
+}
+
 function isTopLevelFrame() {
   try {
     return window.parent === window
@@ -87,7 +131,7 @@ if (trackingServerUrl !== null && isTopLevelFrame()) {
     // Serialized here so the k6 runtime receives a single string instead of
     // rebuilding the whole event graph on its side. JSON.stringify escapes
     // newlines, which keeps the two header separators unambiguous.
-    return `${pageId}\n${nextBatchId}\n${JSON.stringify(events)}`
+    return `${pageId}\n${nextBatchId}\n${stringifyIgnoringPageToJSON(events)}`
   }
 
   record({

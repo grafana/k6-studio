@@ -271,4 +271,74 @@ describe('session replay in-page script', () => {
     expect(replayWindow.__K6_DRAIN_EVENTS__).toBeUndefined()
     expect(vi.mocked(record)).not.toHaveBeenCalled()
   })
+
+  // Prototype.js 1.6 (still served by legacy intranets) predates native JSON
+  // and adds toJSON methods that return already-serialized text to the shared
+  // prototypes. JSON.stringify honors them, double-encoding every array and
+  // string, and the tracking server then rejects the whole batch: the replay
+  // shows up blank while the test itself passes.
+  describe('on a page that pollutes prototypes with toJSON', () => {
+    function pollute() {
+      // What Prototype 1.6.0.3 does, reduced to the serialization behavior.
+      Object.defineProperty(Array.prototype, 'toJSON', {
+        value: function toJSON(this: unknown[]) {
+          return `[${this.map((item) => JSON.stringify(item)).join(', ')}]`
+        },
+        writable: true,
+        configurable: true,
+      })
+      Object.defineProperty(String.prototype, 'toJSON', {
+        value: function toJSON(this: string) {
+          return `"${this.toString()}"`
+        },
+        writable: true,
+        configurable: true,
+      })
+
+      return function restore() {
+        Reflect.deleteProperty(Array.prototype, 'toJSON')
+        Reflect.deleteProperty(String.prototype, 'toJSON')
+      }
+    }
+
+    it('still serializes the batch as an array of events', async () => {
+      const unpollute = pollute()
+
+      try {
+        await importReplayScript()
+
+        emitEvent(createEvent(1, { text: 'typed into the page' }))
+
+        const batch = drainedBatch()
+
+        expect(Array.isArray(batch.events)).toBe(true)
+        expect(batch.events).toContainEqual(
+          createEvent(1, { text: 'typed into the page' })
+        )
+      } finally {
+        unpollute()
+      }
+    })
+
+    it('leaves the page pollution in place after draining', async () => {
+      const unpollute = pollute()
+
+      try {
+        await importReplayScript()
+
+        drain()
+
+        // The page's own code relies on its patched prototypes, so the drain
+        // must put them back exactly as they were.
+        expect(
+          Object.getOwnPropertyDescriptor(Array.prototype, 'toJSON')
+        ).toBeDefined()
+        expect(
+          Object.getOwnPropertyDescriptor(String.prototype, 'toJSON')
+        ).toBeDefined()
+      } finally {
+        unpollute()
+      }
+    })
+  })
 })
