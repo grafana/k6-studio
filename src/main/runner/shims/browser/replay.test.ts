@@ -1,6 +1,6 @@
 import { EventType } from '@rrweb/types'
 import { record } from 'rrweb'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { parseReplayEvent } from '../../rrweb'
 import { BrowserReplayEvent } from '../../schema'
@@ -278,7 +278,7 @@ describe('session replay in-page script', () => {
   // string, and the tracking server then rejects the whole batch: the replay
   // shows up blank while the test itself passes.
   describe('on a page that pollutes prototypes with toJSON', () => {
-    function pollute() {
+    beforeEach(() => {
       // What Prototype 1.6.0.3 does, reduced to the serialization behavior.
       Object.defineProperty(Array.prototype, 'toJSON', {
         value: function toJSON(this: unknown[]) {
@@ -287,6 +287,8 @@ describe('session replay in-page script', () => {
         writable: true,
         configurable: true,
       })
+      // String pollution stays untouched by the drain: JSON.stringify only
+      // consults it for boxed strings, which never enter the event graph.
       Object.defineProperty(String.prototype, 'toJSON', {
         value: function toJSON(this: string) {
           return `"${this.toString()}"`
@@ -294,83 +296,57 @@ describe('session replay in-page script', () => {
         writable: true,
         configurable: true,
       })
+    })
 
-      return function restore() {
-        Reflect.deleteProperty(Array.prototype, 'toJSON')
-        Reflect.deleteProperty(String.prototype, 'toJSON')
-      }
-    }
+    afterEach(() => {
+      Reflect.deleteProperty(Array.prototype, 'toJSON')
+      Reflect.deleteProperty(String.prototype, 'toJSON')
+    })
 
     it('still serializes the batch as an array of events', async () => {
-      const unpollute = pollute()
+      await importReplayScript()
 
-      try {
-        await importReplayScript()
+      emitEvent(createEvent(1, { text: 'typed into the page' }))
 
-        emitEvent(createEvent(1, { text: 'typed into the page' }))
+      const batch = drainedBatch()
 
-        const batch = drainedBatch()
-
-        expect(Array.isArray(batch.events)).toBe(true)
-        expect(batch.events).toContainEqual(
-          createEvent(1, { text: 'typed into the page' })
-        )
-      } finally {
-        unpollute()
-      }
+      expect(Array.isArray(batch.events)).toBe(true)
+      expect(batch.events).toContainEqual(
+        createEvent(1, { text: 'typed into the page' })
+      )
     })
 
     it('leaves the page pollution in place after draining', async () => {
-      const unpollute = pollute()
+      await importReplayScript()
 
-      try {
-        await importReplayScript()
+      drain()
 
-        drain()
-
-        // The page's own code relies on its patched prototypes, so the drain
-        // must put them back exactly as they were.
-        expect(
-          Object.getOwnPropertyDescriptor(Array.prototype, 'toJSON')
-        ).toBeDefined()
-        expect(
-          Object.getOwnPropertyDescriptor(String.prototype, 'toJSON')
-        ).toBeDefined()
-      } finally {
-        unpollute()
-      }
+      // The page's own code relies on its patched prototypes, so the drain
+      // must put them back exactly as they were.
+      expect(
+        Object.getOwnPropertyDescriptor(Array.prototype, 'toJSON')
+      ).toBeDefined()
+      expect(
+        Object.getOwnPropertyDescriptor(String.prototype, 'toJSON')
+      ).toBeDefined()
     })
 
     // Prototype.js also replaces Array.from with a version that ignores the
     // map function argument. rrweb inlines stylesheets with
     // Array.from(rules, stringifyRule).join(''), which then joins raw CSSRule
     // objects into "[object CSSStyleRule]..." and every replay renders
-    // unstyled. The script runs before page scripts, so it pins the native
-    // Array.from against later replacement.
+    // unstyled. The script pins Array.from against later replacement.
     it('keeps Array.from working when the page later replaces it', async () => {
-      const nativeFrom = Array.from
-
       await importReplayScript()
 
-      try {
-        // What Prototype 1.6 does: a replacement that drops the map function.
-        const brokenFrom = (arrayLike: ArrayLike<unknown>) =>
-          nativeFrom(arrayLike)
+      // Plain assignment like Prototype's `Array.from = $A`, replacing it
+      // with a version that drops the map function. Must neither throw nor
+      // take effect.
+      expect(() => {
+        Object.assign(Array, { from: () => [] })
+      }).not.toThrow()
 
-        // Plain assignment like Prototype's `Array.from = $A`. Must neither
-        // throw nor take effect.
-        expect(() => {
-          Object.assign(Array, { from: brokenFrom })
-        }).not.toThrow()
-
-        expect(Array.from([1, 2], (value) => value * 2)).toEqual([2, 4])
-      } finally {
-        Reflect.defineProperty(Array, 'from', {
-          value: nativeFrom,
-          writable: true,
-          configurable: true,
-        })
-      }
+      expect(Array.from([1, 2], (value) => value * 2)).toEqual([2, 4])
     })
   })
 })

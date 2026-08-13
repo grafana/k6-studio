@@ -16,43 +16,39 @@ declare global {
 
 const trackingServerUrl = window.__K6_SESSION_REPLAY_TRACKING_SERVER_URL__
 
-// None of these have a toJSON method natively, so one found there is the
-// page's. Date is excluded even though Prototype.js replaces its toJSON too:
-// no Date instances ever enter the event graph (timestamps are numbers), and
-// deleting Date's toJSON on pages that leave it native would turn dates
-// into {}.
-const POLLUTABLE_PROTOTYPES: object[] = [
-  Array.prototype,
-  String.prototype,
-  Number.prototype,
-  Boolean.prototype,
-  Object.prototype,
-]
+// JSON.stringify consults toJSON on object values only, and rrweb event
+// graphs are plain objects, arrays, and primitives, so these two are the only
+// prototypes whose pollution can reach the payload (String, Number, and
+// Boolean toJSON fire for boxed primitives only, and Date instances never
+// enter the graph). Neither has a toJSON natively, so one found there is the
+// page's.
+const POLLUTABLE_PROTOTYPES: object[] = [Array.prototype, Object.prototype]
 
 /**
- * Keeps `Array.from` native for the page's lifetime. Pre-JSON frameworks like
- * Prototype.js 1.6 replace it with a version that ignores the map function
- * argument, which breaks rrweb's stylesheet inlining
+ * Keeps `Array.from` working for the page's lifetime. Pre-JSON frameworks
+ * like Prototype.js 1.6 replace it with a version that ignores the map
+ * function argument, which breaks rrweb's stylesheet inlining
  * (`Array.from(rules, stringifyRule).join('')` joins raw CSSRule objects into
- * "[object CSSStyleRule]...") and renders every replay unstyled. This script
- * runs before any page script, so the native is still available to pin. The
- * setter silently ignores the page's later assignment: such frameworks call
- * their own helper internally and only alias it onto `Array.from`, so the
- * page keeps working.
+ * "[object CSSStyleRule]...") and renders every replay unstyled. The pin
+ * captures whatever `Array.from` is when this script starts: the native at
+ * document_start, or on popup re-injection (evaluated after page scripts,
+ * see sessionReplay.ts) the native that rrweb's module-eval guard just
+ * recovered from a clean iframe. That guard is one-shot, so only the pin
+ * covers pages that replace `Array.from` after load. The setter silently
+ * discards such replacements: these frameworks call their own helper
+ * internally and only alias it onto `Array.from`, so the page keeps working
+ * (and rrweb's recovery assignment no-ops the same way).
  */
 function pinNativeArrayFrom() {
   const nativeFrom = Array.from
 
-  try {
-    Object.defineProperty(Array, 'from', {
-      configurable: false,
-      get: () => nativeFrom,
-      set: () => {},
-    })
-  } catch {
-    // Not configurable: either already pinned by another copy of this script
-    // or locked down by the page. Nothing to do either way.
-  }
+  // Fails only when another copy of this script already pinned it or the
+  // page locked the property down. Nothing to do either way.
+  Reflect.defineProperty(Array, 'from', {
+    configurable: false,
+    get: () => nativeFrom,
+    set: () => {},
+  })
 }
 
 /**
