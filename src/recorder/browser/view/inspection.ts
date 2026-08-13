@@ -91,25 +91,32 @@ export function readSelection(
  * element reference passes across the boundary).
  */
 export function attachInspectionDetection() {
-  document.addEventListener('mouseover', (event) => {
-    const bridge = getBridge()
+  const abortController = new AbortController()
+  const { signal } = abortController
 
-    if (bridge === undefined) {
-      return
-    }
+  document.addEventListener(
+    'mouseover',
+    (event) => {
+      const bridge = getBridge()
 
-    const [target] = event.composedPath()
+      if (bridge === undefined) {
+        return
+      }
 
-    if (!isElement(target)) {
-      return
-    }
+      const [target] = event.composedPath()
 
-    // The inspector running inside the iframe reports the actual element under
-    // the cursor, so don't highlight the iframe element itself; clear the hover
-    // instead so a prior highlight can't linger over it (this also avoids an
-    // expensive selector computation on the often deeply nested iframe element).
-    bridge.hover(isHTMLIFrameElement(target) ? null : target)
-  })
+      if (!isElement(target)) {
+        return
+      }
+
+      // The inspector running inside the iframe reports the actual element under
+      // the cursor, so don't highlight the iframe element itself; clear the hover
+      // instead so a prior highlight can't linger over it (this also avoids an
+      // expensive selector computation on the often deeply nested iframe element).
+      bridge.hover(isHTMLIFrameElement(target) ? null : target)
+    },
+    { signal }
+  )
 
   document.addEventListener(
     'click',
@@ -138,8 +145,10 @@ export function attachInspectionDetection() {
 
       bridge.pick(target, event.clientX, event.clientY)
     },
-    { capture: true }
+    { capture: true, signal }
   )
+
+  return () => abortController.abort()
 }
 
 /**
@@ -148,31 +157,44 @@ export function attachInspectionDetection() {
  * is read here and forwarded to the top frame.
  */
 export function attachTextSelectionDetection() {
+  const abortController = new AbortController()
+  const { signal } = abortController
+
   let isSelecting = false
 
-  document.addEventListener('selectstart', () => {
-    if (getTextSelectionBridge() !== undefined) {
-      isSelecting = true
-    }
-  })
+  document.addEventListener(
+    'selectstart',
+    () => {
+      if (getTextSelectionBridge() !== undefined) {
+        isSelecting = true
+      }
+    },
+    { signal }
+  )
 
-  document.addEventListener('mouseup', () => {
-    if (!isSelecting) {
-      return
-    }
+  document.addEventListener(
+    'mouseup',
+    () => {
+      if (!isSelecting) {
+        return
+      }
 
-    isSelecting = false
+      isSelecting = false
 
-    const bridge = getTextSelectionBridge()
+      const bridge = getTextSelectionBridge()
 
-    if (bridge === undefined) {
-      return
-    }
+      if (bridge === undefined) {
+        return
+      }
 
-    const selection = readSelection(document)
+      const selection = readSelection(document)
 
-    if (selection !== null) {
-      bridge.select(selection.range, selection.commonAncestor)
-    }
-  })
+      if (selection !== null) {
+        bridge.select(selection.range, selection.commonAncestor)
+      }
+    },
+    { signal }
+  )
+
+  return () => abortController.abort()
 }

@@ -10,6 +10,11 @@ const trackTabFocus = vi.fn()
 const disposeTabFocus = vi.fn()
 const startRecording = vi.fn()
 const disposeRecording = vi.fn()
+const isInFrame = vi.fn<() => boolean>()
+const attachInspectionDetection = vi.fn<() => () => void>()
+const disposeInspection = vi.fn()
+const attachTextSelectionDetection = vi.fn<() => () => void>()
+const disposeTextSelection = vi.fn()
 
 vi.mock('./routing', () => ({
   createClient: () => createClient() as never,
@@ -29,8 +34,11 @@ vi.mock('./recording', () => ({
     startRecording(client, storage) as never,
 }))
 vi.mock('./view/inspection', () => ({
-  attachInspectionDetection: () => {},
-  attachTextSelectionDetection: () => {},
+  attachInspectionDetection: () => attachInspectionDetection(),
+  attachTextSelectionDetection: () => attachTextSelectionDetection(),
+}))
+vi.mock('./utils', () => ({
+  isInFrame: () => isInFrame(),
 }))
 
 async function runEntrypoint() {
@@ -50,6 +58,9 @@ describe('recorder entrypoint', () => {
     initializeView.mockReturnValue(disposeView)
     trackTabFocus.mockReturnValue(disposeTabFocus)
     startRecording.mockReturnValue(disposeRecording)
+    isInFrame.mockReturnValue(false)
+    attachInspectionDetection.mockReturnValue(disposeInspection)
+    attachTextSelectionDetection.mockReturnValue(disposeTextSelection)
   })
 
   it('creates the runtime and remembers it on the window', async () => {
@@ -112,6 +123,24 @@ describe('recorder entrypoint', () => {
 
     expect(disposeView).toHaveBeenCalledOnce()
     expect(disposeTabFocus).toHaveBeenCalledOnce()
+    expect(disposeRecording).toHaveBeenCalledOnce()
+  })
+
+  // Child frames run inspection detection instead of the recorder UI. Its
+  // listeners survive a same-document race just like the recording ones, so
+  // they have to be torn down by the copy that replaces this one.
+  it('disposes child-frame detection along with the rest of the document', async () => {
+    isInFrame.mockReturnValue(true)
+
+    await runEntrypoint()
+
+    expect(trackTabFocus).not.toHaveBeenCalled()
+    expect(initializeView).not.toHaveBeenCalled()
+
+    window.__K6_STUDIO_RECORDER_RUNTIME__?.disposeDocument()
+
+    expect(disposeInspection).toHaveBeenCalledOnce()
+    expect(disposeTextSelection).toHaveBeenCalledOnce()
     expect(disposeRecording).toHaveBeenCalledOnce()
   })
 })
