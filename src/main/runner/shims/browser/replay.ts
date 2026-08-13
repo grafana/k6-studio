@@ -17,7 +17,10 @@ declare global {
 const trackingServerUrl = window.__K6_SESSION_REPLAY_TRACKING_SERVER_URL__
 
 // None of these have a toJSON method natively, so one found there is the
-// page's (Date is left alone: its toJSON is native and JSON-compatible).
+// page's. Date is excluded even though Prototype.js replaces its toJSON too:
+// no Date instances ever enter the event graph (timestamps are numbers), and
+// deleting Date's toJSON on pages that leave it native would turn dates
+// into {}.
 const POLLUTABLE_PROTOTYPES: object[] = [
   Array.prototype,
   String.prototype,
