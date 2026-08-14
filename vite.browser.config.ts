@@ -5,7 +5,7 @@ import { defineConfig, type ConfigEnv, type UserConfig } from 'vite'
 // https://vitejs.dev/config
 export default defineConfig((env) => {
   const forgeEnv = env as ConfigEnv<'renderer'>
-  const { root, mode } = forgeEnv
+  const { root, mode, command } = forgeEnv
   const nodeEnv = process.env.NODE_ENV || 'production'
 
   return {
@@ -25,7 +25,12 @@ export default defineConfig((env) => {
     build: {
       target: 'esnext',
       outDir: `resources/browser`,
-      sourcemap: 'inline',
+      // Inline only in dev: the bundle is evaluated from a string, so a
+      // separate .js.map with a relative sourceMappingURL could never resolve
+      // (worse, the fetch would go through the recording proxy). In packaged
+      // builds nothing consumes the map, and it made up ~79% of the bundle
+      // that gets shipped over CDP on every injection.
+      sourcemap: command === 'serve' ? 'inline' : false,
       lib: {
         entry: 'src/recorder/browser/index.ts',
         formats: ['iife'],
