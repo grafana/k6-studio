@@ -37,15 +37,20 @@ const POLLUTABLE_PROTOTYPES: object[] = [Array.prototype, Object.prototype]
  * covers pages that replace `Array.from` after load. The setter silently
  * discards such replacements: these frameworks call their own helper
  * internally and only alias it onto `Array.from`, so the page keeps working
- * (and rrweb's recovery assignment no-ops the same way).
+ * (and rrweb's recovery assignment no-ops the same way). The pin itself stays
+ * configurable, so a page that installs its own `Array.from` with
+ * `Object.defineProperty` (what self-hosted polyfill bundles do, without
+ * feature detection) replaces the pin instead of throwing. Giving up the pin
+ * costs an unstyled replay, throwing would break the page under test.
  */
 function pinNativeArrayFrom() {
   const nativeFrom = Array.from
 
-  // Fails only when another copy of this script already pinned it or the
-  // page locked the property down. Nothing to do either way.
+  // Fails only when the page locked the property down, and there is nothing
+  // to do about that. A second copy of this script re-pins the native it
+  // reads back through the getter.
   Reflect.defineProperty(Array, 'from', {
-    configurable: false,
+    configurable: true,
     get: () => nativeFrom,
     set: () => {},
   })

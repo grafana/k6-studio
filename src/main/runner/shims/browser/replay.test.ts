@@ -348,5 +348,35 @@ describe('session replay in-page script', () => {
 
       expect(Array.from([1, 2], (value) => value * 2)).toEqual([2, 4])
     })
+
+    // Self-hosted polyfill bundles install Array.from with an unconditional
+    // Object.defineProperty, which throws against a pin the page cannot
+    // reconfigure and leaves an uncaught TypeError on a page that only breaks
+    // while session replay is on. The polyfill takes the property over: an
+    // unstyled replay is a better outcome than a broken page.
+    it('lets the page redefine Array.from with defineProperty', async () => {
+      await importReplayScript()
+
+      const nativeFrom = Array.from
+      const polyfilled = () => []
+
+      try {
+        expect(() => {
+          Object.defineProperty(Array, 'from', {
+            value: polyfilled,
+            writable: true,
+            configurable: true,
+          })
+        }).not.toThrow()
+
+        expect(Array.from).toBe(polyfilled)
+      } finally {
+        Reflect.defineProperty(Array, 'from', {
+          value: nativeFrom,
+          writable: true,
+          configurable: true,
+        })
+      }
+    })
   })
 })
