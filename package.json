@@ -143,7 +143,7 @@
     "lodash-es": "4.18.1",
     "lucide-react": "1.14.0",
     "monaco-editor": "0.55.1",
-    "nanoid": "5.1.11",
+    "nanoid": "5.1.16",
     "node-forge": "1.4.0",
     "openid-client": "6.8.4",
     "papaparse": "5.5.3",
