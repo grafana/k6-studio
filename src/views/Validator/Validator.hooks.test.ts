@@ -7,7 +7,6 @@ import { useDebugSession } from './Validator.hooks'
 type Callback = (...args: unknown[]) => void
 const noop = () => () => {}
 
-const onScriptFinished = vi.fn<(cb: Callback) => () => void>()
 const onScriptStopped = vi.fn<(cb: Callback) => () => void>()
 const onScriptLog = vi.fn().mockImplementation(noop)
 const onScriptCheck = vi.fn().mockImplementation(noop)
@@ -21,7 +20,6 @@ describe('useDebugSession', () => {
   beforeAll(() => {
     vi.stubGlobal('studio', {
       script: {
-        onScriptFinished,
         onScriptStopped,
         onScriptLog,
         onScriptCheck,
@@ -38,7 +36,6 @@ describe('useDebugSession', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    onScriptFinished.mockImplementation(noop)
     onScriptStopped.mockImplementation(noop)
   })
 
@@ -60,28 +57,6 @@ describe('useDebugSession', () => {
     })
 
     expect(result.current.session.state).toBe('running')
-  })
-
-  it('should transition to stopped on script:finished', async () => {
-    let capturedCallback: Callback = () => {}
-    onScriptFinished.mockImplementation((cb: Callback) => {
-      capturedCallback = cb
-      return () => {}
-    })
-
-    const { result } = renderHook(() =>
-      useDebugSession({ type: 'file', path: '/test.js' })
-    )
-
-    await act(async () => {
-      await result.current.startDebugging()
-    })
-    expect(result.current.session.state).toBe('running')
-
-    act(() => {
-      capturedCallback()
-    })
-    expect(result.current.session.state).toBe('stopped')
   })
 
   it('should transition to stopped on script:stopped (e.g. ScriptException exit)', async () => {
