@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.1.1](https://github.com/grafana/k6-studio/compare/v2.1.0...v2.1.1) (2026-08-18)
+
+
+### Bug Fixes
+
+* Debug session stays stuck at 'running' when script fails at runtime ([#1343](https://github.com/grafana/k6-studio/issues/1343)) ([4c27fc8](https://github.com/grafana/k6-studio/commit/4c27fc88a5864deaf923ef3b73d319d305781115))
+* **security/high/:** update dependency nanoid to v5.1.16 [security] ([#1354](https://github.com/grafana/k6-studio/issues/1354)) ([7236d29](https://github.com/grafana/k6-studio/commit/7236d299534da5b5709e57744097df62be53624f))
+
 ## [2.1.0](https://github.com/grafana/k6-studio/compare/v2.0.2...v2.1.0) (2026-08-11)
 
 
