@@ -91,7 +91,7 @@ export function useDebugSession(script: Script) {
   }, [])
 
   useEffect(() => {
-    return window.studio.script.onScriptFinished(() => {
+    return window.studio.script.onScriptStopped(() => {
       setState('stopped')
     })
   }, [])
