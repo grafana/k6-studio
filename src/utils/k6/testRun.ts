@@ -208,6 +208,10 @@ export class TestRun extends EventEmitter<TestRunEventMap> {
         break
 
       case ExitCode.ScriptAborted:
+      case ExitCode.ScriptException:
+      case ExitCode.SetupTimeout:
+      case ExitCode.TeardownTimeout:
+      case ExitCode.GenericTimeout:
       case ExitCode.ThresholdsHaveFailed:
       case ExitCode.MarkedAsFailed:
         this.emit('done', {
