@@ -1,6 +1,6 @@
 import { EventType } from '@rrweb/types'
 import { record } from 'rrweb'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { parseReplayEvent } from '../../rrweb'
 import { BrowserReplayEvent } from '../../schema'
@@ -270,5 +270,113 @@ describe('session replay in-page script', () => {
 
     expect(replayWindow.__K6_DRAIN_EVENTS__).toBeUndefined()
     expect(vi.mocked(record)).not.toHaveBeenCalled()
+  })
+
+  // Prototype.js 1.6 (still served by legacy sites) predates native JSON
+  // and adds toJSON methods that return already-serialized text to the shared
+  // prototypes. JSON.stringify honors them, double-encoding every array and
+  // string, and the tracking server then rejects the whole batch: the replay
+  // shows up blank while the test itself passes.
+  describe('on a page that pollutes prototypes with toJSON', () => {
+    beforeEach(() => {
+      // What Prototype 1.6.0.3 does, reduced to the serialization behavior.
+      Object.defineProperty(Array.prototype, 'toJSON', {
+        value: function toJSON(this: unknown[]) {
+          return `[${this.map((item) => JSON.stringify(item)).join(', ')}]`
+        },
+        writable: true,
+        configurable: true,
+      })
+      // String pollution stays untouched by the drain: JSON.stringify only
+      // consults it for boxed strings, which never enter the event graph.
+      Object.defineProperty(String.prototype, 'toJSON', {
+        value: function toJSON(this: string) {
+          return `"${this.toString()}"`
+        },
+        writable: true,
+        configurable: true,
+      })
+    })
+
+    afterEach(() => {
+      Reflect.deleteProperty(Array.prototype, 'toJSON')
+      Reflect.deleteProperty(String.prototype, 'toJSON')
+    })
+
+    it('still serializes the batch as an array of events', async () => {
+      await importReplayScript()
+
+      emitEvent(createEvent(1, { text: 'typed into the page' }))
+
+      const batch = drainedBatch()
+
+      expect(Array.isArray(batch.events)).toBe(true)
+      expect(batch.events).toContainEqual(
+        createEvent(1, { text: 'typed into the page' })
+      )
+    })
+
+    it('leaves the page pollution in place after draining', async () => {
+      await importReplayScript()
+
+      drain()
+
+      // The page's own code relies on its patched prototypes, so the drain
+      // must put them back exactly as they were.
+      expect(
+        Object.getOwnPropertyDescriptor(Array.prototype, 'toJSON')
+      ).toBeDefined()
+      expect(
+        Object.getOwnPropertyDescriptor(String.prototype, 'toJSON')
+      ).toBeDefined()
+    })
+
+    // Prototype.js also replaces Array.from with a version that ignores the
+    // map function argument. rrweb inlines stylesheets with
+    // Array.from(rules, stringifyRule).join(''), which then joins raw CSSRule
+    // objects into "[object CSSStyleRule]..." and every replay renders
+    // unstyled. The script pins Array.from against later replacement.
+    it('keeps Array.from working when the page later replaces it', async () => {
+      await importReplayScript()
+
+      // Plain assignment like Prototype's `Array.from = $A`, replacing it
+      // with a version that drops the map function. Must neither throw nor
+      // take effect.
+      expect(() => {
+        Object.assign(Array, { from: () => [] })
+      }).not.toThrow()
+
+      expect(Array.from([1, 2], (value) => value * 2)).toEqual([2, 4])
+    })
+
+    // Self-hosted polyfill bundles install Array.from with an unconditional
+    // Object.defineProperty, which throws against a pin the page cannot
+    // reconfigure and leaves an uncaught TypeError on a page that only breaks
+    // while session replay is on. The polyfill takes the property over: an
+    // unstyled replay is a better outcome than a broken page.
+    it('lets the page redefine Array.from with defineProperty', async () => {
+      await importReplayScript()
+
+      const nativeFrom = Array.from
+      const polyfilled = () => []
+
+      try {
+        expect(() => {
+          Object.defineProperty(Array, 'from', {
+            value: polyfilled,
+            writable: true,
+            configurable: true,
+          })
+        }).not.toThrow()
+
+        expect(Array.from).toBe(polyfilled)
+      } finally {
+        Reflect.defineProperty(Array, 'from', {
+          value: nativeFrom,
+          writable: true,
+          configurable: true,
+        })
+      }
+    })
   })
 })

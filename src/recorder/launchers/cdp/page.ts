@@ -5,7 +5,13 @@ import { ChromeDevToolsClient, Page as CdpPage } from '@/utils/cdp/client'
 import { EventEmitter } from '@/utils/events'
 import { uuid } from '@/utils/uuid'
 
-import { Script } from './script'
+import { RECORDER_WORLD_NAME, Script } from './script'
+
+// The recording script reads the tab id from this global when it starts up, so
+// every world it runs in has to have it set.
+function tabIdSource(tabId: string) {
+  return `window.__K6_STUDIO_TAB_ID__ = "${tabId}";`
+}
 
 function toNavigationSource(
   event: CdpPage.FrameStartedNavigatingEvent
@@ -48,6 +54,11 @@ export class Page extends EventEmitter<PageEventMap> {
 
   #requestedNavigation: CdpPage.FrameRequestedNavigationEvent | null = null
   #startedNavigation: CdpPage.FrameStartedNavigatingEvent | null = null
+
+  // The navigation handlers in the constructor are never unregistered (a Page
+  // outliving its CDP session only leaks no-op listeners), but documentOpened
+  // triggers multi-megabyte evaluates, so it must stop with the Page.
+  #disposeDocumentOpened = () => {}
 
   // Whether any navigation has been recorded for this tab. See
   // #recordMissedEntryNavigation.
@@ -144,6 +155,43 @@ export class Page extends EventEmitter<PageEventMap> {
       this.#reset()
     })
 
+    // A document replaced via document.open() loses the recording script's
+    // UI and event listeners, and Chromium does not run scripts registered
+    // with Page.addScriptToEvaluateOnNewDocument again for it, so the script
+    // is evaluated again in the frame's isolated world. Complements the
+    // in-page recovery mechanisms (monitorDocumentChange and
+    // keepMountAtEndOfBody in src/recorder/browser/view), which cannot
+    // survive document.open because their observers die with the old
+    // document.
+    //
+    // Unlike the navigation handlers above, this handler cannot filter by
+    // frame id: it must handle every frame in the tab (e.g. a frameset child
+    // the parent document.write()s into). It filters by session because the
+    // generated CDP client delivers every tab's events to every Page.
+    // TODO: That is a bug in generateCdpClient.ts: `on` builds a session
+    // filter but registers the raw listener. The generator is fixed to
+    // register filteredListener, but client.ts could not be regenerated
+    // (gen:cdp currently fails with TS5011), so this guard stays until a
+    // regenerated client ships.
+    // The frame id checks in the handlers above only double as session
+    // filters by accident, because a page target's frame id equals its
+    // target id.
+    this.#disposeDocumentOpened = this.#client.page.on(
+      'documentOpened',
+      ({ sessionId, data }) => {
+        if (sessionId !== this.#client.sessionId) {
+          return
+        }
+
+        this.#reinjectScript(data.frame.id).catch((error) => {
+          logger.warn(
+            'Failed to re-inject recording script after document.open:',
+            error
+          )
+        })
+      }
+    )
+
     this.#script.on('reload', () => {
       this.#client.page.reload({}).catch((error) => {
         logger.error('Failed to reload page:', error)
@@ -195,7 +243,8 @@ export class Page extends EventEmitter<PageEventMap> {
       this.#client.page.setBypassCSP(true),
 
       this.#client.page.addScriptToEvaluateOnNewDocument({
-        source: `window.__K6_STUDIO_TAB_ID__ = "${this.#id}";`,
+        source: tabIdSource(this.#id),
+        worldName: RECORDER_WORLD_NAME,
         runImmediately,
       }),
       this.#script.inject(this.#client, runImmediately),
@@ -242,6 +291,31 @@ export class Page extends EventEmitter<PageEventMap> {
     })
   }
 
+  /**
+   * Runs the recording script in the frame's isolated world again. The world
+   * outlives the document it was created for, and `Page.createIsolatedWorld`
+   * returns it when it is still around and creates it otherwise.
+   */
+  async #reinjectScript(frameId: string) {
+    const { executionContextId } = await this.#client.page.createIsolatedWorld({
+      frameId,
+      worldName: RECORDER_WORLD_NAME,
+    })
+
+    const { exceptionDetails } = await this.#client.runtime.evaluate({
+      expression: tabIdSource(this.#id),
+      contextId: executionContextId,
+    })
+
+    if (exceptionDetails !== undefined) {
+      throw new Error(
+        `Failed to set tab id: ${exceptionDetails.exception?.description ?? exceptionDetails.text}`
+      )
+    }
+
+    await this.#script.evaluate(this.#client, executionContextId)
+  }
+
   navigateTo(url: string) {
     this.#client.page
       .navigate({ url, transitionType: 'other' })
@@ -276,6 +350,8 @@ export class Page extends EventEmitter<PageEventMap> {
   }
 
   dispose() {
+    this.#disposeDocumentOpened()
+
     this.#script.remove(this.#client).catch(() => {
       // Let's just assume we got here because the session was already
       // closed or the script was already removed.

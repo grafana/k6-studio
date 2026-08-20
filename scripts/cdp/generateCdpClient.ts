@@ -354,26 +354,46 @@ function generateEventFunctions({ domain, events = [] }: cdp.Domain) {
     return []
   }
 
+  // A client bound to a session only forwards the events of that session. A
+  // root client has no session id and forwards everything, including events
+  // that carry one. Dropping those would break the browser-level client, which
+  // receives Target.attachedToTarget with the session id of the parent target
+  // when a popup is auto-attached in flat session mode.
+  //
+  // Wrappers are tracked per listener and per event name, so registering the
+  // same listener for two events keeps both wrappers and `off` can find the
+  // one it needs to unregister.
   const onFunctionBody = parse(`
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
 
       listener(event)
     }
 
-    this.listeners.set(listener as ChromeEventListener, filteredListener as ChromeEventListener)
+    const listenersByName: Map<string, ChromeEventListener> =
+      this.listeners.get(listener as ChromeEventListener) ?? new Map()
+
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
   `)
 
   const offFunctionBody = parse(`
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+
+    if (listenersByName === undefined) {
+      return
+    }
+
+    const filteredListener = listenersByName.get(name)
 
     if (filteredListener === undefined) {
       return
     }
 
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
   `)
 
   function eventFn(
@@ -425,16 +445,19 @@ function generateEventFunctions({ domain, events = [] }: cdp.Domain) {
           '+',
           params.name
         )
-        const listener = new ExpressionBuilder(identifier('listener')).as(
-          typeRef('ChromeEventListener')
-        )
+
+        // The transport is shared by every session, so the session-aware
+        // wrapper is what gets registered, not the raw listener.
+        const filteredListener = new ExpressionBuilder(
+          identifier('filteredListener')
+        ).as(typeRef('ChromeEventListener'))
 
         return [
           ...body,
           new ExpressionBuilder($this())
             .member('transport')
             .member(name)
-            .call([eventName, listener])
+            .call([eventName, filteredListener])
             .returned(),
         ]
       })
@@ -573,7 +596,14 @@ async function generate() {
         b.type(t.union([SESSION_ID_TYPE, t.undefined()])).init()
       )
       .field('listeners', (b) =>
-        b.type(typeRef('WeakMap', [listenerType, listenerType])).init()
+        b
+          .type(
+            typeRef('WeakMap', [
+              listenerType,
+              typeRef('Map', [t.string(), listenerType]),
+            ])
+          )
+          .init()
       )
       .construct((b, self) => {
         return b

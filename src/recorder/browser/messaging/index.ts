@@ -40,6 +40,15 @@ type BrowserExtensionClientEvents = {
 export type BrowserExtensionEvent =
   BrowserExtensionClientEvents[keyof BrowserExtensionClientEvents]
 
+export interface BrowserExtensionClientOptions {
+  /**
+   * Called when an incoming message fails validation, so that the owner of the
+   * client can report it. Messages that don't validate are dropped, which costs
+   * us recorded events, so we want to know when it happens.
+   */
+  onInvalidMessage?: (error: z.ZodError) => void
+}
+
 /**
  * A single interface to handle asynchronous communication between the different parts of the extension,
  * e.g. from content script to background script, from background script to k6 Studio, etc.
@@ -55,7 +64,11 @@ export class BrowserExtensionClient extends EventEmitter<BrowserExtensionClientE
   #transport: Transport
   #keepAlive: Parameters<typeof clearInterval>[0] = undefined
 
-  constructor(name: string, transport: Transport = new NullTransport()) {
+  constructor(
+    name: string,
+    transport: Transport = new NullTransport(),
+    options: BrowserExtensionClientOptions = {}
+  ) {
     super()
 
     this.#transport = transport
@@ -64,7 +77,12 @@ export class BrowserExtensionClient extends EventEmitter<BrowserExtensionClientE
       const parsed = BrowserExtensionClientMessageSchema.safeParse(data)
 
       if (!parsed.success) {
-        console.error(`[${name}] received invalid message:`, parsed.error, data)
+        // Never log the message itself: it can carry recorded user input,
+        // including passwords, and in the main process console output becomes
+        // a Sentry breadcrumb on the event onInvalidMessage reports.
+        console.error(`[${name}] received invalid message:`, parsed.error)
+
+        options.onInvalidMessage?.(parsed.error)
 
         return
       }
