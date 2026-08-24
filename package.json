@@ -89,7 +89,7 @@
   "license": "AGPL-3.0-only",
   "private": true,
   "dependencies": {
-    "@ai-sdk/react": "2.0.187",
+    "@ai-sdk/react": "4.0.80",
     "@dnd-kit/core": "6.3.1",
     "@dnd-kit/modifiers": "9.0.0",
     "@dnd-kit/sortable": "10.0.0",
@@ -120,7 +120,7 @@
     "@tanstack/react-query": "5.100.9",
     "@types/plist": "3.0.5",
     "@typescript-eslint/typescript-estree": "8.59.2",
-    "ai": "5.0.185",
+    "ai": "7.0.77",
     "aria-query": "5.3.2",
     "astring": "1.9.0",
     "chokidar": "4.0.3",
