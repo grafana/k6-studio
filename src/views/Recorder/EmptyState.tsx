@@ -82,7 +82,7 @@ export function EmptyState({ isLoading }: EmptyStateProps) {
     }
 
     setValue('url', navigationState.prefilledURL)
-    navigate(location.pathname, { replace: true, state: null })
+    void navigate(location.pathname, { replace: true, state: null })
   }, [navigationState?.prefilledURL, navigate, location.pathname, setValue])
 
   const { recentURLs, removeURL } = useRecentURLs({ limit: 3 })

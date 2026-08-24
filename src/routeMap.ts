@@ -14,7 +14,7 @@ function getRoute(name: RouteName) {
 
 export function getRoutePath(
   name: RouteName,
-  params?: Record<string, string | number> | 0 | false | null
+  params?: Record<string, string> | 0 | false | null
 ) {
   return params ? generatePath(getRoute(name), params) : getRoute(name)
 }

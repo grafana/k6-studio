@@ -49,7 +49,7 @@ export function useExportScript({
 
       if (openOnSave) {
         onSuccess?.(location)
-        navigate(viewPath)
+        void navigate(viewPath)
 
         return
       }

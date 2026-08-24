@@ -26,7 +26,7 @@ export function useStartRecording() {
   return useCallback(
     (url: string) => {
       addURL(url)
-      navigate(getRoutePath('recorder'), {
+      void navigate(getRoutePath('recorder'), {
         state: {
           autoStart: { url, capture: { browser: captureBrowser } },
         } satisfies StartRecordingNavigationState,
