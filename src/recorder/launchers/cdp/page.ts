@@ -166,23 +166,14 @@ export class Page extends EventEmitter<PageEventMap> {
     //
     // Unlike the navigation handlers above, this handler cannot filter by
     // frame id: it must handle every frame in the tab (e.g. a frameset child
-    // the parent document.write()s into). It filters by session because the
-    // generated CDP client delivers every tab's events to every Page.
-    // TODO: That is a bug in generateCdpClient.ts: `on` builds a session
-    // filter but registers the raw listener. The generator is fixed to
-    // register filteredListener, but client.ts could not be regenerated
-    // (gen:cdp currently fails with TS5011), so this guard stays until a
-    // regenerated client ships.
+    // the parent document.write()s into). The session is filtered by the
+    // client, which only forwards the events of the session it is bound to.
     // The frame id checks in the handlers above only double as session
     // filters by accident, because a page target's frame id equals its
     // target id.
     this.#disposeDocumentOpened = this.#client.page.on(
       'documentOpened',
-      ({ sessionId, data }) => {
-        if (sessionId !== this.#client.sessionId) {
-          return
-        }
-
+      ({ data }) => {
         this.#reinjectScript(data.frame.id).catch((error) => {
           logger.warn(
             'Failed to re-inject recording script after document.open:',

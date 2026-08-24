@@ -371,9 +371,9 @@ function generateEventFunctions({ domain, events = [] }: cdp.Domain) {
 
       listener(event)
     }
-
-    const listenersByName: Map<string, ChromeEventListener> =
-      this.listeners.get(listener as ChromeEventListener) ?? new Map()
+ 
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ?? new Map<string, ChromeEventListener>()
 
     listenersByName.set(name, filteredListener as ChromeEventListener)
 
