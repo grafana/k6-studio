@@ -197,15 +197,6 @@ export class Page extends EventEmitter<PageEventMap> {
     isInitialTab: boolean
     hasOpener: boolean
   }) {
-    // A target paused waiting for the debugger (e.g. a popup opened with
-    // noopener/noreferrer, which gets a new browsing context group) doesn't
-    // process session commands until Runtime.runIfWaitingForDebugger is sent,
-    // so awaiting any response before requesting resume would deadlock and
-    // leave the tab paused with a spinner forever. All commands are therefore
-    // dispatched up front and only then awaited. The transport sends messages
-    // in call order, so the scripts are still registered before the page
-    // resumes.
-    //
     // Scripts run immediately only in tabs the page did not open itself. A
     // popup the page opened (window.open, target=_blank) attaches before its
     // document exists, and executing the recording script in its empty
@@ -217,6 +208,19 @@ export class Page extends EventEmitter<PageEventMap> {
     // so the scripts must also run in whatever document already exists.
     const runImmediately = !hasOpener
 
+    // We tell the browser to pause and wait for a debugger whenever a new target
+    // is created so that we can attach to it and inject our scripts before the page
+    // runs any of its own scripts. While the target is waiting for a debugger,
+    // all commands are queued up and are only executed after `runIfWaitingForDebugger`
+    // is sent.
+    //
+    // If we were to await any of the calls below individually then we'd never reach
+    // the call to `runIfWaitingForDebugger` because we're stuck in the queue waiting
+    // for `runIfWaitingForDebugger` to be called.
+    //
+    // Calling them this way queues the commands up in the correct order without blocking
+    // the call to `runIfWaitingForDebugger` and by awaiting `Promise.all` we can still
+    // wait for all commands to be completed before continuing with out logic.
     await Promise.all([
       this.#client.page.enable(),
 

@@ -25,11 +25,6 @@ export default defineConfig((env) => {
     build: {
       target: 'esnext',
       outDir: `resources/browser`,
-      // Inline only in dev: the bundle is evaluated from a string, so a
-      // separate .js.map with a relative sourceMappingURL could never resolve
-      // (worse, the fetch would go through the recording proxy). In packaged
-      // builds nothing consumes the map, and it made up ~79% of the bundle
-      // that gets shipped over CDP on every injection.
       sourcemap: command === 'serve' ? 'inline' : false,
       lib: {
         entry: 'src/recorder/browser/index.ts',

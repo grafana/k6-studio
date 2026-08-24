@@ -51,10 +51,7 @@ export function InBrowserControls() {
       </ErrorBoundary>
       {/*
         The boundaries sit inside the conditionals so that selecting a tool
-        again mounts a fresh one, giving a crashed tool another chance. A
-        crashed tool also deselects itself: leaving it selected would keep
-        suppressing event recording (shouldSkipEvent) with no tool UI in
-        sight.
+        again mounts a fresh one, giving a crashed tool another chance.
       */}
       {tool === 'inspect' && (
         <ErrorBoundary name="Element inspector" onError={handleDeselectTool}>

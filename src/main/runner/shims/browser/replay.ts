@@ -25,23 +25,10 @@ const trackingServerUrl = window.__K6_SESSION_REPLAY_TRACKING_SERVER_URL__
 const POLLUTABLE_PROTOTYPES: object[] = [Array.prototype, Object.prototype]
 
 /**
- * Keeps `Array.from` working for the page's lifetime. Pre-JSON frameworks
- * like Prototype.js 1.6 replace it with a version that ignores the map
- * function argument, which breaks rrweb's stylesheet inlining
- * (`Array.from(rules, stringifyRule).join('')` joins raw CSSRule objects into
- * "[object CSSStyleRule]...") and renders every replay unstyled. The pin
- * captures whatever `Array.from` is when this script starts: the native at
- * document_start, or on popup re-injection (evaluated after page scripts,
- * see sessionReplay.ts) the native that rrweb's module-eval guard just
- * recovered from a clean iframe. That guard is one-shot, so only the pin
- * covers pages that replace `Array.from` after load. The setter silently
- * discards such replacements: these frameworks call their own helper
- * internally and only alias it onto `Array.from`, so the page keeps working
- * (and rrweb's recovery assignment no-ops the same way). The pin itself stays
- * configurable, so a page that installs its own `Array.from` with
- * `Object.defineProperty` (what self-hosted polyfill bundles do, without
- * feature detection) replaces the pin instead of throwing. Giving up the pin
- * costs an unstyled replay, throwing would break the page under test.
+ * Pre-JSON frameworks like Prototype.js 1.6 replace Array.from with a version
+ * that doesn't support the map function argument. rrweb uses the `map` argument
+ * when recording stylesheets so we need to restore the native function, otherwise
+ * stylesheets will be recorded as `"[object CSSStyleRule]..."`.
  */
 function pinNativeArrayFrom() {
   const nativeFrom = Array.from
@@ -57,19 +44,16 @@ function pinNativeArrayFrom() {
 }
 
 /**
- * JSON.stringify that ignores toJSON methods the page added to the shared
- * prototypes. Pre-JSON frameworks like Prototype.js 1.6 add toJSON methods
- * that return already-serialized text, which double-encodes every array and
- * string in the batch and gets it rejected by the tracking server. This runs
- * in the page's own world (the k6 browser module can only inject there), so
- * the pollution can't be avoided, only sidestepped: the methods are removed
- * for the duration of the (synchronous) stringify and restored right after,
- * so the page never observes the gap.
+ * Pre-JSON frameworks like Prototype.js 1.6 adds toJSON methods to the prototypes
+ * of Array and Object. These methods returns an already serialized version of the object,
+ * so passing it to JSON.stringify would double-serialize it. This function serializes
+ * values without calling toJSON on the prototype of Object and Array.
  */
 function stringifyIgnoringPageToJSON(value: unknown): string {
   const removed: Array<{ prototype: object; descriptor: PropertyDescriptor }> =
     []
 
+  // Remove toJSON from the prototypes so that JSON.stringify doesn't call them
   for (const prototype of POLLUTABLE_PROTOTYPES) {
     const descriptor = Reflect.getOwnPropertyDescriptor(prototype, 'toJSON')
 
@@ -84,6 +68,7 @@ function stringifyIgnoringPageToJSON(value: unknown): string {
   try {
     return JSON.stringify(value)
   } finally {
+    // Restore the prototypes to their original state so that the page can continue
     for (const { prototype, descriptor } of removed) {
       Reflect.defineProperty(prototype, 'toJSON', descriptor)
     }

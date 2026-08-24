@@ -87,11 +87,6 @@ export class WindowEventManager {
     })
   }
 
-  /**
-   * Removes every listener the manager attached. Needed when a second copy of
-   * the script takes over a document whose window still has this copy's
-   * listeners, which would otherwise record every interaction twice.
-   */
   dispose() {
     this.#disposers.forEach((dispose) => dispose())
     this.#disposers = []

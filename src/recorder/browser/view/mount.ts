@@ -1,22 +1,8 @@
-/**
- * Marks the mount element so that any other initializer can tell that the
- * document already hosts the recorder UI. The same document can be
- * initialized more than once: by another copy of this script (one injected
- * into the initial empty document and one injected when the real document
- * commits into the same context), or by the same copy re-entering through
- * monitorDocumentChange in view/index.tsx. Two mounts would fight over the
- * end of the body through keepMountAtEndOfBody, locking the renderer in an
- * infinite MutationObserver loop. The marker lives in the DOM because the
- * DOM is the only state separate script copies share.
- */
 const MOUNT_MARKER_ATTRIBUTE = 'data-ksix-studio-mount'
 
 /**
- * Whether the document hosts a LIVE recorder UI. The marker attribute alone
- * is not proof: a page that serializes its own body and rewrites itself
- * (e.g. document.write(document.body.innerHTML)) reproduces the marker as a
- * dead copy, since shadow roots do not serialize. A mount without a shadow
- * root has no UI behind it and must not block a fresh injection.
+ * Whether the document hosts a LIVE recorder UI. A mount is live if
+ * it has the marker attribute and a shadow root.
  */
 export function isDocumentMounted() {
   return findMounts().some((element) => element.shadowRoot !== null)
@@ -24,8 +10,7 @@ export function isDocumentMounted() {
 
 /**
  * Removes marker-bearing elements that have no UI behind them, so they can't
- * skew generated nth-child selectors. See isDocumentMounted for how dead
- * copies come to exist.
+ * skew generated nth-child selectors.
  */
 export function removeStaleMounts() {
   findMounts()
@@ -71,12 +56,6 @@ export function createMount() {
     dispose: () => {
       stopKeepingAtEndOfBody()
       attributeObserver.disconnect()
-
-      // The shadow root cannot be detached, so a disposed mount left in the
-      // document would still pass isDocumentMounted and block the next copy of
-      // the script from mounting a working UI. Its position observer is gone
-      // too, so the page could also drift it away from the end of the body and
-      // skew generated selectors.
       mount.remove()
     },
   }

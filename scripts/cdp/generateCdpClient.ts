@@ -354,15 +354,10 @@ function generateEventFunctions({ domain, events = [] }: cdp.Domain) {
     return []
   }
 
-  // A client bound to a session only forwards the events of that session. A
-  // root client has no session id and forwards everything, including events
-  // that carry one. Dropping those would break the browser-level client, which
-  // receives Target.attachedToTarget with the session id of the parent target
-  // when a popup is auto-attached in flat session mode.
-  //
-  // Wrappers are tracked per listener and per event name, so registering the
-  // same listener for two events keeps both wrappers and `off` can find the
-  // one it needs to unregister.
+  // Clients are either for the entire browser or for a specific session (think of it like
+  // the browser process vs. a specific tab). All clients will receive all events, so if the
+  // client is tied to a specific session then we need to ignore events that don't belong to
+  // that session.
   const onFunctionBody = parse(`
     const filteredListener: typeof listener = (event) => {
       if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
