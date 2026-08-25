@@ -8,7 +8,7 @@ import {
 import { CONNECT_COPY } from '@/components/Assistant/connectCopy'
 import { ErrorMessage as MessageContent } from '@/components/ErrorMessage'
 import { ExternalLink } from '@/components/ExternalLink'
-import { invalidateAssistantAuthStatus } from '@/hooks/useAssistantAuth'
+import { expireAssistantSession } from '@/hooks/useAssistantAuth'
 import {
   AssistantErrorInfo,
   classifyError,
@@ -34,12 +34,11 @@ export function ErrorMessage({
         onRetry,
         onReset,
         onClose,
-        // Re-checking auth reports the session as expired, which sends the user
-        // to the same reconnect prompt the wizard shows. Signing out here would
-        // instead ask them to connect from scratch.
+        // Mark the stored session expired before re-checking auth. A mid-run 401
+        // can happen while the refresh token is still locally valid, and a plain
+        // invalidation would keep reporting connected and skip the reconnect gate.
         onReconnect: () => {
-          void invalidateAssistantAuthStatus()
-          onReset()
+          void expireAssistantSession().then(() => onReset())
         },
       }}
     />

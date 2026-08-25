@@ -11,6 +11,12 @@ export function invalidateAssistantAuthStatus() {
   return queryClient.invalidateQueries({ queryKey: QUERY_KEY })
 }
 
+export function expireAssistantSession() {
+  return window.studio.ai
+    .assistantExpireSession()
+    .then(() => invalidateAssistantAuthStatus())
+}
+
 export function useAssistantAuthStatus() {
   const isProfileOpen = useStudioUIStore((s) => s.isProfileDialogOpen)
   const wasOpen = useRef(false)

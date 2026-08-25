@@ -1,12 +1,17 @@
 import { cleanup, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { CONNECT_COPY } from '@/components/Assistant/connectCopy'
 
 import { ErrorMessage } from './ErrorMessage'
 
+const { expireAssistantSessionMock } = vi.hoisted(() => ({
+  expireAssistantSessionMock: vi.fn(() => Promise.resolve()),
+}))
+
 vi.mock('@/hooks/useAssistantAuth', () => ({
-  useAssistantSignOut: () => ({ mutate: vi.fn() }),
+  expireAssistantSession: expireAssistantSessionMock,
 }))
 
 vi.mock('@/assets/grot-crashed.svg', () => ({
@@ -35,6 +40,26 @@ describe('ErrorMessage', () => {
     expect(
       screen.getByRole('button', { name: CONNECT_COPY.expired.action })
     ).toBeDefined()
+  })
+
+  it('expires the stored session before returning to the reconnect gate', async () => {
+    const user = userEvent.setup()
+    const onReset = vi.fn()
+
+    render(
+      <ErrorMessage
+        {...baseProps}
+        onReset={onReset}
+        error={new Error('A2A request failed (401): Unauthorized')}
+      />
+    )
+
+    await user.click(
+      screen.getByRole('button', { name: CONNECT_COPY.expired.action })
+    )
+
+    expect(expireAssistantSessionMock).toHaveBeenCalledOnce()
+    expect(onReset).toHaveBeenCalledOnce()
   })
 
   it('renders "Connection error" for fetch failure', () => {

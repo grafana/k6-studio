@@ -26,6 +26,7 @@ import {
 import { getAssistantConnection } from './tokenRefresh'
 import {
   clearAssistantTokens,
+  expireAssistantSession,
   mapTokenResponse,
   saveAssistantTokens,
 } from './tokenStore'
@@ -244,4 +245,18 @@ export function initialize() {
       log.info(LOG_PREFIX, 'Cleared assistant tokens for stack', stackId)
     }
   })
+
+  ipcMain.handle(
+    AssistantAuthHandler.ExpireSession,
+    async (): Promise<void> => {
+      const profile = await getProfileData()
+      const stackId = profile.profiles.currentStack
+
+      if (stackId) {
+        abortAllActiveAssistantSessions()
+        await expireAssistantSession(stackId)
+        log.info(LOG_PREFIX, 'Expired assistant session for stack', stackId)
+      }
+    }
+  )
 }

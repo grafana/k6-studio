@@ -30,6 +30,10 @@ export function assistantSignOut() {
   return ipcRenderer.invoke(AssistantAuthHandler.SignOut) as Promise<void>
 }
 
+export function assistantExpireSession() {
+  return ipcRenderer.invoke(AssistantAuthHandler.ExpireSession) as Promise<void>
+}
+
 export function assistantWakeStack() {
   return ipcRenderer.invoke(AssistantAuthHandler.WakeStack) as Promise<void>
 }

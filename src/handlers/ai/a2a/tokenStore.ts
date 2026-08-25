@@ -140,6 +140,27 @@ export async function clearAssistantTokens(stackId: string): Promise<void> {
   })
 }
 
+/** Marks a stored session as expired without clearing the reconnect flow state. */
+export async function expireAssistantSession(stackId: string): Promise<void> {
+  const store = await readStore()
+  const tokens = store.tokens[stackId]
+
+  if (!tokens) {
+    return
+  }
+
+  await writeStore({
+    ...store,
+    tokens: {
+      ...store.tokens,
+      [stackId]: {
+        ...tokens,
+        refreshExpiresAt: 0,
+      },
+    },
+  })
+}
+
 /**
  * Only the tokens themselves are encrypted, so callers that just need to know
  * how long a session lasts avoid decrypting anything.
