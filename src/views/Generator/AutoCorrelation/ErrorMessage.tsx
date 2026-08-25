@@ -8,8 +8,10 @@ import {
 import { ErrorMessage as MessageContent } from '@/components/ErrorMessage'
 import { ExternalLink } from '@/components/ExternalLink'
 import { useAssistantSignOut } from '@/hooks/useAssistantAuth'
-
-import { AssistantErrorInfo, classifyError } from './utils/classifyError'
+import {
+  AssistantErrorInfo,
+  classifyError,
+} from '@/utils/assistant/classifyError'
 
 interface AutoCorrelationErrorProps {
   error: Error

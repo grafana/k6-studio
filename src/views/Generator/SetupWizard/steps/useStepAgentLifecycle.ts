@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
 
+import { invalidateAssistantAuthStatus } from '@/hooks/useAssistantAuth'
+import { classifyError } from '@/utils/assistant/classifyError'
 import { AgentRunStatus } from '@/utils/assistant/useAssistantAgent'
 
 import { useSetupWizard } from '../state/SetupWizardContext'
@@ -8,6 +10,8 @@ import { WizardStep } from '../state/types'
 interface UseStepAgentLifecycleOptions {
   stepId: WizardStep
   status: AgentRunStatus
+  /** The run's failure, used to tell an expired session from a failed analysis. */
+  error: Error | undefined
   /**
    * Called once the agent reaches the `completed` status. Implementations read
    * their result payload from refs and dispatch the completion action.
@@ -26,6 +30,7 @@ interface UseStepAgentLifecycleOptions {
 export function useStepAgentLifecycle({
   stepId,
   status,
+  error,
   onCompleted,
   failureMessage,
   onFinished,
@@ -46,6 +51,15 @@ export function useStepAgentLifecycle({
 
     if (status === 'error') {
       onFinished('error')
+
+      // An expired session is not an analysis failure, so re-check auth and let
+      // the gate ask for a reconnect. The step keeps its failed state, which is
+      // retryable once the user is back. Resetting it here would auto-start a
+      // run against the same dead token.
+      if (error && classifyError(error.message).category === 'auth-expired') {
+        void invalidateAssistantAuthStatus()
+      }
+
       dispatch({ type: 'stepRunFailed', stepId, message: failureMessage })
     }
 

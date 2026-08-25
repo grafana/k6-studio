@@ -13,7 +13,19 @@ import { WizardState } from '../state/types'
 
 import { HostsStep } from './HostsStep/HostsStep'
 
-const agentMock = vi.hoisted(() => ({ status: 'running', stop: vi.fn() }))
+const agentMock = vi.hoisted(() => ({
+  status: 'running',
+  stop: vi.fn(),
+  error: undefined as Error | undefined,
+}))
+
+const { invalidateAuthStatusMock } = vi.hoisted(() => ({
+  invalidateAuthStatusMock: vi.fn(),
+}))
+
+vi.mock('@/hooks/useAssistantAuth', () => ({
+  invalidateAssistantAuthStatus: invalidateAuthStatusMock,
+}))
 
 vi.mock('@/utils/assistant/useAssistantAgent', () => ({
   useAssistantAgent: () => ({
@@ -21,7 +33,7 @@ vi.mock('@/utils/assistant/useAssistantAgent', () => ({
     stop: agentMock.stop,
     reset: vi.fn(),
     status: agentMock.status,
-    error: undefined,
+    error: agentMock.error,
     actionsLog: {
       entries: [],
       addEntry: vi.fn(() => ({ id: 'log-1' })),
@@ -34,7 +46,12 @@ function ActiveStep() {
   const { state } = useSetupWizard()
 
   if (state.activeStep === 'hosts') {
-    return <HostsStep />
+    return (
+      <>
+        <HostsStep />
+        <div data-testid="hosts-status">{state.steps.hosts.status}</div>
+      </>
+    )
   }
 
   return (
@@ -145,5 +162,29 @@ describe('useStepAgent', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Skip step' }))
 
     expect(useGeneratorStore.getState().wizardUsed).toBe(false)
+  })
+
+  it('re-checks auth when the session expired mid-run', () => {
+    agentMock.status = 'error'
+    agentMock.error = new Error(
+      'Assistant refresh token has expired. Please re-authenticate with Grafana Assistant.'
+    )
+
+    renderWizard()
+
+    // The refreshed status flips the gate to its reconnect screen. The step
+    // stays failed so the user can retry it after reconnecting.
+    expect(invalidateAuthStatusMock).toHaveBeenCalledOnce()
+    expect(screen.getByTestId('hosts-status').textContent).toBe('error')
+  })
+
+  it('fails the step when the run errors for another reason', () => {
+    agentMock.status = 'error'
+    agentMock.error = new Error('boom')
+
+    renderWizard()
+
+    expect(screen.getByTestId('hosts-status').textContent).toBe('error')
+    expect(invalidateAuthStatusMock).not.toHaveBeenCalled()
   })
 })

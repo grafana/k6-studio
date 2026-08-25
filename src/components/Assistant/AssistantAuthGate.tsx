@@ -14,6 +14,22 @@ import {
 import { useStackHealth } from '@/hooks/useStackHealth'
 import { UsageEventName } from '@/services/usageTracking/types'
 
+/** Both states send the user through the same connect flow. */
+const CONNECT_COPY = {
+  disconnected: {
+    title: 'Connect to Grafana Assistant',
+    description:
+      'Approve the connection so the Assistant can analyze your recording.',
+    action: 'Connect to Grafana Assistant',
+  },
+  expired: {
+    title: 'Your session has expired',
+    description:
+      'Reconnect to Grafana Assistant to pick up where you left off.',
+    action: 'Reconnect',
+  },
+} as const
+
 interface AssistantAuthGateProps {
   /** Rendered once the user is signed in, connected, and the stack is ready. */
   children: ReactNode
@@ -28,9 +44,10 @@ export function AssistantAuthGate({ children }: AssistantAuthGateProps) {
   const [isCloudSigningIn, setIsCloudSigningIn] = useState(false)
   const signIn = useAssistantSignIn()
 
+  const connection = authStatus?.connection ?? 'disconnected'
   const isSignedIn = !!authStatus?.stackId
-  const isAuthenticated = authStatus?.authenticated ?? false
-  const isAwaitingApproval = !isAuthenticated && signIn.isPending
+  const isConnected = connection === 'connected'
+  const isAwaitingApproval = !isConnected && signIn.isPending
 
   const handleSignUpClick = () => {
     window.studio.app.trackEvent({
@@ -108,21 +125,20 @@ export function AssistantAuthGate({ children }: AssistantAuthGateProps) {
     )
   }
 
-  if (!isAuthenticated) {
+  if (!isConnected) {
+    const { title, description, action } = CONNECT_COPY[connection]
+
     return (
       <GateLayout>
         <GateIcon />
-        <GateHeading
-          title="Connect to Grafana Assistant"
-          description="Approve the connection so the Assistant can analyze your recording."
-        />
+        <GateHeading title={title} description={description} />
         <Button
           size="3"
           css={{ width: '100%' }}
           onClick={() => signIn.mutate()}
         >
           <LinkIcon />
-          Connect to Grafana Assistant
+          {action}
         </Button>
         {signIn.error && (
           <Callout.Root color="red" size="1">

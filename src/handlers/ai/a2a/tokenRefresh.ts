@@ -29,6 +29,25 @@ export function isRefreshTokenExpired(tokens: AssistantTokenData): boolean {
   return Date.now() >= tokens.refreshExpiresAt
 }
 
+export type AssistantConnection = 'connected' | 'expired' | 'disconnected'
+
+/**
+ * Stored tokens whose refresh token has expired cannot be renewed, so the user
+ * has to connect again. Callers gate on this rather than on the tokens merely
+ * being present.
+ */
+export async function getAssistantConnection(
+  stackId: string
+): Promise<AssistantConnection> {
+  const tokens = await getAssistantTokens(stackId)
+
+  if (!tokens) {
+    return 'disconnected'
+  }
+
+  return isRefreshTokenExpired(tokens) ? 'expired' : 'connected'
+}
+
 export async function refreshAndSaveTokens(
   stackId: string,
   tokens: AssistantTokenData

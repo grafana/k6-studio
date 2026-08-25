@@ -71,6 +71,7 @@ export function useStepAgent<TTools extends ToolSet>({
   useStepAgentLifecycle({
     stepId,
     status: agent.status,
+    error: agent.error,
     onCompleted,
     failureMessage,
     onFinished: trackFinished,

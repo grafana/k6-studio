@@ -29,7 +29,7 @@ export function IntroductionMessage({ onStart }: IntroductionMessageProps) {
   const signIn = useAssistantSignIn()
 
   const isSignedIn = !!authStatus?.stackId
-  const isAuthenticated = authStatus?.authenticated ?? false
+  const isAuthenticated = authStatus?.connection === 'connected'
   const isAwaitingApproval = !isAuthenticated && signIn.isPending
 
   if (!isSignedIn && isCloudSigningIn) {

@@ -24,8 +24,11 @@ import {
   type StackHealthStatus,
 } from './stackHealth'
 import {
+  getAssistantConnection,
+  type AssistantConnection,
+} from './tokenRefresh'
+import {
   clearAssistantTokens,
-  hasAssistantTokens,
   mapTokenResponse,
   saveAssistantTokens,
 } from './tokenStore'
@@ -36,7 +39,7 @@ export type AssistantAuthResult =
   | { type: 'aborted' }
 
 export interface AssistantAuthStatus {
-  authenticated: boolean
+  connection: AssistantConnection
   stackId: string | null
   stackName: string | null
 }
@@ -202,14 +205,13 @@ export function initialize() {
       const stackId = profile.profiles.currentStack
 
       if (!stackId) {
-        return { authenticated: false, stackId: null, stackName: null }
+        return { connection: 'disconnected', stackId: null, stackName: null }
       }
 
       const stack = profile.profiles.stacks[stackId]
-      const authenticated = await hasAssistantTokens(stackId)
 
       return {
-        authenticated,
+        connection: await getAssistantConnection(stackId),
         stackId,
         stackName: stack?.name ?? null,
       }
