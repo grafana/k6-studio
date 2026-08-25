@@ -10,6 +10,12 @@ import type {
 
 import { useStackHealth } from './useStackHealth'
 
+vi.mock('@/hooks/useProfiles', () => ({
+  useProfiles: () => ({
+    data: { currentStack: 'stack-1', stacks: {} },
+  }),
+}))
+
 const checkStackHealthMock = vi.fn<() => Promise<StackHealthStatus>>()
 const wakeStackMock = vi.fn<() => Promise<StackWakeResult>>()
 
