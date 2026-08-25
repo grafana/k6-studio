@@ -15,8 +15,9 @@ const HealthResponseSchema = z.object({
 })
 
 /**
- * Grafana Cloud's gateway rejects requests to a hibernating instance with this
- * payload. A browser gets the same status as an HTML page holding a reCAPTCHA
+ * Shape of every error the Grafana Cloud gateway returns for an instance it
+ * won't serve yet. A hibernating one waiting for its captcha is the case we act
+ * on: a browser gets the same response as an HTML page holding a reCAPTCHA
  * checkbox, and the instance only boots once someone clicks it, so we point the
  * user at their instance instead of polling forever.
  */
@@ -30,7 +31,7 @@ const HIBERNATING_CODE = 'Loading'
 /**
  * An instance that is booting on its own answers with the same status and code
  * as one waiting for the captcha, so the message is the only thing telling them
- * apart. Anything we don't recognise keeps the loading spinner.
+ * apart. Anything we don't recognize keeps the loading spinner.
  */
 const CAPTCHA_MESSAGE = 'Click on the checkbox'
 
