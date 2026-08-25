@@ -54,6 +54,23 @@ export async function getAssistantConnection(
   return isRefreshTokenExpired(expiry) ? 'expired' : 'connected'
 }
 
+/**
+ * The server refused this session, which the stored expiry cannot show on its
+ * own. Drop the tokens so the connection stops reporting itself as live, unless
+ * they already read as expired.
+ */
+export async function rejectAssistantSession(stackId: string): Promise<void> {
+  const expiry = await getAssistantTokenExpiry(stackId)
+
+  if (!expiry || isRefreshTokenExpired(expiry)) {
+    return
+  }
+
+  log.info(LOG_PREFIX, 'Dropping refused assistant session for stack', stackId)
+
+  await clearAssistantTokens(stackId)
+}
+
 export async function refreshAndSaveTokens(
   stackId: string,
   tokens: AssistantTokenData

@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { getAssistantConnection, refreshAndSaveTokens } from './tokenRefresh'
+import {
+  getAssistantConnection,
+  refreshAndSaveTokens,
+  rejectAssistantSession,
+} from './tokenRefresh'
 
 const { store, clearAssistantTokensMock } = vi.hoisted(() => ({
   store: {
@@ -149,5 +153,42 @@ describe('getAssistantConnection', () => {
     }
 
     await expect(getAssistantConnection('1')).resolves.toBe('connected')
+  })
+})
+
+describe('rejectAssistantSession', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    store.expiry = {}
+  })
+
+  it('drops tokens the server refused while they still look valid', async () => {
+    // The case the stored expiry cannot see: an A2A 401 on a session whose
+    // refresh token has not run out locally.
+    store.expiry['1'] = {
+      expiresAt: Date.now() + 60_000,
+      refreshExpiresAt: Date.now() + 86400_000,
+    }
+
+    await rejectAssistantSession('1')
+
+    expect(clearAssistantTokensMock).toHaveBeenCalledWith('1')
+  })
+
+  it('leaves tokens alone when they already read as expired', async () => {
+    store.expiry['1'] = {
+      expiresAt: Date.now() - 86400_000,
+      refreshExpiresAt: Date.now() - 1000,
+    }
+
+    await rejectAssistantSession('1')
+
+    expect(clearAssistantTokensMock).not.toHaveBeenCalled()
+  })
+
+  it('does nothing when no tokens are stored', async () => {
+    await rejectAssistantSession('1')
+
+    expect(clearAssistantTokensMock).not.toHaveBeenCalled()
   })
 })

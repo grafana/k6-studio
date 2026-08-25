@@ -19,12 +19,12 @@ const agentMock = vi.hoisted(() => ({
   error: undefined as Error | undefined,
 }))
 
-const { invalidateAuthStatusMock } = vi.hoisted(() => ({
-  invalidateAuthStatusMock: vi.fn(),
+const { endRejectedSessionMock } = vi.hoisted(() => ({
+  endRejectedSessionMock: vi.fn(),
 }))
 
 vi.mock('@/hooks/useAssistantAuth', () => ({
-  invalidateAssistantAuthStatus: invalidateAuthStatusMock,
+  endRejectedAssistantSession: endRejectedSessionMock,
 }))
 
 vi.mock('@/utils/assistant/useAssistantAgent', () => ({
@@ -165,7 +165,7 @@ describe('useStepAgent', () => {
     expect(useGeneratorStore.getState().wizardUsed).toBe(false)
   })
 
-  it('re-checks auth when the session expired mid-run', () => {
+  it('ends the session when it expired mid-run', () => {
     agentMock.status = 'error'
     // What getA2AConfig surfaces once the refresh has failed. The throw inside
     // refreshAndSaveTokens never reaches the renderer.
@@ -178,7 +178,7 @@ describe('useStepAgent', () => {
     // The refreshed status flips the gate to its reconnect screen. The run is
     // recorded as interrupted rather than as a failed analysis, and stays
     // retryable once the user is back.
-    expect(invalidateAuthStatusMock).toHaveBeenCalledOnce()
+    expect(endRejectedSessionMock).toHaveBeenCalledOnce()
     expect(screen.getByTestId('hosts-status').textContent).toBe('aborted')
   })
 
@@ -189,6 +189,6 @@ describe('useStepAgent', () => {
     renderWizard()
 
     expect(screen.getByTestId('hosts-status').textContent).toBe('error')
-    expect(invalidateAuthStatusMock).not.toHaveBeenCalled()
+    expect(endRejectedSessionMock).not.toHaveBeenCalled()
   })
 })

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 
-import { invalidateAssistantAuthStatus } from '@/hooks/useAssistantAuth'
+import { endRejectedAssistantSession } from '@/hooks/useAssistantAuth'
 import { classifyError } from '@/utils/assistant/classifyError'
 import { AgentRunStatus } from '@/utils/assistant/useAssistantAgent'
 
@@ -68,7 +68,7 @@ export function useStepAgentLifecycle({
       ) {
         onFinished('aborted')
         dispatch({ type: 'stepRunAborted', stepId })
-        void invalidateAssistantAuthStatus()
+        void endRejectedAssistantSession()
         return
       }
 

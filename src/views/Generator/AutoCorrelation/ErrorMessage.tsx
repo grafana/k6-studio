@@ -8,7 +8,7 @@ import {
 import { CONNECT_COPY } from '@/components/Assistant/connectCopy'
 import { ErrorMessage as MessageContent } from '@/components/ErrorMessage'
 import { ExternalLink } from '@/components/ExternalLink'
-import { invalidateAssistantAuthStatus } from '@/hooks/useAssistantAuth'
+import { endRejectedAssistantSession } from '@/hooks/useAssistantAuth'
 import {
   AssistantErrorInfo,
   classifyError,
@@ -34,11 +34,10 @@ export function ErrorMessage({
         onRetry,
         onReset,
         onClose,
-        // Re-checking auth reports the session as expired, which sends the user
-        // to the same reconnect prompt the wizard shows. Signing out here would
-        // instead ask them to connect from scratch.
+        // Ending the session sends the user to the same reconnect prompt the
+        // wizard shows, whether the tokens lapsed or the server refused them.
         onReconnect: () => {
-          void invalidateAssistantAuthStatus()
+          void endRejectedAssistantSession()
           onReset()
         },
       }}

@@ -11,6 +11,16 @@ export function invalidateAssistantAuthStatus() {
   return queryClient.invalidateQueries({ queryKey: QUERY_KEY })
 }
 
+/**
+ * Ends a session the server refused. The stored expiry alone still reads as
+ * live in that case, so the tokens have to be dropped before the refreshed
+ * status can send the user to the reconnect prompt.
+ */
+export async function endRejectedAssistantSession() {
+  await window.studio.ai.assistantRejectSession()
+  await invalidateAssistantAuthStatus()
+}
+
 export function useAssistantAuthStatus() {
   const isProfileOpen = useStudioUIStore((s) => s.isProfileDialogOpen)
   const wasOpen = useRef(false)
