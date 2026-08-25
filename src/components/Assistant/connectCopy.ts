@@ -22,8 +22,7 @@ export const CONNECT_COPY: Record<
   },
   expired: {
     title: 'Your session has expired',
-    description:
-      'Reconnect to Grafana Assistant to pick up where you left off.',
+    description: 'Reconnect to Grafana Assistant to continue.',
     action: 'Reconnect',
   },
 }
