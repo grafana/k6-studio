@@ -140,7 +140,14 @@ export async function clearAssistantTokens(stackId: string): Promise<void> {
   })
 }
 
-export async function hasAssistantTokens(stackId: string): Promise<boolean> {
+/**
+ * Only the tokens themselves are encrypted, so callers that just need to know
+ * how long a session lasts avoid decrypting anything.
+ */
+export async function getAssistantTokenExpiry(
+  stackId: string
+): Promise<Pick<AssistantTokenData, 'expiresAt' | 'refreshExpiresAt'> | null> {
   const store = await readStore()
-  return stackId in store.tokens
+
+  return store.tokens[stackId] ?? null
 }

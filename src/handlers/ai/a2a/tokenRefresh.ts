@@ -5,6 +5,7 @@ import { LOG_PREFIX } from './constants'
 import { safeResponseText } from './helpers'
 import {
   type AssistantTokenData,
+  getAssistantTokenExpiry,
   getAssistantTokens,
   mapTokenResponse,
   saveAssistantTokens,
@@ -25,7 +26,9 @@ export function isTokenExpiringSoon(tokens: AssistantTokenData): boolean {
   return Date.now() + REFRESH_THRESHOLD_MS >= tokens.expiresAt
 }
 
-export function isRefreshTokenExpired(tokens: AssistantTokenData): boolean {
+export function isRefreshTokenExpired(tokens: {
+  refreshExpiresAt: number
+}): boolean {
   return Date.now() >= tokens.refreshExpiresAt
 }
 
@@ -39,13 +42,13 @@ export type AssistantConnection = 'connected' | 'expired' | 'disconnected'
 export async function getAssistantConnection(
   stackId: string
 ): Promise<AssistantConnection> {
-  const tokens = await getAssistantTokens(stackId)
+  const expiry = await getAssistantTokenExpiry(stackId)
 
-  if (!tokens) {
+  if (!expiry) {
     return 'disconnected'
   }
 
-  return isRefreshTokenExpired(tokens) ? 'expired' : 'connected'
+  return isRefreshTokenExpired(expiry) ? 'expired' : 'connected'
 }
 
 export async function refreshAndSaveTokens(
