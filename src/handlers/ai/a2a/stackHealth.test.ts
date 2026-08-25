@@ -4,10 +4,17 @@ import {
   checkStackHealth,
   wakeStack,
   type StackHealthStatus,
+  type StackWakeResult,
 } from './stackHealth'
 
 const mockFetch = vi.fn()
 const stackUrl = 'https://mystack.grafana.net'
+
+/** Body Grafana Cloud returns while a hibernating instance waits for the captcha. */
+const HIBERNATING_BODY = JSON.stringify({
+  code: 'Loading',
+  message: 'Click on the checkbox to continue loading your instance',
+})
 
 beforeEach(() => {
   mockFetch.mockClear()
@@ -36,10 +43,67 @@ describe('wakeStack', () => {
     )
   })
 
-  it('does not throw when the request fails', async () => {
+  it('returns "awake" when the stack serves the login page', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      text: () => Promise.resolve('<html>login</html>'),
+    })
+
+    await expect(wakeStack(stackUrl)).resolves.toEqual({
+      status: 'awake',
+    } satisfies StackWakeResult)
+  })
+
+  it('returns "captcha-required" when the instance is hibernating', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 503,
+      text: () => Promise.resolve(HIBERNATING_BODY),
+    })
+
+    await expect(wakeStack(stackUrl)).resolves.toEqual({
+      status: 'captcha-required',
+      url: stackUrl,
+    } satisfies StackWakeResult)
+  })
+
+  it('returns "loading" for other gateway errors', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      text: () =>
+        Promise.resolve(
+          JSON.stringify({
+            code: 'NotFound',
+            message:
+              "We do not recognize the instance URL you're trying to reach.",
+          })
+        ),
+    })
+
+    await expect(wakeStack(stackUrl)).resolves.toEqual({
+      status: 'loading',
+    } satisfies StackWakeResult)
+  })
+
+  it('returns "loading" when the error body is not JSON', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 502,
+      text: () => Promise.resolve('<html>Bad gateway</html>'),
+    })
+
+    await expect(wakeStack(stackUrl)).resolves.toEqual({
+      status: 'loading',
+    } satisfies StackWakeResult)
+  })
+
+  it('returns "loading" when the request fails', async () => {
     mockFetch.mockRejectedValueOnce(new TypeError('Failed to fetch'))
 
-    await expect(wakeStack(stackUrl)).resolves.toBeUndefined()
+    await expect(wakeStack(stackUrl)).resolves.toEqual({
+      status: 'loading',
+    } satisfies StackWakeResult)
   })
 })
 
@@ -64,6 +128,17 @@ describe('checkStackHealth', () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 503,
+    })
+
+    const result = await checkStackHealth(stackUrl)
+
+    expect(result).toBe<StackHealthStatus>('loading')
+  })
+
+  it('returns "loading" when a hibernating instance 404s the health endpoint', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 404,
     })
 
     const result = await checkStackHealth(stackUrl)

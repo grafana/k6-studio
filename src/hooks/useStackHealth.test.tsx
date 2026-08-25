@@ -3,12 +3,17 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { type PropsWithChildren } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { StackHealthStatus } from '@/handlers/ai/a2a/stackHealth'
+import type {
+  StackHealthStatus,
+  StackWakeResult,
+} from '@/handlers/ai/a2a/stackHealth'
 
 import { useStackHealth } from './useStackHealth'
 
 const checkStackHealthMock = vi.fn<() => Promise<StackHealthStatus>>()
-const wakeStackMock = vi.fn<() => Promise<void>>()
+const wakeStackMock = vi.fn<() => Promise<StackWakeResult>>()
+
+const stackUrl = 'https://mystack.grafana.net'
 
 function createWrapper() {
   const client = new QueryClient({
@@ -22,6 +27,7 @@ function createWrapper() {
 describe('useStackHealth', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    wakeStackMock.mockResolvedValue({ status: 'awake' })
     vi.stubGlobal('studio', {
       ai: {
         assistantCheckStackHealth: checkStackHealthMock,
@@ -95,5 +101,54 @@ describe('useStackHealth', () => {
     })
 
     expect(wakeStackMock).not.toHaveBeenCalled()
+  })
+
+  it('exposes the stack url when the instance waits for a captcha', async () => {
+    checkStackHealthMock.mockResolvedValue('loading')
+    wakeStackMock.mockResolvedValue({
+      status: 'captcha-required',
+      url: stackUrl,
+    })
+
+    const { result } = renderHook(() => useStackHealth(true), {
+      wrapper: createWrapper(),
+    })
+
+    await waitFor(() => {
+      expect(result.current.captchaUrl).toBe(stackUrl)
+    })
+  })
+
+  it('does not expose a captcha url once the stack is ready', async () => {
+    checkStackHealthMock.mockResolvedValue('ready')
+    wakeStackMock.mockResolvedValue({
+      status: 'captcha-required',
+      url: stackUrl,
+    })
+
+    const { result } = renderHook(() => useStackHealth(true), {
+      wrapper: createWrapper(),
+    })
+
+    await waitFor(() => {
+      expect(result.current.isStackReady).toBe(true)
+    })
+
+    expect(result.current.captchaUrl).toBeNull()
+  })
+
+  it('does not expose a captcha url while the stack is only booting', async () => {
+    checkStackHealthMock.mockResolvedValue('loading')
+    wakeStackMock.mockResolvedValue({ status: 'loading' })
+
+    const { result } = renderHook(() => useStackHealth(true), {
+      wrapper: createWrapper(),
+    })
+
+    await waitFor(() => {
+      expect(result.current.isStackReady).toBe(false)
+    })
+
+    expect(result.current.captchaUrl).toBeNull()
   })
 })
