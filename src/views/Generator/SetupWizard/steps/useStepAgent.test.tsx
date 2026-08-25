@@ -78,6 +78,7 @@ function renderWizard() {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  agentMock.error = undefined
   vi.stubGlobal('studio', { app: { trackEvent: vi.fn() } })
   agentMock.status = 'running'
   agentMock.stop = vi.fn()
@@ -166,16 +167,19 @@ describe('useStepAgent', () => {
 
   it('re-checks auth when the session expired mid-run', () => {
     agentMock.status = 'error'
+    // What getA2AConfig surfaces once the refresh has failed. The throw inside
+    // refreshAndSaveTokens never reaches the renderer.
     agentMock.error = new Error(
-      'Assistant refresh token has expired. Please re-authenticate with Grafana Assistant.'
+      'Not authenticated with Grafana Assistant. Please connect to Grafana Assistant first.'
     )
 
     renderWizard()
 
-    // The refreshed status flips the gate to its reconnect screen. The step
-    // stays failed so the user can retry it after reconnecting.
+    // The refreshed status flips the gate to its reconnect screen. The run is
+    // recorded as interrupted rather than as a failed analysis, and stays
+    // retryable once the user is back.
     expect(invalidateAuthStatusMock).toHaveBeenCalledOnce()
-    expect(screen.getByTestId('hosts-status').textContent).toBe('error')
+    expect(screen.getByTestId('hosts-status').textContent).toBe('aborted')
   })
 
   it('fails the step when the run errors for another reason', () => {

@@ -10,8 +10,8 @@ const AssistantTokenDataSchema = z.object({
   accessToken: z.string(),
   refreshToken: z.string(),
   apiEndpoint: z.string(),
-  expiresAt: z.number(),
-  refreshExpiresAt: z.number(),
+  expiresAt: z.number().finite(),
+  refreshExpiresAt: z.number().finite(),
 })
 
 const AssistantTokenStoreSchema = z.object({
@@ -148,6 +148,14 @@ export async function getAssistantTokenExpiry(
   stackId: string
 ): Promise<Pick<AssistantTokenData, 'expiresAt' | 'refreshExpiresAt'> | null> {
   const store = await readStore()
+  const tokens = store.tokens[stackId]
 
-  return store.tokens[stackId] ?? null
+  if (!tokens) {
+    return null
+  }
+
+  return {
+    expiresAt: tokens.expiresAt,
+    refreshExpiresAt: tokens.refreshExpiresAt,
+  }
 }

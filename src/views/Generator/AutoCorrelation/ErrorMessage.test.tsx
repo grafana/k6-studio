@@ -1,6 +1,8 @@
 import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
+import { CONNECT_COPY } from '@/components/Assistant/connectCopy'
+
 import { ErrorMessage } from './ErrorMessage'
 
 vi.mock('@/hooks/useAssistantAuth', () => ({
@@ -20,15 +22,19 @@ const baseProps = {
 afterEach(cleanup)
 
 describe('ErrorMessage', () => {
-  it('renders "Session expired" for HTTP 401 error text', () => {
+  it('renders the shared expired-session prompt for HTTP 401 error text', () => {
     render(
       <ErrorMessage
         {...baseProps}
         error={new Error('A2A request failed (401): Unauthorized')}
       />
     )
-    expect(screen.getByText('Session expired')).toBeDefined()
-    expect(screen.getByText(/Reconnect/)).toBeDefined()
+    // Same wording the assistant auth gate and the wizard show.
+    expect(screen.getByText(CONNECT_COPY.expired.title)).toBeDefined()
+    expect(screen.getByText(CONNECT_COPY.expired.description)).toBeDefined()
+    expect(
+      screen.getByRole('button', { name: CONNECT_COPY.expired.action })
+    ).toBeDefined()
   })
 
   it('renders "Connection error" for fetch failure', () => {

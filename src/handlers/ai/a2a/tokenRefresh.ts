@@ -5,13 +5,18 @@ import { LOG_PREFIX } from './constants'
 import { safeResponseText } from './helpers'
 import {
   type AssistantTokenData,
+  clearAssistantTokens,
   getAssistantTokenExpiry,
   getAssistantTokens,
   mapTokenResponse,
   saveAssistantTokens,
 } from './tokenStore'
+import type { AssistantConnection } from './types'
 
 const REFRESH_THRESHOLD_MS = 5 * 60 * 1000 // 5 minutes
+
+/** Statuses that mean the refresh token itself was refused, not a bad moment. */
+const REFRESH_REJECTED_STATUSES = [400, 401, 403]
 
 const RefreshResponseSchema = z.object({
   data: z.object({
@@ -31,8 +36,6 @@ export function isRefreshTokenExpired(tokens: {
 }): boolean {
   return Date.now() >= tokens.refreshExpiresAt
 }
-
-export type AssistantConnection = 'connected' | 'expired' | 'disconnected'
 
 /**
  * Stored tokens whose refresh token has expired cannot be renewed, so the user
@@ -74,6 +77,13 @@ export async function refreshAndSaveTokens(
 
   if (!response.ok) {
     const text = await safeResponseText(response)
+
+    // A refused token never works again. Drop it so the session reads as gone
+    // instead of leaving its stored expiry to claim the user is still signed in.
+    if (REFRESH_REJECTED_STATUSES.includes(response.status)) {
+      await clearAssistantTokens(stackId)
+    }
+
     throw new Error(
       `Assistant token refresh failed (${response.status}): ${text}`
     )

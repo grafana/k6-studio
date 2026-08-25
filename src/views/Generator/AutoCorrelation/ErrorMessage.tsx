@@ -5,9 +5,10 @@ import {
   RefreshCw,
 } from 'lucide-react'
 
+import { CONNECT_COPY } from '@/components/Assistant/connectCopy'
 import { ErrorMessage as MessageContent } from '@/components/ErrorMessage'
 import { ExternalLink } from '@/components/ExternalLink'
-import { useAssistantSignOut } from '@/hooks/useAssistantAuth'
+import { invalidateAssistantAuthStatus } from '@/hooks/useAssistantAuth'
 import {
   AssistantErrorInfo,
   classifyError,
@@ -26,8 +27,6 @@ export function ErrorMessage({
   onReset,
   onClose,
 }: AutoCorrelationErrorProps) {
-  const { mutate: signOut } = useAssistantSignOut()
-
   return (
     <ClassifiedError
       errorInfo={classifyError(error.message)}
@@ -35,8 +34,11 @@ export function ErrorMessage({
         onRetry,
         onReset,
         onClose,
+        // Re-checking auth reports the session as expired, which sends the user
+        // to the same reconnect prompt the wizard shows. Signing out here would
+        // instead ask them to connect from scratch.
         onReconnect: () => {
-          signOut()
+          void invalidateAssistantAuthStatus()
           onReset()
         },
       }}
@@ -73,13 +75,12 @@ const reportIssueButton = (
 
 const ERROR_CONTENT: Record<AssistantErrorInfo['category'], ErrorContent> = {
   'auth-expired': {
-    title: 'Session expired',
-    message:
-      'Your Grafana Assistant session has expired. Please reconnect to continue.',
+    title: CONNECT_COPY.expired.title,
+    message: CONNECT_COPY.expired.description,
     renderActions: ({ onReconnect }) => (
       <Button onClick={onReconnect}>
         <LinkIcon />
-        Reconnect
+        {CONNECT_COPY.expired.action}
       </Button>
     ),
   },

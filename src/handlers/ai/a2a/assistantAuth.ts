@@ -23,15 +23,13 @@ import {
   wakeStack,
   type StackHealthStatus,
 } from './stackHealth'
-import {
-  getAssistantConnection,
-  type AssistantConnection,
-} from './tokenRefresh'
+import { getAssistantConnection } from './tokenRefresh'
 import {
   clearAssistantTokens,
   mapTokenResponse,
   saveAssistantTokens,
 } from './tokenStore'
+import type { AssistantConnection } from './types'
 
 export type AssistantAuthResult =
   | { type: 'authenticated' }

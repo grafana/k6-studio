@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { invalidateAssistantAuthStatus } from '@/hooks/useAssistantAuth'
 import { classifyError } from '@/utils/assistant/classifyError'
@@ -36,6 +36,12 @@ export function useStepAgentLifecycle({
   onFinished,
 }: UseStepAgentLifecycleOptions) {
   const { state, dispatch } = useSetupWizard()
+  // The effect keys on the status transition alone, so read the failure through
+  // a ref rather than trusting it to land in the same render.
+  const errorRef = useRef(error)
+  useEffect(() => {
+    errorRef.current = error
+  })
 
   useEffect(() => {
     // Skipping a step completes it while the agent is still shutting down;
@@ -50,16 +56,23 @@ export function useStepAgentLifecycle({
     }
 
     if (status === 'error') {
-      onFinished('error')
+      const failure = errorRef.current
 
-      // An expired session is not an analysis failure, so re-check auth and let
-      // the gate ask for a reconnect. The step keeps its failed state, which is
-      // retryable once the user is back. Resetting it here would auto-start a
-      // run against the same dead token.
-      if (error && classifyError(error.message).category === 'auth-expired') {
+      // An expired session is not an analysis failure. Record it as an
+      // interrupted run, so the step does not claim the analysis went wrong,
+      // then re-check auth and let the gate ask for a reconnect. Resetting the
+      // step here would auto-start a run against the same dead token.
+      if (
+        failure &&
+        classifyError(failure.message).category === 'auth-expired'
+      ) {
+        onFinished('aborted')
+        dispatch({ type: 'stepRunAborted', stepId })
         void invalidateAssistantAuthStatus()
+        return
       }
 
+      onFinished('error')
       dispatch({ type: 'stepRunFailed', stepId, message: failureMessage })
     }
 

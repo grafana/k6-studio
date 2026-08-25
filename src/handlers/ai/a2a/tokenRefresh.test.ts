@@ -1,6 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { getAssistantConnection, refreshAndSaveTokens } from './tokenRefresh'
+
+const { store, clearAssistantTokensMock } = vi.hoisted(() => ({
+  store: {
+    expiry: {} as Record<
+      string,
+      { expiresAt: number; refreshExpiresAt: number }
+    >,
+  },
+  clearAssistantTokensMock: vi.fn(),
+}))
 import type { AssistantTokenData } from './tokenStore'
 
 vi.mock('./tokenStore', () => ({
@@ -20,14 +30,10 @@ vi.mock('./tokenStore', () => ({
     refreshExpiresAt: new Date(response.refresh_expires_at).getTime(),
   }),
   saveAssistantTokens: vi.fn(),
+  clearAssistantTokens: clearAssistantTokensMock,
   getAssistantTokenExpiry: (stackId: string) =>
-    Promise.resolve(storedExpiry[stackId] ?? null),
+    Promise.resolve(store.expiry[stackId] ?? null),
 }))
-
-const storedExpiry: Record<
-  string,
-  { expiresAt: number; refreshExpiresAt: number }
-> = {}
 
 describe('refreshAndSaveTokens', () => {
   const mockFetch = vi.fn()
@@ -40,6 +46,7 @@ describe('refreshAndSaveTokens', () => {
   }
 
   beforeEach(() => {
+    vi.clearAllMocks()
     vi.stubGlobal('fetch', mockFetch)
   })
 
@@ -91,13 +98,35 @@ describe('refreshAndSaveTokens', () => {
       'Assistant token refresh failed (401)'
     )
   })
+
+  it('drops a refused refresh token so the session reads as gone', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      text: () => Promise.resolve('invalid_grant'),
+    })
+
+    await expect(refreshAndSaveTokens('1', validTokens)).rejects.toThrow()
+
+    expect(clearAssistantTokensMock).toHaveBeenCalledWith('1')
+  })
+
+  it('keeps the tokens when the refresh fails for a transient reason', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 503,
+      text: () => Promise.resolve('service unavailable'),
+    })
+
+    await expect(refreshAndSaveTokens('1', validTokens)).rejects.toThrow()
+
+    expect(clearAssistantTokensMock).not.toHaveBeenCalled()
+  })
 })
 
 describe('getAssistantConnection', () => {
-  afterEach(() => {
-    for (const stackId of Object.keys(storedExpiry)) {
-      delete storedExpiry[stackId]
-    }
+  beforeEach(() => {
+    store.expiry = {}
   })
 
   it('reports disconnected when no tokens are stored', async () => {
@@ -105,7 +134,7 @@ describe('getAssistantConnection', () => {
   })
 
   it('reports expired when the refresh token has run out', async () => {
-    storedExpiry['1'] = {
+    store.expiry['1'] = {
       expiresAt: Date.now() - 86400_000,
       refreshExpiresAt: Date.now() - 1000,
     }
@@ -114,7 +143,7 @@ describe('getAssistantConnection', () => {
   })
 
   it('reports connected while the refresh token is still valid', async () => {
-    storedExpiry['1'] = {
+    store.expiry['1'] = {
       expiresAt: Date.now() - 1000,
       refreshExpiresAt: Date.now() + 86400_000,
     }

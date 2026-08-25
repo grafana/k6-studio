@@ -1,3 +1,5 @@
+export type AssistantConnection = 'connected' | 'expired' | 'disconnected'
+
 export type A2ATaskState =
   | 'submitted'
   | 'working'

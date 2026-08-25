@@ -12,7 +12,7 @@ import grotIllustration from '@/assets/grot-magic.svg'
 import { CONNECT_COPY } from '@/components/Assistant/connectCopy'
 import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
 import { GrafanaCloudSignIn } from '@/components/Profile/GrafanaCloudSignIn'
-import type { AssistantConnection } from '@/handlers/ai/a2a/tokenRefresh'
+import type { AssistantConnection } from '@/handlers/ai/a2a/types'
 import {
   useAssistantAuthStatus,
   useAssistantSignIn,
@@ -155,9 +155,14 @@ function AssistantAuthStatus({
       <>
         {/* The intro already explains a first connection, an expired one needs saying. */}
         {connection === 'expired' && (
-          <Text size="2" color="gray">
-            {title}. {description}
-          </Text>
+          <Flex direction="column" gap="1">
+            <Text size="2" weight="bold">
+              {title}
+            </Text>
+            <Text size="2" color="gray">
+              {description}
+            </Text>
+          </Flex>
         )}
         <Button size="3" onClick={onConnect}>
           <LinkIcon />

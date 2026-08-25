@@ -1,4 +1,4 @@
-import type { AssistantConnection } from '@/handlers/ai/a2a/tokenRefresh'
+import type { AssistantConnection } from '@/handlers/ai/a2a/types'
 
 type ConnectCopy = {
   title: string
