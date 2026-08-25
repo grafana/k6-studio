@@ -34,8 +34,8 @@ const HEALTH_CHECK_TIMEOUT_MS = 5000
  * The /api/health endpoint does not wake hibernating stacks on its own.
  * See: https://github.com/grafana/terraform-provider-grafana/blob/6d9acfb3939ef17e5cff4f144ff91ecec88c2d97/internal/resources/cloud/resource_cloud_stack.go#L704-L705
  *
- * Keep this one-shot. The gateway rate limits wake attempts per client IP and
- * forces its captcha once tripped. Poll checkStackHealth instead, it's exempt.
+ * Send this once. The gateway limits wake requests per client IP and shows its
+ * captcha when that limit is reached. Poll checkStackHealth, which is not limited.
  */
 export async function wakeStack(stackUrl: string): Promise<StackWakeResult> {
   try {
