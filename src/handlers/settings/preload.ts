@@ -8,6 +8,12 @@ export function getSettings() {
   return ipcRenderer.invoke(SettingsHandler.Get) as Promise<AppSettings>
 }
 
+export function getFallbackWarning() {
+  return ipcRenderer.invoke(SettingsHandler.GetFallbackWarning) as Promise<
+    string | null
+  >
+}
+
 export function saveSettings(settings: AppSettings) {
   return ipcRenderer.invoke(
     SettingsHandler.Save,

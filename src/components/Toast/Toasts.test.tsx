@@ -8,9 +8,11 @@ import { Toasts } from './Toasts'
 
 describe('Toasts', () => {
   let emitToast: (toast: AddToastPayload) => void
+  const getFallbackWarning = vi.fn<() => Promise<string | null>>()
 
   beforeEach(() => {
     vi.useFakeTimers()
+    getFallbackWarning.mockResolvedValue(null)
     vi.stubGlobal('studio', {
       ui: {
         onToast: (callback: (toast: AddToastPayload) => void) => {
@@ -18,6 +20,7 @@ describe('Toasts', () => {
           return vi.fn()
         },
       },
+      settings: { getFallbackWarning },
     })
   })
 
@@ -65,5 +68,24 @@ describe('Toasts', () => {
     fireEvent.click(screen.getByRole('button', { hidden: true }))
 
     expect(onDismiss).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows a warning when startup fell back to default settings', async () => {
+    getFallbackWarning.mockResolvedValue(
+      'The settings file could not be parsed.'
+    )
+
+    render(<Toasts />)
+
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    expect(screen.getByText('Settings reset to defaults')).toBeDefined()
+    expect(
+      screen.getByText(
+        'The settings file could not be parsed. Review your settings before continuing.'
+      )
+    ).toBeDefined()
   })
 })

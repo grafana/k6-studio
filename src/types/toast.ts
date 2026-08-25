@@ -1,7 +1,7 @@
 export interface Toast {
   id: string
   open: boolean
-  status: 'default' | 'success' | 'error'
+  status: 'default' | 'success' | 'warning' | 'error'
   title: string
   description?: string
   action?: React.ReactNode
