@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
-const QUERY_KEY = ['assistant-stack-health'] as const
-const WAKE_QUERY_KEY = ['assistant-stack-wake'] as const
+import { useAssistantAuthStatus } from '@/hooks/useAssistantAuth'
+
 const POLL_INTERVAL_MS = 3000
 
 /**
@@ -11,22 +11,30 @@ const POLL_INTERVAL_MS = 3000
 const WAKE_THROTTLE_MS = 15 * 60 * 1000
 
 export function useStackHealth(enabled: boolean) {
+  const { data: authStatus } = useAssistantAuthStatus()
+  // Both answers describe one instance, so a stack switch must not reuse them.
+  const stackId = authStatus?.stackId
+  const isEnabled = enabled && !!stackId
+
   const wake = useQuery({
-    queryKey: WAKE_QUERY_KEY,
+    queryKey: ['assistant-stack-wake', stackId],
     queryFn: () => window.studio.ai.assistantWakeStack(),
     networkMode: 'always',
     staleTime: WAKE_THROTTLE_MS,
+    // Keeping the entry at least as long as the throttle, or it is evicted
+    // after the default five minutes and the next open wakes the stack again.
+    gcTime: WAKE_THROTTLE_MS,
     refetchOnReconnect: false,
-    enabled,
+    enabled: isEnabled,
   })
 
   const health = useQuery({
-    queryKey: QUERY_KEY,
+    queryKey: ['assistant-stack-health', stackId],
     queryFn: () => window.studio.ai.assistantCheckStackHealth(),
     networkMode: 'always',
     refetchInterval: (result) =>
       result.state.data === 'ready' ? false : POLL_INTERVAL_MS,
-    enabled,
+    enabled: isEnabled,
   })
 
   const isStackReady = !enabled || health.data === 'ready'
