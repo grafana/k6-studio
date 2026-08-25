@@ -4,13 +4,21 @@ const QUERY_KEY = ['assistant-stack-health'] as const
 const WAKE_QUERY_KEY = ['assistant-stack-wake'] as const
 const POLL_INTERVAL_MS = 3000
 
+/**
+ * Grafana Cloud rate limits wake attempts per client IP, and forces its captcha
+ * on an instance that would otherwise have woken on its own once tripped. Reuse
+ * the last answer for roughly that window so reopening the gate a few times
+ * doesn't create the captcha we're trying to report.
+ */
+const WAKE_THROTTLE_MS = 15 * 60 * 1000
+
 export function useStackHealth(enabled: boolean) {
-  // Wakes the stack once per mount, and reports whether Grafana Cloud is
-  // waiting for someone to solve its captcha before the instance boots.
   const wake = useQuery({
     queryKey: WAKE_QUERY_KEY,
     queryFn: () => window.studio.ai.assistantWakeStack(),
     networkMode: 'always',
+    staleTime: WAKE_THROTTLE_MS,
+    refetchOnReconnect: false,
     enabled,
   })
 

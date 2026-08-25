@@ -95,7 +95,7 @@ describe('useStackHealth', () => {
     })
   })
 
-  it('wakes the stack again when reopened after it hibernated', async () => {
+  it('does not wake the stack again when reopened right away', async () => {
     checkStackHealthMock.mockResolvedValue('loading')
     const wrapper = createWrapper()
 
@@ -106,11 +106,35 @@ describe('useStackHealth', () => {
     })
 
     unmount()
+    const { result } = renderHook(() => useStackHealth(true), { wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isStackReady).toBe(false)
+    })
+
+    expect(wakeStackMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('wakes the stack again when reopened after the throttle window', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    checkStackHealthMock.mockResolvedValue('loading')
+    const wrapper = createWrapper()
+
+    const { unmount } = renderHook(() => useStackHealth(true), { wrapper })
+
+    await waitFor(() => {
+      expect(wakeStackMock).toHaveBeenCalledTimes(1)
+    })
+
+    unmount()
+    vi.setSystemTime(Date.now() + 16 * 60 * 1000)
     renderHook(() => useStackHealth(true), { wrapper })
 
     await waitFor(() => {
       expect(wakeStackMock).toHaveBeenCalledTimes(2)
     })
+
+    vi.useRealTimers()
   })
 
   it('does not call wake when disabled', () => {

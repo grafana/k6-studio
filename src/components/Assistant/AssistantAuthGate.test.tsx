@@ -37,6 +37,8 @@ vi.mock('@/hooks/useStackHealth', () => ({
 const trackEvent = vi.fn()
 const openExternalLink = vi.fn().mockResolvedValue(undefined)
 
+const stackUrl = 'https://mystack.grafana.net'
+
 beforeEach(() => {
   vi.clearAllMocks()
 
@@ -98,7 +100,7 @@ describe('AssistantAuthGate (hibernating stack)', () => {
   it('asks the user to open their instance when it waits for a captcha', () => {
     useStackHealthMock.mockReturnValue({
       isStackReady: false,
-      captchaUrl: 'https://mystack.grafana.net',
+      captchaUrl: stackUrl,
     })
 
     renderGate()

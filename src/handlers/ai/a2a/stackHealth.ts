@@ -1,6 +1,8 @@
 import log from 'electron-log/main'
 import { z } from 'zod'
 
+import { parseJsonAsSchema } from '@/utils/json'
+
 import { LOG_PREFIX } from './constants'
 
 export type StackHealthStatus = 'ready' | 'loading'
@@ -73,13 +75,13 @@ export async function wakeStack(stackUrl: string): Promise<StackWakeResult> {
 }
 
 function needsCaptcha(body: string): boolean {
-  try {
-    const { code, message } = GatewayErrorSchema.parse(JSON.parse(body))
+  const parsed = parseJsonAsSchema(body, GatewayErrorSchema)
 
-    return code === HIBERNATING_CODE && message.includes(CAPTCHA_MESSAGE)
-  } catch {
-    return false
-  }
+  return (
+    parsed.success &&
+    parsed.data.code === HIBERNATING_CODE &&
+    parsed.data.message.includes(CAPTCHA_MESSAGE)
+  )
 }
 
 export async function checkStackHealth(
