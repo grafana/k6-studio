@@ -6,12 +6,12 @@ import { CONNECT_COPY } from '@/components/Assistant/connectCopy'
 
 import { ErrorMessage } from './ErrorMessage'
 
-const { endRejectedSessionMock } = vi.hoisted(() => ({
-  endRejectedSessionMock: vi.fn(),
+const { invalidateAuthStatusMock } = vi.hoisted(() => ({
+  invalidateAuthStatusMock: vi.fn(),
 }))
 
 vi.mock('@/hooks/useAssistantAuth', () => ({
-  endRejectedAssistantSession: endRejectedSessionMock,
+  invalidateAssistantAuthStatus: invalidateAuthStatusMock,
 }))
 
 vi.mock('@/assets/grot-crashed.svg', () => ({
@@ -80,9 +80,9 @@ describe('ErrorMessage', () => {
     expect(screen.getByRole('button', { name: /Report issue/ })).toBeDefined()
   })
 
-  it('ends the session when reconnecting, so the status stops reading as live', async () => {
-    // An A2A 401 leaves the stored expiry untouched, so invalidating alone
-    // would report the session as connected and land back on Analyze.
+  it('re-reads the auth status when reconnecting', async () => {
+    // The main process drops the tokens when the server refuses them, so the
+    // refreshed status is what sends the user to the right prompt.
     render(
       <ErrorMessage
         {...baseProps}
@@ -94,6 +94,6 @@ describe('ErrorMessage', () => {
       screen.getByRole('button', { name: CONNECT_COPY.expired.action })
     )
 
-    expect(endRejectedSessionMock).toHaveBeenCalledOnce()
+    expect(invalidateAuthStatusMock).toHaveBeenCalledOnce()
   })
 })

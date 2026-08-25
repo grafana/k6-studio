@@ -26,10 +26,6 @@ export function assistantGetStatus() {
   ) as Promise<AssistantAuthStatus>
 }
 
-export function assistantRejectSession() {
-  return ipcRenderer.invoke(AssistantAuthHandler.RejectSession) as Promise<void>
-}
-
 export function assistantSignOut() {
   return ipcRenderer.invoke(AssistantAuthHandler.SignOut) as Promise<void>
 }

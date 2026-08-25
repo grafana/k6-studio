@@ -8,7 +8,7 @@ import {
 import { CONNECT_COPY } from '@/components/Assistant/connectCopy'
 import { ErrorMessage as MessageContent } from '@/components/ErrorMessage'
 import { ExternalLink } from '@/components/ExternalLink'
-import { endRejectedAssistantSession } from '@/hooks/useAssistantAuth'
+import { invalidateAssistantAuthStatus } from '@/hooks/useAssistantAuth'
 import {
   AssistantErrorInfo,
   classifyError,
@@ -34,10 +34,10 @@ export function ErrorMessage({
         onRetry,
         onReset,
         onClose,
-        // Ending the session sends the user to the same reconnect prompt the
-        // wizard shows, whether the tokens lapsed or the server refused them.
+        // The main process already dropped the tokens if the server refused
+        // them, so re-reading the status lands on the right prompt.
         onReconnect: () => {
-          void endRejectedAssistantSession()
+          void invalidateAssistantAuthStatus()
           onReset()
         },
       }}

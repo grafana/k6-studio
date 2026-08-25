@@ -23,7 +23,7 @@ import {
   wakeStack,
   type StackHealthStatus,
 } from './stackHealth'
-import { getAssistantConnection, rejectAssistantSession } from './tokenRefresh'
+import { getAssistantConnection } from './tokenRefresh'
 import {
   clearAssistantTokens,
   mapTokenResponse,
@@ -231,18 +231,6 @@ export function initialize() {
     AssistantAuthHandler.CheckStackHealth,
     async (): Promise<StackHealthStatus> => {
       return checkStackHealth(await getCurrentStackUrl())
-    }
-  )
-
-  ipcMain.handle(
-    AssistantAuthHandler.RejectSession,
-    async (): Promise<void> => {
-      const profile = await getProfileData()
-      const stackId = profile.profiles.currentStack
-
-      if (stackId) {
-        await rejectAssistantSession(stackId)
-      }
     }
   )
 
