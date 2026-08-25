@@ -22,9 +22,17 @@ const HealthResponseSchema = z.object({
  */
 const GatewayErrorSchema = z.object({
   code: z.string(),
+  message: z.string(),
 })
 
 const HIBERNATING_CODE = 'Loading'
+
+/**
+ * An instance that is booting on its own answers with the same status and code
+ * as one waiting for the captcha, so the message is the only thing telling them
+ * apart. Anything we don't recognise keeps the loading spinner.
+ */
+const CAPTCHA_MESSAGE = 'Click on the checkbox'
 
 const HEALTH_CHECK_TIMEOUT_MS = 5000
 
@@ -32,6 +40,10 @@ const HEALTH_CHECK_TIMEOUT_MS = 5000
  * Sends a request to the login page to wake a hibernating Grafana Cloud stack.
  * The /api/health endpoint does not wake hibernating stacks on its own.
  * See: https://github.com/grafana/terraform-provider-grafana/blob/6d9acfb3939ef17e5cff4f144ff91ecec88c2d97/internal/resources/cloud/resource_cloud_stack.go#L704-L705
+ *
+ * Keep this a one-shot request. The gateway rate limits wake attempts per client
+ * IP and forces its captcha once tripped, so polling here would create the very
+ * captcha we're detecting. Poll checkStackHealth instead, which is exempt.
  */
 export async function wakeStack(stackUrl: string): Promise<StackWakeResult> {
   try {
@@ -48,7 +60,7 @@ export async function wakeStack(stackUrl: string): Promise<StackWakeResult> {
       return { status: 'awake' }
     }
 
-    if (isHibernating(body)) {
+    if (needsCaptcha(body)) {
       return { status: 'captcha-required', url: stackUrl }
     }
 
@@ -59,11 +71,11 @@ export async function wakeStack(stackUrl: string): Promise<StackWakeResult> {
   }
 }
 
-function isHibernating(body: string): boolean {
+function needsCaptcha(body: string): boolean {
   try {
-    const { code } = GatewayErrorSchema.parse(JSON.parse(body))
+    const { code, message } = GatewayErrorSchema.parse(JSON.parse(body))
 
-    return code === HIBERNATING_CODE
+    return code === HIBERNATING_CODE && message.includes(CAPTCHA_MESSAGE)
   } catch {
     return false
   }

@@ -67,16 +67,45 @@ describe('wakeStack', () => {
     } satisfies StackWakeResult)
   })
 
-  it('returns "loading" for other gateway errors', async () => {
+  it('returns "loading" when the instance is booting without a captcha', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
-      status: 404,
+      status: 503,
       text: () =>
         Promise.resolve(
           JSON.stringify({
-            code: 'NotFound',
-            message:
-              "We do not recognize the instance URL you're trying to reach.",
+            code: 'Loading',
+            message: 'Your instance is loading, and will be ready shortly.',
+          })
+        ),
+    })
+
+    await expect(wakeStack(stackUrl)).resolves.toEqual({
+      status: 'loading',
+    } satisfies StackWakeResult)
+  })
+
+  it('returns "loading" for a maintenance response without a code', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 503,
+      text: () => Promise.resolve(JSON.stringify({ message: 'Maintenance' })),
+    })
+
+    await expect(wakeStack(stackUrl)).resolves.toEqual({
+      status: 'loading',
+    } satisfies StackWakeResult)
+  })
+
+  it('returns "loading" for other gateway states', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 503,
+      text: () =>
+        Promise.resolve(
+          JSON.stringify({
+            code: 'Migrating',
+            message: 'Your instance is being migrated.',
           })
         ),
     })
