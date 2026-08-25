@@ -16,7 +16,7 @@ const HealthResponseSchema = z.object({
   database: z.string(),
 })
 
-/** Error the Grafana Cloud gateway returns for an instance it won't serve yet. */
+/** The Grafana Cloud gateway sends this error when the instance is not available. */
 const GatewayErrorSchema = z.object({
   code: z.string(),
   message: z.string(),
@@ -40,7 +40,7 @@ const HEALTH_CHECK_TIMEOUT_MS = 5000
 export async function wakeStack(stackUrl: string): Promise<StackWakeResult> {
   try {
     const response = await fetch(`${stackUrl}/login?disableAutoLogin=true`, {
-      // Get the gateway's JSON error, not its captcha page
+      // Ask for JSON so the gateway does not send its captcha page
       headers: { Accept: 'application/json' },
       signal: AbortSignal.timeout(HEALTH_CHECK_TIMEOUT_MS),
     })
