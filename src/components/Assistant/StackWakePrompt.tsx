@@ -5,10 +5,7 @@ interface StackWakePromptProps {
   url: string
 }
 
-/**
- * Grafana Cloud guards hibernating instances with a captcha, so k6 Studio can't
- * wake them on its own. Send the user to their instance to click it instead.
- */
+/** Only a browser can solve the captcha guarding a hibernating instance. */
 export function StackWakePrompt({ url }: StackWakePromptProps) {
   const handleOpen = () => window.studio.browser.openExternalLink(url)
 

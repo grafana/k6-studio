@@ -10,7 +10,7 @@ import {
 const mockFetch = vi.fn()
 const stackUrl = 'https://mystack.grafana.net'
 
-/** Body Grafana Cloud returns while a hibernating instance waits for the captcha. */
+/** What the gateway sends while a hibernating instance waits for the captcha. */
 const HIBERNATING_BODY = JSON.stringify({
   code: 'Loading',
   message: 'Click on the checkbox to continue loading your instance',

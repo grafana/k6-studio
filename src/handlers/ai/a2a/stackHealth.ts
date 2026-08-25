@@ -16,13 +16,7 @@ const HealthResponseSchema = z.object({
   database: z.string(),
 })
 
-/**
- * Shape of every error the Grafana Cloud gateway returns for an instance it
- * won't serve yet. A hibernating one waiting for its captcha is the case we act
- * on: a browser gets the same response as an HTML page holding a reCAPTCHA
- * checkbox, and the instance only boots once someone clicks it, so we point the
- * user at their instance instead of polling forever.
- */
+/** Error the Grafana Cloud gateway returns for an instance it won't serve yet. */
 const GatewayErrorSchema = z.object({
   code: z.string(),
   message: z.string(),
@@ -30,11 +24,7 @@ const GatewayErrorSchema = z.object({
 
 const HIBERNATING_CODE = 'Loading'
 
-/**
- * An instance that is booting on its own answers with the same status and code
- * as one waiting for the captcha, so the message is the only thing telling them
- * apart. Anything we don't recognize keeps the loading spinner.
- */
+/** An instance booting on its own sends the same code, so match the message. */
 const CAPTCHA_MESSAGE = 'Click on the checkbox'
 
 const HEALTH_CHECK_TIMEOUT_MS = 5000
@@ -44,14 +34,13 @@ const HEALTH_CHECK_TIMEOUT_MS = 5000
  * The /api/health endpoint does not wake hibernating stacks on its own.
  * See: https://github.com/grafana/terraform-provider-grafana/blob/6d9acfb3939ef17e5cff4f144ff91ecec88c2d97/internal/resources/cloud/resource_cloud_stack.go#L704-L705
  *
- * Keep this a one-shot request. The gateway rate limits wake attempts per client
- * IP and forces its captcha once tripped, so polling here would create the very
- * captcha we're detecting. Poll checkStackHealth instead, which is exempt.
+ * Keep this one-shot. The gateway rate limits wake attempts per client IP and
+ * forces its captcha once tripped. Poll checkStackHealth instead, it's exempt.
  */
 export async function wakeStack(stackUrl: string): Promise<StackWakeResult> {
   try {
     const response = await fetch(`${stackUrl}/login?disableAutoLogin=true`, {
-      // Ask for the gateway's JSON error instead of its captcha page
+      // Get the gateway's JSON error, not its captcha page
       headers: { Accept: 'application/json' },
       signal: AbortSignal.timeout(HEALTH_CHECK_TIMEOUT_MS),
     })

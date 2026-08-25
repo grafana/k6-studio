@@ -5,10 +5,8 @@ const WAKE_QUERY_KEY = ['assistant-stack-wake'] as const
 const POLL_INTERVAL_MS = 3000
 
 /**
- * Grafana Cloud rate limits wake attempts per client IP, and forces its captcha
- * on an instance that would otherwise have woken on its own once tripped. Reuse
- * the last answer for roughly that window so reopening the gate a few times
- * doesn't create the captcha we're trying to report.
+ * Grafana Cloud rate limits wake attempts per client IP and forces its captcha
+ * once tripped, so reopening the gate reuses the last answer for that window.
  */
 const WAKE_THROTTLE_MS = 15 * 60 * 1000
 
