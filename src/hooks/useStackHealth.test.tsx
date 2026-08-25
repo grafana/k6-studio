@@ -95,6 +95,24 @@ describe('useStackHealth', () => {
     })
   })
 
+  it('wakes the stack again when reopened after it hibernated', async () => {
+    checkStackHealthMock.mockResolvedValue('loading')
+    const wrapper = createWrapper()
+
+    const { unmount } = renderHook(() => useStackHealth(true), { wrapper })
+
+    await waitFor(() => {
+      expect(wakeStackMock).toHaveBeenCalledTimes(1)
+    })
+
+    unmount()
+    renderHook(() => useStackHealth(true), { wrapper })
+
+    await waitFor(() => {
+      expect(wakeStackMock).toHaveBeenCalledTimes(2)
+    })
+  })
+
   it('does not call wake when disabled', () => {
     renderHook(() => useStackHealth(false), {
       wrapper: createWrapper(),

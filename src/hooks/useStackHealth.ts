@@ -5,11 +5,12 @@ const WAKE_QUERY_KEY = ['assistant-stack-wake'] as const
 const POLL_INTERVAL_MS = 3000
 
 export function useStackHealth(enabled: boolean) {
+  // Wakes the stack once per mount, and reports whether Grafana Cloud is
+  // waiting for someone to solve its captcha before the instance boots.
   const wake = useQuery({
     queryKey: WAKE_QUERY_KEY,
     queryFn: () => window.studio.ai.assistantWakeStack(),
     networkMode: 'always',
-    staleTime: Infinity,
     enabled,
   })
 
