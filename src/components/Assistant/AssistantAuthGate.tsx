@@ -14,21 +14,7 @@ import {
 import { useStackHealth } from '@/hooks/useStackHealth'
 import { UsageEventName } from '@/services/usageTracking/types'
 
-/** Both states send the user through the same connect flow. */
-const CONNECT_COPY = {
-  disconnected: {
-    title: 'Connect to Grafana Assistant',
-    description:
-      'Approve the connection so the Assistant can analyze your recording.',
-    action: 'Connect to Grafana Assistant',
-  },
-  expired: {
-    title: 'Your session has expired',
-    description:
-      'Reconnect to Grafana Assistant to pick up where you left off.',
-    action: 'Reconnect',
-  },
-} as const
+import { CONNECT_COPY } from './connectCopy'
 
 interface AssistantAuthGateProps {
   /** Rendered once the user is signed in, connected, and the stack is ready. */
