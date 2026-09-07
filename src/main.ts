@@ -18,7 +18,7 @@ import {
   launchProxyAndAttachEmitter,
   stopProxyProcess,
 } from './main/proxy'
-import { getSettings, initSettings } from './main/settings'
+import { initSettings } from './main/settings'
 import { closeWatcher, configureWatcher } from './main/watcher'
 import { showWindow, trackWindowState } from './main/window'
 import { configureSystemProxy } from './services/http'
@@ -176,8 +176,9 @@ const createWindow = async () => {
 
 app.whenReady().then(
   async () => {
-    await initSettings()
-    k6StudioState.appSettings = await getSettings()
+    const { settings, fallbackWarning } = await initSettings()
+    k6StudioState.appSettings = settings
+    k6StudioState.settingsFallbackWarning = fallbackWarning ?? null
     nativeTheme.themeSource = k6StudioState.appSettings.appearance.theme
 
     await setupProjectStructure()
