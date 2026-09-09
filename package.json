@@ -80,7 +80,7 @@
     "tsconfig-paths": "4.2.0",
     "typescript": "npm:@typescript/typescript6@6.0.1",
     "vite": "8.0.16",
-    "vitest": "4.1.9"
+    "vitest": "4.1.11"
   },
   "keywords": [],
   "author": {
