@@ -1,5 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
+import { invalidateAssistantAuthStatus } from '@/hooks/useAssistantAuth'
+import { classifyError } from '@/utils/assistant/classifyError'
 import { AgentRunStatus } from '@/utils/assistant/useAssistantAgent'
 
 import { useSetupWizard } from '../state/SetupWizardContext'
@@ -8,6 +10,8 @@ import { WizardStep } from '../state/types'
 interface UseStepAgentLifecycleOptions {
   stepId: WizardStep
   status: AgentRunStatus
+  /** The run's failure, used to tell an expired session from a failed analysis. */
+  error: Error | undefined
   /**
    * Called once the agent reaches the `completed` status. Implementations read
    * their result payload from refs and dispatch the completion action.
@@ -26,11 +30,18 @@ interface UseStepAgentLifecycleOptions {
 export function useStepAgentLifecycle({
   stepId,
   status,
+  error,
   onCompleted,
   failureMessage,
   onFinished,
 }: UseStepAgentLifecycleOptions) {
   const { state, dispatch } = useSetupWizard()
+  // The effect keys on the status transition alone, so read the failure through
+  // a ref rather than trusting it to land in the same render.
+  const errorRef = useRef(error)
+  useEffect(() => {
+    errorRef.current = error
+  })
 
   useEffect(() => {
     // Skipping a step completes it while the agent is still shutting down;
@@ -45,6 +56,22 @@ export function useStepAgentLifecycle({
     }
 
     if (status === 'error') {
+      const failure = errorRef.current
+
+      // An expired session is not an analysis failure. Record it as an
+      // interrupted run, so the step does not claim the analysis went wrong,
+      // then re-check auth and let the gate ask for a reconnect. Resetting the
+      // step here would auto-start a run against the same dead token.
+      if (
+        failure &&
+        classifyError(failure.message).category === 'auth-expired'
+      ) {
+        onFinished('aborted')
+        dispatch({ type: 'stepRunAborted', stepId })
+        void invalidateAssistantAuthStatus()
+        return
+      }
+
       onFinished('error')
       dispatch({ type: 'stepRunFailed', stepId, message: failureMessage })
     }

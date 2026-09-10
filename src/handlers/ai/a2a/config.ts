@@ -1,6 +1,6 @@
 import { getProfileData } from '@/handlers/auth/fs'
 
-import { getValidAssistantTokens } from './tokenRefresh'
+import { getValidAssistantTokens, rejectAssistantSession } from './tokenRefresh'
 
 export interface A2AConfig {
   baseUrl: string
@@ -32,6 +32,16 @@ export async function getCurrentStackUrl(): Promise<string> {
   }
 
   return stack.url
+}
+
+/** Ends the session for whichever stack is selected. */
+export async function rejectCurrentAssistantSession(): Promise<void> {
+  const profile = await getProfileData()
+  const stackId = profile.profiles.currentStack
+
+  if (stackId) {
+    await rejectAssistantSession(stackId)
+  }
 }
 
 export async function getA2AConfig(): Promise<A2AConfig> {

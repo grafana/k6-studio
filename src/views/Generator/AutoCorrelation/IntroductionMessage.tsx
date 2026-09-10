@@ -9,8 +9,10 @@ import {
 import { useState } from 'react'
 
 import grotIllustration from '@/assets/grot-magic.svg'
+import { CONNECT_COPY } from '@/components/Assistant/connectCopy'
 import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
 import { GrafanaCloudSignIn } from '@/components/Profile/GrafanaCloudSignIn'
+import type { AssistantConnection } from '@/handlers/ai/a2a/types'
 import {
   useAssistantAuthStatus,
   useAssistantSignIn,
@@ -28,9 +30,9 @@ export function IntroductionMessage({ onStart }: IntroductionMessageProps) {
   const [isCloudSigningIn, setIsCloudSigningIn] = useState(false)
   const signIn = useAssistantSignIn()
 
+  const connection = authStatus?.connection ?? 'disconnected'
   const isSignedIn = !!authStatus?.stackId
-  const isAuthenticated = authStatus?.authenticated ?? false
-  const isAwaitingApproval = !isAuthenticated && signIn.isPending
+  const isAwaitingApproval = connection !== 'connected' && signIn.isPending
 
   if (!isSignedIn && isCloudSigningIn) {
     return (
@@ -91,7 +93,7 @@ export function IntroductionMessage({ onStart }: IntroductionMessageProps) {
     <IntroLayout subtitle="Powered by Grafana Assistant">
       <AssistantAuthStatus
         isSignedIn={isSignedIn}
-        isAuthenticated={isAuthenticated}
+        connection={connection}
         isLoading={isLoading}
         onSignIn={() => setIsCloudSigningIn(true)}
         onConnect={() => signIn.mutate()}
@@ -104,7 +106,7 @@ export function IntroductionMessage({ onStart }: IntroductionMessageProps) {
 
 interface AssistantAuthStatusProps {
   isSignedIn: boolean
-  isAuthenticated: boolean
+  connection: AssistantConnection
   isLoading: boolean
   onSignIn: () => void
   onConnect: () => void
@@ -114,14 +116,15 @@ interface AssistantAuthStatusProps {
 
 function AssistantAuthStatus({
   isSignedIn,
-  isAuthenticated,
+  connection,
   isLoading,
   onSignIn,
   onConnect,
   onStart,
   connectError,
 }: AssistantAuthStatusProps) {
-  const { isStackReady } = useStackHealth(isAuthenticated)
+  const isConnected = connection === 'connected'
+  const { isStackReady } = useStackHealth(isConnected)
 
   if (isLoading) {
     return (
@@ -145,12 +148,25 @@ function AssistantAuthStatus({
     )
   }
 
-  if (!isAuthenticated) {
+  if (connection !== 'connected') {
+    const { title, description, action } = CONNECT_COPY[connection]
+
     return (
       <>
+        {/* The intro already explains a first connection, an expired one needs saying. */}
+        {connection === 'expired' && (
+          <Flex direction="column" gap="1">
+            <Text size="2" weight="bold">
+              {title}
+            </Text>
+            <Text size="2" color="gray">
+              {description}
+            </Text>
+          </Flex>
+        )}
         <Button size="3" onClick={onConnect}>
           <LinkIcon />
-          Connect to Grafana Assistant
+          {action}
         </Button>
         {connectError && (
           <Callout.Root color="red" size="1">
