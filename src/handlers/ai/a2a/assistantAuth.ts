@@ -22,6 +22,7 @@ import {
   checkStackHealth,
   wakeStack,
   type StackHealthStatus,
+  type StackWakeResult,
 } from './stackHealth'
 import {
   clearAssistantTokens,
@@ -223,9 +224,12 @@ export function initialize() {
     }
   })
 
-  ipcMain.handle(AssistantAuthHandler.WakeStack, async (): Promise<void> => {
-    return wakeStack(await getCurrentStackUrl())
-  })
+  ipcMain.handle(
+    AssistantAuthHandler.WakeStack,
+    async (): Promise<StackWakeResult> => {
+      return wakeStack(await getCurrentStackUrl())
+    }
+  )
 
   ipcMain.handle(
     AssistantAuthHandler.CheckStackHealth,

@@ -3,12 +3,25 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { type PropsWithChildren } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { StackHealthStatus } from '@/handlers/ai/a2a/stackHealth'
+import type {
+  StackHealthStatus,
+  StackWakeResult,
+} from '@/handlers/ai/a2a/stackHealth'
 
 import { useStackHealth } from './useStackHealth'
 
 const checkStackHealthMock = vi.fn<() => Promise<StackHealthStatus>>()
-const wakeStackMock = vi.fn<() => Promise<void>>()
+const wakeStackMock = vi.fn<() => Promise<StackWakeResult>>()
+
+const stackUrl = 'https://mystack.grafana.net'
+
+const authStatusMock = vi.fn(() => ({
+  data: { authenticated: true, stackId: '1', stackName: 'my-stack' },
+}))
+
+vi.mock('@/hooks/useAssistantAuth', () => ({
+  useAssistantAuthStatus: () => authStatusMock(),
+}))
 
 function createWrapper() {
   const client = new QueryClient({
@@ -22,6 +35,7 @@ function createWrapper() {
 describe('useStackHealth', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    wakeStackMock.mockResolvedValue({ status: 'awake' })
     vi.stubGlobal('studio', {
       ai: {
         assistantCheckStackHealth: checkStackHealthMock,
@@ -89,11 +103,159 @@ describe('useStackHealth', () => {
     })
   })
 
+  it('does not wake the stack again when reopened right away', async () => {
+    checkStackHealthMock.mockResolvedValue('loading')
+    const wrapper = createWrapper()
+
+    const { unmount } = renderHook(() => useStackHealth(true), { wrapper })
+
+    await waitFor(() => {
+      expect(wakeStackMock).toHaveBeenCalledTimes(1)
+    })
+
+    unmount()
+    const { result } = renderHook(() => useStackHealth(true), { wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isStackReady).toBe(false)
+    })
+
+    expect(wakeStackMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('wakes the stack again when reopened after the throttle window', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    checkStackHealthMock.mockResolvedValue('loading')
+    const wrapper = createWrapper()
+
+    const { unmount } = renderHook(() => useStackHealth(true), { wrapper })
+
+    await waitFor(() => {
+      expect(wakeStackMock).toHaveBeenCalledTimes(1)
+    })
+
+    unmount()
+    vi.setSystemTime(Date.now() + 16 * 60 * 1000)
+    renderHook(() => useStackHealth(true), { wrapper })
+
+    await waitFor(() => {
+      expect(wakeStackMock).toHaveBeenCalledTimes(2)
+    })
+
+    vi.useRealTimers()
+  })
+
   it('does not call wake when disabled', () => {
     renderHook(() => useStackHealth(false), {
       wrapper: createWrapper(),
     })
 
     expect(wakeStackMock).not.toHaveBeenCalled()
+  })
+
+  it('exposes the stack url when the instance waits for a captcha', async () => {
+    checkStackHealthMock.mockResolvedValue('loading')
+    wakeStackMock.mockResolvedValue({
+      status: 'captcha-required',
+      url: stackUrl,
+    })
+
+    const { result } = renderHook(() => useStackHealth(true), {
+      wrapper: createWrapper(),
+    })
+
+    await waitFor(() => {
+      expect(result.current.captchaUrl).toBe(stackUrl)
+    })
+  })
+
+  it('does not expose a captcha url once the stack is ready', async () => {
+    checkStackHealthMock.mockResolvedValue('ready')
+    wakeStackMock.mockResolvedValue({
+      status: 'captcha-required',
+      url: stackUrl,
+    })
+
+    const { result } = renderHook(() => useStackHealth(true), {
+      wrapper: createWrapper(),
+    })
+
+    await waitFor(() => {
+      expect(result.current.isStackReady).toBe(true)
+    })
+
+    expect(result.current.captchaUrl).toBeNull()
+  })
+
+  it('does not expose a captcha url while the stack is only booting', async () => {
+    checkStackHealthMock.mockResolvedValue('loading')
+    wakeStackMock.mockResolvedValue({ status: 'loading' })
+
+    const { result } = renderHook(() => useStackHealth(true), {
+      wrapper: createWrapper(),
+    })
+
+    await waitFor(() => {
+      expect(result.current.isStackReady).toBe(false)
+    })
+
+    expect(result.current.captchaUrl).toBeNull()
+  })
+
+  it('holds the throttle across an unmount longer than the cache default', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    checkStackHealthMock.mockResolvedValue('loading')
+    const wrapper = createWrapper()
+
+    const { unmount } = renderHook(() => useStackHealth(true), { wrapper })
+
+    await waitFor(() => {
+      expect(wakeStackMock).toHaveBeenCalledTimes(1)
+    })
+
+    unmount()
+    // Past react-query's 5 minute gcTime, but well inside the wake throttle.
+    // advanceTimersByTime also runs the pending cache-eviction timer.
+    await vi.advanceTimersByTimeAsync(6 * 60 * 1000)
+    renderHook(() => useStackHealth(true), { wrapper })
+
+    await waitFor(() => {
+      expect(checkStackHealthMock).toHaveBeenCalled()
+    })
+
+    expect(wakeStackMock).toHaveBeenCalledTimes(1)
+
+    vi.useRealTimers()
+  })
+
+  it('wakes the newly selected stack instead of reusing the old answer', async () => {
+    checkStackHealthMock.mockResolvedValue('loading')
+    wakeStackMock.mockResolvedValue({
+      status: 'captcha-required',
+      url: stackUrl,
+    })
+    const wrapper = createWrapper()
+
+    const { unmount, result } = renderHook(() => useStackHealth(true), {
+      wrapper,
+    })
+
+    await waitFor(() => {
+      expect(result.current.captchaUrl).toBe(stackUrl)
+    })
+
+    unmount()
+    authStatusMock.mockReturnValue({
+      data: { authenticated: true, stackId: '2', stackName: 'other-stack' },
+    })
+    wakeStackMock.mockResolvedValue({ status: 'awake' })
+
+    const second = renderHook(() => useStackHealth(true), { wrapper })
+
+    await waitFor(() => {
+      expect(wakeStackMock).toHaveBeenCalledTimes(2)
+    })
+
+    expect(second.result.current.captchaUrl).toBeNull()
   })
 })

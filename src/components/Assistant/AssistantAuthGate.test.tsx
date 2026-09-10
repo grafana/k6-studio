@@ -3,10 +3,23 @@ import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { AssistantAuthStatus } from '@/handlers/ai/a2a/assistantAuth'
+import type { useStackHealth } from '@/hooks/useStackHealth'
+
 import { AssistantAuthGate } from './AssistantAuthGate'
 
+type AuthStatusQuery = {
+  data: AssistantAuthStatus | undefined
+  isLoading: boolean
+}
+
+const { useAssistantAuthStatusMock, useStackHealthMock } = vi.hoisted(() => ({
+  useAssistantAuthStatusMock: vi.fn<() => AuthStatusQuery>(),
+  useStackHealthMock: vi.fn<() => ReturnType<typeof useStackHealth>>(),
+}))
+
 vi.mock('@/hooks/useAssistantAuth', () => ({
-  useAssistantAuthStatus: () => ({ data: undefined, isLoading: false }),
+  useAssistantAuthStatus: () => useAssistantAuthStatusMock(),
   useAssistantSignIn: () => ({
     isPending: false,
     mutate: vi.fn(),
@@ -18,14 +31,22 @@ vi.mock('@/hooks/useAssistantAuth', () => ({
 }))
 
 vi.mock('@/hooks/useStackHealth', () => ({
-  useStackHealth: () => ({ isStackReady: true }),
+  useStackHealth: () => useStackHealthMock(),
 }))
 
 const trackEvent = vi.fn()
 const openExternalLink = vi.fn().mockResolvedValue(undefined)
 
+const stackUrl = 'https://mystack.grafana.net'
+
 beforeEach(() => {
   vi.clearAllMocks()
+
+  useAssistantAuthStatusMock.mockReturnValue({
+    data: undefined,
+    isLoading: false,
+  })
+  useStackHealthMock.mockReturnValue({ isStackReady: true, captchaUrl: null })
 
   vi.stubGlobal('studio', {
     app: { trackEvent },
@@ -65,5 +86,50 @@ describe('AssistantAuthGate (signed out)', () => {
     expect(trackEvent).toHaveBeenCalledWith({
       event: 'test_setup_wizard_sign_up_clicked',
     })
+  })
+})
+
+describe('AssistantAuthGate (hibernating stack)', () => {
+  beforeEach(() => {
+    useAssistantAuthStatusMock.mockReturnValue({
+      data: { authenticated: true, stackId: '1', stackName: 'my-stack' },
+      isLoading: false,
+    })
+  })
+
+  it('asks the user to open their instance when it waits for a captcha', () => {
+    useStackHealthMock.mockReturnValue({
+      isStackReady: false,
+      captchaUrl: stackUrl,
+    })
+
+    renderGate()
+
+    expect(
+      screen.getByRole('button', { name: 'Open my instance' })
+    ).toBeDefined()
+    expect(screen.queryByText('Your Grafana instance is loading...')).toBeNull()
+  })
+
+  it('keeps showing the spinner while the instance boots on its own', () => {
+    useStackHealthMock.mockReturnValue({
+      isStackReady: false,
+      captchaUrl: null,
+    })
+
+    renderGate()
+
+    expect(
+      screen.getByText('Your Grafana instance is loading...')
+    ).toBeDefined()
+    expect(
+      screen.queryByRole('button', { name: 'Open my instance' })
+    ).toBeNull()
+  })
+
+  it('renders its children once the stack is ready', () => {
+    renderGate()
+
+    expect(screen.getByTestId('wizard-content')).toBeDefined()
   })
 })
