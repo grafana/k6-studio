@@ -61,7 +61,7 @@ export function Validator({ file, content }: ValidatorProps) {
       })
 
       if (location.path !== file.path) {
-        navigate(getViewPath(location.path), { replace: true })
+        void navigate(getViewPath(location.path), { replace: true })
       }
     },
     onError: (error) => {

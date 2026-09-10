@@ -89,7 +89,7 @@ export function Recorder() {
       return
     }
 
-    navigate(location.pathname, { replace: true })
+    void navigate(location.pathname, { replace: true })
     void handleStartRecording(state.autoStart)
   }, [location, navigate, recorderState, handleStartRecording])
 
@@ -209,7 +209,7 @@ export function Recorder() {
         status: 'success',
       })
 
-      navigate(getViewPath(fileName), {
+      void navigate(getViewPath(fileName), {
         state: { discardable: true },
       })
     })

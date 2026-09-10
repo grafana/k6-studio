@@ -6,7 +6,7 @@ export function useListenDeepLinks() {
 
   useEffect(() => {
     return window.studio.app.onDeepLink((path) => {
-      navigate(path)
+      void navigate(path)
     })
   }, [navigate])
 }
