@@ -99,23 +99,12 @@ describe('initSettings disk migration', () => {
     expect(parsed).not.toHaveProperty('ai')
     expect(raw).not.toContain('encrypted-key-string')
     expect(parsed.proxy).toEqual(baseSharedSettings.proxy)
-    expect(parsed.recorder).toEqual(baseSharedSettings.recorder)
+    expect(parsed.recorder).toEqual({
+      ...baseSharedSettings.recorder,
+      chromeLaunchArgs: [],
+    })
     expect(parsed.telemetry).toEqual(baseSharedSettings.telemetry)
     expect(parsed.appearance).toEqual(baseSharedSettings.appearance)
     expect(parsed.windowState).toEqual(baseSharedSettings.windowState)
-  })
-
-  it('leaves a v5 file untouched', async () => {
-    const v5Settings = {
-      version: '5.0',
-      ...baseSharedSettings,
-    }
-    const originalRaw = JSON.stringify(v5Settings)
-    writeFileSync(filePath, originalRaw)
-
-    const { initSettings } = await import('./settings')
-    await initSettings()
-
-    expect(readFileSync(filePath, 'utf-8')).toBe(originalRaw)
   })
 })

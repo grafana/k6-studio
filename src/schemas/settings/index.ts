@@ -27,7 +27,7 @@ export function migrate(settings: z.infer<typeof AnySettingSchema>) {
     case '4.0':
       return migrate(v4.migrate(settings))
     case '5.0':
-      return settings
+      return v5.AppSettingsSchema.parse(settings)
     default:
       return exhaustive(settings)
   }
@@ -37,6 +37,7 @@ export const AppSettingsSchema = AnySettingSchema.transform(migrate)
 
 export {
   AppearanceSchema,
+  CustomBrowserLaunchArgsSchema,
   ProxySettingsSchema,
   RecorderSettingsSchema,
   TelemetrySchema,
