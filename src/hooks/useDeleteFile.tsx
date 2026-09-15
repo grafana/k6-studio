@@ -29,7 +29,7 @@ export function useDeleteFile({
     addPending(file.path)
 
     if (navigateHomeOnDelete) {
-      navigate(getRoutePath('home'))
+      void navigate(getRoutePath('home'))
     }
 
     let undone = false

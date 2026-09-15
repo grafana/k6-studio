@@ -111,12 +111,12 @@ export function RecordingPreviewControls({
 
   const handleDiscardConfirm = () => {
     handleDelete()
-    navigate(getRoutePath('recorder'))
+    void navigate(getRoutePath('recorder'))
   }
 
   const handleDeleteRecordingConfirm = () => {
     handleDelete()
-    navigate(getRoutePath('home'))
+    void navigate(getRoutePath('home'))
   }
 
   return (

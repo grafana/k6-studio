@@ -108,7 +108,7 @@ export function Generator({ file, content }: GeneratorProps) {
       if (location.path === filePath) {
         setSavedData(selectGeneratorData(useGeneratorStore.getState()))
       } else {
-        navigate(getViewPath(location.path), { replace: true })
+        void navigate(getViewPath(location.path), { replace: true })
       }
     },
     onError: (error) => {

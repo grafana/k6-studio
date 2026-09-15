@@ -14,7 +14,7 @@ function getRoute(name: RouteName) {
 
 export function getRoutePath(
   name: RouteName,
-  params?: Record<string, string | number> | 0 | false | null
+  params?: Record<string, string> | 0 | false | null
 ) {
   return params ? generatePath(getRoute(name), params) : getRoute(name)
 }
@@ -26,7 +26,8 @@ export const routeMap = {
 }
 
 export function getViewPath(filePath: string) {
-  const encodedFilePath = encodeURIComponent(filePath)
-
-  return getRoutePath('file', { filePath: encodedFilePath })
+  // generatePath encodes params itself as of react-router v7, so pre-encoding
+  // here would double-encode the path and leave `%20` in it once useParams
+  // decodes a single level.
+  return getRoutePath('file', { filePath })
 }

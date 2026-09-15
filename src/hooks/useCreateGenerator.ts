@@ -21,7 +21,7 @@ export function useCreateGenerator() {
         const fileName =
           await window.studio.generator.createGenerator(recordingPath)
 
-        navigate({
+        void navigate({
           pathname: getViewPath(fileName),
           search: mode === 'setup' ? SETUP_MODE_SEARCH : undefined,
         })

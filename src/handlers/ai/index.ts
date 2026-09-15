@@ -42,7 +42,7 @@ export async function handleStreamChat(
 
   try {
     const messages = sanitizeModelMessages(
-      convertToModelMessages(request.messages)
+      await convertToModelMessages(request.messages)
     )
 
     const response = streamText({

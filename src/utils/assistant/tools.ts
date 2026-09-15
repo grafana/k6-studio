@@ -1,5 +1,6 @@
 import type { FlexibleSchema } from '@ai-sdk/provider-utils'
 import { asSchema, tool, ToolSet } from 'ai'
+import invariant from 'tiny-invariant'
 import { z } from 'zod'
 
 import { RemoteToolDefinition } from '@/handlers/ai/types'
@@ -8,15 +9,35 @@ import { RemoteToolDefinition } from '@/handlers/ai/types'
  * Converts renderer-side tool definitions (with zod schemas) into the
  * JSON-schema form sent over IPC and forwarded to the assistant.
  */
+// ai v7 allows a schema to resolve asynchronously. Every tool here is backed by
+// a zod schema, which resolves synchronously, and only a resolved schema can
+// cross IPC. JSON Schema has its own `then` keyword, so check for a callable.
+function isResolved<T>(schema: T | PromiseLike<T>): schema is T {
+  return typeof (schema as PromiseLike<T>).then !== 'function'
+}
+
 export function serializeToolDefinitions(
   tools: ToolSet
 ): RemoteToolDefinition[] {
-  return Object.entries(tools).map(([name, toolDef]) => ({
-    name,
-    description: toolDef.description ?? '',
-    inputSchema: asSchema(toolDef.inputSchema as FlexibleSchema<unknown>)
-      .jsonSchema,
-  }))
+  return Object.entries(tools).map(([name, toolDef]) => {
+    const { jsonSchema } = asSchema(
+      toolDef.inputSchema as FlexibleSchema<unknown>
+    )
+
+    invariant(
+      isResolved(jsonSchema),
+      `Tool "${name}" has an asynchronous input schema, which cannot be serialized`
+    )
+
+    return {
+      name,
+      // Descriptions can be built lazily from call context as of ai v7, but
+      // only static ones can cross IPC, and every tool here declares a string.
+      description:
+        typeof toolDef.description === 'string' ? toolDef.description : '',
+      inputSchema: jsonSchema,
+    }
+  })
 }
 
 /**

@@ -106,7 +106,7 @@ export function BrowserTestEditor({
       if (location.path === file.path) {
         markAsSaved()
       } else {
-        navigate(getViewPath(location.path), { replace: true })
+        void navigate(getViewPath(location.path), { replace: true })
       }
     },
     onError: (error) => {
