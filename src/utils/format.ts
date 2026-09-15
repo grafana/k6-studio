@@ -30,8 +30,14 @@ function atobUTF8(base64Str: string) {
     bytes[i] = binaryStr.charCodeAt(i)
   }
 
-  // decode bytes as UTF-8
-  return new TextDecoder('utf-8').decode(bytes)
+  try {
+    return new TextDecoder('utf-8', {
+      fatal: true,
+      ignoreBOM: true,
+    }).decode(bytes)
+  } catch {
+    return binaryStr
+  }
 }
 
 export function safeBtoa(content: string) {
