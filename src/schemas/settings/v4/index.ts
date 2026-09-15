@@ -126,9 +126,13 @@ export type UpstreamProxySettings = z.infer<typeof UpstreamProxySettingsSchema>
 export function migrate(
   settings: z.infer<typeof AppSettingsSchema>
 ): v5.AppSettings {
-  const { ai: _ai, ...rest } = settings
+  const { ai: _ai, recorder, ...rest } = settings
   return {
     ...rest,
     version: '5.0',
+    recorder: {
+      ...recorder,
+      chromeLaunchArgs: [],
+    },
   }
 }

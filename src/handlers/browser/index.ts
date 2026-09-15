@@ -55,6 +55,7 @@ export function initialize() {
           browserWindow.webContents.send(BrowserHandler.Error, {
             reason: error.source,
             fatal: true,
+            message: error.message,
           })
 
           return

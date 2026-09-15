@@ -5,7 +5,7 @@ import * as v2 from './v2'
 import * as v3 from './v3'
 import * as v4 from './v4'
 
-import { migrate } from '.'
+import { AppSettingsSchema, migrate } from '.'
 
 describe('Settings migration', () => {
   it('should migrate from v1 to latest', () => {
@@ -200,7 +200,10 @@ describe('Settings migration', () => {
       const migration = v4.migrate(v4Settings)
 
       expect(migration.proxy).toEqual(v4Settings.proxy)
-      expect(migration.recorder).toEqual(v4Settings.recorder)
+      expect(migration.recorder).toEqual({
+        ...v4Settings.recorder,
+        chromeLaunchArgs: [],
+      })
       expect(migration.windowState).toEqual(v4Settings.windowState)
       expect(migration.telemetry).toEqual(v4Settings.telemetry)
       expect(migration.appearance).toEqual(v4Settings.appearance)
@@ -211,6 +214,43 @@ describe('Settings migration', () => {
 
       expect(migration.version).toBe('5.0')
       expect('ai' in migration).toBe(false)
+    })
+  })
+
+  describe('v5 parsing', () => {
+    it('should default chromeLaunchArgs to an empty array', () => {
+      const v5Settings = {
+        version: '5.0',
+        proxy: {
+          mode: 'regular',
+          port: 6000,
+          automaticallyFindPort: true,
+          sslInsecure: false,
+        },
+        recorder: {
+          detectBrowserPath: true,
+          browserRecording: 'extension',
+        },
+        windowState: {
+          width: 1200,
+          height: 800,
+          x: 0,
+          y: 0,
+          isMaximized: true,
+        },
+        telemetry: {
+          usageReport: true,
+          errorReport: true,
+        },
+        appearance: {
+          theme: 'system',
+        },
+      }
+
+      const migration = AppSettingsSchema.parse(v5Settings)
+
+      expect(migration.version).toBe('5.0')
+      expect(migration.recorder.chromeLaunchArgs).toEqual([])
     })
   })
 })

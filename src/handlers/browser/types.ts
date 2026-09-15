@@ -12,4 +12,5 @@ export enum BrowserHandler {
 export interface LaunchBrowserError {
   fatal: boolean
   reason: LaunchBrowserErrorReason
+  message?: string
 }
