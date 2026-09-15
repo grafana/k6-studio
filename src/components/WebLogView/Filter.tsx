@@ -19,6 +19,9 @@ export function Filter({
   setFilterAllData: (filterAllData: boolean) => void
 }) {
   const inputRef = useRef<SearchFieldHandle>(null)
+  const filterScopeAction = filterAllData
+    ? 'Search URL, method, and status code only'
+    : 'Include headers, cookies, payload, and response data in search'
 
   useKeyPressEvent('Escape', () => {
     inputRef.current?.clear()
@@ -47,8 +50,9 @@ export function Filter({
       onChange={setFilter}
     >
       <TextField.Slot px="1">
-        <Tooltip content="Search all request data, including headers, cookies, payload, and response data">
+        <Tooltip content={filterScopeAction}>
           <IconButton
+            aria-label={filterScopeAction}
             variant={filterAllData ? 'solid' : 'ghost'}
             size="1"
             onClick={() => setFilterAllData(!filterAllData)}
