@@ -14,19 +14,23 @@ import { getExecutableNameFromPlist } from '../utils/plist'
 
 import { stopProxyProcess, launchProxyAndAttachEmitter } from './proxy'
 
-export const defaultSettings: AppSettings = {
-  version: '5.0',
-  proxy: {
-    mode: 'regular',
-    port: 6000,
-    automaticallyFindPort: true,
-    sslInsecure: false,
-  },
-  recorder: { detectBrowserPath: true },
-  windowState: { width: 1200, height: 800, x: 0, y: 0, isMaximized: true },
-  telemetry: { usageReport: true, errorReport: true },
-  appearance: { theme: 'system' },
+export function createDefaultSettings(): AppSettings {
+  return {
+    version: '5.0',
+    proxy: {
+      mode: 'regular',
+      port: 6000,
+      automaticallyFindPort: true,
+      sslInsecure: false,
+    },
+    recorder: { detectBrowserPath: true },
+    windowState: { width: 1200, height: 800, x: 0, y: 0, isMaximized: true },
+    telemetry: { usageReport: true, errorReport: true },
+    appearance: { theme: 'system' },
+  }
 }
+
+export const defaultSettings = createDefaultSettings()
 
 const fileName =
   process.env.NODE_ENV === 'development'
@@ -34,21 +38,33 @@ const fileName =
     : 'k6-studio.json'
 const filePath = path.join(app.getPath('userData'), fileName)
 
+export interface SettingsInitializationResult {
+  settings: AppSettings
+  fallbackWarning?: string
+}
+
 /**
  * If an older-version settings file exists on disk, migrate it and
  * rewrite it so deprecated fields (e.g. the OpenAI api key from v4)
  * don't sit on the user's machine after they upgrade.
  */
-export async function initSettings() {
+export async function initSettings(): Promise<SettingsInitializationResult> {
   if (!(await exists(filePath))) {
-    return writeFile(filePath, JSON.stringify(defaultSettings))
+    const settings = createDefaultSettings()
+    await writeFile(filePath, JSON.stringify(settings))
+    return { settings }
   }
 
   const raw = await readFile(filePath, 'utf-8')
   const rawParsed = safeJsonParse<{ version?: unknown }>(raw)
 
   if (!rawParsed) {
-    return writeFile(filePath, JSON.stringify(defaultSettings))
+    const settings = createDefaultSettings()
+    await writeFile(filePath, JSON.stringify(settings))
+    return {
+      settings,
+      fallbackWarning: 'The settings file could not be parsed.',
+    }
   }
 
   const result = AppSettingsSchema.safeParse({
@@ -61,12 +77,19 @@ export async function initSettings() {
       'Failed to migrate settings file, resetting to defaults',
       result.error
     )
-    return writeFile(filePath, JSON.stringify(defaultSettings))
+    const settings = createDefaultSettings()
+    await writeFile(filePath, JSON.stringify(settings))
+    return {
+      settings,
+      fallbackWarning: 'The settings file contained invalid values.',
+    }
   }
 
   if (rawParsed.version !== result.data.version) {
     await writeFile(filePath, JSON.stringify(result.data))
   }
+
+  return { settings: result.data }
 }
 
 /**
@@ -87,7 +110,7 @@ export async function getSettings() {
     log.error('Failed to parse settings file', error)
     // if the file is invalid during runtime,
     // return a valid settings object so the app can keep running
-    return defaultSettings
+    return createDefaultSettings()
   }
 }
 

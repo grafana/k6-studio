@@ -17,6 +17,18 @@ export function Toasts() {
     })
   }, [addToast])
 
+  useEffect(() => {
+    void window.studio.settings.getFallbackWarning().then((warning) => {
+      if (warning) {
+        addToast({
+          title: 'Settings reset to defaults',
+          description: `${warning} Review your settings before continuing.`,
+          status: 'warning',
+        })
+      }
+    })
+  }, [addToast])
+
   return (
     <RadixToast.Provider key={providerResetKey} swipeDirection="right">
       {toasts.map((toast) => (

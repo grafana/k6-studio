@@ -75,10 +75,25 @@ describe('initSettings disk migration', () => {
   it('writes defaults when the file is missing', async () => {
     const { initSettings, defaultSettings } = await import('./settings')
 
-    await initSettings()
+    const result = await initSettings()
 
     expect(existsSync(filePath)).toBe(true)
     expect(readSettingsFile(filePath)).toEqual(defaultSettings)
+    expect(result).toEqual({ settings: defaultSettings })
+  })
+
+  it('returns fresh defaults for each fallback initialization', async () => {
+    const { initSettings, defaultSettings } = await import('./settings')
+
+    const first = await initSettings()
+    first.settings.proxy.port = 1234
+    rmSync(filePath)
+
+    const second = await initSettings()
+
+    expect(second.settings.proxy.port).toBe(defaultSettings.proxy.port)
+    expect(first.settings).not.toBe(second.settings)
+    expect(first.settings.proxy).not.toBe(second.settings.proxy)
   })
 
   it('migrates a v4 file on disk and strips the encrypted api key', async () => {
@@ -117,5 +132,34 @@ describe('initSettings disk migration', () => {
     await initSettings()
 
     expect(readFileSync(filePath, 'utf-8')).toBe(originalRaw)
+  })
+
+  it('reports when malformed JSON is replaced with defaults', async () => {
+    writeFileSync(filePath, '{invalid json')
+
+    const { initSettings, defaultSettings } = await import('./settings')
+    const result = await initSettings()
+
+    expect(result).toEqual({
+      settings: defaultSettings,
+      fallbackWarning: 'The settings file could not be parsed.',
+    })
+    expect(readSettingsFile(filePath)).toEqual(defaultSettings)
+  })
+
+  it('reports when invalid settings are replaced with defaults', async () => {
+    writeFileSync(
+      filePath,
+      JSON.stringify({ ...baseSharedSettings, version: '5.0', proxy: null })
+    )
+
+    const { initSettings, defaultSettings } = await import('./settings')
+    const result = await initSettings()
+
+    expect(result).toEqual({
+      settings: defaultSettings,
+      fallbackWarning: 'The settings file contained invalid values.',
+    })
+    expect(readSettingsFile(filePath)).toEqual(defaultSettings)
   })
 })
