@@ -1,7 +1,7 @@
 import { Interpolation, Theme } from '@emotion/react'
 import { Box, Reset } from '@radix-ui/themes'
-import { useState, useEffect, Ref, useRef } from 'react'
-import { useClickAway, useKeyPressEvent } from 'react-use'
+import { useState, useEffect, Ref, useRef, KeyboardEvent } from 'react'
+import { useClickAway } from 'react-use'
 
 import { mergeRefs } from '@/utils/react'
 
@@ -39,11 +39,16 @@ export function InlineEditor({
     }
   })
 
-  useKeyPressEvent('Escape', () => {
-    onCancel()
-  })
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Escape') {
+      onCancel()
+      return
+    }
 
-  useKeyPressEvent('Enter', () => {
+    if (event.key !== 'Enter') {
+      return
+    }
+
     if (localValue === value || localValue.trim() === '') {
       onCancel()
 
@@ -51,7 +56,7 @@ export function InlineEditor({
     }
 
     onSave(localValue)
-  })
+  }
 
   return (
     <Box css={style}>
@@ -60,6 +65,7 @@ export function InlineEditor({
           ref={mergeRefs(inputRef, ref)}
           value={localValue}
           onChange={(e) => setValue(e.target.value)}
+          onKeyDown={handleKeyDown}
           css={{
             outline: '1px solid var(--focus-8)',
           }}

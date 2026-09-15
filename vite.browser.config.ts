@@ -1,12 +1,11 @@
 import react from '@vitejs/plugin-react'
 import { readFileSync } from 'fs'
 import { defineConfig, type ConfigEnv, type UserConfig } from 'vite'
-import tsconfigPaths from 'vite-tsconfig-paths'
 
 // https://vitejs.dev/config
 export default defineConfig((env) => {
   const forgeEnv = env as ConfigEnv<'renderer'>
-  const { root, mode } = forgeEnv
+  const { root, mode, command } = forgeEnv
   const nodeEnv = process.env.NODE_ENV || 'production'
 
   return {
@@ -26,7 +25,7 @@ export default defineConfig((env) => {
     build: {
       target: 'esnext',
       outDir: `resources/browser`,
-      sourcemap: 'inline',
+      sourcemap: command === 'serve' ? 'inline' : false,
       lib: {
         entry: 'src/recorder/browser/index.ts',
         formats: ['iife'],
@@ -54,12 +53,12 @@ export default defineConfig((env) => {
       react({
         jsxImportSource: '@emotion/react',
       }),
-      tsconfigPaths(),
     ],
     resolve: {
       preserveSymlinks: true,
       // Force vite to use browser-specific package exports
       conditions: ['browser', 'import', 'module', 'default'],
+      tsconfigPaths: true,
     },
     clearScreen: false,
   } as UserConfig

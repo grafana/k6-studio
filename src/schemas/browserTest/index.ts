@@ -1,5 +1,24 @@
+import { z } from 'zod'
+
+import { jsonCodec, migrationCodec } from '@/utils/zod'
+
+import { BrowserTestFileSchema } from './v1'
+
+const AnyBrowserTestFileSchema = z.discriminatedUnion('version', [
+  BrowserTestFileSchema,
+])
+
+export const BrowserTestFileCodec = jsonCodec(
+  migrationCodec(
+    AnyBrowserTestFileSchema,
+    BrowserTestFileSchema,
+    (supported) => {
+      return supported
+    }
+  )
+)
+
 export {
-  BrowserTestFileSchema as BrowserTestFileDataSchema,
   type BrowserTestFile,
   type AnyBrowserAction,
   type LocatorCheckAction,

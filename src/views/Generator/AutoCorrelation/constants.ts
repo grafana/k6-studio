@@ -1,3 +1,15 @@
+import { tool, ToolSet } from 'ai'
+import { z } from 'zod'
+
+import {
+  BaseExtractorSchema,
+  BeginEndSelectorSchema,
+  HeaderNameSelectorSchema,
+  JsonSelectorSchema,
+  RegexSelectorSchema,
+} from '@/types/autoCorrelation'
+import { recordingSearchTools } from '@/utils/assistant/tools'
+
 export const systemPrompt = `
 You are an expert at creating correlation rules for k6 studio.
 Your goal is to help create rules that will make the script work correctly when replaying a recorded user session.
@@ -74,3 +86,59 @@ The validation result will show:
 Repeat the process of creating rules and validating until the validation is successful.
 Do not stop until the validation is successful, only abort when correlating is not possible.
 `
+
+const addRuleBeginEndSchema = z.object({
+  extractor: BaseExtractorSchema.extend({ selector: BeginEndSelectorSchema }),
+})
+
+const addRuleRegexSchema = z.object({
+  extractor: BaseExtractorSchema.extend({ selector: RegexSelectorSchema }),
+})
+
+const addRuleJsonSchema = z.object({
+  extractor: BaseExtractorSchema.extend({ selector: JsonSelectorSchema }),
+})
+
+const addRuleHeaderNameSchema = z.object({
+  extractor: BaseExtractorSchema.extend({ selector: HeaderNameSelectorSchema }),
+})
+
+export const tools = {
+  ...recordingSearchTools,
+
+  runValidation: tool({
+    description: 'Start a validation run with the current set of rules',
+    inputSchema: z.object({}),
+  }),
+
+  addRuleBeginEnd: tool({
+    description: 'Create a correlation rule with a begin-end selector.',
+    inputSchema: z.object({ rule: addRuleBeginEndSchema }),
+  }),
+
+  addRuleRegex: tool({
+    description: 'Create a correlation rule with a regex selector.',
+    inputSchema: z.object({ rule: addRuleRegexSchema }),
+  }),
+
+  addRuleJson: tool({
+    description: 'Create a correlation rule with a JSON-path selector.',
+    inputSchema: z.object({ rule: addRuleJsonSchema }),
+  }),
+
+  addRuleHeaderName: tool({
+    description: 'Create a correlation rule with a header-name selector.',
+    inputSchema: z.object({ rule: addRuleHeaderNameSchema }),
+  }),
+
+  finish: tool({
+    description: 'Call this tool once correlation is finished.',
+    inputSchema: z.object({
+      outcome: z
+        .enum(['success', 'partial-success', 'failure'])
+        .describe(
+          'Use success when all requests are correlated and validation is passing. Use partial-success when some requests are still failing but significant progress has been made. Use failure when no progress has been made and validation is still failing.'
+        ),
+    }),
+  }),
+} satisfies ToolSet

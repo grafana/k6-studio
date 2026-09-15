@@ -14,12 +14,6 @@ export function SelectOptionActionBody({
   action,
   onChange,
 }: SelectOptionActionBodyProps) {
-  const handleChangeLocator = (
-    locator: LocatorSelectOptionAction['locator']
-  ) => {
-    onChange({ ...action, locator })
-  }
-
   const handleChangeValues = (values: LocatorSelectOptionAction['values']) => {
     onChange({ ...action, values })
   }
@@ -38,8 +32,8 @@ export function SelectOptionActionBody({
       />
       in
       <LocatorForm
-        state={action.locator}
-        onChange={handleChangeLocator}
+        action={action}
+        onChange={onChange}
         suggestedRoles={['combobox', 'listbox', 'menu', 'radiogroup']}
       />
     </Grid>

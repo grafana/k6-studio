@@ -1,68 +1,51 @@
-import { css } from '@emotion/react'
-import {
-  Flex,
-  Grid,
-  Popover,
-  RadioGroup,
-  Separator,
-  Tooltip,
-} from '@radix-ui/themes'
-import { WholeWordIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Flex, Popover } from '@radix-ui/themes'
+import { ReactElement, useEffect, useState } from 'react'
 
-import { LocatorIcon, LocatorText } from '@/components/Browser/Locator'
-import { FieldGroup } from '@/components/Form'
-import { useHighlightLocator } from '@/components/HighlightLocatorProvider'
-import { ElementLocator, LocatorOptions } from '@/schemas/locator'
-import { exhaustive } from '@/utils/typescript'
+import { LocatorSummary } from '@/components/Browser/Locator'
+import {
+  HighlightedLocator,
+  useHighlightLocator,
+} from '@/components/HighlightLocatorProvider'
+import { AnyLocatableAction } from '@/schemas/browserTest/v1/actions'
+import { getCurrentLocator, LocatorOptions } from '@/schemas/locator'
+import { flattenLocators } from '@/utils/locator'
 
 import { ValuePopoverBadge } from '../components'
 
-import {
-  GetByAltTextForm,
-  GetByCssForm,
-  GetByLabelForm,
-  GetByPlaceholderForm,
-  GetByRoleForm,
-  GetByTestIdForm,
-  GetByTextForm,
-  GetByTitleForm,
-} from './locators'
+import { LocatorChainList, LocatorTargetKey } from './LocatorChainList'
+import { useTouchStates } from './LocatorForm.hooks'
+import { getErrors } from './locators/validation'
 
-const LOCATOR_TYPES: Record<ElementLocator['type'], string> = {
-  role: 'ARIA Role',
-  label: 'Form label',
-  alt: 'Alt text',
-  placeholder: 'Placeholder',
-  testid: 'Test ID',
-  text: 'Text content',
-  title: 'Title',
-  css: 'CSS selector',
-}
-
-interface LocatorFormProps {
-  state: LocatorOptions
-  onChange: (value: LocatorOptions) => void
+interface LocatorFormProps<Action extends AnyLocatableAction> {
+  action: Action
   suggestedRoles?: string[]
+  onChange: (value: Action) => void
 }
 
-export function LocatorForm({
-  state: { current, values },
-  onChange,
+export function LocatorForm<Action extends AnyLocatableAction>({
+  action,
   suggestedRoles,
-}: LocatorFormProps) {
+  onChange,
+}: LocatorFormProps<Action>): ReactElement {
   const highlightSelector = useHighlightLocator()
 
+  const elementOptions = action.locator
+
+  const touchStates = useTouchStates()
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 
-  const [touchedTypes, setTouchedTypes] = useState(
-    new Set<ElementLocator['type']>()
+  // Which accordion row is open (null = all collapsed). The open row is the one
+  // being edited; frames and the element are addressed by their own synthetic key.
+  const [expandedTarget, setExpandedTarget] = useState<LocatorTargetKey | null>(
+    elementOptions.key
   )
-  const [dirtyTypes, setDirtyTypes] = useState(
-    new Set<ElementLocator['type']>()
+  const [hoveredTarget, setHoveredTarget] = useState<LocatorTargetKey | null>(
+    null
   )
 
-  const currentLocator = values[current] ?? initializeLocatorValues(current)
+  // The badge surfaces the first problem anywhere in the chain: the element
+  // first, then frames outermost-first (prefixed so the tooltip says which).
+  const badgeError = getErrors(elementOptions, touchStates)[0]
 
   useEffect(() => {
     if (!isPopoverOpen) {
@@ -72,13 +55,24 @@ export function LocatorForm({
     }
 
     const debounce = setTimeout(() => {
-      highlightSelector(currentLocator)
+      highlightSelector(
+        resolveHighlight(
+          hoveredTarget ?? expandedTarget ?? elementOptions.key,
+          elementOptions
+        )
+      )
     }, 100)
 
     return () => {
       clearTimeout(debounce)
     }
-  }, [isPopoverOpen, currentLocator, highlightSelector])
+  }, [
+    isPopoverOpen,
+    hoveredTarget,
+    expandedTarget,
+    elementOptions,
+    highlightSelector,
+  ])
 
   useEffect(() => {
     return () => {
@@ -87,7 +81,7 @@ export function LocatorForm({
   }, [highlightSelector])
 
   const handlePointerEnter = () => {
-    highlightSelector(currentLocator)
+    highlightSelector(resolveHighlight(elementOptions.key, elementOptions))
   }
 
   const handlePointerLeave = () => {
@@ -98,57 +92,41 @@ export function LocatorForm({
     highlightSelector(null)
   }
 
-  const handleChangeCurrent = (type: LocatorOptions['current']) => {
-    if (dirtyTypes.has(current)) {
-      setTouchedTypes((prev) => {
-        if (prev.has(current)) {
-          return prev
-        }
-        const next = new Set(prev)
-        next.add(current)
-        return next
-      })
-    }
-
-    const nextValues = values[type]
-      ? values
-      : { ...values, [type]: initializeLocatorValues(type) }
-
-    onChange({ current: type, values: nextValues })
-  }
-
-  const handleLocatorChange = (locator: ElementLocator) => {
-    setDirtyTypes((prev) => {
-      return addIfAbsent(prev, current)
-    })
-    onChange({
-      current,
-      values: { ...values, [current]: locator },
-    })
-  }
-
-  const handleFieldBlur = () => {
-    setTouchedTypes((prev) => {
-      return addIfAbsent(prev, current)
-    })
-  }
-
   const handlePopoverOpenChange = (open: boolean) => {
     setIsPopoverOpen(open)
+
     if (open) {
+      setExpandedTarget(elementOptions.key)
+      setHoveredTarget(null)
+
       return
     }
 
-    setTouchedTypes((prev) => {
-      return addIfAbsent(prev, current)
+    // Closing is the last chance to surface problems, so mark every target
+    // touched, including frames the user never expanded.
+    for (const frame of flattenLocators(elementOptions)) {
+      touchStates.touch(frame)
+    }
+  }
+
+  const handleChange = (next: LocatorOptions) => {
+    onChange({
+      ...action,
+      locator: next,
     })
   }
 
-  const validation = touchedTypes.has(current)
-    ? validateLocator(currentLocator)
-    : { isValid: true }
+  const handleHoverTarget = (target: LocatorOptions | null) => {
+    setHoveredTarget(target?.key ?? null)
+  }
 
-  const error = validation.isValid ? null : validation.message
+  const handleExpandedChange = (target: LocatorTargetKey | null) => {
+    setExpandedTarget(target)
+  }
+
+  const handleTouch = (locator: LocatorOptions) => {
+    touchStates.touch(locator)
+  }
 
   return (
     <Popover.Root open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
@@ -157,264 +135,63 @@ export function LocatorForm({
         onPointerLeave={handlePointerLeave}
       >
         <ValuePopoverBadge
-          displayValue={<DisplayValue state={{ current, values }} />}
-          error={error}
+          displayValue={<DisplayValue state={elementOptions} />}
+          error={badgeError}
         />
       </Popover.Trigger>
-      <Popover.Content align="start" size="1" width="400px">
-        <Grid gap="3" columns="auto auto 1fr">
-          <FieldGroup name="locator-type" label="Get by" labelSize="1" mb="0">
-            <RadioGroup.Root
-              size="1"
-              name="locator-type"
-              value={current}
-              onValueChange={handleChangeCurrent}
-            >
-              {Object.entries(LOCATOR_TYPES)
-                // TODO: temporarily hide 'text' until codegen support is added
-                .filter(([type]) => type !== 'text')
-                .map(([type, label]) => (
-                  <RadioGroup.Item value={type} key={type}>
-                    {label}
-                  </RadioGroup.Item>
-                ))}
-            </RadioGroup.Root>
-          </FieldGroup>
-
-          <Separator orientation="vertical" size="4" decorative />
-          <LocatorFieldsForm
-            locator={currentLocator}
-            errors={validation.fieldErrors}
-            onChange={handleLocatorChange}
-            onBlur={handleFieldBlur}
-            suggestedRoles={suggestedRoles}
-          />
-        </Grid>
+      <Popover.Content
+        align="start"
+        size="1"
+        width="400px"
+        // Don't auto-focus the first control (the add-iframe button), which
+        // would pop its tooltip open the moment the popover appears.
+        onOpenAutoFocus={(event) => event.preventDefault()}
+      >
+        <LocatorChainList
+          target={elementOptions}
+          touchStates={touchStates}
+          expanded={expandedTarget}
+          suggestedRoles={suggestedRoles}
+          onChange={handleChange}
+          onHoverTarget={handleHoverTarget}
+          onExpandedChange={handleExpandedChange}
+          onTouch={handleTouch}
+        />
       </Popover.Content>
     </Popover.Root>
   )
 }
 
-interface LocatorFieldsFormProps {
-  locator: ElementLocator
-  errors?: Record<string, string>
-  onChange: (locator: ElementLocator) => void
-  onBlur?: () => void
-  suggestedRoles?: string[]
-}
+// What hovering or editing `target` should highlight: a frame within the
+// frames before it, the element within the full chain.
+function resolveHighlight(
+  target: LocatorTargetKey,
+  element: LocatorOptions
+): HighlightedLocator | null {
+  const chain = flattenLocators(element).toArray()
 
-function LocatorFieldsForm({
-  locator,
-  errors,
-  onChange,
-  onBlur,
-  suggestedRoles,
-}: LocatorFieldsFormProps) {
-  switch (locator.type) {
-    case 'role':
-      return (
-        <GetByRoleForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
-          onBlur={onBlur}
-          suggestedRoles={suggestedRoles}
-        />
-      )
-    case 'css':
-      return (
-        <GetByCssForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
-          onBlur={onBlur}
-        />
-      )
-    case 'testid':
-      return (
-        <GetByTestIdForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
-          onBlur={onBlur}
-        />
-      )
-    case 'label':
-      return (
-        <GetByLabelForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
-          onBlur={onBlur}
-        />
-      )
-    case 'placeholder':
-      return (
-        <GetByPlaceholderForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
-          onBlur={onBlur}
-        />
-      )
-    case 'title':
-      return (
-        <GetByTitleForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
-          onBlur={onBlur}
-        />
-      )
-    case 'alt':
-      return (
-        <GetByAltTextForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
-          onBlur={onBlur}
-        />
-      )
-    case 'text':
-      return (
-        <GetByTextForm
-          locator={locator}
-          errors={errors}
-          onChange={onChange}
-          onBlur={onBlur}
-        />
-      )
-    default:
-      return exhaustive(locator)
-  }
-}
+  const index = chain.findIndex((frame) => frame.key === target)
 
-function validateLocator(locator: ElementLocator) {
-  const fieldErrors: Record<string, string> = {}
-
-  switch (locator.type) {
-    case 'css':
-      if (!locator.selector.trim())
-        fieldErrors['css-selector'] = 'CSS selector cannot be empty'
-      break
-    case 'testid':
-      if (!locator.testId.trim())
-        fieldErrors['test-id'] = 'Test ID cannot be empty'
-      break
-    case 'label':
-      if (!locator.label.trim())
-        fieldErrors['form-label'] = 'Label cannot be empty'
-      break
-    case 'placeholder':
-      if (!locator.placeholder.trim())
-        fieldErrors['placeholder'] = 'Placeholder cannot be empty'
-      break
-    case 'title':
-      if (!locator.title.trim()) fieldErrors['title'] = 'Title cannot be empty'
-      break
-    case 'alt':
-    case 'text':
-      if (!locator.text.trim())
-        fieldErrors[locator.type === 'alt' ? 'alt' : 'text-content'] =
-          locator.type === 'alt'
-            ? 'Alt text cannot be empty'
-            : 'Text cannot be empty'
-      break
-    case 'role':
-      if (!locator.role.trim()) fieldErrors['role'] = 'Role cannot be empty'
-      break
-    default:
-      exhaustive(locator)
-  }
-
-  const message = Object.values(fieldErrors)[0]
-
-  if (!message) {
-    return { isValid: true }
-  }
-
-  return { isValid: false, message, fieldErrors }
-}
-
-function DisplayValue({
-  state: { current, values },
-}: {
-  state: LocatorOptions
-}) {
-  const locator = values[current]!
-  return (
-    <Flex gap="1" align="center" overflow="hidden">
-      <LocatorIcon
-        locator={locator}
-        css={css`
-          && {
-            width: 12px;
-            height: 12px;
-            min-width: 12px;
-            min-height: 12px;
-          }
-        `}
-      />
-      <span
-        css={css`
-          overflow: hidden;
-          white-space: nowrap;
-          text-overflow: ellipsis;
-        `}
-      >
-        <LocatorText locator={locator} />
-      </span>
-      <ExactMatchIndicator locator={locator} />
-    </Flex>
-  )
-}
-
-function ExactMatchIndicator({ locator }: { locator: ElementLocator }) {
-  if (locator.type === 'testid' || locator.type === 'css') {
+  if (index === -1) {
     return null
   }
 
-  const exact = locator.options?.exact
-  if (exact) {
-    return (
-      <Tooltip content="Exact match">
-        <WholeWordIcon aria-label="Exact match" />
-      </Tooltip>
-    )
+  const [frame, ...rest] = chain.slice(index)
+
+  if (frame === undefined) {
+    return null
   }
 
-  return null
-}
-
-function initializeLocatorValues(type: ElementLocator['type']): ElementLocator {
-  switch (type) {
-    case 'css':
-      return { type, selector: '' }
-
-    case 'testid':
-      return { type, testId: '' }
-
-    case 'label':
-      return { type, label: '', options: { exact: false } }
-
-    case 'placeholder':
-      return { type, placeholder: '', options: { exact: false } }
-
-    case 'title':
-      return { type, title: '', options: { exact: false } }
-
-    case 'alt':
-    case 'text':
-      return { type, text: '', options: { exact: false } }
-
-    case 'role':
-      return { type, role: '', options: { exact: false } }
-
-    default:
-      return exhaustive(type)
+  return {
+    locator: getCurrentLocator(frame),
+    frames: rest.toReversed(), // Frames should be outermost-first for the highlight provider, but the chain is innermost-first.
   }
 }
 
-function addIfAbsent<T>(set: Set<T>, value: T) {
-  return set.has(value) ? set : new Set(set).add(value)
+function DisplayValue({ state }: { state: LocatorOptions }) {
+  return (
+    <Flex gap="1" align="center" overflow="hidden">
+      <LocatorSummary locator={getCurrentLocator(state)} />
+    </Flex>
+  )
 }

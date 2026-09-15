@@ -1,12 +1,9 @@
-import { BrowserContext, browser } from 'k6/browser'
+import { browser } from 'k6/browser'
 
-import { pageProxy } from './proxies/page'
-import {
-  createSingleEntryGuard,
-  createProxy,
-  ProxyOptions,
-  TRACKING_SERVER_URL,
-} from './utils'
+import { browserContextProxy, pageProxy } from './proxies/page'
+import { registerContext } from './replayDrain'
+import { injectSessionReplayScript } from './sessionReplay'
+import { createProxy } from './utils'
 
 import '../symbols'
 
@@ -18,37 +15,6 @@ declare module 'k6/browser' {
 
   interface BrowserContext {
     __id?: string
-  }
-}
-
-// NOTE: This placeholder is replaced with the actual session replay script during the instrumentation process.
-const SESSION_REPLAY_SCRIPT = ''
-
-const isContextInitialized = createSingleEntryGuard()
-
-async function injectSessionReplayScript(context: BrowserContext) {
-  if (!isContextInitialized(context)) {
-    return
-  }
-
-  await context.addInitScript(
-    `window.__K6_SESSION_REPLAY_TRACKING_SERVER_URL__ = ${JSON.stringify(TRACKING_SERVER_URL)};`
-  )
-
-  await context.addInitScript(SESSION_REPLAY_SCRIPT)
-}
-
-function browserContextProxy(
-  target: BrowserContext
-): ProxyOptions<BrowserContext> {
-  return {
-    target,
-    tracking: {},
-    proxies: {
-      newPage(target) {
-        return pageProxy(target)
-      },
-    },
   }
 }
 
@@ -78,6 +44,9 @@ browser.context = function (...args) {
   if (context === null) {
     return null
   }
+
+  // Contexts the script never created itself still hold pages to drain.
+  registerContext(context)
 
   return createProxy(browserContextProxy(context))
 }

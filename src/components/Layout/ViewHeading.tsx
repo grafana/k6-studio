@@ -7,6 +7,13 @@ interface ViewHeadingProps {
   subTitle?: ReactNode
 }
 
+/**
+ * The floor the title group shrinks to before the actions give anything up.
+ * Actions that collapse against the row width (GeneratorControls) build their
+ * container-query breakpoints on top of this value.
+ */
+export const TITLE_GROUP_MIN_WIDTH = 280
+
 export function ViewHeading({
   title,
   subTitle,
@@ -20,9 +27,15 @@ export function ViewHeading({
       css={css`
         border-bottom: 1px solid var(--gray-4);
         min-height: 49px;
+        /* Lets the actions collapse their labels with container queries
+           against the row width. */
+        container-type: inline-size;
       `}
     >
-      <Flex maxWidth="50%" flexGrow="1" gap="2" align="center">
+      {/* The title group takes what its content needs and yields to the
+          actions when the row tightens: it shrinks (truncating a long file
+          name) down to this floor before the actions give anything up. */}
+      <Flex gap="2" align="center" css={{ minWidth: TITLE_GROUP_MIN_WIDTH }}>
         <Heading
           size="2"
           css={css`

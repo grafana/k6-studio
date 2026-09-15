@@ -6,18 +6,26 @@ import { useNavigate } from 'react-router-dom'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { HighlightLocatorProvider } from '@/components/HighlightLocatorProvider'
+import { HtmlInspector } from '@/components/HtmlInspector'
 import { View } from '@/components/Layout/View'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
+import { UnsavedChangesDialog } from '@/components/UnsavedChangesDialog'
 import {
   LogsSection,
   useConsoleFilter,
 } from '@/components/Validator/LogsSection'
 import { useSaveFile } from '@/hooks/useSaveFile'
+import { useUnsavedChangesPrompt } from '@/hooks/useUnsavedChangesPrompt'
 import { getViewPath } from '@/routeMap'
-import { BrowserTestFile } from '@/schemas/browserTest'
+import {
+  AnyBrowserAction,
+  BrowserTestFile,
+  BrowserTestOptions,
+} from '@/schemas/browserTest'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 
+import { PlayerContextProvider } from '../../components/SessionPlayer/PlayerContext'
 import { NetworkInspector } from '../Validator/Browser/NetworkInspector'
 
 import {
@@ -54,7 +62,8 @@ export function BrowserTestEditor({
 
   const [state, setState] = useState<ContextMenuState | null>(null)
 
-  const test = useBrowserTestState(initialData)
+  const { isDirty, test, markAsSaved, onChange } =
+    useBrowserTestState(initialData)
 
   const previewScript = useBrowserScriptPreview(test.actions, test.options)
 
@@ -93,11 +102,11 @@ export function BrowserTestEditor({
       isExternal: false,
     }),
     filters: [{ name: 'Browser Test', extensions: ['k6b'] }],
-    onSave: (location) => {
+    onSave: ({ location }) => {
       if (location.path === file.path) {
-        test.markAsSaved()
+        markAsSaved()
       } else {
-        navigate(getViewPath(location.path), { replace: true })
+        void navigate(getViewPath(location.path), { replace: true })
       }
     },
     onError: (error) => {
@@ -114,127 +123,167 @@ export function BrowserTestEditor({
     void saveFile({ saveAs: false })
   }
 
+  const unsavedChangesPrompt = useUnsavedChangesPrompt({
+    isDirty,
+    onSave: () => saveFile({ saveAs: false }),
+  })
+
+  const handleAddAction = (action: AnyBrowserAction) => {
+    onChange({
+      ...test,
+      actions: [...test.actions, action],
+    })
+  }
+
+  const handleActionsChange = (actions: AnyBrowserAction[]) => {
+    onChange({
+      ...test,
+      actions,
+    })
+  }
+
+  const handleOptionsChange = (
+    callback: (prev: BrowserTestOptions) => BrowserTestOptions
+  ) => {
+    onChange((prev) => {
+      return {
+        ...prev,
+        options: callback(prev.options),
+      }
+    })
+  }
+
   return (
     <HighlightLocatorProvider>
-      <ValidationProvider states={states} isValidating={isValidating}>
-        <View
-          title="Browser test"
-          subTitle={<FileNameHeader file={file} canRename={!isExternal} />}
-          actions={
-            <BrowserTestEditorControls
-              file={file}
-              preview={previewScript}
-              session={session}
-              isDirty={test.isDirty}
-              onStartDebugging={startDebugging}
-              onStopDebugging={stopDebugging}
-              onSave={handleSave}
-            />
-          }
-        >
-          <Flex flexGrow="1" direction="column" align="stretch">
-            <Tabs.Root asChild defaultValue="console">
-              <Flex
-                css={css`
-                  flex: 1 1 0;
-                `}
-                direction="column"
-              >
-                <Group
-                  {...drawerLayout}
-                  id="drawer"
+      <PlayerContextProvider>
+        <ValidationProvider states={states} isValidating={isValidating}>
+          <View
+            title="Browser test"
+            subTitle={<FileNameHeader file={file} canRename={!isExternal} />}
+            actions={
+              <BrowserTestEditorControls
+                isDirty={isDirty}
+                file={file}
+                preview={previewScript}
+                session={session}
+                onStartDebugging={startDebugging}
+                onStopDebugging={stopDebugging}
+                onSave={handleSave}
+              />
+            }
+          >
+            <Flex flexGrow="1" direction="column" align="stretch">
+              <Tabs.Root asChild defaultValue="console">
+                <Flex
                   css={css`
                     flex: 1 1 0;
                   `}
-                  orientation="vertical"
+                  direction="column"
                 >
-                  <Panel id="main">
-                    <Group
-                      {...mainLayout}
-                      id="main"
-                      css={css`
-                        height: 100%;
-                      `}
-                    >
-                      <Panel id="main" minSize={200}>
-                        <BrowserTestPreview
-                          state={state}
-                          session={session}
-                          previewScript={previewScript}
-                          shutdownDelay={shutdownDelay}
-                          onStateChange={setState}
-                          onAddAction={test.addAction}
-                          onShutdownDelayChange={setShutdownDelay}
-                        />
-                      </Panel>
-                      <Separator />
-                      <Panel id="actions" defaultSize="30%" minSize={400}>
-                        <EditableBrowserActionList
-                          actions={test.actions}
-                          onAddAction={test.addAction}
-                          onRemoveAction={test.removeAction}
-                          onChangeAction={test.updateAction}
-                          onReorderActions={test.reorderActions}
-                          optionsButton={
-                            <BrowserTestOptionsButton
-                              options={test.options}
-                              onLoadProfileChange={test.setLoadProfile}
-                              onThresholdsChange={test.setThresholds}
-                              onLoadZonesChange={test.setLoadZones}
-                            />
-                          }
-                        />
-                      </Panel>
-                    </Group>
-                  </Panel>
-                  <Separator />
-                  <Tabs.List>
-                    <Tabs.Trigger value="console" onClick={onTabClick}>
-                      Console ({session.logs.length})
-                    </Tabs.Trigger>
-                    <Tabs.Trigger value="network" onClick={onTabClick}>
-                      Network ({session.requests.length})
-                    </Tabs.Trigger>
-                  </Tabs.List>
-                  <Separator data-disabled />
-                  <Panel
+                  <Group
+                    {...drawerLayout}
                     id="drawer"
-                    panelRef={setDrawer}
-                    collapsible
-                    defaultSize="30%"
-                    minSize={100}
+                    css={css`
+                      flex: 1 1 0;
+                    `}
+                    orientation="vertical"
                   >
-                    <Flex height="100%" direction="column" overflow="hidden">
-                      <Tabs.Content
+                    <Panel id="main">
+                      <Group
+                        {...mainLayout}
+                        id="main"
                         css={css`
-                          overflow: hidden;
-                          flex: 1 1 0;
+                          height: 100%;
                         `}
-                        value="console"
                       >
-                        <LogsSection
-                          {...consoleFilter}
-                          autoScroll={session.state === 'running'}
-                          logs={session.logs}
-                        />
-                      </Tabs.Content>
-                      <Tabs.Content
-                        css={css`
-                          overflow: hidden;
-                          flex: 1 1 0;
-                        `}
-                        value="network"
-                      >
-                        <NetworkInspector session={session} />
-                      </Tabs.Content>
-                    </Flex>
-                  </Panel>
-                </Group>
-              </Flex>
-            </Tabs.Root>
-          </Flex>
-        </View>
-      </ValidationProvider>
+                        <Panel id="main" minSize={200}>
+                          <BrowserTestPreview
+                            state={state}
+                            session={session}
+                            previewScript={previewScript}
+                            shutdownDelay={shutdownDelay}
+                            onStateChange={setState}
+                            onAddAction={handleAddAction}
+                            onShutdownDelayChange={setShutdownDelay}
+                          />
+                        </Panel>
+                        <Separator />
+                        <Panel id="actions" defaultSize="30%" minSize={400}>
+                          <EditableBrowserActionList
+                            actions={test.actions}
+                            optionsButton={
+                              <BrowserTestOptionsButton
+                                options={test.options}
+                                onChange={handleOptionsChange}
+                              />
+                            }
+                            onChange={handleActionsChange}
+                          />
+                        </Panel>
+                      </Group>
+                    </Panel>
+                    <Separator />
+                    <Tabs.List>
+                      <Tabs.Trigger value="console" onClick={onTabClick}>
+                        Console ({session.logs.length})
+                      </Tabs.Trigger>
+                      <Tabs.Trigger value="network" onClick={onTabClick}>
+                        Network ({session.requests.length})
+                      </Tabs.Trigger>
+                      <Tabs.Trigger value="elements" onClick={onTabClick}>
+                        Elements
+                      </Tabs.Trigger>
+                    </Tabs.List>
+                    <Separator data-disabled />
+                    <Panel
+                      id="drawer"
+                      panelRef={setDrawer}
+                      collapsible
+                      defaultSize="30%"
+                      minSize={100}
+                    >
+                      <Flex height="100%" direction="column" overflow="hidden">
+                        <Tabs.Content
+                          css={css`
+                            overflow: hidden;
+                            flex: 1 1 0;
+                          `}
+                          value="console"
+                        >
+                          <LogsSection
+                            {...consoleFilter}
+                            autoScroll={session.state === 'running'}
+                            logs={session.logs}
+                          />
+                        </Tabs.Content>
+                        <Tabs.Content
+                          css={css`
+                            overflow: hidden;
+                            flex: 1 1 0;
+                          `}
+                          value="network"
+                        >
+                          <NetworkInspector session={session} />
+                        </Tabs.Content>
+                        <Tabs.Content
+                          css={css`
+                            overflow: hidden;
+                            flex: 1 1 0;
+                          `}
+                          value="elements"
+                        >
+                          <HtmlInspector sessionState={session.state} />
+                        </Tabs.Content>
+                      </Flex>
+                    </Panel>
+                  </Group>
+                </Flex>
+              </Tabs.Root>
+            </Flex>
+            <UnsavedChangesDialog {...unsavedChangesPrompt} />
+          </View>
+        </ValidationProvider>
+      </PlayerContextProvider>
     </HighlightLocatorProvider>
   )
 }

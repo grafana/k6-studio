@@ -19,7 +19,7 @@ import {
   launchProxyAndAttachEmitter,
   stopProxyProcess,
 } from './main/proxy'
-import { getSettings, initSettings } from './main/settings'
+import { initSettings } from './main/settings'
 import { closeWatcher, configureWatcher } from './main/watcher'
 import { showWindow, trackWindowState } from './main/window'
 import { workspaceIndex } from './main/workspaceIndex'
@@ -28,6 +28,12 @@ import { initEventTracking } from './services/usageTracking'
 import { ProxyStatus } from './types'
 import { getAppIcon, getPlatform } from './utils/electron'
 import { setupProjectStructure } from './utils/workspace'
+
+// stdout/stderr can be closed pipes (e.g. the launching terminal has exited);
+// without an error listener every console write throws an uncaught EPIPE,
+// which Electron surfaces as a crash dialog.
+process.stdout?.on('error', () => {})
+process.stderr?.on('error', () => {})
 
 if (process.env.NODE_ENV !== 'development') {
   // initialize Sentry first so the autoUpdater error listener below can report
@@ -83,7 +89,9 @@ const createWindow = async () => {
     y,
     width,
     height,
-    minWidth: 800,
+    // Keeps the narrowest view row (with the sidebar at its max) above the
+    // header's fully collapsed floor; see GeneratorControls' breakpoints.
+    minWidth: 1000,
     minHeight: 600,
     show: false,
     icon,
@@ -144,13 +152,19 @@ const createWindow = async () => {
   mainWindow.on('close', (event) => {
     mainWindow.webContents.send('app:close')
 
-    const isGeneratorRoute =
+    const fileExtension =
       k6StudioState.currentClientRoute.startsWith('/file/') &&
-      decodeURIComponent(
-        k6StudioState.currentClientRoute.slice('/file/'.length)
-      ).endsWith('.k6g')
+      path.extname(
+        decodeURIComponent(
+          k6StudioState.currentClientRoute.slice('/file/'.length)
+        )
+      )
 
-    if (isGeneratorRoute && !k6StudioState.wasAppClosedByClient) {
+    if (
+      fileExtension &&
+      ['.k6g', '.k6b', '.js', '.ts'].includes(fileExtension) &&
+      !k6StudioState.wasAppClosedByClient
+    ) {
       event.preventDefault()
     }
 
@@ -167,8 +181,9 @@ const createWindow = async () => {
 
 app.whenReady().then(
   async () => {
-    await initSettings()
-    k6StudioState.appSettings = await getSettings()
+    const { settings, fallbackWarning } = await initSettings()
+    k6StudioState.appSettings = settings
+    k6StudioState.settingsFallbackWarning = fallbackWarning ?? null
     nativeTheme.themeSource = k6StudioState.appSettings.appearance.theme
 
     await setupProjectStructure()

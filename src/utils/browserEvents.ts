@@ -1,4 +1,5 @@
-import { BrowserEvent } from '@/schemas/recording'
+import { BrowserEvent, NavigateToPageEvent } from '@/schemas/recording'
+import { exhaustive } from '@/utils/typescript'
 
 export interface EventPage {
   tab: string
@@ -46,6 +47,26 @@ export function groupEventsByPage(events: BrowserEvent[]): EventPage[] {
   return [...pages.values()]
 }
 
+export function findEntryNavigation(events: BrowserEvent[]) {
+  const index = events.findIndex(
+    (event) => event.type === 'navigate-to-page' && isWebUrl(event.url)
+  )
+
+  const entry = events[index]
+
+  return entry?.type === 'navigate-to-page' ? { index, entry } : null
+}
+
+function withEntrySource(
+  events: BrowserEvent[],
+  entryIndex: number,
+  source: NavigateToPageEvent['source']
+): BrowserEvent[] {
+  return events.map((event, index) =>
+    index === entryIndex ? { ...event, source } : event
+  )
+}
+
 /**
  * When a page is exported on its own, the navigation that opened it may have
  * been recorded as implicit because the action that triggered it lives in
@@ -56,13 +77,9 @@ export function groupEventsByPage(events: BrowserEvent[]): EventPage[] {
 export function normalizeEntryNavigation(
   events: BrowserEvent[]
 ): BrowserEvent[] {
-  const entryIndex = events.findIndex(
-    (event) => event.type === 'navigate-to-page' && isWebUrl(event.url)
-  )
+  const found = findEntryNavigation(events)
 
-  const entry = events[entryIndex]
-
-  if (entry?.type !== 'navigate-to-page' || entry.source !== 'implicit') {
+  if (found === null || found.entry.source !== 'implicit') {
     return events
   }
 
@@ -74,7 +91,7 @@ export function normalizeEntryNavigation(
   // [navigate(chrome://new-tab-page), navigate(https://app)]: nothing in this
   // tab triggered the app navigation, so it is promoted. A same-tab
   // [click, navigate(https://app)] is left as-is, since the click owns it.
-  const previous = events[entryIndex - 1]
+  const previous = events[found.index - 1]
   const triggeredByPreviousAction =
     previous?.type === 'click' || previous?.type === 'submit-form'
 
@@ -82,7 +99,218 @@ export function normalizeEntryNavigation(
     return events
   }
 
-  return events.map((event, index) =>
-    index === entryIndex ? { ...event, source: 'address-bar' } : event
+  return withEntrySource(events, found.index, 'address-bar')
+}
+
+/**
+ * The recorder marks a popup's first navigation as explicit (`address-bar`)
+ * because no in-page request precedes it in the new tab. When the tab was
+ * reached through a click handoff, the click already lands the test on that
+ * page, so the landing navigation is demoted to implicit and conversion drops
+ * it instead of emitting a duplicate `page.goto`.
+ */
+function demoteLanding(
+  events: BrowserEvent[],
+  landing: NavigateToPageEvent | null
+): BrowserEvent[] {
+  if (landing === null) {
+    return events
+  }
+
+  return events.map((event) =>
+    event === landing ? { ...landing, source: 'implicit' } : event
   )
+}
+
+/**
+ * Whether an event was directly caused by the user acting on the page, as
+ * opposed to a side effect like an implicit navigation or a tab opening.
+ * Navigations and reloads of browser-internal pages do not count: they never
+ * convert to an action, so nothing is lost by leaving them out of an export
+ * (e.g. an abandoned tab sitting on `chrome://new-tab-page`).
+ */
+function isInteraction(event: BrowserEvent): boolean {
+  switch (event.type) {
+    case 'click':
+    case 'input-change':
+    case 'check-change':
+    case 'radio-change':
+    case 'select-change':
+    case 'submit-form':
+    case 'assert':
+    case 'wait-for':
+      return true
+
+    case 'reload-page':
+      return isWebUrl(event.url)
+
+    case 'navigate-to-page':
+      return event.source !== 'implicit' && isWebUrl(event.url)
+
+    case 'tab-opened':
+      return false
+
+    default:
+      return exhaustive(event)
+  }
+}
+
+// A click that opens a tab does so in the same task, so the tab is attached
+// within milliseconds. Anything slower was opened by something else: the
+// context menu's "open link in new tab" records no click of its own, which
+// would otherwise leave the previous unrelated click blamed for the new tab.
+const HANDOFF_MAX_DELAY_MS = 500
+
+// The landing of a click-opened popup starts committing the moment the tab
+// opens, so its navigation is recorded within a couple of seconds even on
+// slow sites (up to ~2.5s across measured recordings). A popup that opens on
+// about:blank records no landing at all: its first navigation is whatever the
+// user navigated to afterwards, which arrives much later.
+const LANDING_COMMIT_MAX_DELAY_MS = 5_000
+
+interface Handoff {
+  opened: BrowserEvent
+  // The navigation the click landed the new tab on, or null when the tab has
+  // none (e.g. a popup opened on about:blank that the user navigated later).
+  landing: NavigateToPageEvent | null
+}
+
+/**
+ * Finds the `tab-opened` event proving that the click directly opened the
+ * given page's tab: it must be the first tab opened after the click, it must
+ * follow the click immediately, and the tab must not start on a browser
+ * internal page (a manually opened tab starts on `chrome://new-tab-page`
+ * before the user types the url). Replaying a click that did not open the tab
+ * and then waiting for a page would hang or grab the wrong page.
+ *
+ * Also resolves which of the tab's navigations is the click's landing: only
+ * an explicit navigation committed soon after the tab opened qualifies,
+ * anything later is the user navigating the popup themselves and must
+ * survive as a goto.
+ */
+function findHandoff(
+  events: BrowserEvent[],
+  click: BrowserEvent,
+  next: EventPage
+): Handoff | null {
+  const clickIndex = events.indexOf(click)
+  const opened = events.find(
+    (event, index) => index > clickIndex && event.type === 'tab-opened'
+  )
+
+  if (opened === undefined || opened.tab !== next.tab) {
+    return null
+  }
+
+  if (opened.timestamp - click.timestamp > HANDOFF_MAX_DELAY_MS) {
+    return null
+  }
+
+  const firstNavigation = next.events.find(
+    (event) => event.type === 'navigate-to-page'
+  )
+
+  if (
+    firstNavigation !== undefined &&
+    firstNavigation.url.startsWith('chrome://')
+  ) {
+    return null
+  }
+
+  const entry = findEntryNavigation(next.events)?.entry ?? null
+
+  const isLanding =
+    entry !== null &&
+    entry.source !== 'implicit' &&
+    entry.timestamp - opened.timestamp <= LANDING_COMMIT_MAX_DELAY_MS
+
+  return { opened, landing: isLanding ? entry : null }
+}
+
+/**
+ * Merges a multi-tab recording into a single linear event list when the
+ * journey never returns to a tab after moving on: each tab's interactions must
+ * end before the next tab's events begin. When the last interaction in a tab
+ * is the click that opened the next one, the click is kept adjacent to the
+ * next tab's `tab-opened` event so conversion can pair them into a click that
+ * switches to the new page. Otherwise the next tab's entry navigation is
+ * promoted to an explicit one, producing a `page.goto` instead. Returns null
+ * when the recording branches between tabs and cannot be merged.
+ */
+export function mergeLinearPages(
+  events: BrowserEvent[],
+  pages: EventPage[]
+): BrowserEvent[] | null {
+  if (pages.length < 2) {
+    return null
+  }
+
+  // Merging only covers the exportable pages, so a tab left out of them that
+  // the user interacted with would lose those steps without a trace. Fall back
+  // to the page picker instead of exporting an incomplete journey.
+  const exportableTabs = new Set(pages.map((page) => page.tab))
+  const hasHiddenInteraction = events.some(
+    (event) => !exportableTabs.has(event.tab) && isInteraction(event)
+  )
+
+  if (hasHiddenInteraction) {
+    return null
+  }
+
+  const merged: BrowserEvent[] = []
+  let handoff: Handoff | null = null
+
+  for (const [index, page] of pages.entries()) {
+    const next = pages[index + 1]
+
+    let slice: BrowserEvent[] = page.events.filter(
+      (event) => event.type !== 'tab-opened'
+    )
+
+    // A tab reached through a click handoff starts on the right page already,
+    // so its landing navigation is demoted for conversion to drop. Any other
+    // tab (including the first) needs its entry navigation promoted to an
+    // explicit one instead, mirroring the single-page export path.
+    slice =
+      handoff !== null
+        ? demoteLanding(slice, handoff.landing)
+        : normalizeEntryNavigation(slice)
+
+    const nextEntry = next?.events[0]
+
+    if (next === undefined || nextEntry === undefined) {
+      merged.push(...slice)
+      break
+    }
+
+    // Events within a tab are in source order, so checking the last
+    // interaction is enough to know the user never came back to this tab.
+    // Both events come from the raw recording, so the flat list can be
+    // compared by identity.
+    const lastInteraction = page.events.findLast(isInteraction)
+
+    if (
+      lastInteraction !== undefined &&
+      events.indexOf(lastInteraction) > events.indexOf(nextEntry)
+    ) {
+      return null
+    }
+
+    const nextHandoff =
+      lastInteraction?.type === 'click'
+        ? findHandoff(events, lastInteraction, next)
+        : null
+
+    if (lastInteraction === undefined || nextHandoff === null) {
+      merged.push(...slice)
+      handoff = null
+      continue
+    }
+
+    merged.push(...slice.slice(0, slice.indexOf(lastInteraction) + 1))
+    merged.push(nextHandoff.opened)
+    handoff = nextHandoff
+  }
+
+  return merged
 }

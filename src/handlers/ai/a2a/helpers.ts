@@ -1,6 +1,6 @@
 import type { LanguageModelV2CallOptions } from '@ai-sdk/provider'
 
-import type { RemoteToolDefinition } from '../tools'
+import type { RemoteToolDefinition } from '../types'
 
 import type { A2ASessionConfig } from './config'
 

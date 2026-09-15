@@ -1,10 +1,9 @@
 import { Flex, IconButton, Tooltip } from '@radix-ui/themes'
+import { TextWrapIcon } from 'lucide-react'
 import { useEffect } from 'react'
 import { useLocalStorage } from 'react-use'
 
 import { useTheme } from '@/hooks/useTheme'
-
-import { WordWrapIcon } from '../icons'
 
 import { k6StudioDarkBackground } from './themes/k6StudioDark'
 import { k6StudioLightBackground } from './themes/k6StudioLight'
@@ -53,7 +52,7 @@ export const EditorToolbar = ({ getState, actions }: EditorToolbarProps) => {
           variant={state?.wordWrap === 'on' ? 'solid' : 'surface'}
           aria-label="Word wrap"
         >
-          <WordWrapIcon width="14px" />
+          <TextWrapIcon />
         </IconButton>
       </Tooltip>
     </Flex>

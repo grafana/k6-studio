@@ -8,7 +8,10 @@ import {
 import { useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
-import { convertEventsToActions } from '@/codegen/browser/convertEventsToActions'
+import {
+  convertEventsToActions,
+  convertRecordingToActions,
+} from '@/codegen/browser/convertEventsToActions'
 import { FileInUseDialog } from '@/components/FileInUseDialog'
 import { RichDropdownMenuItem } from '@/components/RichDropdownMenuItem'
 import { useCreateBrowserTest } from '@/hooks/useCreateBrowserTest'
@@ -20,13 +23,14 @@ import { ProxyData, StudioFile } from '@/types'
 import {
   EventPage,
   groupEventsByPage,
+  mergeLinearPages,
   normalizeEntryNavigation,
 } from '@/utils/browserEvents'
 
 import { SelectPageDialog } from './SelectPageDialog'
 
-function toPageActions(page: EventPage) {
-  return convertEventsToActions(normalizeEntryNavigation(page.events))
+function toPageEvents(page: EventPage) {
+  return normalizeEntryNavigation(page.events)
 }
 
 interface RecordingPreviewControlsProps {
@@ -64,28 +68,44 @@ export function RecordingPreviewControls({
   const pages = useMemo(
     () =>
       groupEventsByPage(browserEvents).filter((page) =>
-        toPageActions(page).some((action) => action.method === 'page.goto')
+        convertEventsToActions(toPageEvents(page)).some(
+          (action) => action.method === 'page.goto'
+        )
       ),
     [browserEvents]
   )
 
-  const handleCreateGenerator = () => createTestGenerator(file.path)
+  const handleCreateGenerator = () =>
+    createTestGenerator(file.path, { mode: 'setup' })
 
   const handleCreateBrowserTest = () => {
     if (pages.length > 1) {
+      // A journey that moves from tab to tab without ever returning can be
+      // exported as one linear test, so no page needs to be picked.
+      const merged = mergeLinearPages(browserEvents, pages)
+
+      if (merged !== null) {
+        void createBrowserTest(convertRecordingToActions(merged, requests))
+        return
+      }
+
       setIsSelectPageOpen(true)
       return
     }
 
     const page = pages[0]
     if (page) {
-      void createBrowserTest(toPageActions(page))
+      void createBrowserTest(
+        convertRecordingToActions(toPageEvents(page), requests)
+      )
     }
   }
 
   const handleSelectPage = (page: EventPage) => {
     setIsSelectPageOpen(false)
-    void createBrowserTest(toPageActions(page))
+    void createBrowserTest(
+      convertRecordingToActions(toPageEvents(page), requests)
+    )
   }
 
   const deleteFile = useDeleteFile({
@@ -96,14 +116,14 @@ export function RecordingPreviewControls({
   const handleDiscardConfirm = () => {
     void deleteFile({ force: true })
 
-    navigate(getRoutePath('recorder'))
+    void navigate(getRoutePath('recorder'))
   }
 
   const handleDelete = async () => {
     const result = await deleteFile()
 
     if (result.deleted) {
-      navigate(getRoutePath('home'))
+      void navigate(getRoutePath('home'))
 
       return
     }
@@ -114,7 +134,7 @@ export function RecordingPreviewControls({
   const handleConfirmDelete = () => {
     void deleteFile({ force: true })
 
-    navigate(getRoutePath('home'))
+    void navigate(getRoutePath('home'))
 
     setReferencesToConfirm(null)
   }

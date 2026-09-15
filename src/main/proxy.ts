@@ -57,35 +57,10 @@ export const launchProxy = (
   // add .exe on windows
   proxyPath += getPlatform() === 'win' ? '.exe' : ''
 
-  const proxyArgs = [
-    '-q',
-    '-s',
-    toNativePath(proxyScript),
-    '--set',
-    `confdir=${toNativePath(certificatesPath)}`,
-    '--listen-port',
-    `${proxySettings.port}`,
-    '--mode',
-    getProxyMode(proxySettings),
-    '--set',
-    'validate_inbound_headers=false',
-  ]
-
-  if (proxySettings.sslInsecure) {
-    proxyArgs.push('--ssl-insecure')
-  }
-
-  if (proxySettings.mode === 'upstream' && proxySettings.requiresAuth) {
-    const { username, password } = proxySettings
-    proxyArgs.push('--upstream-auth', `${username}:${password}`)
-  }
-
-  if (proxySettings.mode === 'upstream' && proxySettings.certificatePath) {
-    proxyArgs.push(
-      '--set',
-      `ssl_verify_upstream_trusted_ca=${toNativePath(proxySettings.certificatePath)}`
-    )
-  }
+  const proxyArgs = buildProxyArgs(proxySettings, {
+    proxyScript,
+    certificatesPath,
+  })
 
   const proxy = spawn(toNativePath(proxyPath), proxyArgs)
 
@@ -130,6 +105,53 @@ export const launchProxy = (
   })
 
   return proxy
+}
+
+export const buildProxyArgs = (
+  proxySettings: ProxySettings,
+  {
+    proxyScript,
+    certificatesPath,
+  }: { proxyScript: string; certificatesPath: string }
+) => {
+  const proxyArgs = [
+    '-q',
+    '-s',
+    toNativePath(proxyScript),
+    '--set',
+    `confdir=${toNativePath(certificatesPath)}`,
+    '--listen-port',
+    `${proxySettings.port}`,
+    '--mode',
+    getProxyMode(proxySettings),
+    '--set',
+    'validate_inbound_headers=false',
+    // Open server connections only when a request is pending. With the
+    // default eager strategy, mitmproxy pins one upstream socket to each
+    // browser preconnect. Servers that close idle keep-alive connections
+    // within seconds leave those tunnels half-dead, and requests sent on
+    // them fail with "502 server closed connection".
+    '--set',
+    'connection_strategy=lazy',
+  ]
+
+  if (proxySettings.sslInsecure) {
+    proxyArgs.push('--ssl-insecure')
+  }
+
+  if (proxySettings.mode === 'upstream' && proxySettings.requiresAuth) {
+    const { username, password } = proxySettings
+    proxyArgs.push('--upstream-auth', `${username}:${password}`)
+  }
+
+  if (proxySettings.mode === 'upstream' && proxySettings.certificatePath) {
+    proxyArgs.push(
+      '--set',
+      `ssl_verify_upstream_trusted_ca=${toNativePath(proxySettings.certificatePath)}`
+    )
+  }
+
+  return proxyArgs
 }
 
 const getProxyMode = (proxySettings: ProxySettings) => {

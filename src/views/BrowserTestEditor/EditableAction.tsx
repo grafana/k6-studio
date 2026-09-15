@@ -1,7 +1,7 @@
 import { css, keyframes } from '@emotion/react'
 import { Flex, IconButton, Tooltip } from '@radix-ui/themes'
 import { Trash2Icon } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { type ReactNode } from 'react'
 
 import { BrowserDebuggerEvent } from '@/main/runner/schema'
 import { AnyBrowserAction } from '@/schemas/browserTest'
@@ -13,7 +13,7 @@ import { useBrowserActionState } from './ValidationProvider'
 
 interface EditableActionProps {
   action: AnyBrowserAction
-  onRemove: (actionId: string) => void
+  onRemove: (action: AnyBrowserAction) => void
   onChange: (action: AnyBrowserAction) => void
   dragHandle?: ReactNode
 }
@@ -51,7 +51,7 @@ export function EditableAction({
   const { isValidating, state } = useBrowserActionState(action.id)
 
   const handleRemove = () => {
-    onRemove(action.id)
+    onRemove(action)
   }
 
   const editor = getActionEditorForAction(action)

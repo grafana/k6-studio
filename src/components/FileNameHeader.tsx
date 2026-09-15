@@ -79,7 +79,7 @@ function RenameFileDialog({ file }: RenameFileDialogProps) {
     newName: string
     references: string[]
   } | null>(null)
-  const { mutateAsync, isPending } = useRenameFile(file)
+  const { mutate: renameFile, isPending } = useRenameFile(file)
 
   const fileExtension = path.extname(file.fileName)
   const confirmedRef = useRef(false)
@@ -101,45 +101,45 @@ function RenameFileDialog({ file }: RenameFileDialogProps) {
     reset({ fileName: file.displayName })
   }, [file.displayName, reset, isOpen])
 
-  const onSubmit = async ({ fileName }: { fileName: string }) => {
+  const onSubmit = ({ fileName }: { fileName: string }) => {
     if (!isDirty) {
       return
     }
 
     const newName = `${fileName.trim()}${fileExtension}`
 
-    const result = await mutateAsync({
-      newName,
-    })
+    renameFile(
+      { newName },
+      {
+        onSuccess: (result) => {
+          if (result.renamed) {
+            setIsOpen(false)
+            return
+          }
 
-    if (result.renamed) {
-      setIsOpen(false)
-
-      return
-    }
-
-    setPendingRename({
-      newName,
-      references: result.references,
-    })
+          setPendingRename({ newName, references: result.references })
+        },
+      }
+    )
   }
 
-  const handleConfirmRename = async (onReferenced: 'force' | 'update') => {
+  const handleConfirmRename = (onReferenced: 'force' | 'update') => {
     if (!pendingRename) {
       return
     }
 
-    confirmedRef.current = true
-
-    const result = await mutateAsync({
-      newName: pendingRename.newName,
-      onReferenced,
-    })
-
-    if (result.renamed) {
-      setPendingRename(null)
-      setIsOpen(false)
-    }
+    renameFile(
+      { newName: pendingRename.newName, onReferenced },
+      {
+        onSuccess: (result) => {
+          if (result.renamed) {
+            confirmedRef.current = true
+            setPendingRename(null)
+            setIsOpen(false)
+          }
+        },
+      }
+    )
   }
 
   const handleCancelDialog = () => {
@@ -156,7 +156,14 @@ function RenameFileDialog({ file }: RenameFileDialogProps) {
 
   return (
     <>
-      <Popover.Root open={isOpen} onOpenChange={setIsOpen}>
+      <Popover.Root
+        open={isOpen}
+        onOpenChange={(open) => {
+          if (pendingRename === null) {
+            setIsOpen(open)
+          }
+        }}
+      >
         <Tooltip content={`Rename ${FileTypeToLabel[file.type]}`}>
           <Popover.Trigger>
             <IconButton
@@ -193,10 +200,11 @@ function RenameFileDialog({ file }: RenameFileDialogProps) {
       </Popover.Root>
       <UpdateReferencesDialog
         open={pendingRename !== null}
+        isPending={isPending}
         filePath={file.path}
         references={pendingRename?.references ?? []}
-        onRename={() => void handleConfirmRename('force')}
-        onUpdateAndRename={() => void handleConfirmRename('update')}
+        onRename={() => handleConfirmRename('force')}
+        onUpdateAndRename={() => handleConfirmRename('update')}
         onCancel={handleCancelDialog}
         onCloseAutoFocus={handleCloseAutoFocus}
       />

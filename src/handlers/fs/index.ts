@@ -16,7 +16,7 @@ import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { showOpenDialog, showSaveDialog } from '@/utils/dialog'
 import { browserWindowFromEvent } from '@/utils/electron'
-import { readFile, writeFile } from '@/utils/fs'
+import { exists, readFile, writeFile } from '@/utils/fs'
 import * as path from '@/utils/path'
 import { isExternalScript } from '@/utils/workspace'
 
@@ -156,6 +156,13 @@ export function initialize() {
       const raw = await readFile(filePath, { encoding: 'utf-8', flag: 'r' })
 
       return deserializeContent(filePath, raw, file.type)
+    }
+  )
+
+  ipcMain.handle(
+    FsHandler.Exists,
+    async (_, filePath: string): Promise<boolean> => {
+      return exists(filePath)
     }
   )
 }

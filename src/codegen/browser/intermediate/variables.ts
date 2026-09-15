@@ -66,15 +66,17 @@ function substituteExpression(
       return node
 
     case 'TraceExpression':
+    case 'ClosePageExpression':
+    case 'NewPagePromiseExpression':
       return {
         ...node,
         target: substituteExpression(node.target, substitutions),
       }
 
-    case 'ClosePageExpression':
+    case 'AwaitExpression':
       return {
         ...node,
-        target: substituteExpression(node.target, substitutions),
+        argument: substituteExpression(node.argument, substitutions),
       }
 
     case 'Identifier':

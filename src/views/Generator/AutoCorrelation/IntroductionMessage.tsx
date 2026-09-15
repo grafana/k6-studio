@@ -1,13 +1,5 @@
 import { css } from '@emotion/react'
-import {
-  Badge,
-  Button,
-  Callout,
-  Flex,
-  Spinner,
-  Text,
-  Tooltip,
-} from '@radix-ui/themes'
+import { Button, Callout, Flex, Spinner, Text, Tooltip } from '@radix-ui/themes'
 import {
   AlertTriangleIcon,
   CheckCircleIcon,
@@ -106,9 +98,6 @@ export function IntroductionMessage({ onStart }: IntroductionMessageProps) {
         onStart={onStart}
         connectError={signIn.error}
       />
-      <Text size="1" color="gray" mt="1">
-        This feature is in public preview and subject to change.
-      </Text>
     </IntroLayout>
   )
 }
@@ -233,9 +222,6 @@ function IntroLayout({
         maxWidth="600px"
         css={{ textAlign: 'center' }}
       >
-        <Badge color="orange" variant="soft">
-          Feature Preview
-        </Badge>
         <Text size="3" weight="bold">
           Automatically correlate dynamic values
         </Text>

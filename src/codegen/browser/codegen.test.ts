@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, it, vi } from 'vitest'
 
 import { defaultBrowserTestOptions } from '@/schemas/browserTest'
+import { newSyntheticKey } from '@/utils/zod'
 
 import { emitScript } from './codegen'
 
@@ -115,6 +116,89 @@ it('should emit click on element', async ({ expect }) => {
 
   await expect(script).toMatchFileSnapshot(
     '__snapshots__/browser/click-element.ts'
+  )
+})
+
+it('should switch to the page opened by a click', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'goto',
+          nodeId: 'goto',
+          url: 'https://example.com',
+          source: 'address-bar',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          locator: { type: 'css', selector: 'a.open' },
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'new-tab-promise',
+          nodeId: 'promise',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'click',
+          nodeId: 'click',
+          button: 'left',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+        {
+          type: 'page',
+          nodeId: 'page2',
+          promise: { nodeId: 'promise' },
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator2',
+          locator: { type: 'css', selector: 'button.submit' },
+          inputs: {
+            page: { nodeId: 'page2' },
+          },
+        },
+        {
+          type: 'click',
+          nodeId: 'click2',
+          button: 'left',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          inputs: {
+            locator: { nodeId: 'locator2' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/click-switches-to-new-page.ts'
   )
 })
 
@@ -1062,6 +1146,52 @@ it('should emit a getByRole locator', async ({ expect }) => {
   )
 })
 
+// k6 escapes the name itself when building its internal selector (see
+// https://github.com/grafana/k6/pull/5374), so the emitted script must pass
+// the name through verbatim. Pre-escaping it produces a double escape and an
+// InvalidSelectorError at runtime.
+it('should emit a getByRole name with an apostrophe verbatim', async ({
+  expect,
+}) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          locator: {
+            type: 'role',
+            role: 'radio',
+            options: { name: "I don't know" },
+          },
+          inputs: { page: { nodeId: 'page' } },
+        },
+        {
+          type: 'click',
+          nodeId: 'click',
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+          button: 'left',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  expect(script).toContain(`getByRole("radio", { name: "I don't know" })`)
+})
+
 it('should emit a css locator', async ({ expect }) => {
   const script = await emitScript({
     defaultScenario: {
@@ -1497,8 +1627,8 @@ it('emits options with thresholds, ramping-vus stages, and cloud loadZones', asy
       loadProfile: {
         executor: 'ramping-vus',
         stages: [
-          { id: 's1', target: 5, duration: '30s' },
-          { id: 's2', target: 0, duration: '15s' },
+          { key: newSyntheticKey(), target: 5, duration: '30s' },
+          { key: newSyntheticKey(), target: 0, duration: '15s' },
         ],
       },
       thresholds: [
@@ -1509,6 +1639,7 @@ it('emits options with thresholds, ramping-vus stages, and cloud loadZones', asy
           condition: '<',
           value: 1000,
           stopTest: false,
+          enabled: true,
         },
       ],
       cloud: {

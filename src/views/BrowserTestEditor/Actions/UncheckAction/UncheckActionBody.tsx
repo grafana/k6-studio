@@ -15,10 +15,6 @@ export function UncheckActionBody({
   action,
   onChange,
 }: UncheckActionBodyProps) {
-  const handleChangeLocator = (locator: LocatorUncheckAction['locator']) => {
-    onChange({ ...action, locator })
-  }
-
   return (
     <Grid
       columns="max-content minmax(0, max-content) 1fr"
@@ -28,9 +24,9 @@ export function UncheckActionBody({
     >
       Uncheck input
       <LocatorForm
-        state={action.locator}
+        action={action}
         suggestedRoles={UNCHECK_ROLES}
-        onChange={handleChangeLocator}
+        onChange={onChange}
       />
     </Grid>
   )

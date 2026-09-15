@@ -7,10 +7,24 @@ import {
   BrowserAssertionEvent,
   BrowserDebuggerEvent,
 } from '@/main/runner/schema'
+import { ElementLocator, LocatorOptions } from '@/schemas/locator'
 import { exhaustive } from '@/utils/typescript'
 
 import { toClickDetails } from './BrowserActionText.utils'
 import { BrowserElementLocator } from './BrowserElementLocator'
+
+type LocatorAction = Extract<
+  AnyBrowserDebugEvent,
+  { locator: ElementLocator }
+> & {
+  frames?: LocatorOptions[]
+}
+
+function ActionElementLocator({ action }: { action: LocatorAction }) {
+  return (
+    <BrowserElementLocator locator={action.locator} frames={action.frames} />
+  )
+}
 
 interface BrowserActionTextProps {
   action: AnyBrowserDebugEvent
@@ -58,14 +72,14 @@ function BrowserActionText({ action }: BrowserActionTextProps) {
     case 'locator.check':
       return (
         <>
-          Check <BrowserElementLocator locator={action.locator} />
+          Check <ActionElementLocator action={action} />
         </>
       )
 
     case 'locator.clear':
       return (
         <>
-          Clear <BrowserElementLocator locator={action.locator} />
+          Clear <ActionElementLocator action={action} />
         </>
       )
 
@@ -73,7 +87,7 @@ function BrowserActionText({ action }: BrowserActionTextProps) {
       return (
         <>
           <ClickPill details={toClickDetails(action)} /> on{' '}
-          <BrowserElementLocator locator={action.locator} />
+          <ActionElementLocator action={action} />
         </>
       )
 
@@ -81,14 +95,14 @@ function BrowserActionText({ action }: BrowserActionTextProps) {
       return (
         <>
           <DoubleClickPill details={toClickDetails(action)} /> on{' '}
-          <BrowserElementLocator locator={action.locator} />
+          <ActionElementLocator action={action} />
         </>
       )
 
     case 'locator.fill':
       return (
         <>
-          Fill <BrowserElementLocator locator={action.locator} /> with text{' '}
+          Fill <ActionElementLocator action={action} /> with text{' '}
           <code>{`"${action.value}"`}</code>
         </>
       )
@@ -96,14 +110,14 @@ function BrowserActionText({ action }: BrowserActionTextProps) {
     case 'locator.focus':
       return (
         <>
-          Focus on <BrowserElementLocator locator={action.locator} />
+          Focus on <ActionElementLocator action={action} />
         </>
       )
 
     case 'locator.hover':
       return (
         <>
-          Hover over <BrowserElementLocator locator={action.locator} />
+          Hover over <ActionElementLocator action={action} />
         </>
       )
 
@@ -111,7 +125,7 @@ function BrowserActionText({ action }: BrowserActionTextProps) {
       return (
         <>
           Press key <Kbd>{`"${action.key}"`}</Kbd> on{' '}
-          <BrowserElementLocator locator={action.locator} />
+          <ActionElementLocator action={action} />
         </>
       )
 
@@ -119,7 +133,7 @@ function BrowserActionText({ action }: BrowserActionTextProps) {
       return (
         <>
           Select options <SelectOptions options={action.values} /> on{' '}
-          <BrowserElementLocator locator={action.locator} />
+          <ActionElementLocator action={action} />
         </>
       )
 
@@ -127,14 +141,14 @@ function BrowserActionText({ action }: BrowserActionTextProps) {
       return (
         <>
           Set {'"checked"'} to <code>{action.checked.toString()}</code> on{' '}
-          <BrowserElementLocator locator={action.locator} />
+          <ActionElementLocator action={action} />
         </>
       )
 
     case 'locator.tap':
       return (
         <>
-          Tap on <BrowserElementLocator locator={action.locator} />
+          Tap on <ActionElementLocator action={action} />
         </>
       )
 
@@ -142,21 +156,21 @@ function BrowserActionText({ action }: BrowserActionTextProps) {
       return (
         <>
           Type <code>{`"${action.text}"`}</code> into{' '}
-          <BrowserElementLocator locator={action.locator} />
+          <ActionElementLocator action={action} />
         </>
       )
 
     case 'locator.uncheck':
       return (
         <>
-          Uncheck <BrowserElementLocator locator={action.locator} />
+          Uncheck <ActionElementLocator action={action} />
         </>
       )
 
     case 'locator.waitFor':
       return (
         <>
-          Wait for element <BrowserElementLocator locator={action.locator} />
+          Wait for element <ActionElementLocator action={action} />
         </>
       )
 
@@ -164,7 +178,7 @@ function BrowserActionText({ action }: BrowserActionTextProps) {
       return (
         <>
           Call <code>{action.name}</code> on{' '}
-          <BrowserElementLocator locator={action.locator} />
+          <ActionElementLocator action={action} />
         </>
       )
 

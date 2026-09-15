@@ -16,12 +16,6 @@ export function ToBeCheckedActionBody({
   action,
   onChange,
 }: ToBeCheckedActionBodyProps) {
-  const handleChangeLocator = (
-    locator: LocatorToBeCheckedAction['locator']
-  ) => {
-    onChange({ ...action, locator })
-  }
-
   const handleChangeChecked = (checked: boolean) => {
     onChange({ ...action, checked })
   }
@@ -35,9 +29,9 @@ export function ToBeCheckedActionBody({
     >
       Expect
       <LocatorForm
-        state={action.locator}
+        action={action}
         suggestedRoles={CHECKED_ROLES}
-        onChange={handleChangeLocator}
+        onChange={onChange}
       />
       to be
       <CheckedStateForm value={action.checked} onChange={handleChangeChecked} />

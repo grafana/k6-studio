@@ -5,6 +5,7 @@ import * as path from '@/utils/path'
 
 interface UpdateReferencesDialogProps {
   open: boolean
+  isPending: boolean
   filePath: string
   references: string[]
   onRename: () => void
@@ -15,6 +16,7 @@ interface UpdateReferencesDialogProps {
 
 export function UpdateReferencesDialog({
   open,
+  isPending,
   filePath,
   references,
   onRename,
@@ -23,7 +25,10 @@ export function UpdateReferencesDialog({
   onCloseAutoFocus,
 }: UpdateReferencesDialogProps) {
   return (
-    <Dialog.Root open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
+    <Dialog.Root
+      open={open}
+      onOpenChange={(isOpen) => !isOpen && !isPending && onCancel()}
+    >
       <Dialog.Content size="3" onCloseAutoFocus={onCloseAutoFocus}>
         <Dialog.Title>Update references</Dialog.Title>
         <Flex direction="column" gap="3">
@@ -47,14 +52,22 @@ export function UpdateReferencesDialog({
                 margin: 0;
               `}
               variant="ghost"
+              disabled={isPending}
             >
               Cancel
             </Button>
           </Dialog.Close>
-          <Button variant="outline" color="red" onClick={onRename}>
+          <Button
+            variant="outline"
+            color="red"
+            onClick={onRename}
+            disabled={isPending}
+          >
             Rename anyway
           </Button>
-          <Button onClick={onUpdateAndRename}>Update files</Button>
+          <Button onClick={onUpdateAndRename} disabled={isPending}>
+            Update files
+          </Button>
         </Flex>
       </Dialog.Content>
     </Dialog.Root>

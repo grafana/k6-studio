@@ -4,88 +4,15 @@ import {
   buildClickAction,
   buildToBeCheckedAction,
 } from '@/test/factories/browserActions'
+import { SyntheticKey } from '@/utils/zod'
 
-import { convertActionsToTest, convertEventsToTest } from './test'
+import { convertActionsToTest } from './test'
+import { TestNode } from './types'
 
-describe('convertEventsToTest', () => {
-  it('should not wait for navigation when submit-form is not followed by an implicit navigation', () => {
-    const test = convertEventsToTest({
-      browserEvents: [
-        {
-          type: 'navigate-to-page',
-          eventId: 'start-nav',
-          timestamp: 1,
-          tab: 'tab-1',
-          url: 'https://example.com/search',
-          source: 'address-bar',
-        },
-        {
-          type: 'submit-form',
-          eventId: 'submit',
-          timestamp: 2,
-          tab: 'tab-1',
-          form: { selectors: { css: 'form.search' } },
-          submitter: { selectors: { css: 'button[type="submit"]' } },
-        },
-      ],
-    })
-
-    const submitNode = test.defaultScenario?.nodes
-      .filter((node) => node.type === 'click')
-      .find((node) => node.nodeId === 'submit')
-
-    expect(submitNode).toBeDefined()
-    expect(submitNode?.waitForNavigation).toBeUndefined()
-  })
-
-  it('should wait for navigation when submit-form is followed by an implicit navigation', () => {
-    const test = convertEventsToTest({
-      browserEvents: [
-        {
-          type: 'navigate-to-page',
-          eventId: 'start-nav',
-          timestamp: 1,
-          tab: 'tab-1',
-          url: 'https://example.com/search',
-          source: 'address-bar',
-        },
-        {
-          type: 'submit-form',
-          eventId: 'submit',
-          timestamp: 2,
-          tab: 'tab-1',
-          form: { selectors: { css: 'form.search' } },
-          submitter: { selectors: { css: 'button[type="submit"]' } },
-        },
-        {
-          type: 'navigate-to-page',
-          eventId: 'implicit-nav',
-          timestamp: 3,
-          tab: 'tab-1',
-          url: 'https://example.com/results',
-          source: 'implicit',
-        },
-      ],
-    })
-
-    const nodes = test.defaultScenario?.nodes ?? []
-
-    const submitNode = nodes
-      .filter((node) => node.type === 'click')
-      .find((node) => node.nodeId === 'submit')
-
-    const implicitNavNode = nodes.find((node) => node.nodeId === 'implicit-nav')
-
-    expect(implicitNavNode).toBeUndefined()
-
-    expect(submitNode).toBeDefined()
-    expect(submitNode?.waitForNavigation).toEqual({
-      page: {
-        nodeId: 'tab-1',
-      },
-    })
-  })
-})
+// A fixed stand-in key: these fixtures don't exercise key behavior, and
+// generating one via newSyntheticKey() would consume the mocked
+// crypto.randomUUID() counter that convertActionsToTest's node IDs rely on.
+const fixtureKey = 'fixture-key' as SyntheticKey
 
 describe('convertActionsToTest', () => {
   beforeEach(() => {
@@ -174,6 +101,52 @@ describe('convertActionsToTest', () => {
     })
   })
 
+  it('switches to a new page when click options.switchesToNewPage is true', () => {
+    const test = convertActionsToTest({
+      browserActions: [
+        buildClickAction({ options: { switchesToNewPage: true } }),
+        buildClickAction({ options: undefined }),
+      ],
+    })
+
+    const nodes = test.defaultScenario?.nodes ?? []
+    const pageNodes = nodes.filter((node) => node.type === 'page')
+    const promiseNode = nodes.find((node) => node.type === 'new-tab-promise')
+    const clickIndex = nodes.findIndex((node) => node.type === 'click')
+
+    expect(pageNodes).toHaveLength(2)
+    expect(promiseNode).toBeDefined()
+    expect(pageNodes[1]?.promise).toEqual({ nodeId: promiseNode?.nodeId })
+
+    // The promise must be created before the click and the new page after it.
+    expect(nodes.findIndex((node) => node === promiseNode)).toBeLessThan(
+      clickIndex
+    )
+    expect(nodes.findIndex((node) => node === pageNodes[1])).toBeGreaterThan(
+      clickIndex
+    )
+  })
+
+  it('binds locators after a page switch to the new page', () => {
+    const test = convertActionsToTest({
+      browserActions: [
+        buildClickAction({ options: { switchesToNewPage: true } }),
+        buildClickAction({ options: undefined }),
+      ],
+    })
+
+    const nodes = test.defaultScenario?.nodes ?? []
+    const pageNodes = nodes.filter((node) => node.type === 'page')
+    const locatorNodes = nodes.filter((node) => node.type === 'locator')
+
+    expect(locatorNodes[0]?.inputs.page).toEqual({
+      nodeId: pageNodes[0]?.nodeId,
+    })
+    expect(locatorNodes[1]?.inputs.page).toEqual({
+      nodeId: pageNodes[1]?.nodeId,
+    })
+  })
+
   it('does not wait for navigation when click options.waitForNavigation is false', () => {
     const test = convertActionsToTest({
       browserActions: [
@@ -196,6 +169,8 @@ describe('convertActionsToTest', () => {
           method: 'locator.click',
           id: '2',
           locator: {
+            type: 'element',
+            key: fixtureKey,
             current: 'css',
             values: {
               css: {
@@ -244,6 +219,7 @@ describe('convertActionsToTest', () => {
           type: 'css',
           selector: 'button#submit',
         },
+        frames: [],
         inputs: {
           page: {
             nodeId: '1',
@@ -276,7 +252,7 @@ describe('convertActionsToTest', () => {
           },
         },
       },
-    ])
+    ] satisfies TestNode[])
   })
 
   it('threads inputType:aria through toBeChecked to is-checked IR operation', () => {
@@ -286,6 +262,8 @@ describe('convertActionsToTest', () => {
           inputType: 'aria',
           checked: true,
           locator: {
+            type: 'element',
+            key: fixtureKey,
             current: 'css',
             values: { css: { type: 'css', selector: '[role="checkbox"]' } },
           },

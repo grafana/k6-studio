@@ -4,15 +4,19 @@ import { ElementLocator, AltLocator } from '@/schemas/locator'
 import { TextFieldWithExactToggle } from '../../components'
 import { toFieldErrors } from '../utils'
 
+import { FieldErrors } from './validation'
+
 interface GetByAltTextFormProps {
-  locator: AltLocator
-  errors?: Record<string, string>
+  locator: AltLocator | undefined
+  isTouched: boolean
+  errors: FieldErrors['alt'] | undefined
   onChange: (locator: ElementLocator) => void
   onBlur?: () => void
 }
 
 export function GetByAltTextForm({
-  locator,
+  locator = { type: 'alt', text: '', options: { exact: false } },
+  isTouched,
   errors,
   onChange,
   onBlur,
@@ -23,7 +27,7 @@ export function GetByAltTextForm({
       label="Alt text"
       labelSize="1"
       mb="0"
-      errors={toFieldErrors('alt', errors?.['alt'])}
+      errors={toFieldErrors('alt', isTouched && errors?.text)}
     >
       <TextFieldWithExactToggle
         name="alt"

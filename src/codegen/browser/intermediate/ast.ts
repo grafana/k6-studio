@@ -18,6 +18,20 @@ export interface NewPageExpression {
   type: 'NewPageExpression'
 }
 
+// A promise that resolves with the next page opened in the target page's
+// browser context, i.e. `page.context().waitForEvent('page')`. Deliberately
+// not awaited at the creation site: it is created before the action that
+// opens the page and awaited afterwards via AwaitExpression.
+export interface NewPagePromiseExpression {
+  type: 'NewPagePromiseExpression'
+  target: Expression
+}
+
+export interface AwaitExpression {
+  type: 'AwaitExpression'
+  argument: Expression
+}
+
 export interface ClosePageExpression {
   type: 'ClosePageExpression'
   target: Expression
@@ -250,6 +264,8 @@ export type Expression =
   | StringLiteral
   | NullLiteral
   | NewPageExpression
+  | NewPagePromiseExpression
+  | AwaitExpression
   | ClosePageExpression
   | NewRoleLocatorExpression
   | RoleLocatorOptionsExpression

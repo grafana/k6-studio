@@ -127,7 +127,7 @@ export function useRenameFile(file: StudioFile) {
         return
       }
 
-      navigate(getViewPath(newPath), { replace: true })
+      void navigate(getViewPath(newPath), { replace: true })
     },
   })
 }

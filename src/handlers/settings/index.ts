@@ -20,6 +20,12 @@ export function initialize() {
     return await getSettings()
   })
 
+  ipcMain.handle(SettingsHandler.GetFallbackWarning, () => {
+    const warning = k6StudioState.settingsFallbackWarning
+    k6StudioState.settingsFallbackWarning = null
+    return warning
+  })
+
   ipcMain.handle(SettingsHandler.Save, async (event, data: AppSettings) => {
     console.info(`${SettingsHandler.Save} event received`)
 

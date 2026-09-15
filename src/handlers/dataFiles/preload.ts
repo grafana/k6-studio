@@ -7,3 +7,7 @@ export function importFile() {
     string | undefined
   >
 }
+
+export function openFile() {
+  return ipcRenderer.invoke(DataFileHandler.Open) as Promise<string | undefined>
+}

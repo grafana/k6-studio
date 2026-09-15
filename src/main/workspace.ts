@@ -41,7 +41,7 @@ function updateGeneratorReferences(
     }),
   }
 
-  return JSON.stringify(serializeGenerator(filePath, updated))
+  return serializeGenerator(filePath, updated)
 }
 
 function updateReferencesInFile(
@@ -70,7 +70,7 @@ export async function updateReferences(
   for (const filePath of referencingFiles) {
     const file = getStudioFileFromPath(filePath)
 
-    if (file === null) {
+    if (file === undefined) {
       continue
     }
 

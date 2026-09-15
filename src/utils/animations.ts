@@ -20,5 +20,15 @@ const scaleUpKeyframes = keyframes`
   }
 `
 
+export const blinkKeyframes = keyframes`
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+`
+
 export const fadeIn = `${fadeInKeyframes} 0.3s ease-out`
 export const scaleUp = `${scaleUpKeyframes} 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)`

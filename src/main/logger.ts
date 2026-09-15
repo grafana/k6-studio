@@ -45,6 +45,11 @@ export function initializeLogger() {
   if (process.env.NODE_ENV === 'development') {
     log.transports.file.fileName = 'k6-studio-dev.log'
     log.transports.file.level = 'debug'
+  } else {
+    // In packaged builds stdout may be a closed pipe and nothing reads it
+    // anyway; the file transport already persists everything at 'error' and
+    // above, so writing eventLogger/info noise to the console buys nothing.
+    log.transports.console.level = false
   }
 
   log.hooks.push((msg) => {

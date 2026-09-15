@@ -48,6 +48,13 @@ function buildScenarioGraph(scenario: model.Scenario) {
         break
 
       case 'page':
+        if (node.promise) {
+          graph.connect(node.nodeId, node.promise.nodeId, 'reference')
+        }
+        break
+
+      case 'new-tab-promise':
+        graph.connect(node.nodeId, node.inputs.page.nodeId, 'reference')
         break
 
       case 'locator':

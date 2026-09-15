@@ -1,5 +1,10 @@
 import { Box, IconButton } from '@radix-ui/themes'
-import { CircleCheckIcon, CircleXIcon, XIcon } from 'lucide-react'
+import {
+  CircleCheckIcon,
+  CircleXIcon,
+  TriangleAlertIcon,
+  XIcon,
+} from 'lucide-react'
 
 import { useToastStore } from '@/store/ui/useToast'
 import { Toast as ToastProps } from '@/types/toast'
@@ -68,6 +73,8 @@ function StatusIcon({ status }: { status: ToastProps['status'] }) {
       return <CircleCheckIcon color="var(--green-11)" />
     case 'error':
       return <CircleXIcon color="var(--red-11)" />
+    case 'warning':
+      return <TriangleAlertIcon color="var(--amber-11)" />
     case 'default':
       return null
     default:

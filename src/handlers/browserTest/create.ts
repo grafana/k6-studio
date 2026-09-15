@@ -3,6 +3,7 @@ import { BROWSER_TESTS_PATH } from '@/constants/workspace'
 import {
   type AnyBrowserAction,
   BrowserTestFile,
+  BrowserTestFileCodec,
   defaultBrowserTestOptions,
 } from '@/schemas/browserTest'
 import { trackEvent } from '@/services/usageTracking'
@@ -19,7 +20,7 @@ export async function createBrowserTest(
   }
 
   const filePath = await createFileWithUniqueName({
-    data: JSON.stringify(browserTest, null, 2),
+    data: BrowserTestFileCodec.encode(browserTest),
     directory: BROWSER_TESTS_PATH,
     ext: K6_BROWSER_TEST_FILE_EXTENSION,
     prefix: 'Browser',

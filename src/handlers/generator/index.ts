@@ -21,10 +21,7 @@ export function initialize() {
     async (_, generator: GeneratorFileData, filePath: string) => {
       console.log(`${GeneratorHandler.Save} event received`)
 
-      await writeFile(
-        filePath,
-        JSON.stringify(serializeGenerator(filePath, generator), null, 2)
-      )
+      await writeFile(filePath, serializeGenerator(filePath, generator))
 
       trackGeneratorUpdated(generator)
     }

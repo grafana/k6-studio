@@ -1,6 +1,7 @@
 import { css } from '@emotion/react'
 import { Flex, Tabs } from '@radix-ui/themes'
 
+import { HtmlInspector } from '@/components/HtmlInspector'
 import {
   Group,
   Panel,
@@ -18,6 +19,7 @@ import {
   HighlightLocatorProvider,
   useHighlightedLocator,
 } from '../../../components/HighlightLocatorProvider'
+import { PlayerContextProvider } from '../../../components/SessionPlayer/PlayerContext'
 import { DebugSession } from '../types'
 
 import { BrowserActionsPanel } from './BrowserActionsPanel'
@@ -30,6 +32,7 @@ interface BrowserDebuggerProps {
   script: string
   session: DebugSession
   onDebugScript: () => void
+  onScriptChange: (value: string) => void
 }
 
 export function BrowserDebuggerContent({
@@ -37,6 +40,7 @@ export function BrowserDebuggerContent({
   script,
   session,
   onDebugScript,
+  onScriptChange,
 }: BrowserDebuggerProps) {
   const highlightedLocator = useHighlightedLocator()
 
@@ -89,6 +93,7 @@ export function BrowserDebuggerContent({
                   script={script}
                   session={session}
                   highlightedLocator={highlightedLocator}
+                  onScriptChange={onScriptChange}
                 />
               </Panel>
               <Separator />
@@ -107,6 +112,9 @@ export function BrowserDebuggerContent({
             </Tabs.Trigger>
             <Tabs.Trigger value="network" onClick={handleTabClick}>
               Network ({session.requests.length})
+            </Tabs.Trigger>
+            <Tabs.Trigger value="elements" onClick={handleTabClick}>
+              Elements
             </Tabs.Trigger>
           </Tabs.List>
           <Separator data-disabled />
@@ -145,6 +153,15 @@ export function BrowserDebuggerContent({
                   }
                 />
               </Tabs.Content>
+              <Tabs.Content
+                css={css`
+                  overflow: hidden;
+                  flex: 1 1 0;
+                `}
+                value="elements"
+              >
+                <HtmlInspector sessionState={session.state} />
+              </Tabs.Content>
             </Flex>
           </Panel>
         </Group>
@@ -156,7 +173,9 @@ export function BrowserDebuggerContent({
 export function BrowserDebugger(props: BrowserDebuggerProps) {
   return (
     <HighlightLocatorProvider>
-      <BrowserDebuggerContent {...props} />
+      <PlayerContextProvider>
+        <BrowserDebuggerContent {...props} />
+      </PlayerContextProvider>
     </HighlightLocatorProvider>
   )
 }

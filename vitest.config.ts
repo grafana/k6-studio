@@ -1,9 +1,7 @@
 import { fileURLToPath } from 'node:url'
-import viteTsconfigPaths from 'vite-tsconfig-paths'
 import { defineConfig, configDefaults } from 'vitest/config'
 
 export default defineConfig({
-  plugins: [viteTsconfigPaths()],
   test: {
     includeSource: ['src/**/*.{js,ts}'],
     // e2e/ holds Playwright specs run via `pnpm test:e2e`, not vitest.
@@ -14,11 +12,18 @@ export default defineConfig({
       'k6/http': fileURLToPath(
         new URL('./src/test/stubs/k6-http.ts', import.meta.url)
       ),
+      'k6/browser': fileURLToPath(
+        new URL('./src/test/stubs/k6-browser.ts', import.meta.url)
+      ),
     },
   },
   define: {
     'import.meta.vitest': 'undefined',
     __APP_VERSION__: JSON.stringify('0.0.0-vitest'),
     K6_TESTING_OVERRIDE: JSON.stringify(''),
+    GRAFANA_COM_URL: JSON.stringify('https://grafana.com'),
+  },
+  resolve: {
+    tsconfigPaths: true,
   },
 })

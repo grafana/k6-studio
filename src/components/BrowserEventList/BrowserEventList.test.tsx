@@ -2,6 +2,7 @@ import { fireEvent, render } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { BrowserEvent, ClickEvent } from '@/schemas/recording'
+import { SyntheticKey } from '@/utils/zod'
 import { RecordingContext } from '@/views/Recorder/RecordingContext'
 
 import { BrowserEventList } from './BrowserEventList'
@@ -50,6 +51,8 @@ describe('BrowserEventList highlighting', () => {
       { type: 'css', selector: '#checkout-button' },
       [
         {
+          type: 'frame',
+          key: expect.any(String) as SyntheticKey,
           current: 'css',
           values: { css: { type: 'css', selector: '#checkout' } },
         },
@@ -73,7 +76,7 @@ describe('BrowserEventList highlighting', () => {
 
     expect(onHighlight).toHaveBeenCalledWith(
       { type: 'css', selector: '#checkout-button' },
-      undefined
+      []
     )
   })
 })

@@ -20,7 +20,13 @@ export function NavigationCard({
         role="presentation"
         css={css`
           color: var(--accent-9);
-          margin-left: -6px;
+          margin-left: -2px;
+          margin-bottom: var(--space-2);
+
+          .lucide {
+            width: 40px;
+            height: 40px;
+          }
         `}
       >
         {icon}

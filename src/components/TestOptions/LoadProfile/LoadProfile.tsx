@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Text } from '@radix-ui/themes'
-import { FormProvider } from 'react-hook-form'
+import { FormProvider, Resolver } from 'react-hook-form'
 
 import { LoadProfileExecutorOptionsSchema } from '@/schemas/generator'
 import { LoadProfileExecutorOptions } from '@/types/testOptions'
@@ -20,7 +20,12 @@ export function LoadProfile({ value, onChange, executors }: LoadProfileProps) {
   const formMethods = useControlledForm<LoadProfileExecutorOptions>({
     value,
     onChange,
-    resolver: zodResolver(LoadProfileExecutorOptionsSchema),
+    // Stages carry a synthetic key, which zodResolver types as optional
+    // input rather than the always-present output field the form actually
+    // works with.
+    resolver: zodResolver(
+      LoadProfileExecutorOptionsSchema
+    ) as Resolver<LoadProfileExecutorOptions>,
   })
   const { watch, handleSubmit } = formMethods
 

@@ -44,12 +44,12 @@ export function useExportScript({
       options: {},
     }),
     filters: [{ name: 'k6 test scripts', extensions: ['js'] }],
-    onSave(location) {
+    onSave({ location }) {
       const viewPath = getViewPath(location.path)
 
       if (openOnSave) {
         onSuccess?.(location)
-        navigate(viewPath)
+        void navigate(viewPath)
 
         return
       }

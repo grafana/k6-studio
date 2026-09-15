@@ -84,8 +84,17 @@ function handleStatusUpdate(
   const state = event.status.state
 
   if (state === 'completed') {
+    // The completed status can outrun the stream/step events that normally
+    // close an open content block. Close it here too: stale trackers would
+    // make the next round's first delta skip its start event, and every
+    // finish must leave the stream balanced.
+    const closeParts = closeActiveContentBlock(session)
+    session.activeStreamArtifactId = undefined
+    session.activeStreamContentType = undefined
+
     // Usage is reported per-step via step.complete artifacts, not here
     return [
+      ...closeParts,
       {
         type: 'finish',
         finishReason: 'stop',
@@ -195,17 +204,25 @@ function handleStepComplete(
   const stopReason = dataPart?.data?.stopReason
   const usage = extractUsage(artifact)
 
+  // Close any content block still open in this step's stream (its start was
+  // emitted here, so the ids match) and clear the trackers. Otherwise the open
+  // block leaks into the next step's stream, which would emit a stale end for a
+  // reasoning/text part the renderer never started and crash.
+  const closeParts = closeActiveContentBlock(session)
+  session.activeStreamArtifactId = undefined
+  session.activeStreamContentType = undefined
+
   // Only emit finish for non-tool-use steps. Tool-use finishes are handled
   // by the readyToFinishForTools flag set in tryMatchToolRequests.
   if (stopReason !== 'tool_use') {
-    return [{ type: 'finish', finishReason: 'stop', usage }]
+    return [...closeParts, { type: 'finish', finishReason: 'stop', usage }]
   }
 
   // Gate readyToFinishForTools so the stream won't close before all tool calls arrive.
   session.allToolCallsReceived = true
   session.tryMatchToolRequests()
 
-  return []
+  return closeParts
 }
 
 function handleMessageArtifact(
@@ -242,10 +259,15 @@ function handleTokenStreamArtifact(
   const id = artifact.artifactId
 
   switch (artifact.name) {
-    case ARTIFACT_NAME.MESSAGE_STREAM_START:
+    case ARTIFACT_NAME.MESSAGE_STREAM_START: {
+      // A delta arriving before this event may have already opened a block;
+      // close it before the trackers are overwritten, or its end is never
+      // emitted and the stream carries an unbalanced start.
+      const parts = closeActiveContentBlock(session)
       session.activeStreamArtifactId = id
       session.activeStreamContentType = undefined
-      return []
+      return parts
+    }
     case ARTIFACT_NAME.MESSAGE_CONTENT_DELTA:
       return handleContentDelta(session, artifact)
     case ARTIFACT_NAME.MESSAGE_STREAM_COMPLETE: {
@@ -263,7 +285,14 @@ function handleContentDelta(
   session: ActiveA2ASession,
   artifact: A2AArtifact
 ): LanguageModelV2StreamPart[] {
-  const streamId = session.activeStreamArtifactId ?? artifact.artifactId
+  // Persist the id this block opens with so closeActiveContentBlock emits the
+  // matching end. Without this, a delta arriving before message.stream.start
+  // opens with artifactId but closes with a different (or absent) id.
+  if (session.activeStreamArtifactId === undefined) {
+    session.activeStreamArtifactId = artifact.artifactId
+  }
+
+  const streamId = session.activeStreamArtifactId
   const parts: LanguageModelV2StreamPart[] = []
 
   for (const part of artifact.parts) {
@@ -295,7 +324,7 @@ function handleContentDelta(
   return parts
 }
 
-function closeActiveContentBlock(
+export function closeActiveContentBlock(
   session: ActiveA2ASession
 ): LanguageModelV2StreamPart[] {
   const streamId = session.activeStreamArtifactId

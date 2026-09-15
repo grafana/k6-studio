@@ -40,7 +40,11 @@ function isBrowserScenario(scenario: ir.Scenario) {
       case 'AssignmentStatement':
         return visit(node.value)
 
+      case 'AwaitExpression':
+        return visit(node.argument)
+
       case 'NewPageExpression':
+      case 'NewPagePromiseExpression':
       case 'ClosePageExpression':
       case 'GotoExpression':
       case 'ReloadExpression':

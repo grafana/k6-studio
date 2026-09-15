@@ -37,7 +37,7 @@ export function generateScript({
   )
 
   return `
-    // ${generateScriptHeader()}
+    // ${generateScriptHeader(generator.wizardUsed)}
 
     ${generateImports(generator, { hasBinaryContent })}
 

@@ -37,6 +37,31 @@ function emitNewPageExpression(
     .done()
 }
 
+function emitNewPagePromiseExpression(
+  context: ScenarioContext,
+  expression: ir.NewPagePromiseExpression
+): ts.Expression {
+  const target = emitExpression(context, expression.target)
+
+  // Deliberately not awaited: the promise is created before the action that
+  // opens the page and awaited afterwards.
+  return new ExpressionBuilder(target)
+    .member('context')
+    .call([])
+    .member('waitForEvent')
+    .call([string('page')])
+    .done()
+}
+
+function emitAwaitExpression(
+  context: ScenarioContext,
+  expression: ir.AwaitExpression
+): ts.Expression {
+  return new ExpressionBuilder(emitExpression(context, expression.argument))
+    .await(context)
+    .done()
+}
+
 function emitClosePageExpression(
   context: ScenarioContext,
   expression: ir.ClosePageExpression
@@ -553,6 +578,12 @@ function emitExpression(
 
     case 'NewPageExpression':
       return emitNewPageExpression(context, expression)
+
+    case 'NewPagePromiseExpression':
+      return emitNewPagePromiseExpression(context, expression)
+
+    case 'AwaitExpression':
+      return emitAwaitExpression(context, expression)
 
     case 'ClosePageExpression':
       return emitClosePageExpression(context, expression)

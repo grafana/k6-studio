@@ -24,12 +24,6 @@ export function ToHaveValueActionBody({
   action,
   onChange,
 }: ToHaveValueActionBodyProps) {
-  const handleChangeLocator = (
-    locator: LocatorToHaveValueAction['locator']
-  ) => {
-    onChange({ ...action, locator })
-  }
-
   const handleChangeExpected = (
     expected: LocatorToHaveValueAction['expected']
   ) => {
@@ -50,9 +44,9 @@ export function ToHaveValueActionBody({
     >
       Expect
       <LocatorForm
-        state={action.locator}
+        action={action}
         suggestedRoles={suggestedRoles}
-        onChange={handleChangeLocator}
+        onChange={onChange}
       />
       to have {action.expected.current === 'single' ? 'value' : 'values'}
       <ToHaveValuesForm

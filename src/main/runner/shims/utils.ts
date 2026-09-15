@@ -6,6 +6,33 @@ export const TRACKING_SERVER_URL = __ENV.K6_TRACKING_SERVER_PORT
   ? `http://localhost:${__ENV.K6_TRACKING_SERVER_PORT}`
   : null
 
+/**
+ * Posts to the tracking server without blocking the caller. Resolves to
+ * whether the server accepted the body. Errors are swallowed so tracking never
+ * interferes with script execution.
+ */
+export function postTracking(path: string, body: string): Promise<boolean> {
+  if (TRACKING_SERVER_URL === null) {
+    return Promise.resolve(false)
+  }
+
+  try {
+    return http
+      .asyncRequest('POST', `${TRACKING_SERVER_URL}${path}`, body, {
+        headers: { 'Content-Type': 'application/json' },
+      })
+      .then(
+        // A 4xx or 5xx resolves with a response instead of rejecting.
+        (response) => response.status >= 200 && response.status < 300,
+        () => false
+      )
+  } catch {
+    // A request can also fail synchronously, e.g. when the k6 runtime is
+    // tearing down the iteration.
+    return Promise.resolve(false)
+  }
+}
+
 export class TrackingClient {
   name: string
   currentId: number

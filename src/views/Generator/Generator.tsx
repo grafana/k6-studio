@@ -1,14 +1,18 @@
+import { Callout, IconButton } from '@radix-ui/themes'
 import log from 'electron-log/renderer'
+import { WandSparklesIcon, XIcon } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useBlocker, useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
+import { UnsavedChangesDialog } from '@/components/UnsavedChangesDialog'
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
 import { GeneratorContent } from '@/handlers/fs/types'
 import { useSaveFile } from '@/hooks/useSaveFile'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
+import { useUnsavedChangesPrompt } from '@/hooks/useUnsavedChangesPrompt'
 import { getViewPath } from '@/routeMap'
 import { useGeneratorStore, selectGeneratorData } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
@@ -22,8 +26,29 @@ import {
 } from './Generator.hooks'
 import { GeneratorControls } from './GeneratorControls'
 import { GeneratorTabs } from './GeneratorTabs'
+import { SetupWizard } from './SetupWizard'
+import { SetupWizardOutcome } from './SetupWizard/SetupWizard'
 import { TestRuleContainer } from './TestRuleContainer'
-import { UnsavedChangesDialog } from './UnsavedChangesDialog'
+
+function buildSetupSummary(store: {
+  allowlist: string[]
+  rules: Array<{ type: string }>
+  thresholds: unknown[]
+}): string {
+  const correlationCount = store.rules.filter(
+    (rule) => rule.type === 'correlation'
+  ).length
+  const parameterCount = store.rules.filter(
+    (rule) => rule.type === 'parameterization'
+  ).length
+
+  return [
+    `${store.allowlist.length} hosts`,
+    `${correlationCount} correlation rules`,
+    `${parameterCount} parameters`,
+    `${store.thresholds.length} thresholds`,
+  ].join(' · ')
+}
 
 interface GeneratorProps {
   file: StudioFile
@@ -38,6 +63,7 @@ export function Generator({ file, content }: GeneratorProps) {
 
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const [savedData, setSavedData] = useState<GeneratorFileData>(content.data)
+  const [setupSummary, setSetupSummary] = useState<string | null>(null)
 
   const setRecordingPath = useGeneratorStore((store) => store.setRecordingPath)
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
@@ -49,6 +75,11 @@ export function Generator({ file, content }: GeneratorProps) {
 
   const showToast = useToast()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const wizardMode = searchParams.get('mode')
+  const isSetupMode = wizardMode === 'setup' || wizardMode === 'guided'
+  const startInGuidedSetup = wizardMode === 'guided'
 
   const filePath = file.path
   const scriptPreview = useScriptPreview(filePath)
@@ -73,11 +104,11 @@ export function Generator({ file, content }: GeneratorProps) {
       isExternal: false,
     }),
     filters: [{ name: 'Generator', extensions: ['k6g'] }],
-    onSave: (location) => {
+    onSave: ({ location }) => {
       if (location.path === filePath) {
         setSavedData(selectGeneratorData(useGeneratorStore.getState()))
       } else {
-        navigate(getViewPath(location.path), { replace: true })
+        void navigate(getViewPath(location.path), { replace: true })
       }
     },
     onError: (error) => {
@@ -95,15 +126,6 @@ export function Generator({ file, content }: GeneratorProps) {
 
   const isDirty = useIsGeneratorDirty(savedData)
   const isDirtyRef = useRef(isDirty)
-
-  const [isAppClosing, setIsAppClosing] = useState(false)
-
-  const blocker = useBlocker(({ historyAction }) => {
-    // Don't block navigation when redirecting home from invalid generator
-    // TODO(router): Action enum is not exported from react-router-dom
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-    return isDirty && historyAction !== 'REPLACE'
-  })
 
   useEffect(() => {
     return () => {
@@ -135,16 +157,6 @@ export function Generator({ file, content }: GeneratorProps) {
   }, [harError, showToast])
 
   useEffect(() => {
-    return window.studio.app.onApplicationClose(() => {
-      if (isDirty || blocker.state === 'blocked') {
-        setIsAppClosing(true)
-        return
-      }
-      window.studio.app.closeApplication()
-    })
-  })
-
-  useEffect(() => {
     isDirtyRef.current = isDirty
   }, [isDirty])
 
@@ -152,41 +164,46 @@ export function Generator({ file, content }: GeneratorProps) {
     return saveFile({ saveAs: false })
   }, [saveFile])
 
+  const unsavedChangesPrompt = useUnsavedChangesPrompt({
+    isDirty,
+    onSave: handleSaveGenerator,
+  })
+
   const handleChangeRecording = (newPath: string) => {
     setSelectedRequest(null)
     setRecordingPath(newPath)
   }
 
-  const handleSaveGeneratorDialog = async () => {
-    const location = await handleSaveGenerator()
-
-    if (location === undefined) {
-      setIsAppClosing(false)
-
-      return
+  // `replace` keeps the dirty blocker from firing on wizard-internal
+  // navigation (it only blocks non-REPLACE history actions).
+  const handleExitSetupMode = (outcome: SetupWizardOutcome) => {
+    if (outcome === 'completed') {
+      setSetupSummary(buildSetupSummary(useGeneratorStore.getState()))
     }
 
-    if (isAppClosing) {
-      return window.studio.app.closeApplication()
-    }
-
-    blocker.proceed?.()
+    setSearchParams({}, { replace: true })
   }
 
-  const handleDiscardGeneratorDialog = () => {
-    if (isAppClosing) {
-      return window.studio.app.closeApplication()
-    }
-
-    blocker.proceed?.()
+  // `replace` avoids the dirty blocker; the wizard opens straight in guided
+  // setup when re-entered from the generator.
+  const handleConfigureWithAssistant = () => {
+    setSearchParams({ mode: 'guided' }, { replace: true })
   }
 
-  const handleCancelGeneratorDialog = () => {
-    if (isAppClosing) {
-      return window.studio.app.closeApplication()
-    }
-
-    blocker.reset?.()
+  if (isSetupMode) {
+    return (
+      <>
+        <SetupWizard
+          isLoading={isLoading}
+          startInGuidedSetup={startInGuidedSetup}
+          script={scriptPreview}
+          scriptName={file.fileName}
+          onSaveGenerator={handleSaveGenerator}
+          onExit={handleExitSetupMode}
+        />
+        <UnsavedChangesDialog {...unsavedChangesPrompt} />
+      </>
+    )
   }
 
   return (
@@ -203,12 +220,41 @@ export function Generator({ file, content }: GeneratorProps) {
         <GeneratorControls
           file={file}
           onSave={handleSaveGenerator}
+          onConfigureWithAssistant={handleConfigureWithAssistant}
           isDirty={isDirty}
           script={scriptPreview}
         />
       }
       loading={isLoading}
     >
+      {setupSummary !== null && (
+        <Callout.Root
+          color="green"
+          m="2"
+          role="status"
+          css={{ position: 'relative', paddingRight: 'var(--space-7)' }}
+        >
+          <Callout.Icon>
+            <WandSparklesIcon size={16} />
+          </Callout.Icon>
+          <Callout.Text>Configured with Assistant: {setupSummary}</Callout.Text>
+          <IconButton
+            size="1"
+            variant="ghost"
+            color="gray"
+            aria-label="Dismiss"
+            onClick={() => setSetupSummary(null)}
+            css={{
+              position: 'absolute',
+              top: '50%',
+              right: 'var(--space-3)',
+              transform: 'translateY(-50%)',
+            }}
+          >
+            <XIcon size={14} />
+          </IconButton>
+        </Callout.Root>
+      )}
       <Group {...sidebarLayout}>
         <Panel id="main" minSize={580}>
           <Group orientation="vertical" {...mainLayout}>
@@ -239,12 +285,7 @@ export function Generator({ file, content }: GeneratorProps) {
           </>
         )}
       </Group>
-      <UnsavedChangesDialog
-        open={blocker.state === 'blocked' || (isAppClosing && isDirty)}
-        onSave={handleSaveGeneratorDialog}
-        onDiscard={handleDiscardGeneratorDialog}
-        onCancel={handleCancelGeneratorDialog}
-      />
+      <UnsavedChangesDialog {...unsavedChangesPrompt} />
     </View>
   )
 }

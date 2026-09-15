@@ -4,15 +4,19 @@ import { ElementLocator, TextLocator } from '@/schemas/locator'
 import { TextFieldWithExactToggle } from '../../components'
 import { toFieldErrors } from '../utils'
 
+import { FieldErrors } from './validation'
+
 interface GetByTextFormProps {
-  locator: TextLocator
-  errors?: Record<string, string>
+  locator: TextLocator | undefined
+  isTouched: boolean
+  errors: FieldErrors['text'] | undefined
   onChange: (locator: ElementLocator) => void
   onBlur?: () => void
 }
 
 export function GetByTextForm({
-  locator,
+  locator = { type: 'text', text: '', options: { exact: false } },
+  isTouched,
   errors,
   onChange,
   onBlur,
@@ -23,7 +27,7 @@ export function GetByTextForm({
       label="Text content"
       labelSize="1"
       mb="0"
-      errors={toFieldErrors('text-content', errors?.['text-content'])}
+      errors={toFieldErrors('text-content', isTouched && errors?.text)}
     >
       <TextFieldWithExactToggle
         name="text-content"

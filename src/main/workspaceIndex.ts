@@ -40,6 +40,8 @@ const referencedByIndex = new Map<
   Map<ReferencingFile, OriginalPath>
 >()
 
+const pendingReads = new Map<string, symbol>()
+
 function extractReferences(generatorPath: string, data: string): string[] {
   const generator = deserializeGenerator(generatorPath, data)
   const references: string[] = []
@@ -121,24 +123,42 @@ function addToIndex(
   }
 }
 
-async function add(filePath: string) {
-  if (path.extname(filePath) !== '.k6g') {
+function finishIndexing(filePath: string, read: symbol, references: string[]) {
+  const fileKey = path.key(filePath)
+
+  // A later change or deletion takes precedence over an older read.
+  if (pendingReads.get(fileKey) !== read) {
     return
   }
+
+  pendingReads.delete(fileKey)
+  addToIndex(filePath, references)
+}
+
+async function add(filePath: string): Promise<boolean> {
+  if (path.extname(filePath) !== '.k6g') {
+    return true
+  }
+
+  const read = Symbol()
+  pendingReads.set(path.key(filePath), read)
 
   try {
     const data = await readFile(filePath, 'utf-8')
     const refs = extractReferences(filePath, data)
 
-    addToIndex(filePath, refs)
+    finishIndexing(filePath, read, refs)
+    return true
   } catch (err) {
     log.warn(`workspace: failed to index ${filePath}`, err)
 
-    addToIndex(filePath, [])
+    finishIndexing(filePath, read, [])
+    return false
   }
 }
 
 function remove(filePath: string) {
+  pendingReads.delete(path.key(filePath))
   addToIndex(filePath, [])
 }
 
@@ -155,7 +175,7 @@ async function build(
       directoryFilter: (entry) => !isExcluded(entry.basename),
     }) as AsyncIterable<EntryInfo>
 
-    const processing: Promise<void>[] = []
+    const processing: Promise<boolean>[] = []
 
     for await (const entry of entries) {
       const filePath = path.normalize(entry.fullPath)
@@ -165,8 +185,10 @@ async function build(
 
     const results = await Promise.allSettled(processing)
 
-    const succeeded = results.filter((r) => r.status === 'fulfilled').length
-    const failed = results.filter((r) => r.status === 'rejected').length
+    const succeeded = results.filter(
+      (result) => result.status === 'fulfilled' && result.value
+    ).length
+    const failed = results.length - succeeded
 
     log.info(
       `workspace: finished building index (succeeded: ${succeeded}, failed: ${failed})`

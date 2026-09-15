@@ -4,15 +4,19 @@ import { ElementLocator, LabelLocator } from '@/schemas/locator'
 import { TextFieldWithExactToggle } from '../../components'
 import { toFieldErrors } from '../utils'
 
+import { FieldErrors } from './validation'
+
 interface GetByLabelFormProps {
-  locator: LabelLocator
-  errors?: Record<string, string>
+  locator: LabelLocator | undefined
+  isTouched: boolean
+  errors: FieldErrors['label'] | undefined
   onChange: (locator: ElementLocator) => void
   onBlur?: () => void
 }
 
 export function GetByLabelForm({
-  locator,
+  locator = { type: 'label', label: '', options: { exact: false } },
+  isTouched,
   errors,
   onChange,
   onBlur,
@@ -23,7 +27,7 @@ export function GetByLabelForm({
       label="Form label"
       labelSize="1"
       mb="0"
-      errors={toFieldErrors('form-label', errors?.['form-label'])}
+      errors={toFieldErrors('form-label', isTouched && errors?.label)}
     >
       <TextFieldWithExactToggle
         name="form-label"

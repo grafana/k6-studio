@@ -12,13 +12,9 @@ export async function createGenerator(recordingPath?: string): Promise<string> {
   const generator = createNewGeneratorFile(recordingPath)
 
   const filePath = await createFileWithUniqueName({
-    data: JSON.stringify(
-      serializeGenerator(
-        path.join(GENERATORS_PATH, `Generator${K6_GENERATOR_FILE_EXTENSION}`),
-        generator
-      ),
-      null,
-      2
+    data: serializeGenerator(
+      path.join(GENERATORS_PATH, `Generator${K6_GENERATOR_FILE_EXTENSION}`),
+      generator
     ),
     directory: GENERATORS_PATH,
     ext: K6_GENERATOR_FILE_EXTENSION,

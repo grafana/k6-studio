@@ -34,7 +34,37 @@ export enum UsageEventName {
   AutocorrelationFailed = 'autocorrelation_failed',
   AutocorrelationAborted = 'autocorrelation_aborted',
   AutocorrelationErrored = 'autocorrelation_errored',
+
+  TestSetupWizardOpened = 'test_setup_wizard_opened',
+  TestSetupWizardCompleted = 'test_setup_wizard_completed',
+  TestSetupWizardDismissed = 'test_setup_wizard_dismissed',
+  TestSetupWizardStepStarted = 'test_setup_wizard_step_started',
+  TestSetupWizardStepFinished = 'test_setup_wizard_step_finished',
+  TestSetupWizardSignUpClicked = 'test_setup_wizard_sign_up_clicked',
 }
+
+/**
+ * The wizard steps as reported in usage events. The wizard's STEP_ORDER derives
+ * its StepId from this list, so a new step extends it here first.
+ */
+export const WIZARD_STEPS = [
+  'hosts',
+  'autocorrelation',
+  'parameterization',
+  'thresholds',
+  'runTest',
+] as const
+
+export type WizardStep = (typeof WIZARD_STEPS)[number]
+
+/** How a wizard step run ended; one step_finished event fires per run. */
+export type WizardStepOutcome =
+  | 'success'
+  | 'partial-success'
+  | 'failure'
+  | 'error'
+  | 'aborted'
+  | 'skipped'
 
 export interface UsageEventMetadata {
   usageStatsId: string
@@ -151,6 +181,41 @@ interface AutocorrelationErroredEvent {
   event: UsageEventName.AutocorrelationErrored
 }
 
+interface TestSetupWizardOpenedEvent {
+  event: UsageEventName.TestSetupWizardOpened
+}
+
+interface TestSetupWizardCompletedEvent {
+  event: UsageEventName.TestSetupWizardCompleted
+}
+
+/** The user chose the manual path instead of the guided setup. */
+interface TestSetupWizardDismissedEvent {
+  event: UsageEventName.TestSetupWizardDismissed
+}
+
+interface TestSetupWizardStepStartedEvent {
+  event: UsageEventName.TestSetupWizardStepStarted
+  payload: {
+    step: WizardStep
+  }
+}
+
+interface TestSetupWizardStepFinishedEvent {
+  event: UsageEventName.TestSetupWizardStepFinished
+  payload: {
+    step: WizardStep
+    outcome: WizardStepOutcome
+    /** Omitted when the run is reconciled outside the step (e.g. unmount). */
+    durationMs?: number
+  }
+}
+
+/** The user followed the wizard's sign-up link to create a Grafana Cloud account. */
+interface TestSetupWizardSignUpClickedEvent {
+  event: UsageEventName.TestSetupWizardSignUpClicked
+}
+
 export type UsageEvent =
   | AppInstalledEvent
   | UserLoggedInEvent
@@ -173,5 +238,11 @@ export type UsageEvent =
   | AutocorrelationFailedEvent
   | AutocorrelationAbortedEvent
   | AutocorrelationErroredEvent
+  | TestSetupWizardOpenedEvent
+  | TestSetupWizardCompletedEvent
+  | TestSetupWizardDismissedEvent
+  | TestSetupWizardStepStartedEvent
+  | TestSetupWizardStepFinishedEvent
+  | TestSetupWizardSignUpClickedEvent
 
 export type UsageEventWithMetadata = UsageEvent & UsageEventMetadata

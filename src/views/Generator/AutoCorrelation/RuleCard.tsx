@@ -1,20 +1,19 @@
-import { Box, Flex, IconButton, Text, Tooltip } from '@radix-ui/themes'
+import { Box, Flex, IconButton, Switch, Text, Tooltip } from '@radix-ui/themes'
 import {
   BracesIcon,
-  ChevronDownIcon,
   CookieIcon,
   FileTextIcon,
   LinkIcon,
   LucideIcon,
   XIcon,
 } from 'lucide-react'
-import { memo, ReactNode, useCallback, useState } from 'react'
+import { memo, ReactNode } from 'react'
 
 import { MethodBadge } from '@/components/MethodBadge'
+import { SuggestionRow } from '@/components/SuggestionList/SuggestionRow'
 import { TextWithTooltip } from '@/components/TextWithTooltip'
 import { Method } from '@/types'
 import { ExtractorSelector } from '@/types/rules'
-import { fadeIn } from '@/utils/animations'
 
 import { SuggestedRuleEntry } from './types'
 
@@ -30,20 +29,27 @@ interface RequestPath {
   path: string
 }
 
+/**
+ * How the row's right-hand control behaves: a committed rule can be
+ * enabled/disabled (wizard), while a pending suggestion can be discarded
+ * (standalone dialog).
+ */
+export type RuleCardAction =
+  | { type: 'toggle'; enabled: boolean; onToggle: (ruleId: string) => void }
+  | { type: 'remove'; onRemove: (ruleId: string) => void; disabled: boolean }
+
 interface RuleCardProps {
   entry: SuggestedRuleEntry
-  onRemove: (ruleId: string) => void
-  disabled: boolean
+  action: RuleCardAction
+  isLast?: boolean
 }
 
 export const RuleCard = memo(function RuleCard({
   entry,
-  onRemove,
-  disabled,
+  action,
+  isLast = false,
 }: RuleCardProps) {
   const ruleId = entry.rule.id
-  const handleRemove = useCallback(() => onRemove(ruleId), [onRemove, ruleId])
-  const [expanded, setExpanded] = useState(true)
   const ruleName = getRuleName(entry)
   const source = getSource(entry)
   const reusedIn = getReusedIn(entry)
@@ -53,50 +59,31 @@ export const RuleCard = memo(function RuleCard({
   const extractedValue = entry.correlationState.extractedValue
 
   return (
-    <Box
-      p="4"
-      css={{
-        backgroundColor: 'var(--color-background)',
-        border: '1px solid var(--gray-4)',
-        borderRadius: 'var(--radius-3)',
-        animation: fadeIn,
-      }}
-    >
-      <Flex justify="between" align="center">
-        <Flex
-          align="center"
-          gap="2"
-          css={{ cursor: 'pointer', flex: 1, minWidth: 0 }}
-          onClick={() => setExpanded((prev) => !prev)}
-        >
-          <ChevronDownIcon
-            size={14}
-            css={{
-              transition: 'transform 150ms',
-              transform: expanded ? undefined : 'rotate(-90deg)',
-              flexShrink: 0,
-            }}
-          />
-          <Text color="orange" asChild>
-            {icon}
-          </Text>
-          <Text weight="bold" size="2" truncate>
-            {ruleName}
-          </Text>
-        </Flex>
-        <IconButton
-          variant="ghost"
-          size="1"
-          color="gray"
-          onClick={handleRemove}
-          disabled={disabled}
-          aria-label={`Remove ${ruleName} rule`}
-        >
-          <XIcon size={12} />
-        </IconButton>
-      </Flex>
-
-      {expanded && (
+    <SuggestionRow
+      isLast={isLast}
+      dimmed={action.type === 'toggle' && !action.enabled}
+      icon={icon}
+      name={ruleName}
+      secondary={
+        source && (
+          <>
+            <MethodBadge method={source.method}>{source.method}</MethodBadge>
+            <Text
+              css={{
+                minWidth: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {source.path}
+            </Text>
+          </>
+        )
+      }
+      controls={
+        <RuleControl ruleId={ruleId} ruleName={ruleName} action={action} />
+      }
+      expandableContent={
         <RuleCardDetails
           extractedValue={extractedValue}
           source={source}
@@ -104,10 +91,44 @@ export const RuleCard = memo(function RuleCard({
           reusedIn={reusedIn}
           overflowCount={overflowCount}
         />
-      )}
-    </Box>
+      }
+    />
   )
 })
+
+function RuleControl({
+  ruleId,
+  ruleName,
+  action,
+}: {
+  ruleId: string
+  ruleName: string
+  action: RuleCardAction
+}) {
+  if (action.type === 'toggle') {
+    return (
+      <Switch
+        size="1"
+        checked={action.enabled}
+        aria-label={`Enable ${ruleName} rule`}
+        onCheckedChange={() => action.onToggle(ruleId)}
+      />
+    )
+  }
+
+  return (
+    <IconButton
+      variant="ghost"
+      size="1"
+      color="gray"
+      onClick={() => action.onRemove(ruleId)}
+      disabled={action.disabled}
+      aria-label={`Remove ${ruleName} rule`}
+    >
+      <XIcon size={12} />
+    </IconButton>
+  )
+}
 
 interface RuleCardDetailsProps {
   extractedValue: string | undefined

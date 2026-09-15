@@ -2,6 +2,7 @@ import {
   LocatorClickAction,
   LocatorToBeCheckedAction,
 } from '@/schemas/browserTest'
+import { elementLocatorOptions } from '@/schemas/locator'
 
 export function buildClickAction(
   overrides: Partial<LocatorClickAction> = {}
@@ -9,16 +10,11 @@ export function buildClickAction(
   return {
     id: crypto.randomUUID(),
     method: 'locator.click',
-    locator: {
-      current: 'role',
-      values: {
-        role: {
-          type: 'role',
-          role: 'button',
-          options: { exact: false },
-        },
-      },
-    },
+    locator: elementLocatorOptions({
+      type: 'role',
+      role: 'button',
+      options: { exact: false },
+    }),
     ...overrides,
   }
 }
@@ -31,10 +27,10 @@ export function buildToBeCheckedAction(
     method: 'locator.toBeChecked',
     checked: true,
     inputType: 'native',
-    locator: {
-      current: 'css',
-      values: { css: { type: 'css', selector: 'input[type="checkbox"]' } },
-    },
+    locator: elementLocatorOptions({
+      type: 'css',
+      selector: 'input[type="checkbox"]',
+    }),
     ...overrides,
   }
 }

@@ -59,10 +59,14 @@ export function useDeleteFile({
       }
     }
 
+    if (usePendingDeletesStore.getState().paths.has(file.path)) {
+      return { deleted: true }
+    }
+
     addPending(file.path)
 
     if (navigateHomeOnDelete) {
-      navigate(getRoutePath('home'))
+      void navigate(getRoutePath('home'))
     }
 
     let undone = false

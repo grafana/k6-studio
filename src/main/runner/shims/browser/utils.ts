@@ -1,5 +1,3 @@
-import http from 'k6/http'
-
 import { LogEntry } from '@/schemas/k6'
 
 import {
@@ -7,11 +5,7 @@ import {
   ActionResultSchema,
   AnyBrowserDebugEvent,
 } from '../../schema'
-import { TrackingClient } from '../utils'
-
-export const TRACKING_SERVER_URL = __ENV.K6_TRACKING_SERVER_PORT
-  ? `http://localhost:${__ENV.K6_TRACKING_SERVER_PORT}`
-  : null
+import { postTracking, TRACKING_SERVER_URL, TrackingClient } from '../utils'
 
 /**
  * Never proxy actions originating from the k6-testing library.
@@ -61,22 +55,9 @@ export function createSingleEntryGuard() {
 const client = new TrackingClient('browser')
 
 export function trackLog(entry: LogEntry) {
-  if (TRACKING_SERVER_URL === null) {
-    return
-  }
-
-  const body = JSON.stringify(entry)
-
   // Blocking the `page.on("console")` handler will cause the browser to hang
-  // for extended periods of time so we use asyncRequest here to avoid blocking.
-  http
-    .asyncRequest('POST', `${TRACKING_SERVER_URL}/log`, body, {
-      headers: { 'Content-Type': 'application/json' },
-    })
-    .catch(() => {
-      // We don't want to interfere with the script execution so
-      // we swallow all errors here.
-    })
+  // for extended periods of time so the post must stay fire-and-forget.
+  void postTracking('/log', JSON.stringify(entry))
 }
 
 function beginAction(
@@ -116,6 +97,17 @@ function endAction(event: ActionBeginEvent | null, result: ActionResultSchema) {
     },
     result,
   })
+
+  actionEndHooks.forEach((hook) => hook())
+}
+
+const actionEndHooks: Array<() => void> = []
+
+/**
+ * Registers a hook that runs after every tracked action has ended.
+ */
+export function onActionEnd(hook: () => void) {
+  actionEndHooks.push(hook)
 }
 
 // Type inference won't work without using the `any` type.

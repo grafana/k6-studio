@@ -1,0 +1,61 @@
+import {
+  DatabaseIcon,
+  GaugeIcon,
+  LinkIcon,
+  LucideIcon,
+  NetworkIcon,
+  RocketIcon,
+} from 'lucide-react'
+
+import { WizardStep } from './state/types'
+
+interface StepConfig {
+  label: string
+  hint: string
+  title: string
+  description: string
+  icon: LucideIcon
+}
+
+export const STEP_CONFIG: Record<WizardStep, StepConfig> = {
+  hosts: {
+    label: 'Hosts',
+    hint: 'Choose what to test',
+    title: 'Select hosts',
+    description:
+      'The Assistant will identify which hosts carry the load you care about. Include or exclude any before continuing.',
+    icon: NetworkIcon,
+  },
+  autocorrelation: {
+    label: 'Autocorrelation',
+    hint: 'Handle dynamic values',
+    title: 'Autocorrelation',
+    description:
+      "Dynamic values like tokens and IDs change every run. The Assistant will extract and reuse them so your script won't break.",
+    icon: LinkIcon,
+  },
+  parameterization: {
+    label: 'Parameterization',
+    hint: 'Extract values into variables',
+    title: 'Parameterization',
+    description:
+      'Hard-coded values like credentials and search terms are baked into your recording. The Assistant will pull them into variables you can edit in one place.',
+    icon: DatabaseIcon,
+  },
+  thresholds: {
+    label: 'Thresholds',
+    hint: 'Set pass/fail criteria',
+    title: 'Thresholds',
+    description:
+      'Pass/fail criteria for your test. The Assistant will tune these to the latency it observes. Edit any value inline.',
+    icon: GaugeIcon,
+  },
+  runTest: {
+    label: 'Test run',
+    hint: 'Save and launch in the cloud',
+    title: 'Run test',
+    description:
+      'Review what your test will do, adjust the load if needed, then launch it in Grafana Cloud.',
+    icon: RocketIcon,
+  },
+}

@@ -104,7 +104,7 @@ function EditableFile({
   const hasEllipsis = useOverflowCheck(linkRef)
   const confirmedRef = useRef(false)
 
-  const { mutateAsync: renameFile } = useRenameFile(file)
+  const { mutate: renameFile, isPending } = useRenameFile(file)
 
   const [pendingRename, setPendingRename] = useState<{
     newName: string
@@ -113,36 +113,44 @@ function EditableFile({
 
   const fileExtension = path.extname(file.fileName).slice(1)
 
-  const handleSave = async (newValue: string) => {
+  const handleSave = (newValue: string) => {
     const newFileName = `${newValue.trim()}.${fileExtension}`
-    const result = await renameFile({ newName: newFileName })
+    renameFile(
+      { newName: newFileName },
+      {
+        onSuccess: (result) => {
+          if (result.renamed) {
+            setPendingRename(null)
+            setEditMode(false)
+            return
+          }
 
-    if (result.renamed) {
-      setPendingRename(null)
-      setEditMode(false)
-
-      return
-    }
-
-    setPendingRename({ newName: newFileName, references: result.references })
+          setPendingRename({
+            newName: newFileName,
+            references: result.references,
+          })
+        },
+      }
+    )
   }
 
-  const handleConfirmRename = async (onReferenced: 'force' | 'update') => {
+  const handleConfirmRename = (onReferenced: 'force' | 'update') => {
     if (pendingRename === null) {
       return
     }
 
-    confirmedRef.current = true
-
-    const result = await renameFile({
-      newName: pendingRename.newName,
-      onReferenced,
-    })
-
-    if (result.renamed) {
-      setPendingRename(null)
-      setEditMode(false)
-    }
+    renameFile(
+      { newName: pendingRename.newName, onReferenced },
+      {
+        onSuccess: (result) => {
+          if (result.renamed) {
+            confirmedRef.current = true
+            setPendingRename(null)
+            setEditMode(false)
+          }
+        },
+      }
+    )
   }
 
   const handleCancelDialog = () => {
@@ -174,10 +182,11 @@ function EditableFile({
         />
         <UpdateReferencesDialog
           open={pendingRename !== null}
+          isPending={isPending}
           filePath={file.path}
           references={pendingRename?.references ?? []}
-          onRename={() => void handleConfirmRename('force')}
-          onUpdateAndRename={() => void handleConfirmRename('update')}
+          onRename={() => handleConfirmRename('force')}
+          onUpdateAndRename={() => handleConfirmRename('update')}
           onCancel={handleCancelDialog}
           onCloseAutoFocus={handleCloseAutoFocus}
         />

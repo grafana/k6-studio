@@ -179,6 +179,26 @@ describe('useDeleteFile', () => {
     expect(showToast).not.toHaveBeenCalled()
   })
 
+  it('shares one Undo action for concurrent deletes while references load', async () => {
+    const { result } = renderHook(() => useDeleteFile({ file }))
+
+    await act(async () => {
+      await Promise.all([result.current(), result.current()])
+    })
+
+    expect(showToast).toHaveBeenCalledTimes(1)
+    const toast = lastToast()
+    const rendered = render(<>{toast.action}</>)
+    fireEvent.click(rendered.getByRole('button', { name: 'Undo' }))
+
+    await act(async () => {
+      await Promise.resolve(toast.onDismiss?.())
+    })
+
+    expect(trashFile).not.toHaveBeenCalled()
+    expect(usePendingDeletesStore.getState().paths.has(file.path)).toBe(false)
+  })
+
   it('force:true bypasses the reference check and deletes immediately', async () => {
     getFileReferences.mockResolvedValue({
       references: [],

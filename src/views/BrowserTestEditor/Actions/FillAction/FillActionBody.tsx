@@ -13,10 +13,6 @@ interface FillActionBodyProps {
 }
 
 export function FillActionBody({ action, onChange }: FillActionBodyProps) {
-  const handleChangeLocator = (locator: LocatorFillAction['locator']) => {
-    onChange({ ...action, locator })
-  }
-
   const handleChangeValue = (value: string) => {
     onChange({ ...action, value })
   }
@@ -30,8 +26,8 @@ export function FillActionBody({ action, onChange }: FillActionBodyProps) {
     >
       Fill
       <LocatorForm
-        state={action.locator}
-        onChange={handleChangeLocator}
+        action={action}
+        onChange={onChange}
         suggestedRoles={FILL_ROLES}
       />
       with

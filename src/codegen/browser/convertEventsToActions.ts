@@ -1,11 +1,13 @@
 import { AnyBrowserAction, LocatorClickModifier } from '@/schemas/browserTest'
 import { BrowserEvent, ClickEvent } from '@/schemas/recording'
+import { ProxyData } from '@/types'
 import { isWebUrl } from '@/utils/browserEvents'
-import { toFrameOptions, toLocatorOptions } from '@/utils/locator'
+import { toElementLocatorOptions } from '@/utils/locator'
 import { exhaustive } from '@/utils/typescript'
 
 import { convertAssertion } from './convertAssertion'
 import { isFollowedByImplicitNavigation } from './navigation'
+import { detectWaits } from './waits'
 
 function buildClickOptions(event: ClickEvent, nextEvent?: BrowserEvent) {
   const modifiers: LocatorClickModifier[] = []
@@ -14,17 +16,19 @@ function buildClickOptions(event: ClickEvent, nextEvent?: BrowserEvent) {
   if (event.modifiers.meta) modifiers.push('Meta')
   if (event.modifiers.shift) modifiers.push('Shift')
 
-  const waitForNavigation = isFollowedByImplicitNavigation(event, nextEvent)
-  const isDefaultClick =
-    event.button === 'left' && modifiers.length === 0 && !waitForNavigation
+  const switchesToNewPage = nextEvent?.type === 'tab-opened'
+  const waitForNavigation =
+    !switchesToNewPage && isFollowedByImplicitNavigation(event, nextEvent)
 
-  if (isDefaultClick) return undefined
-
-  return {
+  const options = {
     ...(event.button !== 'left' && { button: event.button }),
     ...(modifiers.length > 0 && { modifiers }),
     ...(waitForNavigation && { waitForNavigation: true }),
+    ...(switchesToNewPage && { switchesToNewPage: true }),
   }
+
+  // A plain left click needs no options object at all.
+  return Object.keys(options).length > 0 ? options : undefined
 }
 
 function convertEvent(
@@ -48,16 +52,12 @@ function convertEvent(
     return { id: crypto.randomUUID(), method: 'page.reload' }
   }
 
-  // The remaining events all target an element, which may live inside iframes.
-  const frames = toFrameOptions(event.frames)
-
   switch (event.type) {
     case 'click':
       return {
         id: crypto.randomUUID(),
         method: 'locator.click',
-        locator: toLocatorOptions(event.target.selectors),
-        frames,
+        locator: toElementLocatorOptions(event.target, event.frames),
         options: buildClickOptions(event, nextEvent),
       }
 
@@ -65,8 +65,7 @@ function convertEvent(
       return {
         id: crypto.randomUUID(),
         method: 'locator.fill',
-        locator: toLocatorOptions(event.target.selectors),
-        frames,
+        locator: toElementLocatorOptions(event.target, event.frames),
         value: event.value,
       }
 
@@ -74,24 +73,21 @@ function convertEvent(
       return {
         id: crypto.randomUUID(),
         method: event.checked ? 'locator.check' : 'locator.uncheck',
-        locator: toLocatorOptions(event.target.selectors),
-        frames,
+        locator: toElementLocatorOptions(event.target, event.frames),
       }
 
     case 'radio-change':
       return {
         id: crypto.randomUUID(),
         method: 'locator.click',
-        locator: toLocatorOptions(event.target.selectors),
-        frames,
+        locator: toElementLocatorOptions(event.target, event.frames),
       }
 
     case 'select-change':
       return {
         id: crypto.randomUUID(),
         method: 'locator.selectOption',
-        locator: toLocatorOptions(event.target.selectors),
-        frames,
+        locator: toElementLocatorOptions(event.target, event.frames),
         values: event.selected.map((value) => ({ value })),
       }
 
@@ -99,8 +95,7 @@ function convertEvent(
       return {
         id: crypto.randomUUID(),
         method: 'locator.click',
-        locator: toLocatorOptions(event.submitter.selectors),
-        frames,
+        locator: toElementLocatorOptions(event.submitter, event.frames),
         options: isFollowedByImplicitNavigation(event, nextEvent)
           ? { waitForNavigation: true }
           : undefined,
@@ -110,8 +105,7 @@ function convertEvent(
       return {
         id: crypto.randomUUID(),
         method: 'locator.waitFor',
-        locator: toLocatorOptions(event.target.selectors),
-        frames,
+        locator: toElementLocatorOptions(event.target, event.frames),
         options: event.options,
       }
 
@@ -123,11 +117,43 @@ function convertEvent(
   }
 }
 
+/**
+ * @param waits Timeout in milliseconds keyed by the id of the event the wait
+ * must precede. Events that convert to nothing get no wait, since a wait
+ * before a dropped action would be an orphan.
+ */
 export function convertEventsToActions(
-  events: BrowserEvent[]
+  events: BrowserEvent[],
+  waits?: Map<string, number>
 ): AnyBrowserAction[] {
   return events.flatMap((event, index) => {
     const action = convertEvent(event, events[index + 1])
-    return action ? [action] : []
+
+    if (!action) {
+      return []
+    }
+
+    const timeout = waits?.get(event.eventId)
+
+    if (timeout === undefined) {
+      return [action]
+    }
+
+    return [
+      { id: crypto.randomUUID(), method: 'page.waitForTimeout', timeout },
+      action,
+    ]
   })
+}
+
+/**
+ * Converts a recording into browser test actions, inserting the
+ * `page.waitForTimeout` actions the replay needs to avoid racing requests
+ * that the recording's own pacing waited out.
+ */
+export function convertRecordingToActions(
+  events: BrowserEvent[],
+  requests: ProxyData[]
+): AnyBrowserAction[] {
+  return convertEventsToActions(events, detectWaits(events, requests))
 }

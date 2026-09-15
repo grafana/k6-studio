@@ -1,5 +1,9 @@
 import { z } from 'zod/v4'
 
+import { appendOutmost } from '@/utils/locator'
+import { exhaustive } from '@/utils/typescript'
+import { newSyntheticKey, syntheticKey } from '@/utils/zod'
+
 const CssLocatorSchema = z.object({
   type: z.literal('css'),
   selector: z.string(),
@@ -79,7 +83,8 @@ const LocatorTypeSchema = z.union([
   GetByTextLocatorSchema.shape.type,
 ])
 
-export const LocatorOptionsSchema = z.object({
+const BaseLocatorOptionsSchema = z.object({
+  key: syntheticKey(),
   current: LocatorTypeSchema,
   values: z.object({
     css: CssLocatorSchema.optional(),
@@ -93,6 +98,33 @@ export const LocatorOptionsSchema = z.object({
   }),
 })
 
+export type FrameLocatorOptions = z.infer<typeof BaseLocatorOptionsSchema> & {
+  type: 'frame'
+  parent?: LocatorOptions
+}
+export type ElementLocatorOptions = z.infer<typeof BaseLocatorOptionsSchema> & {
+  type: 'element'
+  parent?: LocatorOptions
+}
+
+export type LocatorOptions = FrameLocatorOptions | ElementLocatorOptions
+
+export const FrameLocatorOptionsSchema = BaseLocatorOptionsSchema.extend({
+  type: z.literal('frame'),
+  parent: z.lazy(() => LocatorOptionsSchema).optional(),
+}) satisfies z.ZodType<FrameLocatorOptions>
+
+export const ElementLocatorOptionsSchema = BaseLocatorOptionsSchema.extend({
+  type: z.literal('element'),
+  parent: z.lazy(() => LocatorOptionsSchema).optional(),
+}) satisfies z.ZodType<ElementLocatorOptions>
+
+export const LocatorOptionsSchema: z.ZodType<LocatorOptions> =
+  z.discriminatedUnion('type', [
+    FrameLocatorOptionsSchema,
+    ElementLocatorOptionsSchema,
+  ])
+
 export type ElementLocator = z.infer<typeof ElementLocatorSchema>
 export type CssLocator = z.infer<typeof CssLocatorSchema>
 export type RoleLocator = z.infer<typeof GetByRoleLocatorSchema>
@@ -102,9 +134,79 @@ export type LabelLocator = z.infer<typeof GetByLabelLocatorSchema>
 export type PlaceholderLocator = z.infer<typeof GetByPlaceholderLocatorSchema>
 export type TitleLocator = z.infer<typeof GetByTitleLocatorSchema>
 export type TextLocator = z.infer<typeof GetByTextLocatorSchema>
-export type LocatorOptions = z.infer<typeof LocatorOptionsSchema>
 
-/** Locator options for a plain CSS selector. */
-export function cssLocatorOptions(selector: string): LocatorOptions {
-  return { current: 'css', values: { css: { type: 'css', selector } } }
+function chainParents(
+  parents: Array<LocatorOptions | undefined>
+): LocatorOptions | undefined {
+  return parents
+    .filter((parent) => parent !== undefined)
+    .reduce<LocatorOptions | undefined>(
+      (chain, next) => appendOutmost(chain, next),
+      undefined
+    )
+}
+
+export function elementLocatorOptions(
+  selector: ElementLocator = { type: 'css', selector: '' },
+  ...parents: Array<LocatorOptions | undefined>
+): ElementLocatorOptions {
+  return {
+    type: 'element',
+    key: newSyntheticKey(),
+    current: selector.type,
+    values: { [selector.type]: selector },
+    parent: chainParents(parents),
+  }
+}
+
+export function frameLocatorOptions(
+  selector: ElementLocator = { type: 'css', selector: '' },
+  ...parents: Array<LocatorOptions | undefined>
+): FrameLocatorOptions {
+  return {
+    type: 'frame',
+    key: newSyntheticKey(),
+    current: selector.type,
+    values: { [selector.type]: selector },
+    parent: chainParents(parents),
+  }
+}
+
+/** An empty locator value of the given type. */
+export function initializeLocatorValues(
+  type: ElementLocator['type']
+): ElementLocator {
+  switch (type) {
+    case 'css':
+      return { type, selector: '' }
+
+    case 'testid':
+      return { type, testId: '' }
+
+    case 'label':
+      return { type, label: '', options: { exact: false } }
+
+    case 'placeholder':
+      return { type, placeholder: '', options: { exact: false } }
+
+    case 'title':
+      return { type, title: '', options: { exact: false } }
+
+    case 'alt':
+    case 'text':
+      return { type, text: '', options: { exact: false } }
+
+    case 'role':
+      return { type, role: '', options: { exact: false } }
+
+    default:
+      return exhaustive(type)
+  }
+}
+
+/** The locator value selected by `current`, defaulting to an empty one. */
+export function getCurrentLocator(options: LocatorOptions): ElementLocator {
+  return (
+    options.values[options.current] ?? initializeLocatorValues(options.current)
+  )
 }

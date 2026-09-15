@@ -2,25 +2,35 @@ import { ipcRenderer } from 'electron'
 
 import { BrowserActionEvent, BrowserReplayEvent } from '@/main/runner/schema'
 import { Check, LogEntry } from '@/schemas/k6'
+import { K6TestOptions } from '@/utils/k6/schema'
 
 import { createListener } from '../utils'
 
-import { ScriptHandler } from './types'
+import {
+  RunScriptFromGeneratorOptions,
+  RunScriptOptions,
+  ScriptHandler,
+} from './types'
 
 export function showScriptSelectDialog() {
   return ipcRenderer.invoke(ScriptHandler.Select) as Promise<string | void>
 }
 
-export function runScriptFromGenerator(
-  script: string,
-  scriptPath: string,
-  shouldTrack = true
-) {
+export function runScript(options: RunScriptOptions) {
+  return ipcRenderer.invoke(ScriptHandler.Run, options) as Promise<void>
+}
+
+export function analyzeScript(scriptPath: string) {
+  return ipcRenderer.invoke(
+    ScriptHandler.Analyze,
+    scriptPath
+  ) as Promise<K6TestOptions>
+}
+
+export function runScriptFromGenerator(options: RunScriptFromGeneratorOptions) {
   return ipcRenderer.invoke(
     ScriptHandler.RunFromGenerator,
-    script,
-    scriptPath,
-    shouldTrack
+    options
   ) as Promise<void>
 }
 
@@ -28,14 +38,6 @@ export function saveScript(scriptPath: string, script: string) {
   return ipcRenderer.invoke(ScriptHandler.Save, scriptPath, script) as Promise<
     string | undefined
   >
-}
-
-export function runScript(scriptPath: string, scenarioName?: string) {
-  return ipcRenderer.invoke(
-    ScriptHandler.Run,
-    scriptPath,
-    scenarioName
-  ) as Promise<void>
 }
 
 export function stopScript() {

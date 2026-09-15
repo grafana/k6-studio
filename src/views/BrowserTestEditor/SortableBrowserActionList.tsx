@@ -18,6 +18,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
   useSortable,
+  arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { css } from '@emotion/react'
@@ -37,16 +38,12 @@ enum Position {
 
 interface SortableBrowserActionListProps {
   actions: AnyBrowserAction[]
-  onReorderActions: (activeId: string, overId: string) => void
-  onRemoveAction: (actionId: string) => void
-  onChangeAction: (action: AnyBrowserAction) => void
+  onChange: (actions: AnyBrowserAction[]) => void
 }
 
 export function SortableBrowserActionList({
   actions,
-  onReorderActions,
-  onRemoveAction,
-  onChangeAction,
+  onChange,
 }: SortableBrowserActionListProps) {
   const isValidating = useIsValidating()
   const [active, setActive] = useState<AnyBrowserAction | null>(null)
@@ -58,11 +55,30 @@ export function SortableBrowserActionList({
     })
   )
 
+  const handleRemoveAction = (target: AnyBrowserAction) => {
+    onChange(actions.filter((action) => action.id !== target.id))
+  }
+
+  const handleChangeAction = (target: AnyBrowserAction) => {
+    onChange(
+      actions.map((action) => (action.id === target.id ? target : action))
+    )
+  }
+
   function handleDragEnd(event: DragEndEvent) {
     const { active: activeItem, over } = event
 
     if (over && activeItem.id !== over.id) {
-      onReorderActions(activeItem.id as string, over.id as string)
+      const oldIndex = actions.findIndex(
+        (action) => action.id === activeItem.id
+      )
+      const newIndex = actions.findIndex((action) => action.id === over.id)
+
+      if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
+        return
+      }
+
+      onChange(arrayMove(actions, oldIndex, newIndex))
     }
 
     setActive(null)
@@ -89,8 +105,8 @@ export function SortableBrowserActionList({
             <SortableEditableAction
               key={action.id}
               action={action}
-              onChange={onChangeAction}
-              onRemove={onRemoveAction}
+              onChange={handleChangeAction}
+              onRemove={handleRemoveAction}
             />
           ))}
           <DragOverlay modifiers={[restrictToFirstScrollableAncestor]}>
@@ -98,8 +114,8 @@ export function SortableBrowserActionList({
               <EditableAction
                 action={active}
                 dragHandle={<EditableActionDragHandle overlay />}
-                onChange={onChangeAction}
-                onRemove={onRemoveAction}
+                onChange={handleChangeAction}
+                onRemove={handleRemoveAction}
               />
             ) : null}
           </DragOverlay>
@@ -111,7 +127,7 @@ export function SortableBrowserActionList({
 
 interface SortableEditableActionProps {
   action: AnyBrowserAction
-  onRemove: (actionId: string) => void
+  onRemove: (action: AnyBrowserAction) => void
   onChange: (action: AnyBrowserAction) => void
 }
 

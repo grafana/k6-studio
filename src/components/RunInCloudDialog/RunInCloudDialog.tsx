@@ -10,12 +10,15 @@ interface RunInCloudDialogProps {
   open: boolean
   script: Script
   onOpenChange: (open: boolean) => void
+  /** Called when the test run was started (not when the dialog is closed). */
+  onRunStarted?: () => void
 }
 
 export function RunInCloudDialog({
   open,
   script,
   onOpenChange,
+  onRunStarted,
 }: RunInCloudDialogProps) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -36,6 +39,7 @@ export function RunInCloudDialog({
           <RunInCloudContent
             script={script}
             onClose={() => onOpenChange(false)}
+            onRunStarted={onRunStarted}
           />
         </Flex>
       </Dialog.Content>

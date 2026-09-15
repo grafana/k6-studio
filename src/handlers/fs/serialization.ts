@@ -1,17 +1,16 @@
-import log from 'electron-log/main'
 import invariant from 'tiny-invariant'
 
 import {
   deserializeGenerator,
   serializeGenerator,
 } from '@/handlers/generator/serialization'
-import { BrowserTestFileDataSchema } from '@/schemas/browserTest'
+import { analyzeScript } from '@/main/script'
+import { BrowserTestFileCodec } from '@/schemas/browserTest'
 import { RecordingSchema } from '@/schemas/recording'
 import { StudioFileType } from '@/types'
 import { DataFilePreview } from '@/types/testData'
 import { parseDataFile } from '@/utils/dataFile'
 import { harToProxyData } from '@/utils/harToProxyData'
-import { K6Client } from '@/utils/k6/client'
 import * as path from '@/utils/path'
 import {
   isExternalBrowserTest,
@@ -29,10 +28,10 @@ export function serializeContent(
 ): string {
   switch (content.type) {
     case 'generator':
-      return JSON.stringify(serializeGenerator(filePath, content.data), null, 2)
+      return serializeGenerator(filePath, content.data)
 
     case 'browser-test':
-      return JSON.stringify(content.data, null, 2)
+      return BrowserTestFileCodec.encode(content.data)
 
     case 'script':
       return content.data
@@ -60,7 +59,7 @@ export async function deserializeContent(
     case 'browser-test':
       return {
         type: 'browser-test',
-        data: BrowserTestFileDataSchema.parse(JSON.parse(raw)),
+        data: BrowserTestFileCodec.decode(raw),
         isExternal: isExternalBrowserTest(filePath),
       }
 
@@ -76,18 +75,13 @@ export async function deserializeContent(
     }
 
     case 'script': {
-      const options = await new K6Client()
-        .inspect({ scriptPath: filePath })
-        .catch((err) => {
-          log.error('Failed to inspect script', err)
-          return null
-        })
+      const options = await analyzeScript(filePath)
 
       return {
         type: 'script',
         data: raw,
         isExternal: isExternalScript(filePath),
-        options: options ?? {},
+        options,
       }
     }
 

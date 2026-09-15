@@ -1,5 +1,6 @@
 import { GeneratorFileData } from '@/types/generator'
 import { RampingStage } from '@/types/testOptions'
+import { newSyntheticKey } from '@/utils/zod'
 
 import { createEmptyRule } from './rules'
 
@@ -35,11 +36,13 @@ export function createNewGeneratorFile(recordingPath = ''): GeneratorFileData {
     allowlist: [],
     includeStaticAssets: false,
     scriptName: 'my-script.js',
+    wizardUsed: false,
   }
 }
 
 export function createStage(target: number, duration = ''): RampingStage {
   return {
+    key: newSyntheticKey(),
     target,
     duration,
   }
