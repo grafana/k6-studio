@@ -354,26 +354,41 @@ function generateEventFunctions({ domain, events = [] }: cdp.Domain) {
     return []
   }
 
+  // Clients are either for the entire browser or for a specific session (think of it like
+  // the browser process vs. a specific tab). All clients will receive all events, so if the
+  // client is tied to a specific session then we need to ignore events that don't belong to
+  // that session.
   const onFunctionBody = parse(`
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
 
       listener(event)
     }
+ 
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ?? new Map<string, ChromeEventListener>()
 
-    this.listeners.set(listener as ChromeEventListener, filteredListener as ChromeEventListener)
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
   `)
 
   const offFunctionBody = parse(`
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+
+    if (listenersByName === undefined) {
+      return
+    }
+
+    const filteredListener = listenersByName.get(name)
 
     if (filteredListener === undefined) {
       return
     }
 
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
   `)
 
   function eventFn(
@@ -425,16 +440,19 @@ function generateEventFunctions({ domain, events = [] }: cdp.Domain) {
           '+',
           params.name
         )
-        const listener = new ExpressionBuilder(identifier('listener')).as(
-          typeRef('ChromeEventListener')
-        )
+
+        // The transport is shared by every session, so the session-aware
+        // wrapper is what gets registered, not the raw listener.
+        const filteredListener = new ExpressionBuilder(
+          identifier('filteredListener')
+        ).as(typeRef('ChromeEventListener'))
 
         return [
           ...body,
           new ExpressionBuilder($this())
             .member('transport')
             .member(name)
-            .call([eventName, listener])
+            .call([eventName, filteredListener])
             .returned(),
         ]
       })
@@ -573,7 +591,14 @@ async function generate() {
         b.type(t.union([SESSION_ID_TYPE, t.undefined()])).init()
       )
       .field('listeners', (b) =>
-        b.type(typeRef('WeakMap', [listenerType, listenerType])).init()
+        b
+          .type(
+            typeRef('WeakMap', [
+              listenerType,
+              typeRef('Map', [t.string(), listenerType]),
+            ])
+          )
+          .init()
       )
       .construct((b, self) => {
         return b

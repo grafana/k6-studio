@@ -6,50 +6,14 @@ import { ContainerProvider } from '@/components/primitives/ContainerProvider'
 import { Theme } from '@/components/primitives/Theme'
 import { BrowserExtensionClient } from '@/recorder/browser/messaging'
 
+import { ErrorBoundary } from './ErrorBoundary'
 import { GlobalStyles } from './GlobalStyles'
 import { InBrowserControls } from './InBrowserControls'
-import { createMount } from './mount'
+import { monitorDocumentChange } from './monitor'
+import { createMount, isDocumentMounted, removeStaleMounts } from './mount'
 import { SettingsProvider, SettingsStorage } from './SettingsProvider'
 import { StudioClientProvider } from './StudioClientProvider'
 import { isUsingTool } from './utils'
-
-// When using CDP, some pages will open with an empty document with readyState "completed"
-// the first time that a page is loaded. This means our UI is injected into the empty document,
-// then the document is replaced with the actual content, making our UI disappear.
-//
-// It's not entirely clear why this happens and there doesn't seem to be any events firing that
-// we can rely on. So instead, we use use a brute-force polling mechanism to monitor if the document
-// reference changes during the opening stages of the page. It's not pretty but it works.
-function monitorDocumentChange(onChange: () => void) {
-  // During this short period of time the document will have the URL "about:blank", so if it's
-  // different then we can skip this check entirely.
-  if (document.location.href !== 'about:blank') {
-    return
-  }
-
-  const abortController = new AbortController()
-  const currentDocument = document
-
-  setTimeout(function checkDocumentInstance() {
-    if (abortController.signal.aborted) {
-      return
-    }
-
-    if (document === currentDocument) {
-      setTimeout(checkDocumentInstance, 1)
-
-      return
-    }
-
-    onChange()
-  }, 1)
-
-  // We only need to monitor the first few seconds or so. If nothing has changed
-  // by then, there's no point in wasting CPU cycles.
-  setTimeout(() => {
-    abortController.abort()
-  }, 5000)
-}
 
 // We use a MutationObservers to try and load the UI as soon as the body
 // element has been added. Otherwise we have to wait for content to be
@@ -115,6 +79,14 @@ export function initializeView(
 ) {
   const abortController = new AbortController()
 
+  // Tears down what initialize() set up: the mount observers, the React root
+  // (so its client/storage subscriptions are released), and the bypass
+  // listeners. Replaced once initialize() has run.
+  let disposeInitialized = () => {}
+
+  // Dispose handle of the re-initialization monitorDocumentChange may start.
+  let disposeReinitialized = () => {}
+
   let shadowRoot: ShadowRoot | null = null
 
   function createShadowRoot(mount: Element) {
@@ -143,7 +115,20 @@ export function initializeView(
 
     abortController.abort()
 
-    const mount = createMount()
+    // Another initializer beat us to this document. See the mount marker in
+    // mount.ts for why a second mount must never be created.
+    if (isDocumentMounted()) {
+      console.warn('[k6 Studio] In-browser UI is already initialized.')
+
+      return
+    }
+
+    // A page that rewrote itself from its own serialized body can carry dead
+    // copies of a previous mount's marker.
+    removeStaleMounts()
+
+    const { mount, dispose: disposeMount } = createMount()
+
     const root = createShadowRoot(mount)
 
     /**
@@ -167,7 +152,14 @@ export function initializeView(
       speedy: false,
     })
 
-    createRoot(root).render(
+    const reactRoot = createRoot(root, {
+      // Our error boundaries already warn once for every crash they catch.
+      // React would log the same crash again at error level, in a console that
+      // belongs to the recorded page rather than to us.
+      onCaughtError: () => {},
+    })
+
+    reactRoot.render(
       <CacheProvider value={globalCache}>
         <GlobalStyles />
         <StudioClientProvider client={client}>
@@ -175,19 +167,34 @@ export function initializeView(
             <ContainerProvider container={root}>
               <CacheProvider value={shadowCache}>
                 <Theme root={false} includeColors />
-                <InBrowserControls />
+                {/*
+                  InBrowserControls' own hooks run above its per-feature
+                  boundaries. Without this outer boundary a crash there would
+                  bypass them all and unmount the whole UI.
+                */}
+                <ErrorBoundary>
+                  <InBrowserControls />
+                </ErrorBoundary>
               </CacheProvider>
             </ContainerProvider>
           </SettingsProvider>
         </StudioClientProvider>
       </CacheProvider>
     )
+
+    const removeBypassListeners = attachBypassListeners()
+
+    disposeInitialized = () => {
+      removeBypassListeners()
+      reactRoot.unmount()
+      disposeMount()
+    }
   }
 
-  monitorDocumentChange(() => {
+  const stopMonitoring = monitorDocumentChange(() => {
     console.log('Document instance changed, re-initializing UI.')
 
-    initializeView(client, storage)
+    disposeReinitialized = initializeView(client, storage)
   })
 
   if (document.readyState === 'loading') {
@@ -271,11 +278,42 @@ export function initializeView(
     event.stopImmediatePropagation()
   }
 
-  window.addEventListener('click', bypassRecordedPage, true)
-  window.addEventListener('pointerdown', bypassRecordedPage, true)
-  window.addEventListener('pointerup', bypassRecordedPage, true)
-  window.addEventListener('focusin', bypassFocusEvent, true)
-  window.addEventListener('focusout', bypassFocusEvent, true)
-  window.addEventListener('focus', bypassFocusEvent, true)
-  window.addEventListener('blur', bypassFocusEvent, true)
+  // Only useful once our UI exists: every listener starts with an
+  // isInsideBrowserUI check, so on the path where the mount guard bails they
+  // would just tax every interaction on the page.
+  function attachBypassListeners() {
+    window.addEventListener('click', bypassRecordedPage, true)
+    window.addEventListener('pointerdown', bypassRecordedPage, true)
+    window.addEventListener('pointerup', bypassRecordedPage, true)
+    window.addEventListener('focusin', bypassFocusEvent, true)
+    window.addEventListener('focusout', bypassFocusEvent, true)
+    window.addEventListener('focus', bypassFocusEvent, true)
+    window.addEventListener('blur', bypassFocusEvent, true)
+
+    return () => {
+      window.removeEventListener('click', bypassRecordedPage, true)
+      window.removeEventListener('pointerdown', bypassRecordedPage, true)
+      window.removeEventListener('pointerup', bypassRecordedPage, true)
+      window.removeEventListener('focusin', bypassFocusEvent, true)
+      window.removeEventListener('focusout', bypassFocusEvent, true)
+      window.removeEventListener('focus', bypassFocusEvent, true)
+      window.removeEventListener('blur', bypassFocusEvent, true)
+    }
+  }
+
+  return function dispose() {
+    // Cancels an initialization that hasn't happened yet (initialize() bails
+    // once the controller is aborted) and tears down one that has.
+    abortController.abort()
+
+    // The monitor runs on its own controller, because the one above is aborted
+    // by initialize() as its single-initialization latch, long before the
+    // empty-document swap the monitor waits for. Stopping it here, before the
+    // teardown below, keeps a late poll from re-initializing a view whose
+    // dispose handle would land in this dead copy's disposeReinitialized.
+    stopMonitoring()
+
+    disposeInitialized()
+    disposeReinitialized()
+  }
 }

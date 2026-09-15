@@ -22,14 +22,18 @@ export function trackTabFocus(client: BrowserExtensionClient) {
     wasFocused = isFocused
   }
 
-  window.addEventListener(
-    'focus',
-    () => {
-      checkFocus()
-    },
-    true
-  )
+  const handleFocus = () => {
+    checkFocus()
+  }
 
-  setInterval(checkFocus, 200)
+  window.addEventListener('focus', handleFocus, true)
+
+  const interval = setInterval(checkFocus, 200)
+
   checkFocus()
+
+  return function dispose() {
+    window.removeEventListener('focus', handleFocus, true)
+    clearInterval(interval)
+  }
 }

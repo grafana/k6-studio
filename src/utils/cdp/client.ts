@@ -7855,7 +7855,7 @@ export namespace Schema {
 class AccessibilityClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -7942,39 +7942,44 @@ class AccessibilityClient {
     listener: (event: ChromeEvent<Accessibility.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
     return this.transport.on(
       'Accessibility.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
   off<K extends keyof Accessibility.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Accessibility.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'Accessibility.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class AnimationClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -8067,39 +8072,44 @@ class AnimationClient {
     listener: (event: ChromeEvent<Animation.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
     return this.transport.on(
       'Animation.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
   off<K extends keyof Animation.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Animation.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'Animation.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class AuditsClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -8152,33 +8162,44 @@ class AuditsClient {
     listener: (event: ChromeEvent<Audits.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
+    return this.transport.on(
+      'Audits.' + name,
       filteredListener as ChromeEventListener
     )
-    return this.transport.on('Audits.' + name, listener as ChromeEventListener)
   }
   off<K extends keyof Audits.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Audits.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
-    return this.transport.off('Audits.' + name, listener as ChromeEventListener)
+    listenersByName.delete(name)
+    return this.transport.off(
+      'Audits.' + name,
+      filteredListener as ChromeEventListener
+    )
   }
 }
 class AutofillClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -8221,39 +8242,44 @@ class AutofillClient {
     listener: (event: ChromeEvent<Autofill.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
     return this.transport.on(
       'Autofill.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
   off<K extends keyof Autofill.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Autofill.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'Autofill.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class BackgroundServiceClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -8296,39 +8322,44 @@ class BackgroundServiceClient {
     listener: (event: ChromeEvent<BackgroundService.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
     return this.transport.on(
       'BackgroundService.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
   off<K extends keyof BackgroundService.EventMap>(
     name: K,
     listener: (event: ChromeEvent<BackgroundService.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'BackgroundService.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class BluetoothEmulationClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -8475,39 +8506,44 @@ class BluetoothEmulationClient {
     listener: (event: ChromeEvent<BluetoothEmulation.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
     return this.transport.on(
       'BluetoothEmulation.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
   off<K extends keyof BluetoothEmulation.EventMap>(
     name: K,
     listener: (event: ChromeEvent<BluetoothEmulation.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'BluetoothEmulation.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class BrowserClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -8688,36 +8724,44 @@ class BrowserClient {
     listener: (event: ChromeEvent<Browser.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
+    return this.transport.on(
+      'Browser.' + name,
       filteredListener as ChromeEventListener
     )
-    return this.transport.on('Browser.' + name, listener as ChromeEventListener)
   }
   off<K extends keyof Browser.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Browser.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'Browser.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class CSSClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -9062,33 +9106,44 @@ class CSSClient {
     listener: (event: ChromeEvent<CSS.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
+    return this.transport.on(
+      'CSS.' + name,
       filteredListener as ChromeEventListener
     )
-    return this.transport.on('CSS.' + name, listener as ChromeEventListener)
   }
   off<K extends keyof CSS.EventMap>(
     name: K,
     listener: (event: ChromeEvent<CSS.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
-    return this.transport.off('CSS.' + name, listener as ChromeEventListener)
+    listenersByName.delete(name)
+    return this.transport.off(
+      'CSS.' + name,
+      filteredListener as ChromeEventListener
+    )
   }
 }
 class CacheStorageClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -9144,7 +9199,7 @@ class CacheStorageClient {
 class CastClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -9203,33 +9258,44 @@ class CastClient {
     listener: (event: ChromeEvent<Cast.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
+    return this.transport.on(
+      'Cast.' + name,
       filteredListener as ChromeEventListener
     )
-    return this.transport.on('Cast.' + name, listener as ChromeEventListener)
   }
   off<K extends keyof Cast.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Cast.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
-    return this.transport.off('Cast.' + name, listener as ChromeEventListener)
+    listenersByName.delete(name)
+    return this.transport.off(
+      'Cast.' + name,
+      filteredListener as ChromeEventListener
+    )
   }
 }
 class DOMClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -9700,33 +9766,44 @@ class DOMClient {
     listener: (event: ChromeEvent<DOM.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
+    return this.transport.on(
+      'DOM.' + name,
       filteredListener as ChromeEventListener
     )
-    return this.transport.on('DOM.' + name, listener as ChromeEventListener)
   }
   off<K extends keyof DOM.EventMap>(
     name: K,
     listener: (event: ChromeEvent<DOM.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
-    return this.transport.off('DOM.' + name, listener as ChromeEventListener)
+    listenersByName.delete(name)
+    return this.transport.off(
+      'DOM.' + name,
+      filteredListener as ChromeEventListener
+    )
   }
 }
 class DOMDebuggerClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -9826,7 +9903,7 @@ class DOMDebuggerClient {
 class DOMSnapshotClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -9872,7 +9949,7 @@ class DOMSnapshotClient {
 class DOMStorageClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -9935,39 +10012,44 @@ class DOMStorageClient {
     listener: (event: ChromeEvent<DOMStorage.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
     return this.transport.on(
       'DOMStorage.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
   off<K extends keyof DOMStorage.EventMap>(
     name: K,
     listener: (event: ChromeEvent<DOMStorage.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'DOMStorage.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class DeviceAccessClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -10010,39 +10092,44 @@ class DeviceAccessClient {
     listener: (event: ChromeEvent<DeviceAccess.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
     return this.transport.on(
       'DeviceAccess.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
   off<K extends keyof DeviceAccess.EventMap>(
     name: K,
     listener: (event: ChromeEvent<DeviceAccess.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'DeviceAccess.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class DeviceOrientationClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -10070,7 +10157,7 @@ class DeviceOrientationClient {
 class EmulationClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -10486,39 +10573,44 @@ class EmulationClient {
     listener: (event: ChromeEvent<Emulation.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
     return this.transport.on(
       'Emulation.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
   off<K extends keyof Emulation.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Emulation.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'Emulation.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class EventBreakpointsClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -10552,7 +10644,7 @@ class EventBreakpointsClient {
 class ExtensionsClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -10612,7 +10704,7 @@ class ExtensionsClient {
 class FedCmClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -10679,33 +10771,44 @@ class FedCmClient {
     listener: (event: ChromeEvent<FedCm.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
+    return this.transport.on(
+      'FedCm.' + name,
       filteredListener as ChromeEventListener
     )
-    return this.transport.on('FedCm.' + name, listener as ChromeEventListener)
   }
   off<K extends keyof FedCm.EventMap>(
     name: K,
     listener: (event: ChromeEvent<FedCm.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
-    return this.transport.off('FedCm.' + name, listener as ChromeEventListener)
+    listenersByName.delete(name)
+    return this.transport.off(
+      'FedCm.' + name,
+      filteredListener as ChromeEventListener
+    )
   }
 }
 class FetchClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -10792,33 +10895,44 @@ class FetchClient {
     listener: (event: ChromeEvent<Fetch.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
+    return this.transport.on(
+      'Fetch.' + name,
       filteredListener as ChromeEventListener
     )
-    return this.transport.on('Fetch.' + name, listener as ChromeEventListener)
   }
   off<K extends keyof Fetch.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Fetch.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
-    return this.transport.off('Fetch.' + name, listener as ChromeEventListener)
+    listenersByName.delete(name)
+    return this.transport.off(
+      'Fetch.' + name,
+      filteredListener as ChromeEventListener
+    )
   }
 }
 class FileSystemClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -10838,7 +10952,7 @@ class FileSystemClient {
 class HeadlessExperimentalClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -10874,7 +10988,7 @@ class HeadlessExperimentalClient {
 class IOClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -10908,7 +11022,7 @@ class IOClient {
 class IndexedDBClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -11000,7 +11114,7 @@ class IndexedDBClient {
 class InputClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -11121,33 +11235,44 @@ class InputClient {
     listener: (event: ChromeEvent<Input.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
+    return this.transport.on(
+      'Input.' + name,
       filteredListener as ChromeEventListener
     )
-    return this.transport.on('Input.' + name, listener as ChromeEventListener)
   }
   off<K extends keyof Input.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Input.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
-    return this.transport.off('Input.' + name, listener as ChromeEventListener)
+    listenersByName.delete(name)
+    return this.transport.off(
+      'Input.' + name,
+      filteredListener as ChromeEventListener
+    )
   }
 }
 class InspectorClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -11174,39 +11299,44 @@ class InspectorClient {
     listener: (event: ChromeEvent<Inspector.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
     return this.transport.on(
       'Inspector.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
   off<K extends keyof Inspector.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Inspector.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'Inspector.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class LayerTreeClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -11301,39 +11431,44 @@ class LayerTreeClient {
     listener: (event: ChromeEvent<LayerTree.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
     return this.transport.on(
       'LayerTree.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
   off<K extends keyof LayerTree.EventMap>(
     name: K,
     listener: (event: ChromeEvent<LayerTree.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'LayerTree.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class LogClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -11384,33 +11519,44 @@ class LogClient {
     listener: (event: ChromeEvent<Log.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
+    return this.transport.on(
+      'Log.' + name,
       filteredListener as ChromeEventListener
     )
-    return this.transport.on('Log.' + name, listener as ChromeEventListener)
   }
   off<K extends keyof Log.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Log.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
-    return this.transport.off('Log.' + name, listener as ChromeEventListener)
+    listenersByName.delete(name)
+    return this.transport.off(
+      'Log.' + name,
+      filteredListener as ChromeEventListener
+    )
   }
 }
 class MediaClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -11437,33 +11583,44 @@ class MediaClient {
     listener: (event: ChromeEvent<Media.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
+    return this.transport.on(
+      'Media.' + name,
       filteredListener as ChromeEventListener
     )
-    return this.transport.on('Media.' + name, listener as ChromeEventListener)
   }
   off<K extends keyof Media.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Media.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
-    return this.transport.off('Media.' + name, listener as ChromeEventListener)
+    listenersByName.delete(name)
+    return this.transport.off(
+      'Media.' + name,
+      filteredListener as ChromeEventListener
+    )
   }
 }
 class MemoryClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -11561,7 +11718,7 @@ class MemoryClient {
 class NetworkClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -11920,36 +12077,44 @@ class NetworkClient {
     listener: (event: ChromeEvent<Network.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
+    return this.transport.on(
+      'Network.' + name,
       filteredListener as ChromeEventListener
     )
-    return this.transport.on('Network.' + name, listener as ChromeEventListener)
   }
   off<K extends keyof Network.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Network.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'Network.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class OverlayClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -12216,36 +12381,44 @@ class OverlayClient {
     listener: (event: ChromeEvent<Overlay.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
+    return this.transport.on(
+      'Overlay.' + name,
       filteredListener as ChromeEventListener
     )
-    return this.transport.on('Overlay.' + name, listener as ChromeEventListener)
   }
   off<K extends keyof Overlay.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Overlay.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'Overlay.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class PWAClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -12313,7 +12486,7 @@ class PWAClient {
 class PageClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -12855,33 +13028,44 @@ class PageClient {
     listener: (event: ChromeEvent<Page.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
+    return this.transport.on(
+      'Page.' + name,
       filteredListener as ChromeEventListener
     )
-    return this.transport.on('Page.' + name, listener as ChromeEventListener)
   }
   off<K extends keyof Page.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Page.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
-    return this.transport.off('Page.' + name, listener as ChromeEventListener)
+    listenersByName.delete(name)
+    return this.transport.off(
+      'Page.' + name,
+      filteredListener as ChromeEventListener
+    )
   }
 }
 class PerformanceClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -12924,39 +13108,44 @@ class PerformanceClient {
     listener: (event: ChromeEvent<Performance.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
     return this.transport.on(
       'Performance.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
   off<K extends keyof Performance.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Performance.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'Performance.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class PerformanceTimelineClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -12975,39 +13164,44 @@ class PerformanceTimelineClient {
     listener: (event: ChromeEvent<PerformanceTimeline.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
     return this.transport.on(
       'PerformanceTimeline.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
   off<K extends keyof PerformanceTimeline.EventMap>(
     name: K,
     listener: (event: ChromeEvent<PerformanceTimeline.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'PerformanceTimeline.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class PreloadClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -13034,36 +13228,44 @@ class PreloadClient {
     listener: (event: ChromeEvent<Preload.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
+    return this.transport.on(
+      'Preload.' + name,
       filteredListener as ChromeEventListener
     )
-    return this.transport.on('Preload.' + name, listener as ChromeEventListener)
   }
   off<K extends keyof Preload.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Preload.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'Preload.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class SecurityClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -13116,39 +13318,44 @@ class SecurityClient {
     listener: (event: ChromeEvent<Security.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
     return this.transport.on(
       'Security.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
   off<K extends keyof Security.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Security.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'Security.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class ServiceWorkerClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -13259,39 +13466,44 @@ class ServiceWorkerClient {
     listener: (event: ChromeEvent<ServiceWorker.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
     return this.transport.on(
       'ServiceWorker.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
   off<K extends keyof ServiceWorker.EventMap>(
     name: K,
     listener: (event: ChromeEvent<ServiceWorker.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'ServiceWorker.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class StorageClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -13634,36 +13846,44 @@ class StorageClient {
     listener: (event: ChromeEvent<Storage.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
+    return this.transport.on(
+      'Storage.' + name,
       filteredListener as ChromeEventListener
     )
-    return this.transport.on('Storage.' + name, listener as ChromeEventListener)
   }
   off<K extends keyof Storage.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Storage.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'Storage.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class SystemInfoClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -13699,7 +13919,7 @@ class SystemInfoClient {
 class TargetClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -13878,33 +14098,44 @@ class TargetClient {
     listener: (event: ChromeEvent<Target.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
+    return this.transport.on(
+      'Target.' + name,
       filteredListener as ChromeEventListener
     )
-    return this.transport.on('Target.' + name, listener as ChromeEventListener)
   }
   off<K extends keyof Target.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Target.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
-    return this.transport.off('Target.' + name, listener as ChromeEventListener)
+    listenersByName.delete(name)
+    return this.transport.off(
+      'Target.' + name,
+      filteredListener as ChromeEventListener
+    )
   }
 }
 class TetheringClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -13931,39 +14162,44 @@ class TetheringClient {
     listener: (event: ChromeEvent<Tethering.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
     return this.transport.on(
       'Tethering.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
   off<K extends keyof Tethering.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Tethering.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'Tethering.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class TracingClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -14024,36 +14260,44 @@ class TracingClient {
     listener: (event: ChromeEvent<Tracing.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
+    return this.transport.on(
+      'Tracing.' + name,
       filteredListener as ChromeEventListener
     )
-    return this.transport.on('Tracing.' + name, listener as ChromeEventListener)
   }
   off<K extends keyof Tracing.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Tracing.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'Tracing.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class WebAudioClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -14090,39 +14334,44 @@ class WebAudioClient {
     listener: (event: ChromeEvent<WebAudio.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
     return this.transport.on(
       'WebAudio.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
   off<K extends keyof WebAudio.EventMap>(
     name: K,
     listener: (event: ChromeEvent<WebAudio.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'WebAudio.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class WebAuthnClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -14251,39 +14500,44 @@ class WebAuthnClient {
     listener: (event: ChromeEvent<WebAuthn.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
     return this.transport.on(
       'WebAuthn.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
   off<K extends keyof WebAuthn.EventMap>(
     name: K,
     listener: (event: ChromeEvent<WebAuthn.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'WebAuthn.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class ConsoleClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -14318,36 +14572,44 @@ class ConsoleClient {
     listener: (event: ChromeEvent<Console.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
+    return this.transport.on(
+      'Console.' + name,
       filteredListener as ChromeEventListener
     )
-    return this.transport.on('Console.' + name, listener as ChromeEventListener)
   }
   off<K extends keyof Console.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Console.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'Console.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class DebuggerClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -14654,39 +14916,44 @@ class DebuggerClient {
     listener: (event: ChromeEvent<Debugger.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
     return this.transport.on(
       'Debugger.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
   off<K extends keyof Debugger.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Debugger.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'Debugger.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class HeapProfilerClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -14801,39 +15068,44 @@ class HeapProfilerClient {
     listener: (event: ChromeEvent<HeapProfiler.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
     return this.transport.on(
       'HeapProfiler.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
   off<K extends keyof HeapProfiler.EventMap>(
     name: K,
     listener: (event: ChromeEvent<HeapProfiler.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'HeapProfiler.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class ProfilerClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -14918,39 +15190,44 @@ class ProfilerClient {
     listener: (event: ChromeEvent<Profiler.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
     return this.transport.on(
       'Profiler.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
   off<K extends keyof Profiler.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Profiler.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'Profiler.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class RuntimeClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId
@@ -15159,36 +15436,44 @@ class RuntimeClient {
     listener: (event: ChromeEvent<Runtime.EventMap[K]>) => void
   ): () => void {
     const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
+      if (this.sessionId !== undefined && event.sessionId !== this.sessionId) {
         return
       }
       listener(event)
     }
-    this.listeners.set(
-      listener as ChromeEventListener,
+    const listenersByName =
+      this.listeners.get(listener as ChromeEventListener) ??
+      new Map<string, ChromeEventListener>()
+    listenersByName.set(name, filteredListener as ChromeEventListener)
+    this.listeners.set(listener as ChromeEventListener, listenersByName)
+    return this.transport.on(
+      'Runtime.' + name,
       filteredListener as ChromeEventListener
     )
-    return this.transport.on('Runtime.' + name, listener as ChromeEventListener)
   }
   off<K extends keyof Runtime.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Runtime.EventMap[K]>) => void
   ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    const listenersByName = this.listeners.get(listener as ChromeEventListener)
+    if (listenersByName === undefined) {
+      return
+    }
+    const filteredListener = listenersByName.get(name)
     if (filteredListener === undefined) {
       return
     }
-    this.listeners.delete(listener as ChromeEventListener)
+    listenersByName.delete(name)
     return this.transport.off(
       'Runtime.' + name,
-      listener as ChromeEventListener
+      filteredListener as ChromeEventListener
     )
   }
 }
 class SchemaClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  listeners: WeakMap<ChromeEventListener, Map<string, ChromeEventListener>>
   constructor(transport: Transport, sessionId?: Target.SessionID) {
     this.transport = transport
     this.sessionId = sessionId

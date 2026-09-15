@@ -18,6 +18,8 @@ export class WindowEventManager {
   #reset: TimeoutHandle | null = null
   #history: Array<Event> = []
 
+  #disposers: Array<() => void> = []
+
   get history(): ReadonlyArray<Event> {
     return this.#history
   }
@@ -64,23 +66,30 @@ export class WindowEventManager {
     type: K,
     listener: (ev: WindowEventMap[K], manager: WindowEventManager) => void
   ) {
-    window.addEventListener(
-      type,
-      (ev) => {
-        this.#addToHistory(ev)
+    const capturingListener = (ev: WindowEventMap[K]) => {
+      this.#addToHistory(ev)
 
-        if (shouldSkipEvent(ev)) {
-          return
-        }
+      if (shouldSkipEvent(ev)) {
+        return
+      }
 
-        if (this.#isBlocked(ev)) {
-          return
-        }
+      if (this.#isBlocked(ev)) {
+        return
+      }
 
-        listener(ev, this)
-      },
-      { capture: true }
-    )
+      listener(ev, this)
+    }
+
+    window.addEventListener(type, capturingListener, { capture: true })
+
+    this.#disposers.push(() => {
+      window.removeEventListener(type, capturingListener, { capture: true })
+    })
+  }
+
+  dispose() {
+    this.#disposers.forEach((dispose) => dispose())
+    this.#disposers = []
   }
 
   #addToHistory(ev: Event) {

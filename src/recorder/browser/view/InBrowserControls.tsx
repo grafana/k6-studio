@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { ElementInspector } from './ElementInspector'
+import { ErrorBoundary } from './ErrorBoundary'
 import { EventDrawer } from './EventDrawer'
 import { useRecordedEvents } from './hooks/useRecordedEvents'
 import { RemoteHighlights } from './RemoteHighlights'
@@ -45,24 +46,40 @@ export function InBrowserControls() {
 
   return (
     <>
-      <RemoteHighlights />
-      {tool === 'inspect' && <ElementInspector onClose={handleDeselectTool} />}
-      {tool === 'assert-text' && (
-        <TextSelectionPopover onClose={handleDeselectTool} />
+      <ErrorBoundary name="Remote highlights">
+        <RemoteHighlights />
+      </ErrorBoundary>
+      {/*
+        The boundaries sit inside the conditionals so that selecting a tool
+        again mounts a fresh one, giving a crashed tool another chance.
+      */}
+      {tool === 'inspect' && (
+        <ErrorBoundary name="Element inspector" onError={handleDeselectTool}>
+          <ElementInspector onClose={handleDeselectTool} />
+        </ErrorBoundary>
       )}
-      <ToolBox
-        isDrawerOpen={isDrawerOpen}
-        recordedEventCount={recordedEvents.length}
-        tool={tool}
-        onSelectTool={handleSelectTool}
-        onStopRecording={handleStopRecording}
-        onToggleDrawer={handleToggleDrawer}
-      />
-      <EventDrawer
-        open={isDrawerOpen}
-        events={recordedEvents}
-        onOpenChange={handleToggleDrawer}
-      />
+      {tool === 'assert-text' && (
+        <ErrorBoundary name="Text selection" onError={handleDeselectTool}>
+          <TextSelectionPopover onClose={handleDeselectTool} />
+        </ErrorBoundary>
+      )}
+      <ErrorBoundary name="Toolbox">
+        <ToolBox
+          isDrawerOpen={isDrawerOpen}
+          recordedEventCount={recordedEvents.length}
+          tool={tool}
+          onSelectTool={handleSelectTool}
+          onStopRecording={handleStopRecording}
+          onToggleDrawer={handleToggleDrawer}
+        />
+      </ErrorBoundary>
+      <ErrorBoundary name="Event drawer">
+        <EventDrawer
+          open={isDrawerOpen}
+          events={recordedEvents}
+          onOpenChange={handleToggleDrawer}
+        />
+      </ErrorBoundary>
     </>
   )
 }

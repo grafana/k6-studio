@@ -26,6 +26,11 @@
     ]
   },
   "ts-node": {
-    "require": ["tsconfig-paths/register"]
+    "require": ["tsconfig-paths/register"],
+    "compilerOptions": {
+      "rootDir": ".",
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext"
+    }
   }
 }

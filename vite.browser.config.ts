@@ -5,7 +5,7 @@ import { defineConfig, type ConfigEnv, type UserConfig } from 'vite'
 // https://vitejs.dev/config
 export default defineConfig((env) => {
   const forgeEnv = env as ConfigEnv<'renderer'>
-  const { root, mode } = forgeEnv
+  const { root, mode, command } = forgeEnv
   const nodeEnv = process.env.NODE_ENV || 'production'
 
   return {
@@ -25,7 +25,7 @@ export default defineConfig((env) => {
     build: {
       target: 'esnext',
       outDir: `resources/browser`,
-      sourcemap: 'inline',
+      sourcemap: command === 'serve' ? 'inline' : false,
       lib: {
         entry: 'src/recorder/browser/index.ts',
         formats: ['iife'],

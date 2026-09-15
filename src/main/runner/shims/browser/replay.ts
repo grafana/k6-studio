@@ -16,6 +16,65 @@ declare global {
 
 const trackingServerUrl = window.__K6_SESSION_REPLAY_TRACKING_SERVER_URL__
 
+// JSON.stringify consults toJSON on object values only, and rrweb event
+// graphs are plain objects, arrays, and primitives, so these two are the only
+// prototypes whose pollution can reach the payload (String, Number, and
+// Boolean toJSON fire for boxed primitives only, and Date instances never
+// enter the graph). Neither has a toJSON natively, so one found there is the
+// page's.
+const POLLUTABLE_PROTOTYPES: object[] = [Array.prototype, Object.prototype]
+
+/**
+ * Pre-JSON frameworks like Prototype.js 1.6 replace Array.from with a version
+ * that doesn't support the map function argument. rrweb uses the `map` argument
+ * when recording stylesheets so we need to restore the native function, otherwise
+ * stylesheets will be recorded as `"[object CSSStyleRule]..."`.
+ */
+function pinNativeArrayFrom() {
+  const nativeFrom = Array.from
+
+  // Fails only when the page locked the property down, and there is nothing
+  // to do about that. A second copy of this script re-pins the native it
+  // reads back through the getter.
+  Reflect.defineProperty(Array, 'from', {
+    configurable: true,
+    get: () => nativeFrom,
+    set: () => {},
+  })
+}
+
+/**
+ * Pre-JSON frameworks like Prototype.js 1.6 adds toJSON methods to the prototypes
+ * of Array and Object. These methods returns an already serialized version of the object,
+ * so passing it to JSON.stringify would double-serialize it. This function serializes
+ * values without calling toJSON on the prototype of Object and Array.
+ */
+function stringifyIgnoringPageToJSON(value: unknown): string {
+  const removed: Array<{ prototype: object; descriptor: PropertyDescriptor }> =
+    []
+
+  // Remove toJSON from the prototypes so that JSON.stringify doesn't call them
+  for (const prototype of POLLUTABLE_PROTOTYPES) {
+    const descriptor = Reflect.getOwnPropertyDescriptor(prototype, 'toJSON')
+
+    if (
+      descriptor !== undefined &&
+      Reflect.deleteProperty(prototype, 'toJSON')
+    ) {
+      removed.push({ prototype, descriptor })
+    }
+  }
+
+  try {
+    return JSON.stringify(value)
+  } finally {
+    // Restore the prototypes to their original state so that the page can continue
+    for (const { prototype, descriptor } of removed) {
+      Reflect.defineProperty(prototype, 'toJSON', descriptor)
+    }
+  }
+}
+
 function isTopLevelFrame() {
   try {
     return window.parent === window
@@ -36,6 +95,8 @@ function createPageId() {
 // Events are buffered here and pulled from the k6 process, see the drain
 // function in replayDrain.ts for why they can't be pushed with fetch.
 if (trackingServerUrl !== null && isTopLevelFrame()) {
+  pinNativeArrayFrom()
+
   const pageId = createPageId()
 
   // The k6 side serializes pulls per page and needs a stable id for that: the
@@ -87,7 +148,7 @@ if (trackingServerUrl !== null && isTopLevelFrame()) {
     // Serialized here so the k6 runtime receives a single string instead of
     // rebuilding the whole event graph on its side. JSON.stringify escapes
     // newlines, which keeps the two header separators unambiguous.
-    return `${pageId}\n${nextBatchId}\n${JSON.stringify(events)}`
+    return `${pageId}\n${nextBatchId}\n${stringifyIgnoringPageToJSON(events)}`
   }
 
   record({

@@ -1,13 +1,41 @@
+const MOUNT_MARKER_ATTRIBUTE = 'data-ksix-studio-mount'
+
+/**
+ * Whether the document hosts a LIVE recorder UI. A mount is live if
+ * it has the marker attribute and a shadow root.
+ */
+export function isDocumentMounted() {
+  return findMounts().some((element) => element.shadowRoot !== null)
+}
+
+/**
+ * Removes marker-bearing elements that have no UI behind them, so they can't
+ * skew generated nth-child selectors.
+ */
+export function removeStaleMounts() {
+  findMounts()
+    .filter((element) => element.shadowRoot === null)
+    .forEach((element) => element.remove())
+}
+
+function findMounts() {
+  return [...document.querySelectorAll(`[${MOUNT_MARKER_ATTRIBUTE}]`)]
+}
+
 /**
  * Creates the element that hosts the recorder UI inside the recorded page and
- * defends it against the page's own DOM manipulation.
+ * defends it against the page's own DOM manipulation. Returns the mount and a
+ * dispose function that stops the defending observers and takes the mount back
+ * out of the document.
  */
 export function createMount() {
   const mount = document.createElement('div')
 
+  mount.setAttribute(MOUNT_MARKER_ATTRIBUTE, 'true')
+
   document.body.appendChild(mount)
 
-  keepMountAtEndOfBody(mount)
+  const stopKeepingAtEndOfBody = keepMountAtEndOfBody(mount)
 
   // Some UI frameworks use the `inert` attribute to disable interaction with
   // elements outside of a modal. We remove this attribute so that the recording
@@ -23,7 +51,14 @@ export function createMount() {
     attributeFilter: ['inert'],
   })
 
-  return mount
+  return {
+    mount,
+    dispose: () => {
+      stopKeepingAtEndOfBody()
+      attributeObserver.disconnect()
+      mount.remove()
+    },
+  }
 }
 
 /**
@@ -53,7 +88,19 @@ export function createMount() {
  * so the recording controls stay available.
  */
 export function keepMountAtEndOfBody(mount: Element) {
+  const body = document.body
+
   function ensureAtEndOfBody() {
+    // The body this observer was attached to is gone (e.g. document.open()
+    // rewrote the document, which does not disconnect observers). The mount
+    // died with it and must not be resurrected into the new document, where
+    // its marker would block a fresh injection from mounting a working UI.
+    if (document.body !== body) {
+      positionObserver.disconnect()
+
+      return
+    }
+
     if (document.body.lastElementChild !== mount) {
       document.body.appendChild(mount)
     }
@@ -61,7 +108,7 @@ export function keepMountAtEndOfBody(mount: Element) {
 
   const positionObserver = new MutationObserver(ensureAtEndOfBody)
 
-  positionObserver.observe(document.body, {
+  positionObserver.observe(body, {
     childList: true,
   })
 
