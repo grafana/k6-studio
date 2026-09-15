@@ -5,7 +5,11 @@ import type {
 import log from 'electron-log/main'
 
 import { sendTaskCancel } from './a2a/cancelTask'
-import { type A2AConfig, getA2AConfig } from './a2a/config'
+import {
+  type A2AConfig,
+  getA2AConfig,
+  rejectCurrentAssistantSession,
+} from './a2a/config'
 import { LOG_PREFIX } from './a2a/constants'
 import {
   type A2AJsonRpcRequest,
@@ -195,6 +199,9 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
   }
 }
 
+/** Statuses that mean the session was refused, not that the call went badly. */
+const REJECTED_STATUSES = [401, 403]
+
 async function fetchA2AReader(
   config: A2AConfig,
   body: A2AJsonRpcRequest,
@@ -213,6 +220,13 @@ async function fetchA2AReader(
 
   if (!response.ok) {
     const text = await safeResponseText(response)
+
+    // Only the status tells a refused session from a bad moment, so the
+    // decision to end it belongs here rather than with the error's reader.
+    if (REJECTED_STATUSES.includes(response.status)) {
+      await rejectCurrentAssistantSession()
+    }
+
     throw new Error(`A2A request failed (${response.status}): ${text}`)
   }
 

@@ -10,8 +10,8 @@ const AssistantTokenDataSchema = z.object({
   accessToken: z.string(),
   refreshToken: z.string(),
   apiEndpoint: z.string(),
-  expiresAt: z.number(),
-  refreshExpiresAt: z.number(),
+  expiresAt: z.number().finite(),
+  refreshExpiresAt: z.number().finite(),
 })
 
 const AssistantTokenStoreSchema = z.object({
@@ -140,7 +140,22 @@ export async function clearAssistantTokens(stackId: string): Promise<void> {
   })
 }
 
-export async function hasAssistantTokens(stackId: string): Promise<boolean> {
+/**
+ * Only the tokens themselves are encrypted, so callers that just need to know
+ * how long a session lasts avoid decrypting anything.
+ */
+export async function getAssistantTokenExpiry(
+  stackId: string
+): Promise<Pick<AssistantTokenData, 'expiresAt' | 'refreshExpiresAt'> | null> {
   const store = await readStore()
-  return stackId in store.tokens
+  const tokens = store.tokens[stackId]
+
+  if (!tokens) {
+    return null
+  }
+
+  return {
+    expiresAt: tokens.expiresAt,
+    refreshExpiresAt: tokens.refreshExpiresAt,
+  }
 }
