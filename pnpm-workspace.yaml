@@ -16,6 +16,10 @@ overrides:
   'tar': '^7.5.21'
   'dompurify': '^3.4.13'
 
+  # Electron's extractor validates symlink targets and prevents write-through escapes
+  # (CVE-2026-56876 and CVE-2026-19693) in Packager and Puppeteer.
+  'extract-zip': 'npm:@electron-internal/extract-zip@1.0.5'
+
   # external-editor pulls tmp@0.0.33, which has an unpatched path traversal
   # (GHSA-ph9p-34f9-6g65). Only 0.2.6+ is fixed, so the transitive copy has to be
   # forced up to match the 0.2.x that tmp-promise already resolves to.
