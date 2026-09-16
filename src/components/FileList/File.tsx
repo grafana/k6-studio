@@ -8,10 +8,11 @@ import {
   ServerCogIcon,
   VideoIcon,
 } from 'lucide-react'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useBoolean } from 'react-use'
 
+import { UpdateReferencesDialog } from '@/components/UpdateReferencesDialog'
 import { useOverflowCheck } from '@/hooks/useOverflowCheck'
 import { useRenameFile } from '@/hooks/useRenameFile'
 import { getViewPath } from '@/routeMap'
@@ -98,26 +99,98 @@ function EditableFile({
   setEditMode,
 }: FileProps & { editMode: boolean; setEditMode: (value: boolean) => void }) {
   const linkRef = useRef<HTMLAnchorElement>(null)
-  const hasEllipsis = useOverflowCheck(linkRef)
+  const inlineInputRef = useRef<HTMLInputElement>(null)
 
-  const { mutateAsync: renameFile } = useRenameFile(file)
+  const hasEllipsis = useOverflowCheck(linkRef)
+  const confirmedRef = useRef(false)
+
+  const { mutate: renameFile, isPending } = useRenameFile(file)
+
+  const [pendingRename, setPendingRename] = useState<{
+    newName: string
+    references: string[]
+  } | null>(null)
 
   const fileExtension = path.extname(file.fileName).slice(1)
 
-  const handleSave = async (newValue: string) => {
+  const handleSave = (newValue: string) => {
     const newFileName = `${newValue.trim()}.${fileExtension}`
-    await renameFile(newFileName)
-    setEditMode(false)
+    renameFile(
+      { newName: newFileName },
+      {
+        onSuccess: (result) => {
+          if (result.renamed) {
+            setPendingRename(null)
+            setEditMode(false)
+            return
+          }
+
+          setPendingRename({
+            newName: newFileName,
+            references: result.references,
+          })
+        },
+      }
+    )
+  }
+
+  const handleConfirmRename = (onReferenced: 'force' | 'update') => {
+    if (pendingRename === null) {
+      return
+    }
+
+    renameFile(
+      { newName: pendingRename.newName, onReferenced },
+      {
+        onSuccess: (result) => {
+          if (result.renamed) {
+            confirmedRef.current = true
+            setPendingRename(null)
+            setEditMode(false)
+          }
+        },
+      }
+    )
+  }
+
+  const handleCancelDialog = () => {
+    setPendingRename(null)
+  }
+
+  const handleCloseAutoFocus = (ev: Event) => {
+    if (!confirmedRef.current) {
+      ev.preventDefault()
+      inlineInputRef.current?.focus()
+    }
+
+    confirmedRef.current = false
   }
 
   if (editMode) {
     return (
-      <InlineEditor
-        value={file.displayName}
-        onSave={handleSave}
-        onCancel={() => setEditMode(false)}
-        style={fileStyle}
-      />
+      <>
+        <InlineEditor
+          ref={inlineInputRef}
+          value={file.displayName}
+          onSave={handleSave}
+          onCancel={() => {
+            setPendingRename(null)
+            setEditMode(false)
+          }}
+          style={fileStyle}
+          disableClickAway={pendingRename !== null}
+        />
+        <UpdateReferencesDialog
+          open={pendingRename !== null}
+          isPending={isPending}
+          filePath={file.path}
+          references={pendingRename?.references ?? []}
+          onRename={() => handleConfirmRename('force')}
+          onUpdateAndRename={() => handleConfirmRename('update')}
+          onCancel={handleCancelDialog}
+          onCloseAutoFocus={handleCloseAutoFocus}
+        />
+      </>
     )
   }
 
