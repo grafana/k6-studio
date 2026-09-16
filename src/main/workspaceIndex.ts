@@ -166,6 +166,10 @@ async function build(
   workspaceRoot: string,
   excludedDirs: string[] = ['node_modules']
 ) {
+  referencesIndex.clear()
+  referencedByIndex.clear()
+  pendingReads.clear()
+
   const isExcluded = pm(excludedDirs)
 
   try {

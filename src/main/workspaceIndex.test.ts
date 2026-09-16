@@ -48,6 +48,46 @@ describe('workspaceIndex', () => {
     expect(workspaceIndex.get(recordingPath).referencedBy).toEqual([validPath])
   })
 
+  it('removes references to generators deleted between builds', async () => {
+    const deletedPath = join(directory, 'deleted.k6g')
+    const keptPath = join(directory, 'kept.k6g')
+    const recordingPath = join(directory, 'recording.har')
+    await writeFile(deletedPath, recordingGenerator(deletedPath, recordingPath))
+    await writeFile(keptPath, recordingGenerator(keptPath, recordingPath))
+    await workspaceIndex.build(directory)
+    expect(workspaceIndex.get(deletedPath).references).toEqual([recordingPath])
+
+    await rm(deletedPath)
+    await workspaceIndex.build(directory)
+
+    expect(workspaceIndex.get(deletedPath).references).toEqual([])
+    expect(workspaceIndex.get(recordingPath).referencedBy).toEqual([keptPath])
+    expect(workspaceIndex.get(keptPath).references).toEqual([recordingPath])
+  })
+
+  it('ignores pending reads from a previous build after rebuilding', async () => {
+    const filePath = join(directory, 'deleted.k6g')
+    const recordingPath = join(directory, 'recording.har')
+    const data = recordingGenerator(filePath, recordingPath)
+    await writeFile(filePath, data)
+    const read = Promise.withResolvers<string>()
+    const started = Promise.withResolvers<void>()
+    vi.mocked(readFile).mockImplementationOnce(() => {
+      started.resolve()
+      return read.promise
+    })
+    const previousBuild = workspaceIndex.build(directory)
+    await started.promise
+
+    await rm(filePath)
+    await workspaceIndex.build(directory)
+    read.resolve(data)
+    await previousBuild
+
+    expect(workspaceIndex.get(filePath).references).toEqual([])
+    expect(workspaceIndex.get(recordingPath).referencedBy).toEqual([])
+  })
+
   it('removes stale reverse references when a generator changes or is deleted', async () => {
     const filePath = join(directory, 'test.k6g')
     const oldPath = join(directory, 'old.har')
