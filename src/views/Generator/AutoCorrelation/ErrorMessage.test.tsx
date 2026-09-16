@@ -1,10 +1,17 @@
 import { cleanup, render, screen } from '@testing-library/react'
+import { userEvent } from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+
+import { CONNECT_COPY } from '@/components/Assistant/connectCopy'
 
 import { ErrorMessage } from './ErrorMessage'
 
+const { invalidateAuthStatusMock } = vi.hoisted(() => ({
+  invalidateAuthStatusMock: vi.fn(),
+}))
+
 vi.mock('@/hooks/useAssistantAuth', () => ({
-  useAssistantSignOut: () => ({ mutate: vi.fn() }),
+  invalidateAssistantAuthStatus: invalidateAuthStatusMock,
 }))
 
 vi.mock('@/assets/grot-crashed.svg', () => ({
@@ -20,15 +27,19 @@ const baseProps = {
 afterEach(cleanup)
 
 describe('ErrorMessage', () => {
-  it('renders "Session expired" for HTTP 401 error text', () => {
+  it('renders the shared expired-session prompt for HTTP 401 error text', () => {
     render(
       <ErrorMessage
         {...baseProps}
         error={new Error('A2A request failed (401): Unauthorized')}
       />
     )
-    expect(screen.getByText('Session expired')).toBeDefined()
-    expect(screen.getByText(/Reconnect/)).toBeDefined()
+    // Same wording the assistant auth gate and the wizard show.
+    expect(screen.getByText(CONNECT_COPY.expired.title)).toBeDefined()
+    expect(screen.getByText(CONNECT_COPY.expired.description)).toBeDefined()
+    expect(
+      screen.getByRole('button', { name: CONNECT_COPY.expired.action })
+    ).toBeDefined()
   })
 
   it('renders "Connection error" for fetch failure', () => {
@@ -67,5 +78,22 @@ describe('ErrorMessage', () => {
     expect(screen.getByText('Something went wrong')).toBeDefined()
     expect(screen.getByRole('button', { name: /Retry/ })).toBeDefined()
     expect(screen.getByRole('button', { name: /Report issue/ })).toBeDefined()
+  })
+
+  it('re-reads the auth status when reconnecting', async () => {
+    // The main process drops the tokens when the server refuses them, so the
+    // refreshed status is what sends the user to the right prompt.
+    render(
+      <ErrorMessage
+        {...baseProps}
+        error={new Error('A2A request failed (401): Unauthorized')}
+      />
+    )
+
+    await userEvent.click(
+      screen.getByRole('button', { name: CONNECT_COPY.expired.action })
+    )
+
+    expect(invalidateAuthStatusMock).toHaveBeenCalledOnce()
   })
 })

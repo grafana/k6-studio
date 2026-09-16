@@ -40,6 +40,7 @@ function encodeSSEOpen(events: Array<Record<string, unknown>>): {
 }
 
 import { sendTaskCancel } from './a2a/cancelTask'
+import { rejectCurrentAssistantSession } from './a2a/config'
 import { GrafanaAssistantLanguageModel } from './grafanaAssistantProvider'
 
 vi.mock('./a2a/config', () => ({
@@ -51,6 +52,7 @@ vi.mock('./a2a/config', () => ({
       bearerToken: 'test-token',
     })
   ),
+  rejectCurrentAssistantSession: vi.fn(() => Promise.resolve()),
 }))
 
 vi.mock('./a2a/cancelTask', () => ({
@@ -513,6 +515,38 @@ describe('GrafanaAssistantLanguageModel', () => {
         expect.objectContaining({ bearerToken: 'test-token' }),
         'old-task'
       )
+    })
+  })
+
+  describe('refused sessions', () => {
+    beforeEach(() => {
+      vi.mocked(rejectCurrentAssistantSession).mockClear()
+    })
+
+    it('ends the session when the request is rejected', async () => {
+      const model = new GrafanaAssistantLanguageModel()
+      fetchSpy.mockResolvedValueOnce(
+        new Response('Unauthorized', { status: 401 })
+      )
+
+      await expect(
+        model.doStream(makeOptions('chat-reject', 'hello'))
+      ).rejects.toThrow(/A2A request failed \(401\)/)
+
+      expect(vi.mocked(rejectCurrentAssistantSession)).toHaveBeenCalledOnce()
+    })
+
+    it('keeps the session when the request fails for another reason', async () => {
+      const model = new GrafanaAssistantLanguageModel()
+      fetchSpy.mockResolvedValueOnce(
+        new Response('Service Unavailable', { status: 503 })
+      )
+
+      await expect(
+        model.doStream(makeOptions('chat-reject', 'hello'))
+      ).rejects.toThrow(/A2A request failed \(503\)/)
+
+      expect(vi.mocked(rejectCurrentAssistantSession)).not.toHaveBeenCalled()
     })
   })
 })
