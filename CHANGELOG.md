@@ -1,5 +1,33 @@
 # Changelog
 
+## [2.1.1](https://github.com/grafana/k6-studio/compare/v2.1.0...v2.1.1) (2026-09-22)
+
+
+### Bug Fixes
+
+* clarify HTTP search scope tooltip ([#1367](https://github.com/grafana/k6-studio/issues/1367)) ([a4ea27b](https://github.com/grafana/k6-studio/commit/a4ea27bedf96bb4121eda35ddc6228becc3cabb5))
+* Debug session stays stuck at 'running' when script fails at runtime ([#1343](https://github.com/grafana/k6-studio/issues/1343)) ([4c27fc8](https://github.com/grafana/k6-studio/commit/4c27fc88a5864deaf923ef3b73d319d305781115))
+* Escape backslashes and quotes in correlation regex snippet codegen ([#1319](https://github.com/grafana/k6-studio/issues/1319)) ([5722dc8](https://github.com/grafana/k6-studio/commit/5722dc837f2ac0353b08625db18248282cdf6a41))
+* Recording and session replay break on legacy pages ([#1358](https://github.com/grafana/k6-studio/issues/1358)) ([ccb1482](https://github.com/grafana/k6-studio/commit/ccb148229303dab523f856ec3aee4a6ac288fd33))
+* **security/high/.github/workflows:** update dependency pnpm to v11.11.0 [security] ([#1368](https://github.com/grafana/k6-studio/issues/1368)) ([6dc34e8](https://github.com/grafana/k6-studio/commit/6dc34e8e1a4b722c19f9b35e796ff2ccb6cf7e8d))
+* **security/high/:** update dependency nanoid to v5.1.16 [security] ([#1354](https://github.com/grafana/k6-studio/issues/1354)) ([7236d29](https://github.com/grafana/k6-studio/commit/7236d299534da5b5709e57744097df62be53624f))
+* **security/high/:** update dependency undici to v7.29.0 [security] ([#1344](https://github.com/grafana/k6-studio/issues/1344)) ([8994fb8](https://github.com/grafana/k6-studio/commit/8994fb87bd8d5c77231aa436a8e6fb0d7f7940d8))
+* **security/medium/:** update dependency electron to v42.5.1 [security] ([#1350](https://github.com/grafana/k6-studio/issues/1350)) ([ea29f7b](https://github.com/grafana/k6-studio/commit/ea29f7b67a10dbeea3644f952c2dfcd4bed3abc2))
+* **security/medium/:** update dependency react-router-dom to v6.30.5 [security] ([#1360](https://github.com/grafana/k6-studio/issues/1360)) ([dab56af](https://github.com/grafana/k6-studio/commit/dab56afbc151e0bc19b57fcc0be8911735eca0a4))
+* **security/medium/:** update dependency vitest to v4.1.11 [security] ([#1371](https://github.com/grafana/k6-studio/issues/1371)) ([3a34c11](https://github.com/grafana/k6-studio/commit/3a34c11e2c6f04916b00098086529bf2d63c2c81))
+* **security:** Patch critical, high and medium CVEs ([#1363](https://github.com/grafana/k6-studio/issues/1363)) ([e454602](https://github.com/grafana/k6-studio/commit/e454602a112ed77ff6e1cec5802fb62e4a57129f))
+* surface settings fallback warnings ([#1365](https://github.com/grafana/k6-studio/issues/1365)) ([0c64a6e](https://github.com/grafana/k6-studio/commit/0c64a6e584c8766ad68f0f851238ad2a23eb9749))
+
+
+### Miscellaneous Chores
+
+* **deps:** lock file maintenance ([#1374](https://github.com/grafana/k6-studio/issues/1374)) ([0ad7118](https://github.com/grafana/k6-studio/commit/0ad711898292de945f9da65e36e632dfca7eff8e))
+
+
+### Continuous Integration
+
+* Bump create-github-app-token to v0.3.1 ([#1364](https://github.com/grafana/k6-studio/issues/1364)) ([49ddf59](https://github.com/grafana/k6-studio/commit/49ddf5984fd6a8affda78e266b351e7416f8f058))
+
 ## [2.1.0](https://github.com/grafana/k6-studio/compare/v2.0.2...v2.1.0) (2026-08-11)
 
 
