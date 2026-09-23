@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
 import { BrowserEvent } from '@/schemas/recording'
+import {
+  createProxyDataWithoutResponse,
+  createRequest,
+} from '@/test/factories/proxyData'
+import { safeBtoa } from '@/utils/format'
 
 import { proxyDataToHar } from './proxyDataToHar'
 
@@ -43,5 +48,60 @@ describe('proxyDataToHar browser events', () => {
     proxyDataToHar([], events)
 
     expect(events.map((event) => event.eventId)).toEqual(['c', 'a'])
+  })
+})
+
+describe('proxyDataToHar', () => {
+  it('preserves binary request payloads', () => {
+    const binaryContent = String.fromCharCode(
+      0x89,
+      0x50,
+      0x4e,
+      0x47,
+      0x0d,
+      0x0a,
+      0x1a,
+      0x0a
+    )
+
+    const proxyData = createProxyDataWithoutResponse({
+      request: createRequest({
+        method: 'POST',
+        headers: [['content-type', 'application/octet-stream']],
+        content: btoa(binaryContent),
+      }),
+    })
+
+    const recording = proxyDataToHar([proxyData], [])
+    const text = recording.log.entries?.[0]?.request.postData?.text
+
+    expect(text).toBeDefined()
+    expect(Array.from(text!, (char) => char.charCodeAt(0))).toEqual([
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+    ])
+  })
+
+  it('preserves Unicode characters in request payloads', () => {
+    const original = JSON.stringify({
+      name: 'Nguyễn Văn A',
+      message: 'kiểm thử tiếng Việt',
+      cyrillic: 'Привет мир',
+      emoji: '✅ café',
+    })
+
+    const proxyData = createProxyDataWithoutResponse({
+      request: createRequest({
+        method: 'POST',
+        headers: [['content-type', 'application/json; charset=utf-8']],
+        content: safeBtoa(original),
+      }),
+    })
+
+    const har = proxyDataToHar([proxyData], [])
+
+    const entry = har.log.entries?.[0]
+
+    expect(entry).toBeDefined()
+    expect(entry?.request.postData?.text).toBe(original)
   })
 })
