@@ -14,6 +14,7 @@ import * as proxy from './proxy'
 import * as script from './script'
 import * as settings from './settings'
 import * as ui from './ui'
+import * as workspace from './workspace'
 
 export function initialize() {
   browserRemote.initialize()
@@ -32,4 +33,5 @@ export function initialize() {
   log.initialize()
   app.initialize()
   ai.initialize()
+  workspace.initialize()
 }
