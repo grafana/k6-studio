@@ -119,7 +119,7 @@ export function RequestList({
         onChangeRecording={onChangeRecording}
       />
 
-      <ScrollArea scrollbars="vertical">
+      <ScrollArea scrollbars="vertical" type="auto">
         <WebLogView
           requests={requestWithHighlights}
           selectedRequestId={selectedRequest?.id}
