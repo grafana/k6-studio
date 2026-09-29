@@ -30,5 +30,10 @@ overrides:
   # will probably not happen until 8.0.0) we need to have override this.
   '@electron/node-gyp': 'npm:node-gyp@12.3.0'
 
+  # image-size 2.0.4 fixes CVE-2025-71330. Keep this override with appdmg.patch,
+  # which adapts appdmg to the new file API.
+  'appdmg>image-size': '2.0.4'
+
 patchedDependencies:
+  appdmg: patches/appdmg.patch
   rrweb: patches/rrweb.patch

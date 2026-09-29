@@ -212,8 +212,10 @@ overrides:
   tmp: ^0.2.6
   js-cookie: ^3.0.7
   '@electron/node-gyp': npm:node-gyp@12.3.0
+  appdmg>image-size: 2.0.4
 
 patchedDependencies:
+  appdmg: 5d004309856d0577673f4382db7a23a63ced59bd7a77f8b0b22ce13eed8e2229
   rrweb: 026a8a870fbc04ea8b1d0048f39e6543189a4a762caf48af27db81ba0ff87d40
 
 importers:
@@ -4714,9 +4716,9 @@ packages:
     resolution: {integrity: sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==}
     engines: {node: '>= 4'}
 
-  image-size@0.7.5:
-    resolution: {integrity: sha512-Hiyv+mXHfFEP7LzUL/llg9RwFxxY+o9N3JVLIeG5E7iFIFAalxvRU9UZthBdYDEVnzHMgjnKJPPpay5BWf1g9g==}
-    engines: {node: '>=6.9.0'}
+  image-size@2.0.4:
+    resolution: {integrity: sha512-QRUkFFsRV/6fuESxb9Vkq+a0LkSrgKXuc2NEqfikiXxxN/G3tjWt5EVUlMaImRBZRZK/jRBEbYvpPYZL8t08Zw==}
+    engines: {node: '>=18'}
     hasBin: true
 
   immer@10.2.0:
@@ -10271,14 +10273,14 @@ snapshots:
 
   ansi-styles@6.2.3: {}
 
-  appdmg@0.6.6:
+  appdmg@0.6.6(patch_hash=5d004309856d0577673f4382db7a23a63ced59bd7a77f8b0b22ce13eed8e2229):
     dependencies:
       async: 1.5.2
       ds-store: 0.1.6
       execa: 1.0.0
       fs-temp: 1.2.1
       fs-xattr: 0.3.1
-      image-size: 0.7.5
+      image-size: 2.0.4
       is-my-json-valid: 2.20.6
       minimist: 1.2.8
       parse-color: 1.0.0
@@ -10833,7 +10835,7 @@ snapshots:
       debug: 4.4.3(supports-color@8.1.1)
       minimist: 1.2.8
     optionalDependencies:
-      appdmg: 0.6.6
+      appdmg: 0.6.6(patch_hash=5d004309856d0577673f4382db7a23a63ced59bd7a77f8b0b22ce13eed8e2229)
     transitivePeerDependencies:
       - supports-color
     optional: true
@@ -11552,7 +11554,7 @@ snapshots:
 
   ignore@5.3.2: {}
 
-  image-size@0.7.5:
+  image-size@2.0.4:
     optional: true
 
   immer@10.2.0: {}
