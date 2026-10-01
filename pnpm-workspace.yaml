@@ -12,7 +12,7 @@ allowBuilds:
 overrides:
   'esbuild': '^0.28.0'
   'nan': '^2.25.0'
-  'basic-ftp': '^5.2.0'
+  'basic-ftp': '^6.0.0'
   'tar': '^7.5.21'
   'dompurify': '^3.4.13'
 
