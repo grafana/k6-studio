@@ -5,11 +5,14 @@ import {
   RefreshCw,
 } from 'lucide-react'
 
+import { CONNECT_COPY } from '@/components/Assistant/connectCopy'
 import { ErrorMessage as MessageContent } from '@/components/ErrorMessage'
 import { ExternalLink } from '@/components/ExternalLink'
-import { useAssistantSignOut } from '@/hooks/useAssistantAuth'
-
-import { AssistantErrorInfo, classifyError } from './utils/classifyError'
+import { invalidateAssistantAuthStatus } from '@/hooks/useAssistantAuth'
+import {
+  AssistantErrorInfo,
+  classifyError,
+} from '@/utils/assistant/classifyError'
 
 interface AutoCorrelationErrorProps {
   error: Error
@@ -24,8 +27,6 @@ export function ErrorMessage({
   onReset,
   onClose,
 }: AutoCorrelationErrorProps) {
-  const { mutate: signOut } = useAssistantSignOut()
-
   return (
     <ClassifiedError
       errorInfo={classifyError(error.message)}
@@ -33,8 +34,10 @@ export function ErrorMessage({
         onRetry,
         onReset,
         onClose,
+        // The main process already dropped the tokens if the server refused
+        // them, so re-reading the status lands on the right prompt.
         onReconnect: () => {
-          signOut()
+          void invalidateAssistantAuthStatus()
           onReset()
         },
       }}
@@ -71,13 +74,12 @@ const reportIssueButton = (
 
 const ERROR_CONTENT: Record<AssistantErrorInfo['category'], ErrorContent> = {
   'auth-expired': {
-    title: 'Session expired',
-    message:
-      'Your Grafana Assistant session has expired. Please reconnect to continue.',
+    title: CONNECT_COPY.expired.title,
+    message: CONNECT_COPY.expired.description,
     renderActions: ({ onReconnect }) => (
       <Button onClick={onReconnect}>
         <LinkIcon />
-        Reconnect
+        {CONNECT_COPY.expired.action}
       </Button>
     ),
   },

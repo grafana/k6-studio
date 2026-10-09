@@ -5,12 +5,18 @@ import { LOG_PREFIX } from './constants'
 import { safeResponseText } from './helpers'
 import {
   type AssistantTokenData,
+  clearAssistantTokens,
+  getAssistantTokenExpiry,
   getAssistantTokens,
   mapTokenResponse,
   saveAssistantTokens,
 } from './tokenStore'
+import type { AssistantConnection } from './types'
 
 const REFRESH_THRESHOLD_MS = 5 * 60 * 1000 // 5 minutes
+
+/** Statuses that mean the refresh token itself was refused, not a bad moment. */
+const REFRESH_REJECTED_STATUSES = [400, 401, 403]
 
 const RefreshResponseSchema = z.object({
   data: z.object({
@@ -25,8 +31,44 @@ export function isTokenExpiringSoon(tokens: AssistantTokenData): boolean {
   return Date.now() + REFRESH_THRESHOLD_MS >= tokens.expiresAt
 }
 
-export function isRefreshTokenExpired(tokens: AssistantTokenData): boolean {
+export function isRefreshTokenExpired(tokens: {
+  refreshExpiresAt: number
+}): boolean {
   return Date.now() >= tokens.refreshExpiresAt
+}
+
+/**
+ * Stored tokens whose refresh token has expired cannot be renewed, so the user
+ * has to connect again. Callers gate on this rather than on the tokens merely
+ * being present.
+ */
+export async function getAssistantConnection(
+  stackId: string
+): Promise<AssistantConnection> {
+  const expiry = await getAssistantTokenExpiry(stackId)
+
+  if (!expiry) {
+    return 'disconnected'
+  }
+
+  return isRefreshTokenExpired(expiry) ? 'expired' : 'connected'
+}
+
+/**
+ * The server refused this session, which the stored expiry cannot show on its
+ * own. Drop the tokens so the connection stops reporting itself as live, unless
+ * they already read as expired.
+ */
+export async function rejectAssistantSession(stackId: string): Promise<void> {
+  const expiry = await getAssistantTokenExpiry(stackId)
+
+  if (!expiry || isRefreshTokenExpired(expiry)) {
+    return
+  }
+
+  log.info(LOG_PREFIX, 'Dropping refused assistant session for stack', stackId)
+
+  await clearAssistantTokens(stackId)
 }
 
 export async function refreshAndSaveTokens(
@@ -52,6 +94,13 @@ export async function refreshAndSaveTokens(
 
   if (!response.ok) {
     const text = await safeResponseText(response)
+
+    // A refused token never works again. Drop it so the session reads as gone
+    // instead of leaving its stored expiry to claim the user is still signed in.
+    if (REFRESH_REJECTED_STATUSES.includes(response.status)) {
+      await clearAssistantTokens(stackId)
+    }
+
     throw new Error(
       `Assistant token refresh failed (${response.status}): ${text}`
     )

@@ -13,7 +13,19 @@ import { WizardState } from '../state/types'
 
 import { HostsStep } from './HostsStep/HostsStep'
 
-const agentMock = vi.hoisted(() => ({ status: 'running', stop: vi.fn() }))
+const agentMock = vi.hoisted(() => ({
+  status: 'running',
+  stop: vi.fn(),
+  error: undefined as Error | undefined,
+}))
+
+const { invalidateAuthStatusMock } = vi.hoisted(() => ({
+  invalidateAuthStatusMock: vi.fn(),
+}))
+
+vi.mock('@/hooks/useAssistantAuth', () => ({
+  invalidateAssistantAuthStatus: invalidateAuthStatusMock,
+}))
 
 vi.mock('@/utils/assistant/useAssistantAgent', () => ({
   useAssistantAgent: () => ({
@@ -21,7 +33,7 @@ vi.mock('@/utils/assistant/useAssistantAgent', () => ({
     stop: agentMock.stop,
     reset: vi.fn(),
     status: agentMock.status,
-    error: undefined,
+    error: agentMock.error,
     actionsLog: {
       entries: [],
       addEntry: vi.fn(() => ({ id: 'log-1' })),
@@ -34,7 +46,12 @@ function ActiveStep() {
   const { state } = useSetupWizard()
 
   if (state.activeStep === 'hosts') {
-    return <HostsStep />
+    return (
+      <>
+        <HostsStep />
+        <div data-testid="hosts-status">{state.steps.hosts.status}</div>
+      </>
+    )
   }
 
   return (
@@ -61,6 +78,7 @@ function renderWizard() {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  agentMock.error = undefined
   vi.stubGlobal('studio', { app: { trackEvent: vi.fn() } })
   agentMock.status = 'running'
   agentMock.stop = vi.fn()
@@ -145,5 +163,32 @@ describe('useStepAgent', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Skip step' }))
 
     expect(useGeneratorStore.getState().wizardUsed).toBe(false)
+  })
+
+  it('re-checks auth when the session expired mid-run', () => {
+    agentMock.status = 'error'
+    // What getA2AConfig surfaces once the refresh has failed. The throw inside
+    // refreshAndSaveTokens never reaches the renderer.
+    agentMock.error = new Error(
+      'Not authenticated with Grafana Assistant. Please connect to Grafana Assistant first.'
+    )
+
+    renderWizard()
+
+    // The refreshed status flips the gate to its reconnect screen. The run is
+    // recorded as interrupted rather than as a failed analysis, and stays
+    // retryable once the user is back.
+    expect(invalidateAuthStatusMock).toHaveBeenCalledOnce()
+    expect(screen.getByTestId('hosts-status').textContent).toBe('aborted')
+  })
+
+  it('fails the step when the run errors for another reason', () => {
+    agentMock.status = 'error'
+    agentMock.error = new Error('boom')
+
+    renderWizard()
+
+    expect(screen.getByTestId('hosts-status').textContent).toBe('error')
+    expect(invalidateAuthStatusMock).not.toHaveBeenCalled()
   })
 })

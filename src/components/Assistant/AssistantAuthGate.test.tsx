@@ -3,13 +3,23 @@ import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { AssistantAuthStatus } from '@/handlers/ai/a2a/assistantAuth'
+
 import { AssistantAuthGate } from './AssistantAuthGate'
 
+const { useAssistantAuthStatusMock, signInMock } = vi.hoisted(() => ({
+  useAssistantAuthStatusMock:
+    vi.fn<
+      () => { data: AssistantAuthStatus | undefined; isLoading: boolean }
+    >(),
+  signInMock: vi.fn(),
+}))
+
 vi.mock('@/hooks/useAssistantAuth', () => ({
-  useAssistantAuthStatus: () => ({ data: undefined, isLoading: false }),
+  useAssistantAuthStatus: () => useAssistantAuthStatusMock(),
   useAssistantSignIn: () => ({
     isPending: false,
-    mutate: vi.fn(),
+    mutate: signInMock,
     cancel: vi.fn(),
     error: null,
     verificationCode: null,
@@ -26,6 +36,11 @@ const openExternalLink = vi.fn().mockResolvedValue(undefined)
 
 beforeEach(() => {
   vi.clearAllMocks()
+
+  useAssistantAuthStatusMock.mockReturnValue({
+    data: undefined,
+    isLoading: false,
+  })
 
   vi.stubGlobal('studio', {
     app: { trackEvent },
@@ -65,5 +80,30 @@ describe('AssistantAuthGate (signed out)', () => {
     expect(trackEvent).toHaveBeenCalledWith({
       event: 'test_setup_wizard_sign_up_clicked',
     })
+  })
+})
+
+describe('AssistantAuthGate (expired session)', () => {
+  beforeEach(() => {
+    useAssistantAuthStatusMock.mockReturnValue({
+      data: { connection: 'expired', stackId: '1', stackName: 'my-stack' },
+      isLoading: false,
+    })
+  })
+
+  it('asks the user to reconnect instead of gating on a first connection', () => {
+    renderGate()
+
+    expect(screen.getByText('Your session has expired')).toBeDefined()
+    expect(screen.getByRole('button', { name: 'Reconnect' })).toBeDefined()
+    expect(screen.queryByTestId('wizard-content')).toBeNull()
+  })
+
+  it('reconnects through the same sign-in flow', async () => {
+    renderGate()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Reconnect' }))
+
+    expect(signInMock).toHaveBeenCalledOnce()
   })
 })
