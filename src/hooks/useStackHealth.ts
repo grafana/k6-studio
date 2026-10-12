@@ -12,9 +12,9 @@ const WAKE_THROTTLE_MS = 15 * 60 * 1000
 
 export function useStackHealth(enabled: boolean) {
   const { data: authStatus } = useAssistantAuthStatus()
-  // Both answers describe one instance, so a stack switch must not reuse them.
+  // Wake and health query results belong to one stack and must not be reused for another.
   const stackId = authStatus?.stackId
-  const isEnabled = enabled && !!stackId
+  const canQueryStack = enabled && !!stackId
 
   const wake = useQuery({
     queryKey: ['assistant-stack-wake', stackId],
@@ -25,7 +25,7 @@ export function useStackHealth(enabled: boolean) {
     // after the default five minutes and the next open wakes the stack again.
     gcTime: WAKE_THROTTLE_MS,
     refetchOnReconnect: false,
-    enabled: isEnabled,
+    enabled: canQueryStack,
   })
 
   const health = useQuery({
@@ -34,7 +34,7 @@ export function useStackHealth(enabled: boolean) {
     networkMode: 'always',
     refetchInterval: (result) =>
       result.state.data === 'ready' ? false : POLL_INTERVAL_MS,
-    enabled: isEnabled,
+    enabled: canQueryStack,
   })
 
   const isStackReady = !enabled || health.data === 'ready'
