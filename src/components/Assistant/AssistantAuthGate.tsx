@@ -14,6 +14,8 @@ import {
 import { useStackHealth } from '@/hooks/useStackHealth'
 import { UsageEventName } from '@/services/usageTracking/types'
 
+import { StackWakePrompt } from './StackWakePrompt'
+
 interface AssistantAuthGateProps {
   /** Rendered once the user is signed in, connected, and the stack is ready. */
   children: ReactNode
@@ -140,7 +142,16 @@ export function AssistantAuthGate({ children }: AssistantAuthGateProps) {
 }
 
 function StackHealthGate({ children }: AssistantAuthGateProps) {
-  const { isStackReady } = useStackHealth(true)
+  const { isStackReady, captchaUrl } = useStackHealth(true)
+
+  if (captchaUrl) {
+    return (
+      <GateLayout>
+        <GrafanaLogo />
+        <StackWakePrompt url={captchaUrl} />
+      </GateLayout>
+    )
+  }
 
   if (!isStackReady) {
     return (

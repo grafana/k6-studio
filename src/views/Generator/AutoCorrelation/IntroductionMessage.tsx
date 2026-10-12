@@ -9,6 +9,7 @@ import {
 import { useState } from 'react'
 
 import grotIllustration from '@/assets/grot-magic.svg'
+import { StackWakePrompt } from '@/components/Assistant/StackWakePrompt'
 import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
 import { GrafanaCloudSignIn } from '@/components/Profile/GrafanaCloudSignIn'
 import {
@@ -121,7 +122,7 @@ function AssistantAuthStatus({
   onStart,
   connectError,
 }: AssistantAuthStatusProps) {
-  const { isStackReady } = useStackHealth(isAuthenticated)
+  const { isStackReady, captchaUrl } = useStackHealth(isAuthenticated)
 
   if (isLoading) {
     return (
@@ -162,6 +163,10 @@ function AssistantAuthStatus({
         )}
       </>
     )
+  }
+
+  if (captchaUrl) {
+    return <StackWakePrompt url={captchaUrl} />
   }
 
   if (!isStackReady) {
