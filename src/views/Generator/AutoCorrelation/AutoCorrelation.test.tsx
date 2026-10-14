@@ -197,6 +197,22 @@ describe('AutoCorrelation', () => {
     ).toBeDefined()
   })
 
+  it('warns when a single-value rule matches multiple requests', () => {
+    mockGenerateRules({
+      correlationStatus: 'success',
+      ruleEntries: [
+        {
+          ...ruleEntry,
+          correlationState: { ...ruleEntry.correlationState, count: 2 },
+        },
+      ],
+    })
+
+    renderWithTheme(<AutoCorrelation close={vi.fn()} skipIntroduction />)
+
+    expect(screen.getByText('2 matches')).toBeDefined()
+  })
+
   it('calls onSettled once when the run finishes', () => {
     const onSettled = vi.fn()
     mockGenerateRules({
