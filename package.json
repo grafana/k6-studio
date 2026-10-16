@@ -101,7 +101,7 @@
     "@medv/finder": "4.0.2",
     "@microlink/react-json-view": "1.31.20",
     "@monaco-editor/react": "4.7.0",
-    "@puppeteer/browsers": "2.13.1",
+    "@puppeteer/browsers": "2.13.2",
     "@radix-ui/colors": "3.0.0",
     "@radix-ui/react-accordion": "1.2.12",
     "@radix-ui/react-collapsible": "1.1.12",
