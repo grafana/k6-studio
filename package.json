@@ -131,7 +131,7 @@
     "devtools-protocol": "0.0.1568225",
     "diff": "8.0.4",
     "dom-accessibility-api": "0.7.1",
-    "electron-log": "5.4.3",
+    "electron-log": "5.4.4",
     "electron-squirrel-startup": "1.0.1",
     "express": "5.2.1",
     "find-process": "1.4.11",

@@ -347,8 +347,8 @@ importers:
         specifier: 0.7.1
         version: 0.7.1
       electron-log:
-        specifier: 5.4.3
-        version: 5.4.3
+        specifier: 5.4.4
+        version: 5.4.4
       electron-squirrel-startup:
         specifier: 1.0.1
         version: 1.0.1(supports-color@8.1.1)
@@ -4143,8 +4143,8 @@ packages:
     os: [darwin, linux]
     hasBin: true
 
-  electron-log@5.4.3:
-    resolution: {integrity: sha512-sOUsM3LjZdugatazSQ/XTyNcw8dfvH1SYhXWiJyfYodAAKOZdHs0txPiLDXFzOZbhXgAgshQkshH2ccq0feyLQ==}
+  electron-log@5.4.4:
+    resolution: {integrity: sha512-istWgaXjBfURBSS8LWVW9C3jsc6+ac+tY1lXrQEOTp0lVj+a4OlO1Tmqb36GgnEUDv92DGC9VI1HNXwJinWpgA==}
     engines: {node: '>= 14'}
 
   electron-squirrel-startup@1.0.1:
@@ -10851,7 +10851,7 @@ snapshots:
       - supports-color
     optional: true
 
-  electron-log@5.4.3: {}
+  electron-log@5.4.4: {}
 
   electron-squirrel-startup@1.0.1(supports-color@8.1.1):
     dependencies:
