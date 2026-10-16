@@ -206,7 +206,7 @@ settings:
 overrides:
   esbuild: ^0.28.0
   nan: ^2.25.0
-  basic-ftp: ^5.2.0
+  basic-ftp: ^6.2.1
   tar: ^7.5.21
   dompurify: ^3.4.13
   tmp: ^0.2.6
@@ -3667,8 +3667,8 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
-  basic-ftp@5.3.1:
-    resolution: {integrity: sha512-bopVNp6ugyA150DDuZfPFdt1KZ5a94ZDiwX4hMgZDzF+GttD80lEy8kj98kbyhLXnPvhtIo93mdnLIjpCAeeOw==}
+  basic-ftp@6.2.3:
+    resolution: {integrity: sha512-T7GYtQ2eKJUN5YORG7A8u2WfB9JMN0a4/wl3MI64qq2qTRfa3FXzoNq0DDojZDkDyStcL+TkfKsz4JHEZx5kGQ==}
     engines: {node: '>=10.0.0'}
 
   before-after-hook@2.2.3:
@@ -10369,7 +10369,7 @@ snapshots:
 
   baseline-browser-mapping@2.11.25: {}
 
-  basic-ftp@5.3.1: {}
+  basic-ftp@6.2.3: {}
 
   before-after-hook@2.2.3: {}
 
@@ -11362,7 +11362,7 @@ snapshots:
 
   get-uri@6.0.5(supports-color@8.1.1):
     dependencies:
-      basic-ftp: 5.3.1
+      basic-ftp: 6.2.3
       data-uri-to-buffer: 6.0.2
       debug: 4.4.3(supports-color@8.1.1)
     transitivePeerDependencies:
