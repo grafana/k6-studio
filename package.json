@@ -99,7 +99,7 @@
     "@hookform/error-message": "2.0.1",
     "@hookform/resolvers": "5.2.2",
     "@medv/finder": "4.0.2",
-    "@microlink/react-json-view": "1.31.20",
+    "@microlink/react-json-view": "1.31.40",
     "@monaco-editor/react": "4.7.0",
     "@puppeteer/browsers": "2.13.1",
     "@radix-ui/colors": "3.0.0",
