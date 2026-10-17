@@ -338,8 +338,8 @@ importers:
         specifier: 1.6.17
         version: 1.6.17
       devtools-protocol:
-        specifier: 0.0.1568225
-        version: 0.0.1568225
+        specifier: 0.0.1718299
+        version: 0.0.1718299
       diff:
         specifier: 8.0.4
         version: 8.0.4
@@ -4075,8 +4075,8 @@ packages:
   devlop@1.1.0:
     resolution: {integrity: sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA==}
 
-  devtools-protocol@0.0.1568225:
-    resolution: {integrity: sha512-JOU1u1DIza0c+WYQ6Yhec335zFrutrkLfluME11P70GqumGb1bQbERBQBTbl0quA9XbGad3xKOel9SluUSuYnA==}
+  devtools-protocol@0.0.1718299:
+    resolution: {integrity: sha512-f7A0354+zlhRMPKry6Aw3z7/CejNRKt5//xJADvwT/HopEGBXbbQ0+A6z7DkTUQUVzoKKSmduawqm+5I8WNm7g==}
 
   diff@4.0.4:
     resolution: {integrity: sha512-X07nttJQkwkfKfvTPG/KSnE2OMdcUCao6+eXF3wmnIQRn2aPAHH3VxDbDOdegkd6JbPsXqShpvEOHfAT+nCNwQ==}
@@ -10751,7 +10751,7 @@ snapshots:
     dependencies:
       dequal: 2.0.3
 
-  devtools-protocol@0.0.1568225: {}
+  devtools-protocol@0.0.1718299: {}
 
   diff@4.0.4: {}
 
