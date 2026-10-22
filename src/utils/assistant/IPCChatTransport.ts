@@ -40,7 +40,8 @@ export class IPCChatTransport<
         : options.headers
 
     const request: StreamChatRequest = {
-      id: options.chatId,
+      id: crypto.randomUUID(),
+      chatId: options.chatId,
       trigger: options.trigger,
       messageId: options.messageId,
       messages: options.messages,

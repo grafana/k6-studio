@@ -44,6 +44,7 @@ function createRequest(
 ): StreamChatRequest {
   return {
     id: 'test-request-id',
+    chatId: 'test-chat-id',
     trigger: 'submit-message',
     messages: [],
     tools: [],
@@ -158,6 +159,9 @@ describe('handleStreamChat', () => {
     expect(streamText).toHaveBeenCalledOnce()
     const tools = vi.mocked(streamText).mock.calls[0]![0].tools
 
+    expect(vi.mocked(streamText).mock.calls[0]![0].providerOptions).toEqual({
+      grafanaAssistant: { chatId: 'test-chat-id' },
+    })
     expect(Object.keys(tools ?? {})).toEqual(['suggestHosts'])
     expect(tools?.suggestHosts).toMatchObject({
       description: 'Suggest hosts',
@@ -190,7 +194,7 @@ describe('handleStreamChat', () => {
     })
   })
 
-  it('keeps the newest stream on a chatId abortable after an earlier one ends', async () => {
+  it('keeps another stream in the same chat abortable after an earlier one ends', async () => {
     const { streamText } = await import('ai')
     const { streamMessages } = await import('./streamMessages')
 
@@ -205,19 +209,24 @@ describe('handleStreamChat', () => {
       }
     )
 
-    // First stream on chatId "c" hangs until we release it.
+    // The first stream hangs until we release it.
     let releaseFirst = () => {}
     const firstDone = new Promise<void>((resolve) => {
       releaseFirst = resolve
     })
-    // Second stream (same chatId) stays pending.
+    // The second stream in the same chat stays pending.
     vi.mocked(streamMessages)
       .mockReturnValueOnce(firstDone)
       .mockReturnValueOnce(new Promise<void>(() => {}))
 
-    const request = createRequest({ id: 'c' })
-    const firstCall = handleStreamChat(createMockEvent(), request)
-    const secondCall = handleStreamChat(createMockEvent(), request)
+    const firstCall = handleStreamChat(
+      createMockEvent(),
+      createRequest({ id: 'first' })
+    )
+    const secondCall = handleStreamChat(
+      createMockEvent(),
+      createRequest({ id: 'second' })
+    )
     void secondCall
 
     // The first stream finishes; its finally must not remove the second
@@ -225,7 +234,7 @@ describe('handleStreamChat', () => {
     releaseFirst()
     await firstCall
 
-    handleAbortStreamChat(createMockEvent(), { id: 'c' })
+    handleAbortStreamChat(createMockEvent(), { id: 'second' })
 
     expect(signals).toHaveLength(2)
     expect(signals[1]?.aborted).toBe(true)

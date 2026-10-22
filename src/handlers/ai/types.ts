@@ -23,7 +23,10 @@ export const RemoteToolDefinitionSchema = z.object({
 }) satisfies z.ZodType<RemoteToolDefinition>
 
 export interface StreamChatRequest {
+  /** Unique IPC stream ID, including for continuations and reruns. */
   id: string
+  /** Stable assistant conversation ID. */
+  chatId: string
   trigger: 'submit-message' | 'regenerate-message'
   messageId?: string
   messages: UIMessage[]

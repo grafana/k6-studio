@@ -36,7 +36,7 @@ interface UseAssistantAgentOptions<TTools extends ToolSet> {
   terminalTool?: keyof TTools & string
   /**
    * Executes a tool call client-side and returns its output (or a promise
-   * of it). Calling the terminal tool marks the run as completed.
+   * of it). The run completes after the turn containing the terminal tool ends.
    */
   onToolCall: (toolCall: StaticToolCall<TTools>) => unknown
 }
@@ -48,6 +48,7 @@ export function useAssistantAgent<TTools extends ToolSet>({
 }: UseAssistantAgentOptions<TTools>) {
   const [status, setStatus] = useState<AgentRunStatus>('not-started')
 
+  const terminalToolSucceededRef = useRef(false)
   const statusRef = useRef(status)
   const onToolCallRef = useRef(onToolCall)
 
@@ -93,6 +94,16 @@ export function useAssistantAgent<TTools extends ToolSet>({
       console.error(chatError)
     },
     onFinish: ({ message }) => {
+      if (statusRef.current !== 'running') {
+        return
+      }
+
+      // The terminal call can arrive before other tool calls in the same turn.
+      if (terminalToolSucceededRef.current) {
+        setStatusAndRef('completed')
+        return
+      }
+
       // A turn that ends with tool calls either completed via the terminal
       // tool or continues automatically (the guard re-sends tool results). A
       // prose-only finish means the assistant stopped without its terminal
@@ -101,7 +112,7 @@ export function useAssistantAgent<TTools extends ToolSet>({
         (part) => part.type === 'dynamic-tool' || part.type.startsWith('tool-')
       )
 
-      if (statusRef.current === 'running' && !hasToolCalls) {
+      if (!hasToolCalls) {
         setStatusAndRef('error')
       }
     },
@@ -137,7 +148,7 @@ export function useAssistantAgent<TTools extends ToolSet>({
       }
 
       if (toolCall.toolName === terminalTool && !didToolFail) {
-        setStatusAndRef('completed')
+        terminalToolSucceededRef.current = true
       }
 
       void addToolOutput({
@@ -172,6 +183,7 @@ export function useAssistantAgent<TTools extends ToolSet>({
   }
 
   function reset() {
+    terminalToolSucceededRef.current = false
     setMessages([])
     clearError()
     setStatusAndRef('not-started')

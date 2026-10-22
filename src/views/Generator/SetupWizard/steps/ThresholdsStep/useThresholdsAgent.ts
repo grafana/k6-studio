@@ -1,6 +1,7 @@
 import { StaticToolCall } from 'ai'
 import { useRef } from 'react'
 
+import { markLogOutcome } from '@/components/Assistant/markLogOutcome'
 import { selectFilteredRequests, useGeneratorStore } from '@/store/generator'
 import { Threshold } from '@/types/testOptions'
 import {
@@ -122,12 +123,6 @@ export function useThresholdsAgent() {
         // Tool input arrives unvalidated; re-parse so an off-enum outcome is
         // returned to the model as a retryable error instead of committing.
         const { outcome } = finishInputSchema.parse(toolCall.input)
-        const isSuccess =
-          outcome === 'success' && proposalsRef.current.length > 0
-
-        agent.actionsLog.markLastReasoningAsOutcome(
-          isSuccess ? 'outcome-success' : 'outcome-failure'
-        )
         finishOutcomeRef.current = outcome
         return outcome
       }
@@ -188,7 +183,7 @@ export function useThresholdsAgent() {
         // Snapshot taken before the commit above appended the suggestions.
         preexistingIds: thresholds.map((threshold) => threshold.id),
       },
-      log: agent.actionsLog.entries,
+      log: markLogOutcome(agent.actionsLog.entries, 'outcome-success'),
       summary: `Suggested ${proposals.length} threshold${proposals.length === 1 ? '' : 's'} tuned to the observed latency`,
     })
   }
