@@ -2,6 +2,7 @@ import { UIMessage } from 'ai'
 import { useCallback, useRef, useState } from 'react'
 
 import { deriveLogUpdates } from './deriveLogUpdates'
+import { markLogOutcome } from './markLogOutcome'
 import type { ActionLogEntry } from './types'
 
 export function useActionsLog() {
@@ -119,22 +120,7 @@ export function useActionsLog() {
   function markLastReasoningAsOutcome(
     type: 'outcome-success' | 'outcome-partial' | 'outcome-failure'
   ) {
-    setEntries((prev) => {
-      const lastReasoning = prev.findLast((entry) => entry.type === 'reasoning')
-      if (!lastReasoning) {
-        return [
-          ...prev,
-          {
-            id: crypto.randomUUID(),
-            timestamp: Date.now() - startTimeRef.current,
-            type,
-          },
-        ]
-      }
-      return prev.map((entry) =>
-        entry.id === lastReasoning.id ? { ...entry, type } : entry
-      )
-    })
+    setEntries((prev) => markLogOutcome(prev, type))
   }
 
   function startTimer() {

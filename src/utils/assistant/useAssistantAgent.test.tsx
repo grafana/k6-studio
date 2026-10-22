@@ -147,7 +147,7 @@ describe('useAssistantAgent', () => {
     expect(addToolOutput).not.toHaveBeenCalled()
   })
 
-  it('completes when the finish tool is called', async () => {
+  it('waits for the turn to finish before completing', async () => {
     const { result } = renderAgent()
 
     act(() => {
@@ -162,6 +162,14 @@ describe('useAssistantAgent', () => {
         },
       })
     )
+
+    expect(result.current.status).toBe('running')
+
+    act(() => {
+      capturedOptions.onFinish?.({
+        message: { parts: [{ type: 'tool-finish' }] },
+      })
+    })
 
     expect(result.current.status).toBe('completed')
   })
@@ -184,7 +192,65 @@ describe('useAssistantAgent', () => {
       })
     )
 
+    expect(result.current.status).toBe('running')
+
+    act(() => {
+      capturedOptions.onFinish?.({
+        message: { parts: [{ type: 'tool-doWork' }] },
+      })
+    })
+
     expect(result.current.status).toBe('completed')
+  })
+
+  it('processes proposals arriving after finish before completing', async () => {
+    const onToolCall = vi.fn()
+    const { result } = renderAgent(onToolCall)
+    act(() => {
+      void result.current.start('prompt')
+    })
+
+    await act(() =>
+      capturedOptions.onToolCall!({
+        toolCall: { toolName: 'finish', toolCallId: 'finish-1', input: {} },
+      })
+    )
+    expect(result.current.status).toBe('running')
+
+    await act(() =>
+      capturedOptions.onToolCall!({
+        toolCall: { toolName: 'doWork', toolCallId: 'work-1', input: {} },
+      })
+    )
+    expect(onToolCall).toHaveBeenCalledTimes(2)
+    expect(result.current.status).toBe('running')
+
+    act(() => {
+      capturedOptions.onFinish?.({
+        message: { parts: [{ type: 'tool-finish' }, { type: 'tool-doWork' }] },
+      })
+    })
+    expect(result.current.status).toBe('completed')
+  })
+
+  it('clears pending completion when resetting the run', async () => {
+    const { result } = renderAgent()
+    act(() => {
+      void result.current.start('prompt')
+    })
+    await act(() =>
+      capturedOptions.onToolCall!({
+        toolCall: { toolName: 'finish', toolCallId: 'finish-1', input: {} },
+      })
+    )
+    act(() => {
+      result.current.reset()
+      void result.current.start('retry')
+    })
+    act(() => {
+      capturedOptions.onFinish?.({ message: { parts: [{ type: 'text' }] } })
+    })
+    expect(result.current.status).toBe('error')
   })
 
   it('errors when the run finishes without any tool call', () => {

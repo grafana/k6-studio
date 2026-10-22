@@ -52,7 +52,7 @@ export async function handleStreamChat(
       abortSignal: abortController.signal,
       providerOptions: {
         grafanaAssistant: {
-          chatId: request.id,
+          chatId: request.chatId,
         },
       },
     })
@@ -77,12 +77,7 @@ export async function handleStreamChat(
       id: request.id,
     })
   } finally {
-    // A newer stream can reuse this chatId (the id is the stable chat id, and
-    // the wizard's multi-round tool loops resend on it). Only remove our own
-    // entry, or we would strand the newer stream's controller and kill Stop.
-    if (activeAbortControllers.get(request.id) === abortController) {
-      activeAbortControllers.delete(request.id)
-    }
+    activeAbortControllers.delete(request.id)
   }
 }
 
