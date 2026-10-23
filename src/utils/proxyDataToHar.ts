@@ -2,6 +2,7 @@ import { BrowserEvent, Recording } from '@/schemas/recording'
 import { GroupedProxyData, ProxyData, Request, Response } from '@/types'
 import { HarEntry, HarPage } from '@/types/recording'
 
+import { safeAtob } from './format'
 import { groupProxyData } from './groups'
 import { getContentTypeWithCharsetHeader } from './headers'
 
@@ -105,7 +106,7 @@ function createPostData(request: Request): HarEntry['request']['postData'] {
   }
   const contentTypeHeader =
     getContentTypeWithCharsetHeader(request.headers) ?? ''
-  const content = atob(request.content ?? '')
+  const content = safeAtob(request.content ?? '')
 
   // Extract params for urlencoded form
   if (contentTypeHeader.includes('application/x-www-form-urlencoded')) {
@@ -122,7 +123,7 @@ function createPostData(request: Request): HarEntry['request']['postData'] {
 
   return {
     mimeType: getContentTypeWithCharsetHeader(request.headers) ?? '',
-    text: atob(request.content ?? ''),
+    text: safeAtob(request.content ?? ''),
   }
 }
 
