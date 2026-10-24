@@ -338,8 +338,8 @@ importers:
         specifier: 1.6.17
         version: 1.6.17
       devtools-protocol:
-        specifier: 0.0.1568225
-        version: 0.0.1568225
+        specifier: 0.0.1723477
+        version: 0.0.1723477
       diff:
         specifier: 8.0.4
         version: 8.0.4
@@ -1302,6 +1302,7 @@ packages:
   '@opentelemetry/sdk-trace-base@2.11.0':
     resolution: {integrity: sha512-H19x/TX/LZdqiYOjM7fqtSxwlplC5pgelavqbQdHbhdq0q/AI/TGkM2dfGuuynTXmJPeF2HoZVoPDu+TGoW78A==}
     engines: {node: ^18.19.0 || >=20.6.0}
+    deprecated: Use @opentelemetry/sdk-trace package
     peerDependencies:
       '@opentelemetry/api': '>=1.3.0 <1.10.0'
 
@@ -4075,8 +4076,8 @@ packages:
   devlop@1.1.0:
     resolution: {integrity: sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA==}
 
-  devtools-protocol@0.0.1568225:
-    resolution: {integrity: sha512-JOU1u1DIza0c+WYQ6Yhec335zFrutrkLfluME11P70GqumGb1bQbERBQBTbl0quA9XbGad3xKOel9SluUSuYnA==}
+  devtools-protocol@0.0.1723477:
+    resolution: {integrity: sha512-xDUkBJ4eB0NJoVvOgJ/ztMaFHUQ7zVjzEatndQPbwNfIInEljsh6G6mNY89uA31/EZpgb5tta0Us73oVRznfjQ==}
 
   diff@4.0.4:
     resolution: {integrity: sha512-X07nttJQkwkfKfvTPG/KSnE2OMdcUCao6+eXF3wmnIQRn2aPAHH3VxDbDOdegkd6JbPsXqShpvEOHfAT+nCNwQ==}
@@ -10751,7 +10752,7 @@ snapshots:
     dependencies:
       dequal: 2.0.3
 
-  devtools-protocol@0.0.1568225: {}
+  devtools-protocol@0.0.1723477: {}
 
   diff@4.0.4: {}
 
