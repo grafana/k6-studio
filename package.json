@@ -144,7 +144,7 @@
     "lucide-react": "1.14.0",
     "monaco-editor": "0.55.1",
     "nanoid": "5.1.16",
-    "node-forge": "1.4.0",
+    "node-forge": "1.4.1",
     "openid-client": "6.8.4",
     "papaparse": "5.5.3",
     "pathe": "2.0.3",
