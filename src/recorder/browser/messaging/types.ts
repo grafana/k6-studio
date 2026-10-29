@@ -77,6 +77,30 @@ export const SaveSettingsSchema = z.object({
   tab: z.string(),
 })
 
+export const LoadToolStateSchema = z.object({
+  type: z.literal('load-tool-state'),
+  tab: z.string(),
+  requestId: z.string(),
+})
+
+export const ToolStateRequestSchema = z.object({
+  ...LoadToolStateSchema.shape,
+  type: z.literal('tool-state-request'),
+})
+
+export const SyncToolStateSchema = z.object({
+  type: z.literal('sync-tool-state'),
+  tab: z.string(),
+  session: z.string(),
+  tool: z.enum(['inspect', 'assert-text']).nullable(),
+  requestId: z.string().optional(),
+})
+
+export const ToolStateUpdateSchema = z.object({
+  ...SyncToolStateSchema.shape,
+  type: z.literal('tool-state-update'),
+})
+
 export const BrowserExtensionMessageSchema = z.discriminatedUnion('type', [
   LoadEventsSchema,
 
@@ -91,6 +115,11 @@ export const BrowserExtensionMessageSchema = z.discriminatedUnion('type', [
   LoadSettingsSchema,
   SyncSettingsSchema,
   SaveSettingsSchema,
+
+  LoadToolStateSchema,
+  SyncToolStateSchema,
+  ToolStateRequestSchema,
+  ToolStateUpdateSchema,
 
   ReloadExtensionSchema,
 ])

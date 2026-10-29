@@ -8,9 +8,8 @@
  * collected so far would resolve a locator against the wrong, shallower frame.
  * Best-effort callers (e.g. pixel offsets) wrap the call in try/catch.
  *
- * Reading `window.frameElement` across origins relies on the recorder and
- * validator launching the browser with web security and site isolation
- * disabled, and on session replay rebuilding iframes as same-origin nodes.
+ * This walk requires same-origin ancestors. The recorder resolves inaccessible
+ * frame paths through CDP, while session replay rebuilds same-origin frames.
  */
 export function forEachOwningFrame(
   start: Window | null,

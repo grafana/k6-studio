@@ -15,6 +15,8 @@ const attachInspectionDetection = vi.fn<() => () => void>()
 const disposeInspection = vi.fn()
 const attachTextSelectionDetection = vi.fn<() => () => void>()
 const disposeTextSelection = vi.fn()
+const disposeToolState = vi.fn()
+vi.mock('./view/toolState', () => ({ attachToolState: () => disposeToolState }))
 
 vi.mock('./routing', () => ({
   createClient: () => createClient() as never,
@@ -124,6 +126,7 @@ describe('recorder entrypoint', () => {
     expect(disposeView).toHaveBeenCalledOnce()
     expect(disposeTabFocus).toHaveBeenCalledOnce()
     expect(disposeRecording).toHaveBeenCalledOnce()
+    expect(disposeToolState).toHaveBeenCalledOnce()
   })
 
   // Child frames run inspection detection instead of the recorder UI. Its
@@ -142,5 +145,6 @@ describe('recorder entrypoint', () => {
     expect(disposeInspection).toHaveBeenCalledOnce()
     expect(disposeTextSelection).toHaveBeenCalledOnce()
     expect(disposeRecording).toHaveBeenCalledOnce()
+    expect(disposeToolState).toHaveBeenCalledOnce()
   })
 })

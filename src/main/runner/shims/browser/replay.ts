@@ -92,6 +92,25 @@ function createPageId() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
 }
 
+const recordingOptions = {
+  blockSelector: "link[rel='modulepreload']",
+  inlineImages: true,
+  inlineStylesheet: true,
+  collectFonts: true,
+  slimDOMOptions: true as const,
+  // The default of 'load' can take many seconds on heavy pages, losing every
+  // page the test navigates away from before then.
+  recordAfter: 'DOMContentLoaded' as const,
+  recordCrossOriginIframes: true,
+}
+
+if (trackingServerUrl !== null && !isTopLevelFrame()) {
+  pinNativeArrayFrom()
+
+  // rrweb relays child events to the parent. Only the top frame drains them.
+  record({ ...recordingOptions, emit: () => undefined })
+}
+
 // Events are buffered here and pulled from the k6 process, see the drain
 // function in replayDrain.ts for why they can't be pushed with fetch.
 if (trackingServerUrl !== null && isTopLevelFrame()) {
@@ -152,14 +171,7 @@ if (trackingServerUrl !== null && isTopLevelFrame()) {
   }
 
   record({
-    blockSelector: "link[rel='modulepreload']",
-    inlineImages: true,
-    inlineStylesheet: true,
-    collectFonts: true,
-    slimDOMOptions: true,
-    // The default of 'load' can take many seconds on heavy pages, losing every
-    // page the test navigates away from before then.
-    recordAfter: 'DOMContentLoaded',
+    ...recordingOptions,
     emit(event) {
       buffer.push(event)
     },

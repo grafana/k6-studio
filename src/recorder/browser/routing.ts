@@ -15,12 +15,16 @@ export function createClient(): BrowserExtensionClient {
     new BufferedTransport(new WebSocketTransport('ws://127.0.0.1:7554'))
   )
 
+  frontend.mirrorConnection(studio)
+
   frontend.forward('record-events', [studio])
   frontend.forward('navigate', [studio])
   frontend.forward('load-events', [studio])
   frontend.forward('stop-recording', [studio])
   frontend.forward('reload-extension', [studio])
   frontend.forward('focus-tab', [studio])
+  frontend.forward('load-tool-state', [studio])
+  frontend.forward('sync-tool-state', [studio])
 
   frontend.forward('load-settings', [studio])
   frontend.forward('save-settings', [studio])
@@ -29,6 +33,8 @@ export function createClient(): BrowserExtensionClient {
   studio.forward('events-loaded', [frontend])
   studio.forward('highlight-elements', [frontend])
   studio.forward('sync-settings', [frontend])
+  studio.forward('tool-state-request', [frontend])
+  studio.forward('tool-state-update', [frontend])
 
   return frontend
 }

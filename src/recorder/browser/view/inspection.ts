@@ -1,4 +1,7 @@
+import { forEachOwningFrame } from '@/utils/dom/frameChain'
 import { isElement, isHTMLIFrameElement } from '@/utils/dom/realm'
+
+import { isRemoteToolActive } from './toolState'
 
 /**
  * Bridge the top-frame element inspector exposes so that detection running in
@@ -28,6 +31,10 @@ declare global {
 // The bridges live on the top window. Reading `window.top` can throw on a
 // cross-origin frame, so guard the access and fall back to undefined.
 function getTopFrameBridge<T>(read: (top: Window) => T): T | undefined {
+  if (!canBridgeToTopFrame(window)) {
+    return undefined
+  }
+
   try {
     return window.top ? read(window.top) : undefined
   } catch {
@@ -43,6 +50,19 @@ function getTextSelectionBridge(): TextSelectionBridge | undefined {
   return getTopFrameBridge((top) => top.__K6_STUDIO_TEXT_SELECTION__)
 }
 
+export function canBridgeToTopFrame(start: Window): boolean {
+  try {
+    forEachOwningFrame(
+      start,
+      () => false,
+      () => {}
+    )
+    return start.top?.document !== undefined
+  } catch {
+    return false
+  }
+}
+
 /**
  * True when the top frame has an inspector or text-selection tool active. Child
  * frames keep their own UI store where `tool` is never set, so they detect an
@@ -50,7 +70,12 @@ function getTextSelectionBridge(): TextSelectionBridge | undefined {
  * and text selections as real interactions.
  */
 export function isTopFrameToolActive(): boolean {
-  return getBridge() !== undefined || getTextSelectionBridge() !== undefined
+  return (
+    getBridge() !== undefined ||
+    getTextSelectionBridge() !== undefined ||
+    isRemoteToolActive() === true ||
+    (!canBridgeToTopFrame(window) && isRemoteToolActive() === null)
+  )
 }
 
 /**
@@ -87,12 +112,23 @@ export function readSelection(
  * Runs in child frames so the top-frame inspector can pick elements inside
  * iframes. Detection has to happen in each frame because DOM events don't cross
  * iframe boundaries; matched elements are forwarded to the top frame with a
- * direct call (frames are same-process with web security disabled, so the live
- * element reference passes across the boundary).
+ * direct call when every ancestor is same-origin. Cross-origin frames only
+ * suppress page interactions while a tool is active.
  */
 export function attachInspectionDetection() {
   const abortController = new AbortController()
   const { signal } = abortController
+
+  window.addEventListener(
+    'click',
+    (event) => {
+      if (!canBridgeToTopFrame(window) && isTopFrameToolActive()) {
+        event.preventDefault()
+        event.stopImmediatePropagation()
+      }
+    },
+    { capture: true, signal }
+  )
 
   document.addEventListener(
     'mouseover',

@@ -1,10 +1,15 @@
 import logger from 'electron-log/main'
 
-import { NavigateToPageEvent, ReloadPageEvent } from '@/schemas/recording'
+import {
+  BrowserEvent,
+  NavigateToPageEvent,
+  ReloadPageEvent,
+} from '@/schemas/recording'
 import { ChromeDevToolsClient, Page as CdpPage } from '@/utils/cdp/client'
 import { EventEmitter } from '@/utils/events'
 import { uuid } from '@/utils/uuid'
 
+import { FramePaths } from './frames'
 import { RECORDER_WORLD_NAME, Script } from './script'
 
 // The recording script reads the tab id from this global when it starts up, so
@@ -44,6 +49,7 @@ function isReload(event: CdpPage.FrameStartedNavigatingEvent): boolean {
 }
 
 interface PageEventMap {
+  record: { events: BrowserEvent[] }
   navigate: { event: NavigateToPageEvent | ReloadPageEvent }
 }
 
@@ -51,6 +57,7 @@ export class Page extends EventEmitter<PageEventMap> {
   #id: string
   #client: ChromeDevToolsClient
   #script: Script
+  #framePaths: FramePaths
 
   #requestedNavigation: CdpPage.FrameRequestedNavigationEvent | null = null
   #startedNavigation: CdpPage.FrameStartedNavigatingEvent | null = null
@@ -70,6 +77,9 @@ export class Page extends EventEmitter<PageEventMap> {
     this.#id = id
     this.#client = client
     this.#script = script
+    this.#framePaths = new FramePaths(client, (events) =>
+      this.emit('record', { events })
+    )
 
     this.#client.page.on('frameRequestedNavigation', ({ data }) => {
       if (data.frameId !== this.#id) {
@@ -234,6 +244,7 @@ export class Page extends EventEmitter<PageEventMap> {
       // it still reproduces on Chrome 151 with our two consecutive
       // injections.
       this.#client.runtime.enable(),
+      this.#framePaths.attach(),
 
       this.#client.page.setBypassCSP(true),
 
@@ -346,6 +357,7 @@ export class Page extends EventEmitter<PageEventMap> {
 
   dispose() {
     this.#disposeDocumentOpened()
+    this.#framePaths.dispose()
 
     this.#script.remove(this.#client).catch(() => {
       // Let's just assume we got here because the session was already

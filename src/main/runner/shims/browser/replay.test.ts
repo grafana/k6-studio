@@ -11,6 +11,7 @@ vi.mock('rrweb', () => ({
 
 interface ReplayGlobals {
   __K6_SESSION_REPLAY_TRACKING_SERVER_URL__?: string | null
+  __K6_REPLAY_PAGE_ID__?: string
   __K6_DRAIN_EVENTS__?: Window['__K6_DRAIN_EVENTS__']
 }
 
@@ -96,6 +97,7 @@ beforeEach(() => {
   vi.clearAllMocks()
 
   delete replayWindow.__K6_DRAIN_EVENTS__
+  delete replayWindow.__K6_REPLAY_PAGE_ID__
   replayWindow.__K6_SESSION_REPLAY_TRACKING_SERVER_URL__ = 'http://localhost:0'
 })
 
@@ -241,6 +243,39 @@ describe('session replay in-page script', () => {
     await importReplayScript()
 
     expect(getRecordOptions().recordAfter).toBe('DOMContentLoaded')
+  })
+
+  it('enables rrweb cross-origin iframe recording in the top frame', async () => {
+    await importReplayScript()
+
+    expect(getRecordOptions().recordCrossOriginIframes).toBe(true)
+  })
+
+  it('records child frames for rrweb relay without installing a drain', async () => {
+    const parent = Object.getOwnPropertyDescriptor(window, 'parent')
+
+    Object.defineProperty(window, 'parent', {
+      configurable: true,
+      value: {},
+    })
+
+    try {
+      await importReplayScript()
+
+      const options = getRecordOptions()
+
+      expect(options.recordCrossOriginIframes).toBe(true)
+      expect(options.recordAfter).toBe('DOMContentLoaded')
+      expect(replayWindow.__K6_REPLAY_PAGE_ID__).toBeUndefined()
+      expect(replayWindow.__K6_DRAIN_EVENTS__).toBeUndefined()
+      expect(options.emit?.(createEvent(1))).toBeUndefined()
+    } finally {
+      if (parent !== undefined) {
+        Object.defineProperty(window, 'parent', parent)
+      } else {
+        Reflect.deleteProperty(window, 'parent')
+      }
+    }
   })
 
   it('records even when crypto.randomUUID is unavailable', async () => {
