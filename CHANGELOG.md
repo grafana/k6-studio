@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.2](https://github.com/grafana/k6-studio/compare/v2.1.1...v2.1.2) (2026-10-30)
+
+
+### Bug Fixes
+
+* Preserve Origin headers in recording and validation ([#1399](https://github.com/grafana/k6-studio/issues/1399)) ([eea0af0](https://github.com/grafana/k6-studio/commit/eea0af0521afa391893fc35900a49523fb123341))
+
 ## [2.1.1](https://github.com/grafana/k6-studio/compare/v2.1.0...v2.1.1) (2026-10-22)
 
 
