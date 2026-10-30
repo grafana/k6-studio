@@ -6,15 +6,19 @@ import { parseReplayEvent } from '../../rrweb'
 import { BrowserReplayEvent } from '../../schema'
 
 vi.mock('rrweb', () => ({
-  record: vi.fn(),
+  record: Object.assign(vi.fn(), {
+    mirror: { getId: vi.fn(() => -1) },
+  }),
 }))
 
 interface ReplayGlobals {
   __K6_SESSION_REPLAY_TRACKING_SERVER_URL__?: string | null
+  __K6_REPLAY_PAGE_ID__?: string
   __K6_DRAIN_EVENTS__?: Window['__K6_DRAIN_EVENTS__']
 }
 
 const replayWindow = window as ReplayGlobals
+let restoreMessageListeners = () => {}
 
 async function importReplayScript() {
   vi.resetModules()
@@ -94,10 +98,23 @@ function createEvent(timestamp: number, data: unknown = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  const addEventListener = vi.spyOn(window, 'addEventListener')
+  restoreMessageListeners = () => {
+    addEventListener.mock.calls
+      .filter(([type]) => type === 'message')
+      .forEach(([, listener]) => {
+        window.removeEventListener('message', listener as EventListener)
+      })
+    addEventListener.mockRestore()
+    delete window.__K6_REPLAY_OWNER_READY__
+  }
 
   delete replayWindow.__K6_DRAIN_EVENTS__
+  delete replayWindow.__K6_REPLAY_PAGE_ID__
   replayWindow.__K6_SESSION_REPLAY_TRACKING_SERVER_URL__ = 'http://localhost:0'
 })
+
+afterEach(() => restoreMessageListeners())
 
 describe('session replay in-page script', () => {
   it('exposes a drain function returning the page-start event as JSON', async () => {
@@ -241,6 +258,120 @@ describe('session replay in-page script', () => {
     await importReplayScript()
 
     expect(getRecordOptions().recordAfter).toBe('DOMContentLoaded')
+  })
+
+  it('enables rrweb cross-origin iframe recording in the top frame', async () => {
+    await importReplayScript()
+
+    expect(getRecordOptions().recordCrossOriginIframes).toBe(true)
+  })
+
+  it('starts child recording only after its parent grants the owner frame', async () => {
+    const parentDescriptor = Object.getOwnPropertyDescriptor(window, 'parent')
+    let requestedToken = ''
+    const parent = {
+      postMessage: vi.fn(
+        (message: { token: string }, _targetOrigin: string) => {
+          requestedToken = message.token
+        }
+      ),
+    }
+
+    Object.defineProperty(window, 'parent', {
+      configurable: true,
+      value: parent,
+    })
+
+    try {
+      await importReplayScript()
+      expect(record).not.toHaveBeenCalled()
+
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          source: parent as unknown as Window,
+          data: { type: 'k6-replay-start', token: requestedToken },
+        })
+      )
+
+      const options = getRecordOptions()
+
+      expect(options.recordCrossOriginIframes).toBe(true)
+      expect(options.recordAfter).toBe('DOMContentLoaded')
+      expect(replayWindow.__K6_REPLAY_PAGE_ID__).toBeUndefined()
+      expect(replayWindow.__K6_DRAIN_EVENTS__).toBeUndefined()
+      expect(options.emit?.(createEvent(1))).toBeUndefined()
+    } finally {
+      if (parentDescriptor !== undefined) {
+        Object.defineProperty(window, 'parent', parentDescriptor)
+      } else {
+        Reflect.deleteProperty(window, 'parent')
+      }
+    }
+  })
+
+  it('retries its request when the parent becomes ready later', async () => {
+    const parentDescriptor = Object.getOwnPropertyDescriptor(window, 'parent')
+    const parent = { postMessage: vi.fn() }
+    Object.defineProperty(window, 'parent', {
+      configurable: true,
+      value: parent,
+    })
+
+    try {
+      await importReplayScript()
+      expect(parent.postMessage).toHaveBeenCalledTimes(1)
+
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          source: parent as unknown as Window,
+          data: { type: 'k6-replay-recheck' },
+        })
+      )
+
+      expect(parent.postMessage).toHaveBeenCalledTimes(2)
+      expect(record).not.toHaveBeenCalled()
+    } finally {
+      if (parentDescriptor !== undefined) {
+        Object.defineProperty(window, 'parent', parentDescriptor)
+      } else {
+        Reflect.deleteProperty(window, 'parent')
+      }
+    }
+  })
+
+  it('grants a child only after rrweb has serialized its owner', async () => {
+    const iframe = document.createElement('iframe')
+    document.body.append(iframe)
+    const child = iframe.contentWindow
+    if (child === null) throw new Error('missing child window')
+    const postMessage = vi.spyOn(child, 'postMessage')
+    const getId = vi.spyOn(record.mirror, 'getId')
+
+    try {
+      await importReplayScript()
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          source: child,
+          data: { type: 'k6-replay-request', token: 'child-document' },
+        })
+      )
+      expect(postMessage).not.toHaveBeenCalledWith(
+        { type: 'k6-replay-start', token: 'child-document' },
+        '*'
+      )
+
+      getId.mockReturnValue(1)
+      emitEvent(createEvent(1))
+
+      expect(postMessage).toHaveBeenCalledWith(
+        { type: 'k6-replay-start', token: 'child-document' },
+        '*'
+      )
+    } finally {
+      postMessage.mockRestore()
+      getId.mockRestore()
+      iframe.remove()
+    }
   })
 
   it('records even when crypto.randomUUID is unavailable', async () => {

@@ -33,11 +33,29 @@ async function loadModules() {
 // A page whose recorder state is wiped when it navigates to a new document,
 // like a real popup. The guard evaluate reads the state, the injection
 // evaluate sets it.
+function fakeFrame() {
+  const frame = {
+    hasRecorder: false,
+    parentFrame: vi.fn(() => ({})),
+    evaluate: vi.fn((expression: string) => {
+      if (String(expression).includes('__K6_REPLAY_INSTALLED__')) {
+        return Promise.resolve(frame.hasRecorder)
+      }
+
+      frame.hasRecorder = true
+      return Promise.resolve(undefined)
+    }),
+  }
+
+  return frame
+}
+
 function fakePage() {
   let closed = false
 
   const page = {
     hasRecorder: false,
+    children: [] as ReturnType<typeof fakeFrame>[],
 
     navigateToNewDocument() {
       page.hasRecorder = false
@@ -53,7 +71,7 @@ function fakePage() {
       return Promise.resolve()
     }),
     evaluate: vi.fn((expression: string) => {
-      if (String(expression).includes('!== undefined')) {
+      if (String(expression).includes('__K6_REPLAY_INSTALLED__')) {
         return Promise.resolve(page.hasRecorder)
       }
 
@@ -61,6 +79,7 @@ function fakePage() {
 
       return Promise.resolve(undefined)
     }),
+    frames: vi.fn(() => page.children),
     context: vi.fn(() => ({}) as BrowserContext),
   }
 
@@ -88,6 +107,47 @@ describe('session replay in new tabs', () => {
 
     // One guard + one injection, then one guard that hits
     expect(popup.evaluate).toHaveBeenCalledTimes(3)
+  })
+
+  it('injects each popup child after the top frame', async () => {
+    const { injectIntoNewTab } = await loadModules()
+    const popup = fakePage()
+    const child = fakeFrame()
+    popup.children.push(child)
+
+    await injectIntoNewTab(popup)
+
+    expect(popup.hasRecorder).toBe(true)
+    expect(child.hasRecorder).toBe(true)
+  })
+
+  it('rechecks late and navigated children when the top frame is already injected', async () => {
+    const { injectIntoNewTab, proxyPage } = await loadModules()
+    const popup = fakePage()
+    const main = proxyPage(fakePage())
+    await injectIntoNewTab(popup)
+
+    const child = fakeFrame()
+    popup.children.push(child)
+    await main.goto('https://example.com')
+    await vi.waitFor(() => expect(child.hasRecorder).toBe(true))
+
+    child.hasRecorder = false
+    await main.goto('https://example.com/again')
+    await vi.waitFor(() => expect(child.hasRecorder).toBe(true))
+  })
+
+  it('keeps injecting siblings when a detached child rejects evaluation', async () => {
+    const { injectIntoNewTab } = await loadModules()
+    const popup = fakePage()
+    const detached = fakeFrame()
+    detached.evaluate.mockRejectedValue(new Error('detached'))
+    const sibling = fakeFrame()
+    popup.children.push(detached, sibling)
+
+    await injectIntoNewTab(popup)
+
+    expect(sibling.hasRecorder).toBe(true)
   })
 
   // k6 does not apply context init scripts to page-opened tabs, so a popup

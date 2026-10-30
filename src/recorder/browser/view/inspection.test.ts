@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   attachInspectionDetection,
   attachTextSelectionDetection,
+  canBridgeToTopFrame,
 } from './inspection'
 
 const hover = vi.fn()
@@ -131,5 +132,19 @@ describe('attachTextSelectionDetection', () => {
     dispatch('mouseup', paragraph)
 
     expect(select).not.toHaveBeenCalled()
+  })
+})
+
+describe('canBridgeToTopFrame', () => {
+  it('rejects a same-origin leaf behind an inaccessible middle frame', () => {
+    const top = { document } as Window
+    const middle = { parent: top, frameElement: null, top } as unknown as Window
+    const leaf = {
+      parent: middle,
+      frameElement: document.createElement('iframe'),
+      top,
+    } as unknown as Window
+
+    expect(canBridgeToTopFrame(leaf)).toBe(false)
   })
 })

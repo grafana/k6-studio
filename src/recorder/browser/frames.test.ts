@@ -2,7 +2,12 @@ import { afterEach, describe, expect, it } from 'vitest'
 
 import { BrowserEvent, BrowserEventTarget } from '@/schemas/recording'
 
-import { buildFramePath, getCssFramePathForElement, withFrames } from './frames'
+import {
+  buildFramePath,
+  getCssFramePathForElement,
+  getReachableFramePath,
+  withFrames,
+} from './frames'
 
 interface FakeWindow {
   parent: FakeWindow
@@ -51,6 +56,21 @@ describe('buildFramePath', () => {
     // A partial path would resolve the locator in the wrong (shallower) frame,
     // so the walk fails and the caller falls back to no frame path instead.
     expect(() => buildFramePath(leaf as unknown as Window, details)).toThrow()
+  })
+})
+
+describe('getReachableFramePath', () => {
+  it('keeps the synchronous suffix when a cross-origin owner is inaccessible', () => {
+    const top = fakeFrame(null)
+    const middle = fakeFrame(null)
+    const leaf = fakeFrame({ id: 'iframe#before' } as unknown as Element)
+
+    middle.parent = top
+    leaf.parent = middle
+
+    expect(getReachableFramePath(leaf as unknown as Window, details)).toEqual([
+      { selectors: { css: 'iframe#before' } },
+    ])
   })
 })
 

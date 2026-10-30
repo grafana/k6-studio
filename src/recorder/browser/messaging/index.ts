@@ -63,6 +63,7 @@ export interface BrowserExtensionClientOptions {
 export class BrowserExtensionClient extends EventEmitter<BrowserExtensionClientEvents> {
   #transport: Transport
   #keepAlive: Parameters<typeof clearInterval>[0] = undefined
+  #connectionEvents = new EventEmitter<{ connect: void; disconnect: void }>()
 
   constructor(
     name: string,
@@ -72,6 +73,13 @@ export class BrowserExtensionClient extends EventEmitter<BrowserExtensionClientE
     super()
 
     this.#transport = transport
+
+    this.#transport.on('connect', () =>
+      this.#connectionEvents.emit('connect', undefined)
+    )
+    this.#transport.on('disconnect', () =>
+      this.#connectionEvents.emit('disconnect', undefined)
+    )
 
     this.#transport.on('message', ({ sender, data }) => {
       const parsed = BrowserExtensionClientMessageSchema.safeParse(data)
@@ -145,6 +153,21 @@ export class BrowserExtensionClient extends EventEmitter<BrowserExtensionClientE
         client.send(data, sender)
       }
     })
+  }
+
+  onConnect(listener: () => void) {
+    return this.#connectionEvents.on('connect', listener)
+  }
+
+  onDisconnect(listener: () => void) {
+    return this.#connectionEvents.on('disconnect', listener)
+  }
+
+  mirrorConnection(client: BrowserExtensionClient) {
+    client.onConnect(() => this.#connectionEvents.emit('connect', undefined))
+    client.onDisconnect(() =>
+      this.#connectionEvents.emit('disconnect', undefined)
+    )
   }
 
   dispose() {

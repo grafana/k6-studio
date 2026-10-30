@@ -9,7 +9,7 @@ import { getCssSelector, getElementDetails } from '@/utils/dom/selectors'
  * can be replayed as a chain of frame locators. Throws if a frame in the chain
  * has no reachable owning element (e.g. a detached frame): returning the partial
  * path collected so far would resolve the locator in the wrong, shallower frame,
- * so callers fall back to no frame path instead.
+ * so callers must resolve it through CDP or reject the event.
  */
 export function buildFramePath(
   start: Window,
@@ -26,6 +26,26 @@ export function buildFramePath(
   return path
 }
 
+/** Captures owners reachable before a page event changes their selectors. */
+export function getReachableFramePath(
+  start: Window = window,
+  getDetails: (element: Element) => BrowserEventTarget = getElementDetails
+): BrowserEventTarget[] {
+  const path: BrowserEventTarget[] = []
+
+  try {
+    forEachOwningFrame(
+      start,
+      () => false,
+      (iframe) => path.unshift(getDetails(iframe))
+    )
+  } catch {
+    // CDP resolves ancestors above the inaccessible owner.
+  }
+
+  return path
+}
+
 function safeFramePath(start: Window): BrowserEventTarget[] {
   try {
     return buildFramePath(start, getElementDetails)
@@ -34,14 +54,9 @@ function safeFramePath(start: Window): BrowserEventTarget[] {
   }
 }
 
-/**
- * The chain of iframe locators from the top frame down to the current frame,
- * outermost first. Empty when running in the top frame. Relies on the recorder
- * launching the browser with web security and site isolation disabled so that
- * `window.frameElement` is readable across origins.
- */
+/** Throws when an ancestor is inaccessible so the event can be handed to CDP. */
 export function getFramePath(): BrowserEventTarget[] {
-  return safeFramePath(window)
+  return buildFramePath(window, getElementDetails)
 }
 
 /**

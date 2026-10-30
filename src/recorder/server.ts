@@ -120,6 +120,14 @@ export class BrowserServer extends EventEmitter<BrowserExtensionServerEvents> {
         tab: data.tab,
       })
     })
+
+    this.#client.on('load-tool-state', ({ data }) => {
+      this.#client.send({ ...data, type: 'tool-state-request' })
+    })
+
+    this.#client.on('sync-tool-state', ({ data }) => {
+      this.#client.send({ ...data, type: 'tool-state-update' })
+    })
   }
 
   send(message: BrowserExtensionMessage) {

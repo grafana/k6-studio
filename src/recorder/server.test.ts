@@ -1,10 +1,11 @@
 import * as Sentry from '@sentry/electron/main'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
+import { BrowserExtensionClient } from '@/recorder/browser/messaging'
 import { BrowserExtensionMessageSchema } from '@/recorder/browser/messaging/types'
 import { createInputChangeEvent } from '@/test/factories/browserEvents'
 
-import { createInvalidMessageReporter } from './server'
+import { BrowserServer, createInvalidMessageReporter } from './server'
 
 vi.mock('@sentry/electron/main', () => ({
   captureMessage: vi.fn(),
@@ -77,4 +78,38 @@ describe('createInvalidMessageReporter', () => {
 
     expect(captureMessage).toHaveBeenCalledOnce()
   })
+})
+
+it('rebroadcasts tool-state requests and updates to connected frames', () => {
+  const client = new BrowserExtensionClient('server')
+  const onRequest = vi.fn()
+  const onUpdate = vi.fn()
+  client.on('tool-state-request', onRequest)
+  client.on('tool-state-update', onUpdate)
+  const server = new BrowserServer(client)
+  const request = {
+    type: 'load-tool-state' as const,
+    tab: 'tab-1',
+    requestId: 'request-1',
+  }
+  const update = {
+    type: 'sync-tool-state' as const,
+    tab: 'tab-1',
+    session: 'document-1',
+    tool: 'inspect' as const,
+  }
+
+  client.send(request)
+  client.send(update)
+
+  expect(onRequest).toHaveBeenCalledWith({
+    sender: undefined,
+    data: { ...request, type: 'tool-state-request' },
+  })
+  expect(onUpdate).toHaveBeenCalledWith({
+    sender: undefined,
+    data: { ...update, type: 'tool-state-update' },
+  })
+
+  server.stop()
 })

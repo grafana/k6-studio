@@ -14,50 +14,13 @@
  * limitations under the License.
  */
 
-// ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
-//
-// IF YOU COPY A NEWER VERSION OF THIS FILE FROM THE K6 REPO, MAKE SURE TO ALSO COPY THE CHANGES MADE HERE.
-// WE LOAD THE PAGE SO EARLY THAT THE DOCUMENT ELEMENT DOES NOT EXIST YET. WE HAVE TO DO THIS LOOP TO GET
-// TO CATCH THE MOMEMENT WHEN THE DOCUMENT ELEMENT IS CREATED.
-//
-// ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
-//
-// k6BrowserNative allows accessing native browser objects
-// even if the page under test has overridden them.
+// Preserve this Studio adaptation when syncing from k6: use this realm's native
+// constructors. Load only in the recorder's isolated world or Studio's renderer,
+// because sandboxed frames block the upstream temporary-iframe lookup.
 const k6BrowserNative = {
   Set,
   Map,
 }
-
-function waitForElement() {
-  if (!document.documentElement) {
-    setTimeout(waitForElement, 1)
-
-    return
-  }
-
-  const iframe = document.createElement('iframe')
-  // hide it offscreen with zero size
-  iframe.style.position = 'absolute'
-  iframe.style.width = '0'
-  iframe.style.height = '0'
-  iframe.style.border = '0'
-  iframe.style.top = '-9999px'
-  iframe.style.left = '-9999px'
-  iframe.style.display = 'none'
-
-  // grab the native browser object
-  document.documentElement.appendChild(iframe)
-  const win = iframe.contentWindow
-  document.documentElement.removeChild(iframe)
-
-  k6BrowserNative.Set = win.Set
-  k6BrowserNative.Map = win.Map
-}
-
-waitForElement()
-
-// ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
 
 // packages/playwright-core/src/utils/isomorphic/stringUtils.ts
 var normalizedWhitespaceCache

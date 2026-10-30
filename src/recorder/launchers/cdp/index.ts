@@ -29,11 +29,9 @@ const DEBUGGER_PORT = 9222
 
 const BROWSER_CDP_ARGS = [
   '--disable-back-forward-cache',
-  // Disable web security to allow our script to be executed in sandboxed iframes.
-  '--disable-web-security',
   '--allow-running-insecure-content',
   // Keep cross-origin iframes in the parent's process so the injected recording
-  // script runs inside them and can walk up to the top frame. Disabling the
+  // script runs inside them through the same CDP session. Disabling the
   // IsolateOrigins/site-per-process features (see FEATURES_TO_DISABLE) is not
   // enough on its own in current Chrome; the site-isolation trials must also be
   // turned off.
@@ -101,6 +99,8 @@ class CDPRecordingSession
     this.#server.on('focus', ({ tab }) => {
       this.#currentTab = tab
     })
+
+    this.#session.on('record', ({ events }) => this.#record(events))
 
     this.#session.on('navigate', ({ event }) => {
       this.#record([event])

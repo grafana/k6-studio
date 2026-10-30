@@ -4,9 +4,12 @@ import { record } from 'rrweb'
 import type { PageStartEvent } from '../../rrweb'
 import type { BrowserReplayEvent } from '../../schema'
 
+import { createReplayFrameReadiness } from './replayFrames'
+
 declare global {
   interface Window {
     __K6_SESSION_REPLAY_TRACKING_SERVER_URL__: string | null
+    __K6_REPLAY_INSTALLED__?: true
     __K6_REPLAY_PAGE_ID__?: string
     __K6_DRAIN_EVENTS__?: (
       received: Record<string, number>
@@ -15,6 +18,7 @@ declare global {
 }
 
 const trackingServerUrl = window.__K6_SESSION_REPLAY_TRACKING_SERVER_URL__
+window.__K6_REPLAY_INSTALLED__ = true
 
 // JSON.stringify consults toJSON on object values only, and rrweb event
 // graphs are plain objects, arrays, and primitives, so these two are the only
@@ -92,11 +96,41 @@ function createPageId() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
 }
 
+const recordingOptions = {
+  blockSelector: "link[rel='modulepreload']",
+  inlineImages: true,
+  inlineStylesheet: true,
+  collectFonts: true,
+  slimDOMOptions: true as const,
+  // The default of 'load' can take many seconds on heavy pages, losing every
+  // page the test navigates away from before then.
+  recordAfter: 'DOMContentLoaded' as const,
+  recordCrossOriginIframes: true,
+}
+
+if (trackingServerUrl !== null) {
+  pinNativeArrayFrom()
+}
+
+const topLevelFrame = isTopLevelFrame()
+const frameReadiness =
+  trackingServerUrl === null
+    ? null
+    : createReplayFrameReadiness({
+        token: createPageId(),
+        topLevelFrame,
+        startChildRecording(onMutation) {
+          record({
+            ...recordingOptions,
+            hooks: { mutation: onMutation },
+            emit: () => undefined,
+          })
+        },
+      })
+
 // Events are buffered here and pulled from the k6 process, see the drain
 // function in replayDrain.ts for why they can't be pushed with fetch.
-if (trackingServerUrl !== null && isTopLevelFrame()) {
-  pinNativeArrayFrom()
-
+if (trackingServerUrl !== null && topLevelFrame) {
   const pageId = createPageId()
 
   // The k6 side serializes pulls per page and needs a stable id for that: the
@@ -152,16 +186,10 @@ if (trackingServerUrl !== null && isTopLevelFrame()) {
   }
 
   record({
-    blockSelector: "link[rel='modulepreload']",
-    inlineImages: true,
-    inlineStylesheet: true,
-    collectFonts: true,
-    slimDOMOptions: true,
-    // The default of 'load' can take many seconds on heavy pages, losing every
-    // page the test navigates away from before then.
-    recordAfter: 'DOMContentLoaded',
+    ...recordingOptions,
     emit(event) {
       buffer.push(event)
+      frameReadiness?.onTopEvent(event)
     },
   })
 }

@@ -1,4 +1,5 @@
 import {
+  BrowserEvent,
   NavigateToPageEvent,
   ReloadPageEvent,
   TabOpenedEvent,
@@ -12,6 +13,7 @@ import { Page } from './page'
 import { Script } from './script'
 
 interface BrowserSessionEventMap {
+  record: { events: BrowserEvent[] }
   navigate: { event: NavigateToPageEvent | ReloadPageEvent }
   'tab-opened': { event: TabOpenedEvent }
 }
@@ -69,6 +71,8 @@ export class BrowserSession extends EventEmitter<BrowserSessionEventMap> {
       this.#client.withSession(data.sessionId),
       this.#script
     )
+
+    page.on('record', (event) => this.emit('record', event))
 
     page.on('navigate', (ev) => {
       this.emit('navigate', ev)

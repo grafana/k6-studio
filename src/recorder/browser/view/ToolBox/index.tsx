@@ -137,12 +137,12 @@ export function ToolBox({
           value={tool ?? ''}
           onValueChange={handleToolChange}
         >
-          <ToolBoxTooltip content="Pick an element to add assertions or wait conditions to it">
+          <ToolBoxTooltip content="Pick an element to add assertions or wait conditions. Unavailable inside cross-origin frames.">
             <Toolbar.ToggleItem value="inspect">
               <SquareDashedMousePointerIcon />
             </Toolbar.ToggleItem>
           </ToolBoxTooltip>
-          <ToolBoxTooltip content="Add assertions on text content by selecting it">
+          <ToolBoxTooltip content="Select text to add assertions. Unavailable inside cross-origin frames.">
             <Toolbar.ToggleItem value="assert-text">
               <TextCursorIcon />
             </Toolbar.ToggleItem>
