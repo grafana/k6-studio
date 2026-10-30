@@ -386,8 +386,8 @@ importers:
         specifier: 5.1.16
         version: 5.1.16
       node-forge:
-        specifier: 1.4.0
-        version: 1.4.0
+        specifier: 1.4.1
+        version: 1.4.1
       openid-client:
         specifier: 6.8.4
         version: 6.8.4
@@ -1302,6 +1302,7 @@ packages:
   '@opentelemetry/sdk-trace-base@2.11.0':
     resolution: {integrity: sha512-H19x/TX/LZdqiYOjM7fqtSxwlplC5pgelavqbQdHbhdq0q/AI/TGkM2dfGuuynTXmJPeF2HoZVoPDu+TGoW78A==}
     engines: {node: ^18.19.0 || >=20.6.0}
+    deprecated: Use @opentelemetry/sdk-trace package
     peerDependencies:
       '@opentelemetry/api': '>=1.3.0 <1.10.0'
 
@@ -5451,8 +5452,8 @@ packages:
       encoding:
         optional: true
 
-  node-forge@1.4.0:
-    resolution: {integrity: sha512-LarFH0+6VfriEhqMMcLX2F7SwSXeWwnEAJEsYm5QKWchiVYVvJyV9v7UDvUv+w5HO23ZpQTXDv/GxdDdMyOuoQ==}
+  node-forge@1.4.1:
+    resolution: {integrity: sha512-w5/MfWaeMrpR/5ba6fZyAUTLSuE6aYz7H/3cYrqwZEmf5eQS3IaaLgJt4MBv7HglGFWmV22K8h4U18RJQmw/ow==}
     engines: {node: '>= 6.13.0'}
 
   node-gyp@12.3.0:
@@ -12307,7 +12308,7 @@ snapshots:
     dependencies:
       whatwg-url: 5.0.0
 
-  node-forge@1.4.0: {}
+  node-forge@1.4.1: {}
 
   node-gyp@12.3.0:
     dependencies:
