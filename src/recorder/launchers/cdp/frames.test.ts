@@ -90,6 +90,93 @@ describe('CDP frame paths', () => {
     paths.dispose()
   })
 
+  it('keeps the owner selector captured before a click changes it', async () => {
+    const { paths, context, emit, record, commands } = setup()
+    context(1, 'top')
+    context(2, 'outer')
+    context(3, 'inner')
+    const event = {
+      type: 'click' as const,
+      eventId: 'click-1',
+      timestamp: 1,
+      tab: 'top',
+      target: { selectors: { css: '#action' } },
+      button: 'left' as const,
+      modifiers: { ctrl: false, shift: false, alt: false, meta: false },
+      frames: [{ selectors: { css: '#before' } }],
+    }
+
+    emit('Runtime.bindingCalled', {
+      name: '__K6_STUDIO_RECORD_FRAME_EVENTS__',
+      executionContextId: 3,
+      payload: JSON.stringify([event]),
+    })
+
+    await vi.waitFor(() =>
+      expect(record).toHaveBeenCalledWith([
+        {
+          ...event,
+          frames: [
+            { selectors: { css: '#owner-10' } },
+            { selectors: { css: '#before' } },
+          ],
+        },
+      ])
+    )
+    expect(
+      commands
+        .filter((command) => command.method === 'DOM.getFrameOwner')
+        .map((command) => (command.params as { frameId: string }).frameId)
+    ).toEqual(['outer'])
+    paths.dispose()
+  })
+
+  it('combines a cached prefix with an owner renamed before the event', async () => {
+    const { paths, context, emit, call, record, commands } = setup()
+    context(1, 'top')
+    context(2, 'outer')
+    context(3, 'inner')
+    emit('Runtime.bindingCalled', {
+      name: '__K6_STUDIO_RECORD_FRAME_EVENTS__',
+      executionContextId: 3,
+      payload: '[]',
+    })
+    await vi.waitFor(() =>
+      expect(
+        commands.filter((command) => command.method === 'Runtime.releaseObject')
+      ).toHaveLength(2)
+    )
+    call.mockRejectedValue(new Error('Frame detached'))
+    const event = {
+      type: 'click' as const,
+      eventId: 'click-2',
+      timestamp: 2,
+      tab: 'top',
+      target: { selectors: { css: '#action' } },
+      button: 'left' as const,
+      modifiers: { ctrl: false, shift: false, alt: false, meta: false },
+      frames: [{ selectors: { css: '#current' } }],
+    }
+    emit('Runtime.bindingCalled', {
+      name: '__K6_STUDIO_RECORD_FRAME_EVENTS__',
+      executionContextId: 3,
+      payload: JSON.stringify([event]),
+    })
+
+    await vi.waitFor(() =>
+      expect(record).toHaveBeenCalledWith([
+        {
+          ...event,
+          frames: [
+            { selectors: { css: '#owner-10' } },
+            { selectors: { css: '#current' } },
+          ],
+        },
+      ])
+    )
+    paths.dispose()
+  })
+
   it('rejects missing ancestors instead of returning a partial path', async () => {
     const { paths, context } = setup()
     context(1, 'top')

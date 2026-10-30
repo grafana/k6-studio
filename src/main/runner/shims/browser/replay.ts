@@ -4,9 +4,12 @@ import { record } from 'rrweb'
 import type { PageStartEvent } from '../../rrweb'
 import type { BrowserReplayEvent } from '../../schema'
 
+import { createReplayFrameReadiness } from './replayFrames'
+
 declare global {
   interface Window {
     __K6_SESSION_REPLAY_TRACKING_SERVER_URL__: string | null
+    __K6_REPLAY_INSTALLED__?: true
     __K6_REPLAY_PAGE_ID__?: string
     __K6_DRAIN_EVENTS__?: (
       received: Record<string, number>
@@ -15,6 +18,7 @@ declare global {
 }
 
 const trackingServerUrl = window.__K6_SESSION_REPLAY_TRACKING_SERVER_URL__
+window.__K6_REPLAY_INSTALLED__ = true
 
 // JSON.stringify consults toJSON on object values only, and rrweb event
 // graphs are plain objects, arrays, and primitives, so these two are the only
@@ -104,18 +108,29 @@ const recordingOptions = {
   recordCrossOriginIframes: true,
 }
 
-if (trackingServerUrl !== null && !isTopLevelFrame()) {
+if (trackingServerUrl !== null) {
   pinNativeArrayFrom()
-
-  // rrweb relays child events to the parent. Only the top frame drains them.
-  record({ ...recordingOptions, emit: () => undefined })
 }
+
+const topLevelFrame = isTopLevelFrame()
+const frameReadiness =
+  trackingServerUrl === null
+    ? null
+    : createReplayFrameReadiness({
+        token: createPageId(),
+        topLevelFrame,
+        startChildRecording(onMutation) {
+          record({
+            ...recordingOptions,
+            hooks: { mutation: onMutation },
+            emit: () => undefined,
+          })
+        },
+      })
 
 // Events are buffered here and pulled from the k6 process, see the drain
 // function in replayDrain.ts for why they can't be pushed with fetch.
-if (trackingServerUrl !== null && isTopLevelFrame()) {
-  pinNativeArrayFrom()
-
+if (trackingServerUrl !== null && topLevelFrame) {
   const pageId = createPageId()
 
   // The k6 side serializes pulls per page and needs a stable id for that: the
@@ -174,6 +189,7 @@ if (trackingServerUrl !== null && isTopLevelFrame()) {
     ...recordingOptions,
     emit(event) {
       buffer.push(event)
+      frameReadiness?.onTopEvent(event)
     },
   })
 }

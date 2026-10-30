@@ -57,15 +57,23 @@ export class FramePaths {
     })
   }
 
-  async resolve(contextId: number): Promise<BrowserEventTarget[]> {
+  async resolve(
+    contextId: number,
+    capturedSuffixLength = 0
+  ): Promise<BrowserEventTarget[]> {
     const context = this.#contexts.get(contextId)
     const frameId = context?.auxData?.frameId
     if (typeof frameId !== 'string') throw new Error('Missing recorder context')
     const { frameTree } = await this.client.page.getFrameTree()
     const chain = findChain(frameTree, frameId)
     if (!chain) throw new Error('Recording frame was detached')
+    const ownerIds = chain.slice(1)
+    if (capturedSuffixLength > ownerIds.length)
+      throw new Error('Captured frame suffix exceeds resolved path')
     const path = await Promise.all(
-      chain.slice(1).map((id, index) => this.#describeOwner(id, chain[index]!))
+      ownerIds
+        .slice(0, ownerIds.length - capturedSuffixLength)
+        .map((id, index) => this.#describeOwner(id, chain[index]!))
     )
     return path
   }
@@ -113,11 +121,17 @@ export class FramePaths {
       return
     }
     const cached = this.#paths.get(contextId)
-    const pending = this.resolve(contextId).catch(async (error) => {
-      const previous = await cached
-      if (previous === null || previous === undefined) throw error
-      return previous
-    })
+    const first = events[0]
+    // Binding events carry the owner suffix captured before the page handles the action.
+    const suffix = first && 'frames' in first ? (first.frames ?? []) : []
+    const pending = this.resolve(contextId, suffix.length)
+      .catch(async (error) => {
+        const previous = await cached
+        if (previous === null || previous === undefined) throw error
+        if (suffix.length > previous.length) throw error
+        return previous.slice(0, previous.length - suffix.length)
+      })
+      .then((prefix) => [...prefix, ...suffix])
     this.#paths.set(
       contextId,
       pending.catch(() => null)

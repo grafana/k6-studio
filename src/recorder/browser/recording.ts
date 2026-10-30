@@ -12,7 +12,7 @@ import {
 } from '../../utils/dom/dom'
 import { getElementDetails } from '../../utils/dom/selectors'
 
-import { getFramePath, withFrames } from './frames'
+import { getFramePath, getReachableFramePath, withFrames } from './frames'
 import { eventManager } from './manager'
 import { BrowserExtensionClient } from './messaging'
 import { getTabId } from './utils'
@@ -65,7 +65,10 @@ export function startRecording(
       frames = getFramePath()
     } catch {
       // CDP retains the event if this click destroys the frame's execution context.
-      window.__K6_STUDIO_RECORD_FRAME_EVENTS__?.(JSON.stringify(list))
+      const suffix = getReachableFramePath()
+      window.__K6_STUDIO_RECORD_FRAME_EVENTS__?.(
+        JSON.stringify(list.map((event) => withFrames(event, suffix)))
+      )
       return
     }
     client.send({

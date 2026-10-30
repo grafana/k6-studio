@@ -1,4 +1,4 @@
-import { BrowserContext, Page } from 'k6/browser'
+import { BrowserContext, Frame, Page } from 'k6/browser'
 
 import { TRACKING_SERVER_URL } from '../utils'
 
@@ -43,18 +43,25 @@ export async function injectSessionReplayScript(context: BrowserContext) {
   await context.addInitScript(SESSION_REPLAY_SCRIPT)
 }
 
-async function injectRecorder(page: Page) {
-  // The guard runs separately so the recorder bundle is only shipped to pages
-  // that don't have it yet.
-  const isInjected = await page.evaluate<boolean, undefined>(
-    '() => window.__K6_SESSION_REPLAY_TRACKING_SERVER_URL__ !== undefined'
+async function injectRecorder(frame: Page | Frame) {
+  // The guard avoids shipping the recorder bundle to documents that already have it.
+  const isInjected = await frame.evaluate<boolean, undefined>(
+    '() => window.__K6_REPLAY_INSTALLED__ === true'
   )
 
   if (isInjected) {
     return
   }
 
-  await page.evaluate(INJECT_RECORDER_EXPRESSION)
+  await frame.evaluate(INJECT_RECORDER_EXPRESSION)
+}
+
+async function injectPopupFrames(page: Page) {
+  await injectRecorder(page)
+
+  const children = page.frames().filter((frame) => frame.parentFrame() !== null)
+
+  await Promise.allSettled(children.map((frame) => injectRecorder(frame)))
 }
 
 // page -> injection in flight. Serializing per page keeps two overlapping
@@ -63,7 +70,7 @@ const newTabPages = new Map<Page, Promise<void>>()
 
 function ensureRecorder(page: Page) {
   const pending = newTabPages.get(page) ?? Promise.resolve()
-  const injection = pending.then(() => injectRecorder(page))
+  const injection = pending.then(() => injectPopupFrames(page))
 
   newTabPages.set(
     page,
@@ -78,8 +85,8 @@ function ensureRecorder(page: Page) {
  * (e.g. a popup from a click on a target="_blank" link), so the session replay
  * recorder is injected into such pages once they are obtained through
  * `waitForEvent('page')`. The page stays tracked afterwards: a navigation to a
- * new document wipes the recorder, so it is re-injected after every tracked
- * action for as long as the page is open.
+ * new document wipes the recorder, so every descendant document is checked
+ * after each tracked action for as long as the page is open.
  */
 export function injectSessionReplayIntoNewTab(page: Page) {
   if (TRACKING_SERVER_URL === null) {

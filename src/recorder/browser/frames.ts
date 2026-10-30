@@ -26,6 +26,26 @@ export function buildFramePath(
   return path
 }
 
+/** Captures owners reachable before a page event changes their selectors. */
+export function getReachableFramePath(
+  start: Window = window,
+  getDetails: (element: Element) => BrowserEventTarget = getElementDetails
+): BrowserEventTarget[] {
+  const path: BrowserEventTarget[] = []
+
+  try {
+    forEachOwningFrame(
+      start,
+      () => false,
+      (iframe) => path.unshift(getDetails(iframe))
+    )
+  } catch {
+    // CDP resolves ancestors above the inaccessible owner.
+  }
+
+  return path
+}
+
 function safeFramePath(start: Window): BrowserEventTarget[] {
   try {
     return buildFramePath(start, getElementDetails)

@@ -113,7 +113,7 @@ export function readSelection(
  * iframes. Detection has to happen in each frame because DOM events don't cross
  * iframe boundaries; matched elements are forwarded to the top frame with a
  * direct call when every ancestor is same-origin. Cross-origin frames only
- * suppress page interactions while a tool is active.
+ * suppress page interactions while a tool is confirmed active.
  */
 export function attachInspectionDetection() {
   const abortController = new AbortController()
@@ -122,7 +122,8 @@ export function attachInspectionDetection() {
   window.addEventListener(
     'click',
     (event) => {
-      if (!canBridgeToTopFrame(window) && isTopFrameToolActive()) {
+      // Pending tool state skips recording but must not cancel page clicks.
+      if (isRemoteToolActive() === true && !canBridgeToTopFrame(window)) {
         event.preventDefault()
         event.stopImmediatePropagation()
       }
