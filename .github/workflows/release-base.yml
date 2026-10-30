@@ -26,7 +26,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, macos-15-intel, windows-latest, ubuntu-latest]
+        # electron-installer-redhat does not support the newer RPM in Ubuntu 26.04.
+        platform: [macos-latest, macos-15-intel, windows-latest, ubuntu-24.04]
 
     runs-on: ${{ matrix.platform }}
     steps:
