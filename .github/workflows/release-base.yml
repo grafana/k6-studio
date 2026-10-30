@@ -141,7 +141,7 @@ jobs:
         if: startsWith(matrix.platform, 'windows-')
         with:
           # renovate: datasource=dotnet-version depName=dotnet-sdk
-          dotnet-version: "8.0.414"
+          dotnet-version: "8.0.427"
 
       - name: Install Sign CLI tool
         id: install-sign-tool
