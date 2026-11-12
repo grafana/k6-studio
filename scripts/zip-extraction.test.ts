@@ -26,6 +26,12 @@ const traversalZip =
 
 let directory: string
 
+async function writeArchive(contents: string) {
+  const archive = join(directory, 'browser.zip')
+  await writeFile(archive, Buffer.from(contents, 'base64'))
+  return { archive, destination: join(directory, 'browser') }
+}
+
 beforeEach(async () => {
   directory = await mkdtemp(join(tmpdir(), 'studio-zip-'))
 })
@@ -39,9 +45,7 @@ describe.each([
   { name: 'Puppeteer browsers', extract: unpackArchive },
 ])('$name ZIP extraction', ({ extract }) => {
   it('extracts ordinary files', async () => {
-    const archive = join(directory, 'browser.zip')
-    const destination = join(directory, 'browser')
-    await writeFile(archive, Buffer.from(normalZip, 'base64'))
+    const { archive, destination } = await writeArchive(normalZip)
 
     await extract(archive, destination)
 
@@ -53,9 +57,7 @@ describe.each([
   it.skipIf(process.platform === 'win32')(
     'preserves files and relative symlinks',
     async () => {
-      const archive = join(directory, 'browser.zip')
-      const destination = join(directory, 'browser')
-      await writeFile(archive, Buffer.from(validZip, 'base64'))
+      const { archive, destination } = await writeArchive(validZip)
 
       await extract(archive, destination)
 
@@ -72,13 +74,13 @@ describe.each([
   it.skipIf(process.platform === 'win32')(
     'rejects symlinks outside the destination',
     async () => {
-      const archive = join(directory, 'browser.zip')
-      const destination = join(directory, 'browser')
+      const { archive, destination } = await writeArchive(traversalZip)
       const outside = join(directory, 'outside.txt')
-      await writeFile(archive, Buffer.from(traversalZip, 'base64'))
       await writeFile(outside, 'protected')
 
-      await expect(extract(archive, destination)).rejects.toThrow()
+      await expect(extract(archive, destination)).rejects.toThrow(
+        'target escapes destination'
+      )
 
       expect(await readFile(outside, 'utf8')).toBe('protected')
       await expect(readlink(join(destination, 'link'))).rejects.toMatchObject({

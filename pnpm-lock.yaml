@@ -209,10 +209,11 @@ overrides:
   basic-ftp: ^6.2.1
   tar: ^7.5.21
   dompurify: ^3.4.17
-  image-size: ^2.0.3
+  appdmg>image-size: ^2.0.3
   source-map-js: ^1.2.2
   tinypool: ^2.1.2
-  extract-zip: npm:@electron-internal/extract-zip@1.0.5
+  '@electron/packager>extract-zip': npm:@electron-internal/extract-zip@1.0.5
+  '@puppeteer/browsers>extract-zip': npm:@electron-internal/extract-zip@1.0.5
   tmp: ^0.2.6
   js-cookie: ^3.0.7
   '@electron/node-gyp': npm:node-gyp@12.3.0
