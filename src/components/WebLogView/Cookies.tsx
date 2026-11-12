@@ -22,8 +22,8 @@ export function Cookies({
 
   return (
     <DataList.Root size="1" trim="both">
-      {cookies.map(([name, value]) => (
-        <DataList.Item key={name}>
+      {cookies.map(([name, value], index) => (
+        <DataList.Item key={`${name}_${index}`}>
           <DataList.Label>
             <HighlightedText
               text={name}

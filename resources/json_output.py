@@ -121,7 +121,10 @@ def flow_to_json(flow: mitmproxy.flow.Flow) -> dict:
                 "timestampStart": flow.response.timestamp_start,
                 "timestampEnd": flow.response.timestamp_end,
                 "content": content,
-                "cookies": tuple(flow.request.cookies.items(True)),
+                "cookies": tuple(
+                    (name, value)
+                    for name, (value, _) in flow.response.cookies.items(True)
+                ),
             }
             if flow.response.data.trailers:
                 f["response"]["trailers"] = tuple(
