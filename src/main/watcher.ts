@@ -12,6 +12,7 @@ import { UIHandler } from '@/handlers/ui/types'
 import { watch } from '@/utils/fs'
 
 import { getStudioFileFromPath } from './file'
+import { workspaceIndex } from './workspaceIndex'
 
 export function configureWatcher(browserWindow: BrowserWindow) {
   k6StudioState.watcher = watch(
@@ -34,7 +35,13 @@ export function configureWatcher(browserWindow: BrowserWindow) {
       return
     }
 
+    void workspaceIndex.add(filePath)
+
     browserWindow.webContents.send(UIHandler.AddFile, file)
+  })
+
+  k6StudioState.watcher.on('change', (filePath) => {
+    void workspaceIndex.add(filePath)
   })
 
   k6StudioState.watcher.on('unlink', (filePath) => {
@@ -43,6 +50,8 @@ export function configureWatcher(browserWindow: BrowserWindow) {
     if (!file || filePath.endsWith(TEMP_SCRIPT_SUFFIX)) {
       return
     }
+
+    workspaceIndex.remove(filePath)
 
     browserWindow.webContents.send(UIHandler.RemoveFile, file)
   })

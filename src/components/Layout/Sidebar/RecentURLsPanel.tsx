@@ -178,7 +178,7 @@ function RecentURLItem({
           </li>
         </Grid>
       </ContextMenu.Trigger>
-      <ContextMenu.Content size="1">
+      <ContextMenu.Content>
         <ContextMenu.Item
           disabled={disabled}
           onClick={() => onStartRecording(url)}
