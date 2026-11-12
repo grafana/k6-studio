@@ -22,6 +22,97 @@ export function startRecording(
   client: BrowserExtensionClient,
   settings: SettingsStorage
 ) {
+  const manager = eventManager
+
+  interface PointerDownTarget {
+    target: Element
+    pointerId: number
+    button: number
+    pointerEvents: string
+  }
+
+  let pointerDownTarget: PointerDownTarget | null = null
+  let clearPointerDownTargetTimeout: ReturnType<typeof setTimeout> | null = null
+
+  function clearPointerDownTarget() {
+    pointerDownTarget = null
+
+    if (clearPointerDownTargetTimeout !== null) {
+      clearTimeout(clearPointerDownTargetTimeout)
+      clearPointerDownTargetTimeout = null
+    }
+  }
+
+  manager.capture('pointerdown', (ev) => {
+    if (ev.isPrimary === false || ev.target instanceof Element === false) {
+      return
+    }
+
+    clearPointerDownTarget()
+    pointerDownTarget = {
+      target: ev.target,
+      pointerId: ev.pointerId,
+      button: ev.button,
+      // This listener runs in the capture phase before page handlers can open
+      // an overlay and change hit testing for the pointer target.
+      pointerEvents: getComputedStyle(ev.target).pointerEvents,
+    }
+  })
+
+  manager.capture('pointerup', (ev) => {
+    if (
+      pointerDownTarget === null ||
+      pointerDownTarget.pointerId !== ev.pointerId
+    ) {
+      return
+    }
+
+    // A browser-generated click follows pointerup synchronously. Do not let a
+    // sequence that produced no click affect an activation in a later task.
+    clearPointerDownTargetTimeout = setTimeout(clearPointerDownTarget, 0)
+  })
+
+  manager.capture('pointercancel', (ev) => {
+    if (
+      pointerDownTarget !== null &&
+      pointerDownTarget.pointerId === ev.pointerId
+    ) {
+      clearPointerDownTarget()
+    }
+  })
+
+  function recoverPointerDownTarget(ev: MouseEvent): Element | null {
+    // Keyboard activation and HTMLElement.click() produce clicks with detail 0.
+    // They must keep the click event's own target even if a pointer sequence is
+    // pending at the same time.
+    if (ev.detail === 0 || pointerDownTarget === null) {
+      return null
+    }
+
+    const pointer = pointerDownTarget
+    clearPointerDownTarget()
+
+    if (
+      pointer.button !== ev.button ||
+      pointer.pointerEvents === 'none' ||
+      !pointer.target.isConnected ||
+      ev.target instanceof Element === false ||
+      !ev.target.contains(pointer.target)
+    ) {
+      return null
+    }
+
+    // Radix and Material UI can make the page non-interactive while opening a
+    // modal during pointerdown. The browser then retargets the resulting click
+    // to an ancestor (usually body). Recover only that specific mutation so
+    // ordinary drag/release retargeting keeps the browser's click target.
+    if (getComputedStyle(pointer.target).pointerEvents !== 'none') {
+      return null
+    }
+
+    return pointer.target
+  }
+
   function findClickTarget(element: Element): Element | null {
     switch (settings.getCurrent().clickRecordingMode) {
       case 'interactive-only':
@@ -77,14 +168,14 @@ export function startRecording(
     })
   }
 
-  const manager = eventManager
-
   manager.capture('click', (ev, manager) => {
     if (ev.target instanceof Element === false) {
       return
     }
 
-    const clickTarget = findClickTarget(ev.target)
+    const clickTarget = findClickTarget(
+      recoverPointerDownTarget(ev) ?? ev.target
+    )
 
     // We don't want to capture clicks on form elements since they will be
     // interacted with using e.g. the `selectOption` or `type` functions.
@@ -281,6 +372,7 @@ export function startRecording(
   })
 
   return function dispose() {
+    clearPointerDownTarget()
     manager.dispose()
   }
 }
