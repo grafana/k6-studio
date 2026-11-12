@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.1.3](https://github.com/grafana/k6-studio/compare/v2.1.2...v2.1.3) (2026-11-12)
+
+
+### Bug Fixes
+
+* Patch remaining critical and high dependency CVEs ([#1404](https://github.com/grafana/k6-studio/issues/1404)) ([24bf7eb](https://github.com/grafana/k6-studio/commit/24bf7eb8a187eaf4c67bcc7c72f3cc5c1ef5b54b))
+* **security/high/:** update dependency electron to v42.11.16 [security] ([#1379](https://github.com/grafana/k6-studio/issues/1379)) ([392d4e8](https://github.com/grafana/k6-studio/commit/392d4e844ba0ae160b13ab33ade9ab39ddd22a2d))
+* **security/high/:** update dependency node-forge to v1.4.3 [security] ([#1398](https://github.com/grafana/k6-studio/issues/1398)) ([2fc68dc](https://github.com/grafana/k6-studio/commit/2fc68dc2c1a4b9f885d076a2ce0d2c19af8342f7))
+* **security/high/:** update dependency undici to v7.30.1 [security] ([#1396](https://github.com/grafana/k6-studio/issues/1396)) ([c07c33f](https://github.com/grafana/k6-studio/commit/c07c33fed9afee21a16488df19f8d62feefbe9ec))
+* **security/high/:** update dependency zod to v4.6.6 [security] ([#1395](https://github.com/grafana/k6-studio/issues/1395)) ([ecfee65](https://github.com/grafana/k6-studio/commit/ecfee65a9b6f45a0c1d15c30cf7a5bd44f3a374c))
+
+
+### Continuous Integration
+
+* Pin Linux release runner to Ubuntu 24.04 ([#1402](https://github.com/grafana/k6-studio/issues/1402)) ([ec0695c](https://github.com/grafana/k6-studio/commit/ec0695c334eec06945fd581c84cc72d875292a0c))
+
 ## [2.1.2](https://github.com/grafana/k6-studio/compare/v2.1.1...v2.1.2) (2026-10-30)
 
 
