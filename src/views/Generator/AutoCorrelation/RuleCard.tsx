@@ -1,5 +1,14 @@
-import { Box, Flex, IconButton, Switch, Text, Tooltip } from '@radix-ui/themes'
 import {
+  Badge,
+  Box,
+  Flex,
+  IconButton,
+  Switch,
+  Text,
+  Tooltip,
+} from '@radix-ui/themes'
+import {
+  AlertTriangleIcon,
   BracesIcon,
   CookieIcon,
   FileTextIcon,
@@ -57,6 +66,9 @@ export const RuleCard = memo(function RuleCard({
   const overflowCount = reusedIn.length - MAX_REUSED_IN
   const icon = getRuleIcon(entry)
   const extractedValue = entry.correlationState.extractedValue
+  const matchCount = entry.correlationState.count
+  const hasAmbiguousSource =
+    entry.rule.extractor.extractionMode === 'single' && matchCount > 1
 
   return (
     <SuggestionRow
@@ -81,7 +93,10 @@ export const RuleCard = memo(function RuleCard({
         )
       }
       controls={
-        <RuleControl ruleId={ruleId} ruleName={ruleName} action={action} />
+        <>
+          {hasAmbiguousSource && <MultipleMatchesWarning count={matchCount} />}
+          <RuleControl ruleId={ruleId} ruleName={ruleName} action={action} />
+        </>
       }
       expandableContent={
         <RuleCardDetails
@@ -95,6 +110,19 @@ export const RuleCard = memo(function RuleCard({
     />
   )
 })
+
+function MultipleMatchesWarning({ count }: { count: number }) {
+  return (
+    <Tooltip
+      content={`This rule matched ${count} requests. In single extraction mode, only the first value is used. Fine-tune the rule filter to select one request, or accept the rule as it is.`}
+    >
+      <Badge color="amber" variant="soft">
+        <AlertTriangleIcon size={12} aria-hidden="true" />
+        {count} matches
+      </Badge>
+    </Tooltip>
+  )
+}
 
 function RuleControl({
   ruleId,
