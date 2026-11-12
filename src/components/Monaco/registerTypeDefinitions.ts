@@ -6,7 +6,7 @@ const k6TypeModules = import.meta.glob('/node_modules/@types/k6/**/*.d.ts', {
   query: '?raw',
   import: 'default',
   eager: true,
-}) as Record<string, string>
+})
 
 let areTypesRegistered = false
 

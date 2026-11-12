@@ -12,9 +12,17 @@ allowBuilds:
 overrides:
   'esbuild': '^0.28.0'
   'nan': '^2.25.0'
-  'basic-ftp': '^5.2.0'
+  'basic-ftp': '^6.2.1'
   'tar': '^7.5.21'
-  'dompurify': '^3.4.13'
+  'dompurify': '^3.4.17'
+  # CVE-2025-71330 requires the patched appdmg API below.
+  'appdmg>image-size': '^2.0.3'
+  'source-map-js': '^1.2.2'
+  'tinypool': '^2.1.2'
+
+  # GHSA-jmr9-qjv8-65gv has no extract-zip fix. These consumers only use dir.
+  '@electron/packager>extract-zip': 'npm:@electron-internal/extract-zip@1.0.5'
+  '@puppeteer/browsers>extract-zip': 'npm:@electron-internal/extract-zip@1.0.5'
 
   # external-editor pulls tmp@0.0.33, which has an unpatched path traversal
   # (GHSA-ph9p-34f9-6g65). Only 0.2.6+ is fixed, so the transitive copy has to be
@@ -31,4 +39,5 @@ overrides:
   '@electron/node-gyp': 'npm:node-gyp@12.3.0'
 
 patchedDependencies:
+  appdmg@0.6.6: patches/appdmg.patch
   rrweb: patches/rrweb.patch
