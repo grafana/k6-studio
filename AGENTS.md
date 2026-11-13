@@ -83,3 +83,4 @@ Conventional Commits format. Sentence case, imperative verb.
 feat: Add type column to WebLogView
 fix: Application crashes when opening HAR file
 ```
+- Security issues should be reported via [Grafana's security issue reporting page](https://grafana.com/legal/report-a-security-issue/) and not directly in this repository.
