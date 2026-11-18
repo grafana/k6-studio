@@ -42,10 +42,14 @@ export function ValidatorControls({
 }: ValidatorControlsProps) {
   const proxyStatus = useProxyStatus()
 
-  const handleDelete = useDeleteFile({
+  const deleteFile = useDeleteFile({
     file,
     navigateHomeOnDelete: true,
   })
+
+  const handleDelete = () => {
+    void deleteFile({ force: true })
+  }
 
   return (
     <>

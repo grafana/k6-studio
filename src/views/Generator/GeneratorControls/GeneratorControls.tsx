@@ -93,10 +93,14 @@ export function GeneratorControls({
 
   const handleExportScript = useScriptExport(file.path)
 
-  const handleDelete = useDeleteFile({
+  const deleteFile = useDeleteFile({
     file,
     navigateHomeOnDelete: true,
   })
+
+  const handleDelete = () => {
+    void deleteFile({ force: true })
+  }
 
   return (
     <Flex align="center" justify="end" gap="2" ml="2" css={toolbarStageStyles}>
